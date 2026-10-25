@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Flame, Droplet, Activity, Check, Save, RotateCw, MessageCircle, UtensilsCrossed, Search, Plus, Edit2, Trash2, X, Scale } from 'lucide-react';
+import { Calculator, Flame, Droplet, Activity, Check, Save, RotateCw, MessageCircle, UtensilsCrossed, Search, Plus, Edit2, Trash2, X, Scale, ShieldCheck } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import { copyToClipboard } from '../utils/clipboardUtils';
@@ -7,6 +7,8 @@ import { calculateMetabolicMacroProfile, DAILY_ACTIVITY_FACTORS, WORKOUT_FREQUEN
 import { DEFAULT_FOOD_CATALOG } from '../data/defaultFoodsCatalog';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import CurvedSelect from '../components/common/CurvedSelect';
+import { TableSearch } from '@/shared/components/table-search';
+import { PageHeader } from '@/shared/components/page-header';
 
 export default function MacroCalculator() {
   // Navigation Tabs: 'CATALOG' (Food Library) or 'CALCULATOR' (Macro Engine)
@@ -259,6 +261,11 @@ export default function MacroCalculator() {
   const fatCalories = targetFatGrams * 9;
   const carbsCalories = targetCarbGrams * 4;
   const waterTargetLiters = metabolic.water_target_liters.toFixed(1);
+  const totalMacroCalories = (proteinCalories + carbsCalories + fatCalories) || targetCalories || 1;
+  const proteinPct = Math.round((proteinCalories / totalMacroCalories) * 100);
+  const carbsPct = Math.round((carbsCalories / totalMacroCalories) * 100);
+  const fatPct = Math.max(0, 100 - (proteinPct + carbsPct));
+  const calorieDiff = targetCalories - tdee;
 
   const handleApplyToClient = async () => {
     if (!selectedClient) {
@@ -326,69 +333,75 @@ export default function MacroCalculator() {
 
   return (
     <AdminLayout>
-      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1240px', margin: '0 auto', width: '100%', fontFamily: 'Cairo, sans-serif' }}>
         
-        {/* Page Header with Main Navigation Tabs */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
-          <div>
-            <h1 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: 900, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <UtensilsCrossed size={22} color="#0284C7" />
-              <span>الأغذية والماكروز</span>
-            </h1>
-            <p style={{ margin: 0, fontSize: '12px', color: '#64748B', fontWeight: 600 }}>
-              قاعدة بيانات الأغذية الكاملة، الماكروز لكل 100 جرام، وحاسبة الاحتياج الرياضي اليومي.
-            </p>
-          </div>
+        {/* Unified Premium Page Header */}
+        <PageHeader
+          title="الأغذية والماكروز"
+          description="قاعدة بيانات الأغذية الكاملة للماكروز وحاسبة الاحتياج الرياضي اليومي المعتمدة سريرياً."
+          badge={(
+            <span style={{
+              background: '#F4F0FD',
+              color: '#673DE6',
+              border: '1px solid #EDE8FA',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: 700
+            }}>
+              {activeTab === 'CATALOG' ? `قاعدة الأغذية (${foods.length})` : 'محرك الطاقة السريري'}
+            </span>
+          )}
+          actions={(
+            <div style={{ display: 'inline-flex', background: '#F2F4F7', padding: '3px', borderRadius: '8px', border: '1px solid #EAECF0', gap: '3px' }}>
+              <button
+                type="button"
+                onClick={() => setActiveTab('CATALOG')}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: activeTab === 'CATALOG' ? '#FFFFFF' : 'transparent',
+                  color: activeTab === 'CATALOG' ? '#101828' : '#475467',
+                  fontSize: '12px',
+                  fontWeight: activeTab === 'CATALOG' ? 700 : 500,
+                  cursor: 'pointer',
+                  boxShadow: activeTab === 'CATALOG' ? '0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04)' : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <UtensilsCrossed size={14} color={activeTab === 'CATALOG' ? '#673DE6' : '#64748B'} />
+                <span>قاعدة الأطعمة ({foods.length})</span>
+              </button>
 
-          {/* Navigation Pill Switcher */}
-          <div style={{ display: 'flex', background: '#F1F5F9', padding: '3px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-            <button
-              type="button"
-              onClick={() => setActiveTab('CATALOG')}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '6px',
-                border: 'none',
-                background: activeTab === 'CATALOG' ? '#FFFFFF' : 'transparent',
-                color: activeTab === 'CATALOG' ? '#0F172A' : '#64748B',
-                fontSize: '12px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                boxShadow: activeTab === 'CATALOG' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <UtensilsCrossed size={14} color={activeTab === 'CATALOG' ? '#0284C7' : '#64748B'} />
-              <span>قاعدة الأطعمة ({foods.length})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('CALCULATOR')}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '6px',
-                border: 'none',
-                background: activeTab === 'CALCULATOR' ? '#FFFFFF' : 'transparent',
-                color: activeTab === 'CALCULATOR' ? '#0F172A' : '#64748B',
-                fontSize: '12px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                boxShadow: activeTab === 'CALCULATOR' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <Calculator size={14} color={activeTab === 'CALCULATOR' ? '#0284C7' : '#64748B'} />
-              <span>حاسبة الاحتياج اليومي</span>
-            </button>
-          </div>
-        </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('CALCULATOR')}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: activeTab === 'CALCULATOR' ? '#FFFFFF' : 'transparent',
+                  color: activeTab === 'CALCULATOR' ? '#101828' : '#475467',
+                  fontSize: '12px',
+                  fontWeight: activeTab === 'CALCULATOR' ? 700 : 500,
+                  cursor: 'pointer',
+                  boxShadow: activeTab === 'CALCULATOR' ? '0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04)' : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <Calculator size={14} color={activeTab === 'CALCULATOR' ? '#673DE6' : '#64748B'} />
+                <span>حاسبة الاحتياج اليومي</span>
+              </button>
+            </div>
+          )}
+        />
 
         {/* ========================================================================= */}
         {/* TAB 1: FOOD CATALOG & NUTRITION LIBRARY */}
@@ -396,43 +409,21 @@ export default function MacroCalculator() {
         {activeTab === 'CATALOG' && (
           <div>
             {/* Filter & Control Bar */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px 16px', marginBottom: '14px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '10px', padding: '12px 16px', marginBottom: '14px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
               
               {/* Top Search & Actions Row */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
-                <div style={{ position: 'relative', flex: '1', minWidth: '240px', maxWidth: '420px' }}>
-                  <Search size={14} color="#94A3B8" style={{ position: 'absolute', right: '10px', top: '9px' }} />
-                  <input
-                    type="text"
-                    placeholder="ابحث عن أي صنف طعام (دجاج، أرز، شوفان، سلمون...)"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{
-                      width: '100%',
-                      height: '32px',
-                      padding: '0 30px 0 10px',
-                      borderRadius: '6px',
-                      border: '1px solid #CBD5E1',
-                      fontSize: '11.5px',
-                      fontWeight: 600,
-                      outline: 'none',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  {searchTerm && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchTerm('')}
-                      style={{ position: 'absolute', left: '8px', top: '7px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#94A3B8' }}
-                    >
-                      <X size={13} />
-                    </button>
-                  )}
-                </div>
+                <TableSearch
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="ابحث عن أي صنف طعام (دجاج، أرز، شوفان، سلمون...)"
+                  width="380px"
+                  showShortcut={false}
+                />
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {/* Food State Filter (Curved Segmented Control) */}
-                  <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '8px', border: '1px solid #E2E8F0', gap: '2px' }}>
+                  <div style={{ display: 'inline-flex', background: '#F2F4F7', padding: '3px', borderRadius: '8px', border: '1px solid #EAECF0', gap: '2px' }}>
                     {[
                       { id: 'ALL', label: 'جميع الحالات' },
                       { id: 'COOKED', label: 'مطبوخ' },
@@ -447,13 +438,13 @@ export default function MacroCalculator() {
                           style={{
                             border: 'none',
                             cursor: 'pointer',
-                            padding: '4px 9px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            borderRadius: '6px',
-                            background: isAct ? '#0F172A' : 'transparent',
-                            color: isAct ? '#FFFFFF' : '#64748B',
-                            boxShadow: isAct ? '0 1px 3px rgba(15, 23, 42, 0.12)' : 'none',
+                            padding: '4px 12px',
+                            fontSize: '11.5px',
+                            fontWeight: isAct ? 700 : 500,
+                            borderRadius: '8px',
+                            background: isAct ? '#FFFFFF' : 'transparent',
+                            color: isAct ? '#101828' : '#475467',
+                            boxShadow: isAct ? '0 1px 2px rgba(16, 24, 40, 0.06)' : 'none',
                             transition: 'all 0.12s ease'
                           }}
                         >
@@ -469,18 +460,10 @@ export default function MacroCalculator() {
                     onClick={openAddFoodModal}
                     style={{
                       height: '32px',
-                      padding: '0 14px',
-                      borderRadius: '6px',
+                      padding: '0 16px',
+                      borderRadius: '8px',
                       border: 'none',
-                      background: '#0F172A',
-                      color: '#FFFFFF',
-                      fontSize: '11.5px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      boxShadow: '0 1px 3px rgba(15, 23, 42, 0.15)'
+                      background: '#673DE6', color: '#FFFFFF', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px', boxShadow: '0 1px 2px rgba(103, 61, 230, 0.2)'
                     }}
                   >
                     <Plus size={13} />
@@ -506,10 +489,10 @@ export default function MacroCalculator() {
                       type="button"
                       onClick={() => setCategoryFilter(cat.key)}
                       style={{
-                        padding: '4px 9px',
-                        borderRadius: '5px',
+                        padding: '5px 12px',
+                        borderRadius: '8px',
                         border: isSelected ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                        background: isSelected ? '#0F172A' : '#FFFFFF',
+                        background: isSelected ? '#101828' : '#FFFFFF',
                         color: isSelected ? '#FFFFFF' : '#475569',
                         fontSize: '11px',
                         fontWeight: 700,
@@ -527,7 +510,7 @@ export default function MacroCalculator() {
                         color: isSelected ? '#FFFFFF' : '#64748B',
                         fontSize: '9.5px',
                         padding: '0 4px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         fontWeight: 800
                       }}>
                         {cat.count}
@@ -541,21 +524,21 @@ export default function MacroCalculator() {
 
             {/* Foods Data Table */}
             {loadingFoods ? (
-              <div style={{ textAlign: 'center', padding: '50px 20px', background: '#FFFFFF', borderRadius: '10px', border: '1px solid #E2E8F0', minHeight: '350px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center', padding: '50px 20px', background: '#FFFFFF', borderRadius: '10px', border: '1px solid #EAECF0', minHeight: '350px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <RotateCw size={22} className="animate-spin" color="#0284C7" style={{ margin: '0 auto 8px auto' }} />
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>جاري تحميل مكتبة الأغذية...</div>
               </div>
             ) : filteredFoods.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '50px 20px', background: '#FFFFFF', borderRadius: '10px', border: '1px solid #E2E8F0', minHeight: '350px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center', padding: '50px 20px', background: '#FFFFFF', borderRadius: '10px', border: '1px solid #EAECF0', minHeight: '350px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <UtensilsCrossed size={28} color="#94A3B8" style={{ margin: '0 auto 8px auto', opacity: 0.5 }} />
                 <div style={{ fontSize: '13px', fontWeight: 800, color: '#1E293B', marginBottom: '2px' }}>لا توجد أطعمة مطابقة للبحث</div>
                 <div style={{ fontSize: '11px', color: '#64748B' }}>جرب تغيير تصنيف البحث أو إضافة صنف طعام جديد.</div>
               </div>
             ) : (
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)', minHeight: '350px' }}>
+              <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', overflowX: 'auto', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)', minHeight: '350px' }}>
                 <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
                   <thead>
-                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 800 }}>
+                    <tr style={{ background: '#F8F9FA', borderBottom: '1px solid #EAECF0', color: '#475569', fontWeight: 800 }}>
                       <th style={{ padding: '10px 14px', textAlign: 'right', width: '40%' }}>الصنف الغذائي والتصنيف</th>
                       <th style={{ padding: '10px 12px', textAlign: 'center', width: '16%' }}>السعرات (لكل 100g)</th>
                       <th style={{ padding: '10px 12px', textAlign: 'center', width: '30%' }}>الماكروز الصافية (P | C | F | Fib)</th>
@@ -571,22 +554,22 @@ export default function MacroCalculator() {
                             borderBottom: '1px solid #F1F5F9',
                             transition: 'background 0.12s ease'
                           }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#F8F9FA')}
                           onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                         >
                           {/* Column 1: Food Name + State + Category Badges */}
                           <td style={{ padding: '9px 14px', textAlign: 'right' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' }}>
-                              <span style={{ color: '#0F172A', fontSize: '13px', fontWeight: 800 }}>
+                              <span style={{ color: '#101828', fontSize: '13px', fontWeight: 800 }}>
                                 {food.name_ar}
                               </span>
                               <span style={{
                                 fontSize: '9.5px',
                                 fontWeight: 700,
                                 padding: '1px 6px',
-                                borderRadius: '6px',
+                                borderRadius: '8px',
                                 background: food.food_state === 'COOKED' ? '#F1F5F9' : '#FEF2F2',
-                                border: `1px solid ${food.food_state === 'COOKED' ? '#CBD5E1' : '#FECACA'}`,
+                                border: `1px solid ${food.food_state === 'COOKED' ? '#D0D5DD' : '#FECACA'}`,
                                 color: food.food_state === 'COOKED' ? '#334155' : '#DC2626'
                               }}>
                                 {food.food_state === 'COOKED' ? 'مطبوخ' : 'طازج'}
@@ -595,8 +578,8 @@ export default function MacroCalculator() {
                                 fontSize: '9.5px',
                                 fontWeight: 700,
                                 padding: '1px 6px',
-                                borderRadius: '6px',
-                                background: food.macro_type === 'PROTEIN' ? '#F0F9FF' : food.macro_type === 'CARBS' ? '#FFFBEB' : food.macro_type === 'FATS' ? '#F0FDF4' : '#F8FAFC',
+                                borderRadius: '9999px',
+                                background: food.macro_type === 'PROTEIN' ? '#F0F9FF' : food.macro_type === 'CARBS' ? '#FFFBEB' : food.macro_type === 'FATS' ? '#F0FDF4' : '#F8F9FA',
                                 border: `1px solid ${food.macro_type === 'PROTEIN' ? '#BAE6FD' : food.macro_type === 'CARBS' ? '#FDE68A' : food.macro_type === 'FATS' ? '#BBF7D0' : '#E2E8F0'}`,
                                 color: food.macro_type === 'PROTEIN' ? '#0369A1' : food.macro_type === 'CARBS' ? '#B45309' : food.macro_type === 'FATS' ? '#15803D' : '#475569'
                               }}>
@@ -613,7 +596,7 @@ export default function MacroCalculator() {
                           {/* Column 2: Calories per 100g */}
                           <td style={{ padding: '9px 12px', textAlign: 'center' }}>
                             <span style={{
-                              background: '#F8FAFC', border: '1px solid #E2E8F0',
+                              background: '#F8F9FA', border: '1px solid #EAECF0',
                               color: '#92400E',
                               padding: '3px 10px',
                               borderRadius: '6px',
@@ -634,7 +617,7 @@ export default function MacroCalculator() {
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', direction: 'ltr' }}>
                               <span style={{
                                 width: '56px',
-                                background: '#F8FAFC', border: '1px solid #E2E8F0',
+                                background: '#F8F9FA', border: '1px solid #EAECF0',
                                 color: '#0369A1',
                                 padding: '3px 0',
                                 borderRadius: '5px',
@@ -669,7 +652,7 @@ export default function MacroCalculator() {
                               </span>
                               <span style={{
                                 width: '56px',
-                                background: '#F8FAFC', border: '1px solid #E2E8F0',
+                                background: '#F8F9FA', border: '1px solid #EAECF0',
                                 color: '#15803D',
                                 padding: '3px 0',
                                 borderRadius: '5px',
@@ -686,8 +669,8 @@ export default function MacroCalculator() {
                               </span>
                               <span style={{
                                 width: '56px',
-                                background: '#F8FAFC',
-                                border: '1px solid #E2E8F0',
+                                background: '#F8F9FA',
+                                border: '1px solid #EAECF0',
                                 color: '#64748B',
                                 padding: '3px 0',
                                 borderRadius: '5px',
@@ -767,323 +750,671 @@ export default function MacroCalculator() {
         {/* TAB 2: METABOLIC RATE & MACRO TARGET CALCULATOR */}
         {/* ========================================================================= */}
         {activeTab === 'CALCULATOR' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '20px', alignItems: 'stretch' }}>
             
-            {/* Left Column: Metabolic & Goals Input Form */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px 18px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)' }}>
-              <h3 style={{ margin: '0 0 4px 0', fontSize: '14.5px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Scale size={16} color="#0284C7" />
-                <span>بيانات المتدرب والمستوى البدني</span>
-              </h3>
-              <p style={{ margin: '0 0 14px 0', fontSize: '11px', color: '#64748B' }}>
-                إدخال القياسات الحيوية، مستوى النشاط، ونمط التدريب.
-              </p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    النوع (الجنس)
-                  </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', height: '34px' }}>
-                    {[
-                      { id: 'MALE', label: 'ذكر' },
-                      { id: 'FEMALE', label: 'أنثى' }
-                    ].map((g) => {
-                      const isAct = calcForm.gender === g.id;
-                      return (
-                        <button
-                          key={g.id}
-                          type="button"
-                          onClick={() => setCalcForm({ ...calcForm, gender: g.id })}
-                          style={{
-                            border: isAct ? '1.5px solid #0F172A' : '1px solid #CBD5E1',
-                            borderRadius: '8px',
-                            background: isAct ? '#0F172A' : '#FFFFFF',
-                            color: isAct ? '#FFFFFF' : '#475569',
-                            fontWeight: 800,
-                            fontSize: '11.5px',
-                            cursor: 'pointer',
-                            transition: 'all 0.12s ease'
-                          }}
-                        >
-                          {g.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    العمر (سنة)
-                  </label>
-                  <input
-                    type="number"
-                    value={calcForm.age}
-                    onChange={(e) => setCalcForm({ ...calcForm, age: Number(e.target.value) })}
-                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    الوزن (كجم)
-                  </label>
-                  <input
-                    type="number"
-                    value={calcForm.weight}
-                    onChange={(e) => setCalcForm({ ...calcForm, weight: Number(e.target.value) })}
-                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    الطول (سم)
-                  </label>
-                  <input
-                    type="number"
-                    value={calcForm.height}
-                    onChange={(e) => setCalcForm({ ...calcForm, height: Number(e.target.value) })}
-                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    نسبة الدهون %
-                  </label>
-                  <input
-                    type="number"
-                    value={calcForm.bodyFat}
-                    onChange={(e) => setCalcForm({ ...calcForm, bodyFat: Number(e.target.value) })}
-                    placeholder="اختياري"
-                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', boxSizing: 'border-box' }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    النشاط والحركة اليومية (NEAT)
-                  </label>
-                  <CurvedSelect
-                    value={calcForm.dailyActivity}
-                    onChange={(e) => setCalcForm({ ...calcForm, dailyActivity: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', outline: 'none' }}
-                  >
-                    {Object.entries(DAILY_ACTIVITY_FACTORS).map(([k, v]) => (
-                      <option key={k} value={k}>{v.label_ar} (x{v.factor})</option>
-                    ))}
-                  </CurvedSelect>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                    تكرار تمارين المقاومة (EAT)
-                  </label>
-                  <CurvedSelect
-                    value={calcForm.workoutFrequency}
-                    onChange={(e) => setCalcForm({ ...calcForm, workoutFrequency: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', outline: 'none' }}
-                  >
-                    {Object.entries(WORKOUT_FREQUENCY_FACTORS).map(([k, v]) => (
-                      <option key={k} value={k}>{v.label_ar} (+{v.factor})</option>
-                    ))}
-                  </CurvedSelect>
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                  الهدف المستهدف
-                </label>
-                <CurvedSelect
-                  value={calcForm.goal}
-                  onChange={(e) => setCalcForm({ ...calcForm, goal: e.target.value })}
-                  style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 800, color: '#0284C7', background: '#F0F9FF', outline: 'none' }}
-                >
-                  {Object.entries(GOAL_CALORIE_MULTIPLIERS).map(([k, v]) => (
-                    <option key={k} value={k}>{v.label_ar}</option>
-                  ))}
-                </CurvedSelect>
-              </div>
-
-              {/* Protein Slider */}
-              <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#334155' }}>
-                    احتياج البروتين لكل كجم وزن
-                  </span>
-                  <span style={{ fontSize: '12px', fontWeight: 900, color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '6px' }}>
-                    {calcForm.proteinPerKg} جم / كجم
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="1.4"
-                  max="3.0"
-                  step="0.1"
-                  value={calcForm.proteinPerKg}
-                  onChange={(e) => setCalcForm({ ...calcForm, proteinPerKg: parseFloat(e.target.value) })}
-                  style={{ width: '100%', cursor: 'pointer' }}
-                />
-              </div>
-
-            </div>
-
-            {/* Right Column: Calculated Results & Sync Action */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px 18px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)' }}>
-              <h3 style={{ margin: '0 0 4px 0', fontSize: '14.5px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Flame size={16} color="#DC2626" />
-                <span>نتائج الطاقة والماكروز المستهدفة</span>
-              </h3>
-              <p style={{ margin: '0 0 14px 0', fontSize: '11px', color: '#64748B' }}>
-                التقسيم الرياضي الدقيق للسعرات والجرامات اليومية.
-              </p>
-
-              {/* BMR & TDEE Badges */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
-                <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748B' }}>معدل الحرق الأساسي (BMR)</div>
-                  <div style={{ fontSize: '15px', fontWeight: 900, color: '#0F172A' }}>{bmr} <small style={{ fontSize: '10px' }}>kcal</small></div>
-                </div>
-                <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748B' }}>استهلاك الطاقة (TDEE)</div>
-                  <div style={{ fontSize: '15px', fontWeight: 900, color: '#0F172A' }}>{tdee} <small style={{ fontSize: '10px' }}>kcal</small></div>
-                </div>
-              </div>
-
-              {/* Scientific Methodology Clarification Badge */}
-              <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '6px', padding: '6px 10px', marginBottom: '10px', fontSize: '10.5px', color: '#0369A1', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 800 }}>
-                  <span>منهجية الحساب السريرية:</span>
-                  <span style={{ background: '#FFFFFF', padding: '1px 6px', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
-                    {calcForm.bodyFat ? 'معادلة Katch-McArdle (الكتلة اللادهنية LBM)' : 'معادلة Mifflin-St Jeor السريرية المعتمدة'}
-                  </span>
-                </div>
-                <div style={{ fontSize: '9.5px', color: '#0284C7', opacity: 0.9 }}>
-                  معامل النشاط الحركي التراكمي: نشاط اليوم (NEAT x{DAILY_ACTIVITY_FACTORS[calcForm.dailyActivity]?.value || 1.3}) + تمرين المقاومة (EAT +{WORKOUT_FREQUENCY_FACTORS[calcForm.workoutFrequency]?.value || 0.15})
-                </div>
-              </div>
-
-              {/* Highlight Target Calories */}
-              <div style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)', color: '#FFFFFF', padding: '12px 14px', borderRadius: '8px', textAlign: 'center', marginBottom: '12px', boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, opacity: 0.9 }}>السعرات اليومية المستهدفة للخطة</div>
-                <div style={{ fontSize: '24px', fontWeight: 900 }}>
-                  {targetCalories} <span style={{ fontSize: '13px', fontWeight: 700 }}>سعرة حرارية</span>
-                </div>
-              </div>
-
-              {/* Macro 3-Boxes */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#0284C7' }}>البروتين</div>
-                  <div style={{ fontSize: '16px', fontWeight: 900, color: '#0F172A' }}>{targetProteinGrams} <small style={{ fontSize: '10px' }}>جم</small></div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 600 }}>{proteinCalories} kcal</div>
-                </div>
-
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#D97706' }}>الكارب</div>
-                  <div style={{ fontSize: '16px', fontWeight: 900, color: '#0F172A' }}>{targetCarbGrams} <small style={{ fontSize: '10px' }}>جم</small></div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 600 }}>{carbsCalories} kcal</div>
-                </div>
-
-                <div style={{ background: '#F0FDF4', border: '1px solid #86EFAC', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#16A34A' }}>الدهون</div>
-                  <div style={{ fontSize: '16px', fontWeight: 900, color: '#0F172A' }}>{targetFatGrams} <small style={{ fontSize: '10px' }}>جم</small></div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 600 }}>{fatCalories} kcal</div>
-                </div>
-              </div>
-
-              {/* Water & Steps */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
-                <div style={{ background: '#F8FAFC', padding: '6px 8px', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Droplet size={14} color="#0284C7" />
-                  <div>
-                    <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 700 }}>احتياج الماء</div>
-                    <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>{waterTargetLiters} لتر / يوم</div>
-                  </div>
-                </div>
-
-                <div style={{ background: '#F8FAFC', padding: '6px 8px', borderRadius: '6px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Activity size={14} color="#16A34A" />
-                  <div>
-                    <div style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 700 }}>جلسة الكارديو</div>
-                    <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>30 دقيقة / 4 أيام</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sync to Client Program */}
-              <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', marginBottom: '10px' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                  تطبيق هذه الماكروز فوراً على خطة متدرب:
-                </label>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <CurvedSelect
-                    value={selectedClient}
-                    onChange={(e) => setSelectedClient(e.target.value)}
-                    style={{ flex: 1, height: '34px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 600, outline: 'none' }}
-                  >
-                    <option value="">-- اختر متدرب لتطبيق الخطة فوراً --</option>
-                    {clients.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.first_name} {c.last_name} ({c.email || c.phone_number})
-                      </option>
-                    ))}
-                  </CurvedSelect>
-                  <button
-                    type="button"
-                    onClick={handleApplyToClient}
-                    disabled={calcSaving}
-                    style={{
-                      padding: '0 12px',
-                      height: '34px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      background: '#0F172A',
-                      color: '#FFFFFF',
-                      fontSize: '11.5px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
+            {/* Column 1: Metabolic & Goals Input Form (Right Column in RTL) */}
+            <div style={{
+              background: '#FFFFFF',
+              border: '1px solid #EAECF0',
+              borderRadius: '16px',
+              padding: '22px 24px',
+              boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '16px'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                
+                {/* Header with Quick Autofill Selector */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', paddingBottom: '14px', borderBottom: '1px solid #F2F4F7' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: '#F4F0FD',
+                      border: '1px solid #EDE8FA',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <Save size={13} />
-                    <span>{calcSaving ? 'جاري...' : 'تطبيق'}</span>
-                  </button>
+                      justifyContent: 'center',
+                      color: '#673DE6',
+                      flexShrink: 0
+                    }}>
+                      <Scale size={18} />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#101828' }}>
+                        بيانات المتدرب والمستوى البدني
+                      </h3>
+                      <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#667085' }}>
+                        القياسات الحيوية، مستوى النشاط ونمط التدريب
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Auto-fill from Client Profile */}
+                  {clients.length > 0 && (
+                    <div style={{ minWidth: '150px' }}>
+                      <CurvedSelect
+                        value=""
+                        onChange={(e) => {
+                          const cId = e.target.value;
+                          if (!cId) return;
+                          const cl = clients.find(c => String(c.id) === String(cId));
+                          if (cl) {
+                            setSelectedClient(cl.id);
+                            setCalcForm(prev => ({
+                              ...prev,
+                              gender: cl.gender === 'FEMALE' ? 'FEMALE' : 'MALE',
+                              age: Number(cl.age) || prev.age,
+                              weight: Number(cl.weight_kg || cl.weight) || prev.weight,
+                              height: Number(cl.height_cm || cl.height) || prev.height,
+                              bodyFat: Number(cl.body_fat_percent || cl.body_fat) || prev.bodyFat
+                            }));
+                          }
+                        }}
+                        style={{
+                          height: '32px',
+                          borderRadius: '8px',
+                          border: '1px solid #D0D5DD',
+                          padding: '0 10px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          background: '#F9FAFB',
+                          color: '#344054'
+                        }}
+                      >
+                        <option value="">استيراد من متدرب...</option>
+                        {clients.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.first_name} {c.last_name}
+                          </option>
+                        ))}
+                      </CurvedSelect>
+                    </div>
+                  )}
                 </div>
+
+                {/* Section 1: Biological Profile */}
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#344054', marginBottom: '8px' }}>
+                    1. القياسات الحيوية والشخصية
+                  </div>
+
+                  {/* Row: Gender & Age */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                        النوع (الجنس)
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', height: '38px' }}>
+                        {[
+                          { id: 'MALE', label: 'ذكر' },
+                          { id: 'FEMALE', label: 'أنثى' }
+                        ].map((g) => {
+                          const isAct = calcForm.gender === g.id;
+                          return (
+                            <button
+                              key={g.id}
+                              type="button"
+                              onClick={() => setCalcForm({ ...calcForm, gender: g.id })}
+                              style={{
+                                border: isAct ? '1px solid #673DE6' : '1px solid #D0D5DD',
+                                borderRadius: '8px',
+                                background: isAct ? '#673DE6' : '#FFFFFF',
+                                color: isAct ? '#FFFFFF' : '#344054',
+                                fontWeight: 700,
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                textAlign: 'center',
+                                boxShadow: isAct ? '0 1px 3px rgba(103, 61, 230, 0.25)' : 'none',
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              {g.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                        العمر (سنة)
+                      </label>
+                      <input
+                        type="number"
+                        value={calcForm.age}
+                        onChange={(e) => setCalcForm({ ...calcForm, age: Number(e.target.value) })}
+                        style={{
+                          width: '100%',
+                          height: '38px',
+                          borderRadius: '8px',
+                          border: '1px solid #D0D5DD',
+                          padding: '0 12px',
+                          fontSize: '13px',
+                          fontWeight: 800,
+                          color: '#101828',
+                          textAlign: 'center',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          background: '#FFFFFF'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Row: Weight, Height, Body Fat */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                        الوزن (كجم)
+                      </label>
+                      <input
+                        type="number"
+                        value={calcForm.weight}
+                        onChange={(e) => setCalcForm({ ...calcForm, weight: Number(e.target.value) })}
+                        style={{
+                          width: '100%',
+                          height: '38px',
+                          borderRadius: '8px',
+                          border: '1px solid #D0D5DD',
+                          padding: '0 12px',
+                          fontSize: '13px',
+                          fontWeight: 800,
+                          color: '#101828',
+                          textAlign: 'center',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          background: '#FFFFFF'
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                        الطول (سم)
+                      </label>
+                      <input
+                        type="number"
+                        value={calcForm.height}
+                        onChange={(e) => setCalcForm({ ...calcForm, height: Number(e.target.value) })}
+                        style={{
+                          width: '100%',
+                          height: '38px',
+                          borderRadius: '8px',
+                          border: '1px solid #D0D5DD',
+                          padding: '0 12px',
+                          fontSize: '13px',
+                          fontWeight: 800,
+                          color: '#101828',
+                          textAlign: 'center',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          background: '#FFFFFF'
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                        نسبة الدهون (%)
+                      </label>
+                      <input
+                        type="number"
+                        value={calcForm.bodyFat || ''}
+                        onChange={(e) => setCalcForm({ ...calcForm, bodyFat: e.target.value ? Number(e.target.value) : null })}
+                        placeholder="اختياري"
+                        style={{
+                          width: '100%',
+                          height: '38px',
+                          borderRadius: '8px',
+                          border: '1px solid #D0D5DD',
+                          padding: '0 12px',
+                          fontSize: '13px',
+                          fontWeight: 800,
+                          color: '#101828',
+                          textAlign: 'center',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          background: '#FFFFFF'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ height: '1px', background: '#F2F4F7' }} />
+
+                {/* Section 2: Daily Activity & Training */}
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#344054', marginBottom: '8px' }}>
+                    2. النشاط الحركي والتمارين
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                        النشاط والحركة اليومية (NEAT)
+                      </label>
+                      <CurvedSelect
+                        value={calcForm.dailyActivity}
+                        onChange={(e) => setCalcForm({ ...calcForm, dailyActivity: e.target.value })}
+                        style={{
+                          width: '100%',
+                          height: '38px',
+                          borderRadius: '8px',
+                          border: '1px solid #D0D5DD',
+                          padding: '0 10px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          color: '#101828',
+                          outline: 'none',
+                          background: '#FFFFFF'
+                        }}
+                      >
+                        {Object.entries(DAILY_ACTIVITY_FACTORS).map(([k, v]) => (
+                          <option key={k} value={k}>{v.label_ar}</option>
+                        ))}
+                      </CurvedSelect>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                        تكرار تمارين المقاومة (EAT)
+                      </label>
+                      <CurvedSelect
+                        value={calcForm.workoutFrequency}
+                        onChange={(e) => setCalcForm({ ...calcForm, workoutFrequency: e.target.value })}
+                        style={{
+                          width: '100%',
+                          height: '38px',
+                          borderRadius: '8px',
+                          border: '1px solid #D0D5DD',
+                          padding: '0 10px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          color: '#101828',
+                          outline: 'none',
+                          background: '#FFFFFF'
+                        }}
+                      >
+                        {Object.entries(WORKOUT_FREQUENCY_FACTORS).map(([k, v]) => (
+                          <option key={k} value={k}>{v.label_ar}</option>
+                        ))}
+                      </CurvedSelect>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ height: '1px', background: '#F2F4F7' }} />
+
+                {/* Section 3: Goal & Protein Requirement */}
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#344054', marginBottom: '8px' }}>
+                    3. الهدف الغذائي وتوزيع البروتين
+                  </div>
+
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                      الهدف المستهدف
+                    </label>
+                    <CurvedSelect
+                      value={calcForm.goal}
+                      onChange={(e) => setCalcForm({ ...calcForm, goal: e.target.value })}
+                      style={{
+                        width: '100%',
+                        height: '38px',
+                        borderRadius: '8px',
+                        border: '1px solid #D0D5DD',
+                        padding: '0 12px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        color: '#101828',
+                        background: '#FFFFFF',
+                        outline: 'none'
+                      }}
+                    >
+                      {Object.entries(GOAL_CALORIE_MULTIPLIERS).map(([k, v]) => (
+                        <option key={k} value={k}>{v.label_ar}</option>
+                      ))}
+                    </CurvedSelect>
+                  </div>
+
+                  {/* Protein Requirement Control */}
+                  <div style={{ background: '#F9FAFB', padding: '12px 14px', borderRadius: '12px', border: '1px solid #EAECF0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#344054' }}>
+                        معدل البروتين اليومي لكل كجم وزن
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#673DE6', background: '#F4F0FD', border: '1px solid #EDE8FA', padding: '2px 8px', borderRadius: '6px' }}>
+                          {calcForm.proteinPerKg} جم / كجم
+                        </span>
+                        <span style={{ fontSize: '10.5px', color: '#667085', fontWeight: 600 }}>
+                          (= {targetProteinGrams} جم)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Quick Preset Buttons */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '5px', marginBottom: '10px' }}>
+                      {[
+                        { val: 1.6, label: '1.6', note: 'محافظة' },
+                        { val: 1.8, label: '1.8', note: 'معتدل' },
+                        { val: 2.0, label: '2.0', note: 'بناء عضلي' },
+                        { val: 2.2, label: '2.2', note: 'تنشيف' },
+                        { val: 2.5, label: '2.5', note: 'متقدم' }
+                      ].map(p => {
+                        const isAct = calcForm.proteinPerKg === p.val;
+                        return (
+                          <button
+                            key={p.val}
+                            type="button"
+                            onClick={() => setCalcForm(prev => ({ ...prev, proteinPerKg: p.val }))}
+                            style={{
+                              padding: '5px 4px',
+                              borderRadius: '8px',
+                              border: isAct ? '1px solid #673DE6' : '1px solid #D0D5DD',
+                              background: isAct ? '#673DE6' : '#FFFFFF',
+                              color: isAct ? '#FFFFFF' : '#344054',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '1px',
+                              boxShadow: isAct ? '0 1px 3px rgba(103, 61, 230, 0.25)' : 'none',
+                              transition: 'all 0.12s ease'
+                            }}
+                          >
+                            <span style={{ fontSize: '12px', fontWeight: 800 }}>{p.label}</span>
+                            <span style={{ fontSize: '9px', fontWeight: 600, opacity: isAct ? 0.9 : 0.7 }}>{p.note}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Range Slider in pure RTL matching preset buttons */}
+                    <div style={{ margin: '6px 0 2px 0' }}>
+                      <input
+                        type="range"
+                        min="1.4"
+                        max="3.0"
+                        step="0.1"
+                        value={calcForm.proteinPerKg}
+                        onChange={(e) => setCalcForm({ ...calcForm, proteinPerKg: parseFloat(e.target.value) })}
+                        style={{
+                          width: '100%',
+                          cursor: 'pointer',
+                          accentColor: '#673DE6',
+                          margin: '4px 0'
+                        }}
+                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9.5px', color: '#98A2B3', fontWeight: 600 }}>
+                        <span>1.4 جم (الحد الأدنى)</span>
+                        <span>2.2 جم (الهدف المعياري)</span>
+                        <span>3.0 جم (الحد الرياضي)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Column 2: Calculated Results & Sync Action (Left Column in RTL) */}
+            <div style={{
+              background: '#FFFFFF',
+              border: '1px solid #EAECF0',
+              borderRadius: '16px',
+              padding: '22px 24px',
+              boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '16px'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '14px', borderBottom: '1px solid #F2F4F7' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: '#FEF3F2',
+                      border: '1px solid #FEE4E2',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#D92D20',
+                      flexShrink: 0
+                    }}>
+                      <Flame size={18} />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#101828' }}>
+                        التقرير الرياضي لتوزيع السعرات والماكروز
+                      </h3>
+                      <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#667085' }}>
+                        التقسيم الرياضي الدقيق للسعرات والجرامات اليومية
+                      </p>
+                    </div>
+                  </div>
+
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: '#673DE6',
+                    background: '#F4F0FD',
+                    border: '1px solid #EDE8FA',
+                    padding: '3px 9px',
+                    borderRadius: '8px'
+                  }}>
+                    {GOAL_CALORIE_MULTIPLIERS[calcForm.goal]?.label_ar || 'خطة التغذية'}
+                  </span>
+                </div>
+
+                {/* Hero Box: Target Calories & Metabolic Equation */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #F4F0FD 0%, #EDE8FA 100%)',
+                  border: '1.5px solid #D6BBFB',
+                  borderRadius: '14px',
+                  padding: '16px 20px',
+                  boxShadow: '0 2px 4px rgba(103, 61, 230, 0.06)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#673DE6', marginBottom: '2px' }}>
+                        السعرات اليومية المستهدفة للخطة
+                      </div>
+                      <div style={{ fontSize: '28px', fontWeight: 900, color: '#101828', lineHeight: 1.1 }}>
+                        <bdi dir="ltr">{targetCalories}</bdi> <span style={{ fontSize: '13px', fontWeight: 700, color: '#475467' }}>سعرة حرارية / اليوم</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      {calorieDiff < 0 ? (
+                        <span style={{ background: '#FEF3F2', color: '#B42318', border: '1px solid #FECDCA', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                          عجز: {Math.abs(calorieDiff)} سعرة
+                        </span>
+                      ) : calorieDiff > 0 ? (
+                        <span style={{ background: '#ECFDF3', color: '#027A48', border: '1px solid #A6F4C5', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                          فائض: +{calorieDiff} سعرة
+                        </span>
+                      ) : (
+                        <span style={{ background: '#F2F4F7', color: '#344054', border: '1px solid #EAECF0', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                          صيانة (0 عجز)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Sub-strip with BMR, TDEE, and Methodology */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', borderTop: '1px solid #E4D9FB', paddingTop: '10px', fontSize: '11px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: '#475467', fontWeight: 600 }}>
+                      <span>الحرق الأساسي (BMR): <strong style={{ color: '#101828' }}>{bmr} سعرة</strong></span>
+                      <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
+                      <span>الاستهلاك الكلي (TDEE): <strong style={{ color: '#101828' }}>{tdee} سعرة</strong></span>
+                    </div>
+                    <span style={{ background: '#FFFFFF', padding: '1px 8px', borderRadius: '6px', border: '1px solid #D6BBFB', fontWeight: 700, color: '#673DE6', fontSize: '10px' }}>
+                      {calcForm.bodyFat ? 'معادلة Katch-McArdle السريرية (LBM)' : 'معادلة Mifflin-St Jeor السريرية'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Macro Ratio Visual Bar */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: '11px', fontWeight: 700, color: '#344054' }}>
+                    <span>النسبة المئوية لتوزيع السعرات (Macro Ratio):</span>
+                    <span style={{ color: '#667085', fontSize: '10.5px' }}>
+                      بروتين {proteinPct}% • كارب {carbsPct}% • دهون {fatPct}%
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', height: '8px', borderRadius: '8px', overflow: 'hidden', gap: '2px', background: '#F2F4F7' }}>
+                    <div style={{ width: `${proteinPct}%`, background: '#0284C7', borderRadius: '9999px 0 0 9999px', transition: 'width 0.3s ease' }} title={`البروتين: ${proteinPct}%`} />
+                    <div style={{ width: `${carbsPct}%`, background: '#D97706', transition: 'width 0.3s ease' }} title={`الكارب: ${carbsPct}%`} />
+                    <div style={{ width: `${fatPct}%`, background: '#16A34A', borderRadius: '0 9999px 9999px 0', transition: 'width 0.3s ease' }} title={`الدهون: ${fatPct}%`} />
+                  </div>
+                </div>
+
+                {/* 3 Unified Clean Macro Pillar Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                  {/* Protein */}
+                  <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderTop: '3px solid #0284C7', padding: '12px 10px', borderRadius: '10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#026AA2' }}>البروتين</span>
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#0284C7', background: '#E0F2FE', padding: '1px 5px', borderRadius: '4px' }}>{proteinPct}%</span>
+                    </div>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: '#101828' }}>
+                      {targetProteinGrams} <small style={{ fontSize: '11px', fontWeight: 700 }}>جم</small>
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#667085', fontWeight: 600, marginTop: '2px' }}>{proteinCalories} سعرة</div>
+                  </div>
+
+                  {/* Carbs */}
+                  <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderTop: '3px solid #D97706', padding: '12px 10px', borderRadius: '10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#B54708' }}>الكارب</span>
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#D97706', background: '#FEF3C7', padding: '1px 5px', borderRadius: '4px' }}>{carbsPct}%</span>
+                    </div>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: '#101828' }}>
+                      {targetCarbGrams} <small style={{ fontSize: '11px', fontWeight: 700 }}>جم</small>
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#667085', fontWeight: 600, marginTop: '2px' }}>{carbsCalories} سعرة</div>
+                  </div>
+
+                  {/* Fats */}
+                  <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderTop: '3px solid #16A34A', padding: '12px 10px', borderRadius: '10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#027A48' }}>الدهون</span>
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '1px 5px', borderRadius: '4px' }}>{fatPct}%</span>
+                    </div>
+                    <div style={{ fontSize: '20px', fontWeight: 900, color: '#101828' }}>
+                      {targetFatGrams} <small style={{ fontSize: '11px', fontWeight: 700 }}>جم</small>
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#667085', fontWeight: 600, marginTop: '2px' }}>{fatCalories} سعرة</div>
+                  </div>
+                </div>
+
+                {/* Hydration & Cardio Guidance Strip */}
+                <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '10px', fontSize: '11.5px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Droplet size={14} color="#0284C7" />
+                    <span style={{ color: '#475467' }}>احتياج الماء اليومي: <strong style={{ color: '#101828' }}>{waterTargetLiters} لتر / يوم</strong></span>
+                  </div>
+                  <span style={{ color: '#D0D5DD' }}>|</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Activity size={14} color="#673DE6" />
+                    <span style={{ color: '#475467' }}>جلسة الكارديو: <strong style={{ color: '#101828' }}>30 دقيقة (4 أيام أسبوعياً)</strong></span>
+                  </div>
+                </div>
+
               </div>
 
-              {/* Copy WhatsApp Summary */}
-              <button
-                type="button"
-                onClick={handleCopyCalcSummary}
-                style={{
-                  width: '100%',
-                  height: '34px',
-                  borderRadius: '6px',
-                  border: calcCopied ? '1px solid #86EFAC' : '1px solid #86EFAC',
-                  background: calcCopied ? '#F0FDF4' : '#F0FDF4',
-                  color: '#16A34A',
-                  fontSize: '12px',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px'
-                }}
-              >
-                {calcCopied ? <Check size={14} /> : <MessageCircle size={14} />}
-                <span>{calcCopied ? 'تم نسخ التقرير بنجاح' : 'نسخ ملخص الماكروز للواتساب'}</span>
-              </button>
+              {/* Action Section */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '10px', borderTop: '1px solid #F2F4F7' }}>
+                {/* Sync to Client */}
+                <div style={{ background: '#F9FAFB', padding: '10px 12px', borderRadius: '12px', border: '1px solid #EAECF0' }}>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '6px' }}>
+                    تطبيق هذه الماكروز فوراً على خطة متدرب:
+                  </label>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <CurvedSelect
+                      value={selectedClient}
+                      onChange={(e) => setSelectedClient(e.target.value)}
+                      style={{ flex: 1, height: '36px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 12px', fontSize: '11.5px', fontWeight: 600, outline: 'none', background: '#FFFFFF' }}
+                    >
+                      <option value="">-- اختر متدرب لتطبيق الخطة فوراً --</option>
+                      {clients.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.first_name} {c.last_name} ({c.email || c.phone_number})
+                        </option>
+                      ))}
+                    </CurvedSelect>
+                    <button
+                      type="button"
+                      onClick={handleApplyToClient}
+                      disabled={calcSaving}
+                      style={{
+                        padding: '0 18px',
+                        height: '36px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: '#673DE6',
+                        color: '#FFFFFF',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        boxShadow: '0 1px 3px rgba(103, 61, 230, 0.25)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        flexShrink: 0,
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = '#5025D1'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = '#673DE6'; }}
+                    >
+                      <Save size={13} />
+                      <span>{calcSaving ? 'جاري...' : 'تطبيق'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* WhatsApp Summary */}
+                <button
+                  type="button"
+                  onClick={handleCopyCalcSummary}
+                  style={{
+                    width: '100%',
+                    height: '36px',
+                    borderRadius: '8px',
+                    border: calcCopied ? '1px solid #A6F4C5' : '1px solid #A6F4C5',
+                    background: calcCopied ? '#ECFDF3' : '#ECFDF3',
+                    color: '#027A48',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#D1FADF'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#ECFDF3'; }}
+                >
+                  {calcCopied ? <Check size={14} color="#027A48" /> : <MessageCircle size={14} color="#027A48" />}
+                  <span>{calcCopied ? 'تم نسخ التقرير للحافظة بنجاح' : 'نسخ ملخص الماكروز للواتساب'}</span>
+                </button>
+              </div>
 
             </div>
 
@@ -1117,8 +1448,8 @@ export default function MacroCalculator() {
             }}>
               
               {/* Modal Header */}
-              <div style={{ padding: '14px 18px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
-                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid #EAECF0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8F9FA' }}>
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#101828', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <UtensilsCrossed size={16} color="#0284C7" />
                   <span>{modalMode === 'ADD' ? 'إضافة صنف طعام جديد إلى المكتبة' : 'تعديل بيانات صنف الطعام والماكروز'}</span>
                 </h3>
@@ -1212,14 +1543,14 @@ export default function MacroCalculator() {
                 </div>
 
                 {/* Macro Inputs (per 100g) */}
-                <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                <div style={{ background: '#F8F9FA', padding: '10px 12px', borderRadius: '8px', border: '1px solid #EAECF0' }}>
+                  <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#101828', marginBottom: '8px' }}>
                     القيم الغذائية لكل 100 جرام:
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '6px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#0F172A', marginBottom: '2px' }}>
+                      <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: '#101828', marginBottom: '2px' }}>
                         السعرات (kcal)
                       </label>
                       <input
@@ -1310,7 +1641,7 @@ export default function MacroCalculator() {
                   <button
                     type="submit"
                     disabled={savingFood}
-                    style={{ padding: '0 18px', height: '34px', borderRadius: '8px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    style={{ padding: '0 18px', height: '34px', borderRadius: '8px', border: 'none', background: '#101828', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                   >
                     <Save size={13} />
                     <span>{savingFood ? 'جاري الحفظ...' : 'حفظ الصنف في المكتبة'}</span>

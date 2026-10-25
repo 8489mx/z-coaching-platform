@@ -90,7 +90,7 @@ export default function ClientOnlineRenewal() {
       `مساء الخير يا كابتن كريم!\n` +
       `أنا المشترك: ${clientName || 'بطل'}\n` +
       `كود الاشتراك: #${cleanCode || clientCode}\n` +
-      `قمت بطلب تجديد: باقة ${selectedDuration} شهور (${selectedTier === 'MAX' ? 'باقة ماكس MAX' : 'باقة إيليت ELITE'}) بمبلغ ${currentPrice.toLocaleString('en-US')} ج.م.\n` +
+      `قمت بطلب تجديد: باقة ${selectedDuration} شهور (${selectedTier === 'MAX' ? 'باقة MAX' : 'باقة ELITE'}) بمبلغ ${currentPrice.toLocaleString('en-US')} ج.م.\n` +
       `طريقة التحويل: ${methodArabic}\n` +
       `الرقم المرجعي / اسم المحول: ${refNumber || 'تم الإرسال'}\n` +
       `برجاء تأكيد التفعيل واستمرار الخطة!`
@@ -121,7 +121,7 @@ export default function ClientOnlineRenewal() {
           width: '100%',
           maxWidth: '560px',
           background: '#FFFFFF',
-          borderRadius: '20px',
+          borderRadius: '16px',
           color: '#0F172A',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
           overflow: 'hidden',

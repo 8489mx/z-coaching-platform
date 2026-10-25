@@ -16,8 +16,8 @@ import { getCaffeineCutoffTime } from '../../../utils/circadianLabTriggerEngine'
 function formatPackageName(pkg) {
   if (!pkg) return 'باقة التدريب المخصص';
   const str = String(pkg).toUpperCase().trim();
-  if (str.includes('MAX')) return 'باقة ماكس (4 شهور)';
-  if (str.includes('ELITE')) return 'باقة النخبة (إيليت)';
+  if (str.includes('MAX')) return 'باقة MAX (4 شهور)';
+  if (str.includes('ELITE')) return 'باقة ELITE';
   if (str.includes('PRO')) return 'باقة برو';
   if (str.includes('VIP')) return 'باقة VIP';
   return pkg;

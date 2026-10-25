@@ -168,7 +168,7 @@ export default function MesocycleDebriefPdfView() {
     client_code: code,
     full_name: 'أحمد محمود العوضي',
     phone_number: '201001234567',
-    package_name: 'باقة ماكس (MAX Coaching)',
+    package_name: 'باقة MAX (MAX Coaching)',
     goal_label: 'خسارة دهون وتنشيف',
     weight_kg: 82.5,
     initial_weight: 86.0,
@@ -285,7 +285,7 @@ export default function MesocycleDebriefPdfView() {
             type="button"
             onClick={handlePrint}
             style={{
-              background: '#0284C7',
+              background: '#673DE6',
               border: 'none',
               borderRadius: '8px',
               padding: '6px 16px',
@@ -312,7 +312,7 @@ export default function MesocycleDebriefPdfView() {
         {/* Running Header */}
         <div className="running-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ background: '#0F172A', color: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', fontSize: '7.5pt' }}>Z COACHING</span>
+            <span style={{ background: '#FFFFFF', color: '#101828', borderBottom: '1px solid #EAECF0', boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)', padding: '2px 6px', borderRadius: '4px', fontSize: '7.5pt' }}>Z COACHING</span>
             <span>منظومة التدريب والتغذية السريرية المعتمدة</span>
           </div>
           <div>تقرير ختام الميزوسايكل التدريبي (Mesocycle #{report.mesocycle_number})</div>
@@ -337,9 +337,9 @@ export default function MesocycleDebriefPdfView() {
               </h2>
               <div style={{ fontSize: '9pt', color: '#475569', marginTop: '3px', fontWeight: 700, display: 'flex', gap: '8px' }}>
                 <span>كود المشترك: #{report.client_code}</span>
-                <span>•</span>
+                <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
                 <span>{report.package_name}</span>
-                <span>•</span>
+                <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
                 <span style={{ color: '#0F172A' }}>الهدف الأساسي: {report.goal_label}</span>
               </div>
             </div>

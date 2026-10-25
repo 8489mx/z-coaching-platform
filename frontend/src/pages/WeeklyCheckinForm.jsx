@@ -523,7 +523,7 @@ export default function WeeklyCheckinForm() {
                           key={a.id}
                           type="button"
                           onClick={() => setFormData({ ...formData, pain_area: a.id })}
-                          style={{ padding: '6px 12px', borderRadius: '9999px', border: formData.pain_area === a.id ? '2px solid #DC2626' : '1px solid #CBD5E1', background: formData.pain_area === a.id ? '#FEF2F2' : '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                          style={{ padding: '6px 12px', borderRadius: '8px', border: formData.pain_area === a.id ? '2px solid #DC2626' : '1px solid #CBD5E1', background: formData.pain_area === a.id ? '#FEF2F2' : '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                         >
                           {a.label}
                         </button>

@@ -15,6 +15,7 @@ import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
 import { collectCoachAlerts } from '../../../utils/coachAlerts.js';
 import { evaluateCardioModality } from '../../../utils/cardioModalitySafety.js';
 import { exerciseConflicts } from '../../../utils/exerciseSafety.js';
+import { getClientTier } from '../../../utils/tierBadgeHelper';
 
 // Intake injury keys as the coach reads them.
 const INJURY_LABELS_AR = { knee: 'الركبة', spine_back: 'أسفل الظهر', shoulder: 'الكتف', core: 'منطقة البطن (الكور)', elbow_wrist: 'الكوع والرسغ' };
@@ -55,7 +56,8 @@ export function useCoachEditorData() {
 
   // Clients Queue State & Filters
   const [clientsList, setClientsList] = useState([]);
-  const [queueFilter, setQueueFilter] = useState('ACTION_NEEDED'); // 'ACTION_NEEDED' | 'PENDING_PLAN' | 'NEEDS_UPDATE' | 'ALL'
+  const [queueFilter, setQueueFilter] = useState('ALL'); // 'ALL' | 'ACTION_NEEDED' | 'PENDING_PLAN' | 'NEEDS_UPDATE'
+  const [queueTierFilter, setQueueTierFilter] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
   const [queueSearch, setQueueSearch] = useState('');
 
   const [allExercisesList, setAllExercisesList] = useState([]);
@@ -144,7 +146,7 @@ export function useCoachEditorData() {
           priority = 2;
         }
 
-        const packageName = (c.subscription_package && String(c.subscription_package).includes('MAX')) ? 'باقة ماكس' : 'باقة إليت';
+        const packageName = (c.subscription_package && String(c.subscription_package).includes('MAX')) ? 'باقة MAX' : 'باقة ELITE';
 
         return {
           ...c,
@@ -224,7 +226,7 @@ export function useCoachEditorData() {
 
   // Mapper for Server Master Program (Handles Training Mesocycle V2, Nutrition V2, and Cardio V2)
   const mapMasterToEditor = (master, user = {}) => {
-    const pkg = (user.subscription_package && user.subscription_package.includes('MAX')) ? 'باقة ماكس' : 'باقة إليت';
+    const pkg = (user.subscription_package && user.subscription_package.includes('MAX')) ? 'باقة MAX' : 'باقة ELITE';
     const clientInfo = master.client || {};
     // The plan's own summary of the intake (plans built before it existed fall back as before).
     const clientProfile = master.client_profile || null;
@@ -1373,12 +1375,16 @@ export function useCoachEditorData() {
 
       if (!matchSearch) return false;
 
-      if (queueFilter === 'ACTION_NEEDED') return c.queue_status === 'PENDING_PLAN' || c.queue_status === 'NEEDS_UPDATE';
+      if (queueFilter === 'ACTION_NEEDED') return (c.queue_status === 'PENDING_PLAN' || c.queue_status === 'NEEDS_UPDATE');
       if (queueFilter === 'PENDING_PLAN') return c.queue_status === 'PENDING_PLAN';
       if (queueFilter === 'NEEDS_UPDATE') return c.queue_status === 'NEEDS_UPDATE';
+
+      if (queueTierFilter === 'MAX' && getClientTier(c) !== 'MAX') return false;
+      if (queueTierFilter === 'ELITE' && getClientTier(c) === 'MAX') return false;
+
       return true;
     });
-  }, [clientsList, queueFilter, queueSearch]);
+  }, [clientsList, queueFilter, queueTierFilter, queueSearch]);
 
   const displayedQueue = useMemo(() => {
     return filteredQueue.slice(0, 35);
@@ -1434,6 +1440,8 @@ export function useCoachEditorData() {
     setClientsList,
     queueFilter,
     setQueueFilter,
+    queueTierFilter,
+    setQueueTierFilter,
     queueSearch,
     setQueueSearch,
     allExercisesList,

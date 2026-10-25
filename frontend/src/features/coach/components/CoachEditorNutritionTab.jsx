@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { Plus, Trash2, X, ArrowRightLeft, Zap, Target, ShieldAlert, Copy } from 'lucide-react';
 import { balanceMealItems, dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer.js';
 
+function getCleanMealTitle(rawName) {
+  if (!rawName) return 'وجبة';
+  const s = String(rawName).trim();
+  const clean = s.replace(/\s*\([^)]*\)/g, '').trim();
+  return clean || s;
+}
+
 
 export default function CoachEditorNutritionTab(props) {
   const { searchParams: _searchParams, setSearchParams: _setSearchParams, loading: _loading, setLoading: _setLoading, saving: _saving, setSaving: _setSaving, publishing: _publishing, setPublishing: _setPublishing, program, setProgram, coachNotes: _coachNotes, setCoachNotes: _setCoachNotes, activeSessionIdx: _activeSessionIdx, setActiveSessionIdx: _setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab: _setActiveWorkspaceTab, notification: _notification, setNotification: _setNotification, clientsList: _clientsList, setClientsList: _setClientsList, queueFilter: _queueFilter, setQueueFilter: _setQueueFilter, queueSearch: _queueSearch, setQueueSearch: _setQueueSearch, allExercisesList: _allExercisesList, setAllExercisesList: _setAllExercisesList, cardioSwapModal: _cardioSwapModal, setCardioSwapModal: _setCardioSwapModal, addFoodModal: _addFoodModal, setAddFoodModal, swapFoodModal: _swapFoodModal, setSwapFoodModal, addExModal: _addExModal, setAddExModal: _setAddExModal, swapExModal: _swapExModal, setSwapExModal: _setSwapExModal, mobilityModal: _mobilityModal, setMobilityModal: _setMobilityModal, allMobilityList: _allMobilityList, setAllMobilityList: _setAllMobilityList, showReasoning: _showReasoning, setShowReasoning: _setShowReasoning, exModalSearch: _exModalSearch, setExModalSearch: _setExModalSearch, foodModalSearch: _foodModalSearch, setFoodModalSearch: _setFoodModalSearch, mobilityModalSearch: _mobilityModalSearch, setMobilityModalSearch: _setMobilityModalSearch, swapFoodSearch: _swapFoodSearch, setSwapFoodSearch: _setSwapFoodSearch, swapExSearch: _swapExSearch, setSwapExSearch: _setSwapExSearch, handleSelectClient: _handleSelectClient, handleUpdateFoodAmount, handleDeleteFood, handleAddNewMeal, handleDuplicateMeal, handleDeleteMeal, handleAddFoodToMeal: _handleAddFoodToMeal, handleExecuteFoodSwap: _handleExecuteFoodSwap, handleExecuteExerciseSwap: _handleExecuteExerciseSwap, handleUpdateExerciseParam: _handleUpdateExerciseParam, handleDeleteExercise: _handleDeleteExercise, handleAddExerciseToSession: _handleAddExerciseToSession, handleSelectCardioModality: _handleSelectCardioModality, handleAddMobilityToSession: _handleAddMobilityToSession, handleRemoveMobilityFromSession: _handleRemoveMobilityFromSession, handleSaveDraft: _handleSaveDraft, handleApproveAndPublish: _handleApproveAndPublish, FOOD_DATABASE_LIST: _FOOD_DATABASE_LIST, CARDIO_MODALITY_OPTIONS: _CARDIO_MODALITY_OPTIONS } = props;
@@ -193,13 +200,13 @@ export default function CoachEditorNutritionTab(props) {
             
             {/* Notes the plan engine left for the coach (goal change, clinical ceilings, items to check) */}
             {Array.isArray(program?.nutrition?.coach_alerts) && program.nutrition.coach_alerts.length > 0 && (
-              <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: '12px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <strong style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: '#92400E', fontWeight: 800 }}>
-                  <ShieldAlert size={16} color="#B45309" />
+              <div style={{ background: '#FEFCE8', border: '1px solid #FEF08A', borderRadius: '10px', padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <strong style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#854D0E', fontWeight: 800 }}>
+                  <ShieldAlert size={15} color="#A16207" />
                   ملاحظات للكوتش قبل الاعتماد ({program.nutrition.coach_alerts.length})
                 </strong>
                 {program.nutrition.coach_alerts.map((alert) => (
-                  <div key={alert} style={{ fontSize: '11.5px', color: '#78350F', lineHeight: 1.6 }}>
+                  <div key={alert} style={{ fontSize: '11px', color: '#713F12', lineHeight: 1.5 }}>
                     - {alert}
                   </div>
                 ))}
@@ -207,8 +214,20 @@ export default function CoachEditorNutritionTab(props) {
             )}
 
             {/* Top Macro Summary Bar with Live Calories & Supplements Integration */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
+            <div style={{
+              background: '#FFFFFF',
+              border: '1px solid #EAECF0',
+              borderRadius: '12px',
+              padding: '10px 14px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '8px',
+              boxShadow: '0 1px 3px rgba(16, 24, 40, 0.03)'
+            }}>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                {/* Target Calorie Button */}
                 <button
                   type="button"
                   onClick={() => {
@@ -216,11 +235,13 @@ export default function CoachEditorNutritionTab(props) {
                     setShowEditTargetsModal(true);
                   }}
                   style={{
-                    background: '#0F172A',
+                    background: '#673DE6',
                     color: '#FFFFFF',
-                    padding: '5px 12px',
+                    height: '40px',
+                    padding: '0 12px',
                     borderRadius: '8px',
                     border: 'none',
+                    boxShadow: '0 1px 3px rgba(103, 61, 230, 0.25)',
                     textAlign: 'center',
                     cursor: 'pointer',
                     display: 'flex',
@@ -230,94 +251,164 @@ export default function CoachEditorNutritionTab(props) {
                     transition: 'all 0.15s ease'
                   }}
                   title="تعديل أرقام المستهدفات يدوياً (سعرات وماكروز)"
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#5025D1'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#673DE6'; }}
                 >
-                  <span style={{ fontSize: '9px', opacity: 0.8, display: 'block' }}>المستهدف (تعديل)</span>
-                  <strong style={{ fontSize: '13px', fontWeight: 800 }}>{targetCal} kcal</strong>
+                  <span style={{ fontSize: '10px', opacity: 0.95, fontWeight: 800, lineHeight: 1 }}>المستهدف</span>
+                  <strong style={{ fontSize: '13px', fontWeight: 800, lineHeight: 1.2, marginTop: '2px' }}>{targetCal} kcal</strong>
                 </button>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 12px', borderRadius: '8px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>المخطط الفعلي (أكل + مكملات)</span>
-                  <strong style={{ fontSize: '13px', fontWeight: 800, color: totalPlannedCal === 0 ? '#64748B' : Math.abs(diffCal) <= 30 ? '#16A34A' : diffCal > 0 ? '#D97706' : '#0284C7' }}>
+                {/* Actual Planned Calories Card */}
+                <div style={{
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  color: '#101828',
+                  height: '40px',
+                  padding: '0 10px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  textAlign: 'center'
+                }}
+                title={suppsCal > 0 ? `أكل: ${mealsCal} + مكملات: ${suppsCal}` : 'إجمالي المخطط الفعلي'}
+                >
+                  <span style={{ fontSize: '10px', color: '#475467', fontWeight: 800, lineHeight: 1 }}>المخطط الفعلي</span>
+                  <strong style={{
+                    fontSize: '13px',
+                    fontWeight: 800,
+                    lineHeight: 1.2,
+                    marginTop: '2px',
+                    color: totalPlannedCal === 0 ? '#475467' : Math.abs(diffCal) <= 30 ? '#16A34A' : diffCal > 0 ? '#D97706' : '#0284C7'
+                  }}>
                     {totalPlannedCal} kcal
                   </strong>
                 </div>
 
                 {suppsCal > 0 && (
-                  <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1E40AF', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
-                    <span style={{ fontSize: '9px', display: 'block', opacity: 0.8 }}>أكل / مكملات</span>
-                    <strong style={{ fontSize: '12px' }}>{mealsCal} + {suppsCal}</strong>
+                  <div style={{
+                    background: '#EFF6FF',
+                    border: '1px solid #BFDBFE',
+                    color: '#1E40AF',
+                    height: '40px',
+                    padding: '0 8px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    textAlign: 'center'
+                  }}>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: '#1E40AF', lineHeight: 1 }}>أكل / مكملات</span>
+                    <strong style={{ fontSize: '12px', fontWeight: 800, lineHeight: 1.2, marginTop: '2px' }}>{mealsCal} + {suppsCal}</strong>
                   </div>
                 )}
 
+                {/* Protein Card */}
                 <div style={{
                   background: isProteinExceeded ? '#FEF2F2' : '#F8FAFC',
                   border: isProteinExceeded ? '1.5px solid #EF4444' : '1px solid #E2E8F0',
-                  color: isProteinExceeded ? '#991B1B' : '#0F172A',
-                  padding: '5px 10px',
+                  color: isProteinExceeded ? '#991B1B' : '#101828',
+                  height: '40px',
+                  padding: '0 10px',
                   borderRadius: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                   textAlign: 'center'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '9.5px', color: isProteinExceeded ? '#DC2626' : '#64748B' }}>البروتين</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', lineHeight: 1 }}>
+                    <span style={{ fontSize: '10px', color: isProteinExceeded ? '#DC2626' : '#475467', fontWeight: 800 }}>البروتين</span>
                     {hasProteinCap && (
                       <span style={{
-                        fontSize: '8px',
+                        fontSize: '7.5px',
                         fontWeight: 800,
-                        padding: '1px 4px',
-                        borderRadius: '6px',
+                        padding: '1px 3px',
+                        borderRadius: '4px',
                         background: isProteinExceeded ? '#FEE2E2' : '#DCFCE7',
                         color: isProteinExceeded ? '#DC2626' : '#166534',
                         border: isProteinExceeded ? '1px solid #FECACA' : '1px solid #BBF7D0'
                       }}>
-                        سقف البروتين: {maxSafeProtein}g
+                        سقف: {maxSafeProtein}g
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '1px' }}>
-                    <strong style={{ fontSize: '12.5px', fontWeight: 800, color: isProteinExceeded ? '#DC2626' : '#0F172A' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '2px', lineHeight: 1.2 }}>
+                    <strong style={{ fontSize: '12.5px', fontWeight: 800, color: isProteinExceeded ? '#DC2626' : '#101828' }}>
                       {totalPlannedP}g / {targetP}g
                     </strong>
                     <span style={{
                       fontSize: '9px',
                       fontWeight: 800,
                       padding: '1px 5px',
-                      borderRadius: '6px',
+                      borderRadius: '5px',
                       background: Math.abs(deltaP) <= 2 ? '#DCFCE7' : deltaP > 0 ? '#FEF3C7' : '#EFF6FF',
-                      color: Math.abs(deltaP) <= 2 ? '#15803D' : deltaP > 0 ? '#B45309' : '#1D4ED8'
+                      color: Math.abs(deltaP) <= 2 ? '#15803D' : deltaP > 0 ? '#B45309' : '#1D4ED8',
+                      border: '1px solid ' + (Math.abs(deltaP) <= 2 ? '#BBF7D0' : deltaP > 0 ? '#FDE68A' : '#BFDBFE')
                     }}>
                       {Math.abs(deltaP) <= 2 ? 'مطابق' : deltaP > 0 ? `+${deltaP}g` : `${deltaP}g`}
                     </span>
                   </div>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>الكارب</span>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '1px' }}>
-                    <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedC}g / {targetC}g</strong>
+                {/* Carbs Card */}
+                <div style={{
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  color: '#101828',
+                  height: '40px',
+                  padding: '0 10px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  textAlign: 'center'
+                }}>
+                  <span style={{ fontSize: '10px', color: '#475467', fontWeight: 800, lineHeight: 1 }}>الكارب</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '2px', lineHeight: 1.2 }}>
+                    <strong style={{ fontSize: '12.5px', fontWeight: 800 }}>{totalPlannedC}g / {targetC}g</strong>
                     <span style={{
                       fontSize: '9px',
                       fontWeight: 800,
                       padding: '1px 5px',
-                      borderRadius: '6px',
+                      borderRadius: '5px',
                       background: Math.abs(deltaC) <= 3 ? '#DCFCE7' : deltaC > 0 ? '#FEF3C7' : '#EFF6FF',
-                      color: Math.abs(deltaC) <= 3 ? '#15803D' : deltaC > 0 ? '#B45309' : '#1D4ED8'
+                      color: Math.abs(deltaC) <= 3 ? '#15803D' : deltaC > 0 ? '#B45309' : '#1D4ED8',
+                      border: '1px solid ' + (Math.abs(deltaC) <= 3 ? '#BBF7D0' : deltaC > 0 ? '#FDE68A' : '#BFDBFE')
                     }}>
                       {Math.abs(deltaC) <= 3 ? 'مطابق' : deltaC > 0 ? `+${deltaC}g` : `${deltaC}g`}
                     </span>
                   </div>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block' }}>الدهون</span>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '1px' }}>
-                    <strong style={{ fontSize: '12.5px', fontWeight: 700 }}>{totalPlannedF}g / {targetF}g</strong>
+                {/* Fats Card */}
+                <div style={{
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  color: '#101828',
+                  height: '40px',
+                  padding: '0 10px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  textAlign: 'center'
+                }}>
+                  <span style={{ fontSize: '10px', color: '#475467', fontWeight: 800, lineHeight: 1 }}>الدهون</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '2px', lineHeight: 1.2 }}>
+                    <strong style={{ fontSize: '12.5px', fontWeight: 800 }}>{totalPlannedF}g / {targetF}g</strong>
                     <span style={{
                       fontSize: '9px',
                       fontWeight: 800,
                       padding: '1px 5px',
-                      borderRadius: '6px',
+                      borderRadius: '5px',
                       background: Math.abs(deltaF) <= 2 ? '#DCFCE7' : deltaF > 0 ? '#FEF3C7' : '#EFF6FF',
-                      color: Math.abs(deltaF) <= 2 ? '#15803D' : deltaF > 0 ? '#B45309' : '#1D4ED8'
+                      color: Math.abs(deltaF) <= 2 ? '#15803D' : deltaF > 0 ? '#B45309' : '#1D4ED8',
+                      border: '1px solid ' + (Math.abs(deltaF) <= 2 ? '#BBF7D0' : deltaF > 0 ? '#FDE68A' : '#BFDBFE')
                     }}>
                       {Math.abs(deltaF) <= 2 ? 'مطابق' : deltaF > 0 ? `+${deltaF}g` : `${deltaF}g`}
                     </span>
@@ -325,317 +416,619 @@ export default function CoachEditorNutritionTab(props) {
                 </div>
 
                 {Boolean(program.nutrition?.beverage_sugar_intake && program.nutrition.beverage_sugar_intake !== 'zero_or_sweetener') && (
-                  <div style={{ background: '#FEF3C7', border: '1px solid #FCD34D', color: '#92400E', padding: '5px 10px', borderRadius: '8px', textAlign: 'center' }}>
-                    <span style={{ fontSize: '9px', display: 'block', opacity: 0.85 }}>سكر المشروبات</span>
-                    <strong style={{ fontSize: '12px' }}>
+                  <div style={{
+                    background: '#FEF3C7',
+                    border: '1px solid #FCD34D',
+                    color: '#92400E',
+                    height: '40px',
+                    padding: '0 8px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    textAlign: 'center'
+                  }}>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: '#92400E', lineHeight: 1 }}>سكر المشروبات</span>
+                    <strong style={{ fontSize: '12px', fontWeight: 800, lineHeight: 1.2, marginTop: '2px' }}>
                       {program.nutrition.beverage_sugar_intake === '1_tsp' ? '+5g C (20 kcal)' :
                        program.nutrition.beverage_sugar_intake === '2_tsp' ? '+10g C (40 kcal)' : '+15g C (60 kcal)'}
                     </strong>
                   </div>
                 )}
+
+                {/* Calorie Diff / Surplus Badge */}
+                {totalPlannedCal > 0 && (
+                  <div style={{
+                    fontSize: '11.5px',
+                    fontWeight: 800,
+                    height: '40px',
+                    padding: '0 10px',
+                    borderRadius: '8px',
+                    background: Math.abs(diffCal) <= 25 ? '#DCFCE7' : diffCal > 0 ? '#FEF3C7' : '#E0F2FE',
+                    color: Math.abs(diffCal) <= 25 ? '#15803D' : diffCal > 0 ? '#B45309' : '#0369A1',
+                    border: '1px solid ' + (Math.abs(diffCal) <= 25 ? '#BBF7D0' : diffCal > 0 ? '#FDE68A' : '#BAE6FD'),
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center'
+                  }}>
+                    {Math.abs(diffCal) <= 25 ? 'مطابق للتارجت' : diffCal > 0 ? `فائض +${diffCal} kcal` : `متبقي ${Math.abs(diffCal)} kcal`}
+                  </div>
+                )}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {totalPlannedCal > 0 && (
-                  <span style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    background: Math.abs(diffCal) <= 25 ? '#DCFCE7' : diffCal > 0 ? '#FEF3C7' : '#E0F2FE',
-                    color: Math.abs(diffCal) <= 25 ? '#15803D' : diffCal > 0 ? '#B45309' : '#0369A1'
-                  }}>
-                    {Math.abs(diffCal) <= 25 ? 'مطابق للتارجت بالملي' : diffCal > 0 ? `فائض +${diffCal} kcal` : `متبقي ${Math.abs(diffCal)} kcal`}
-                  </span>
-                )}
-
+              {/* Action Buttons on Left */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <button
                   type="button"
                   onClick={toggleAutoRipple}
                   style={{
-                    height: '30px',
+                    height: '34px',
                     padding: '0 10px',
                     borderRadius: '8px',
-                    background: isAutoRippleOn ? '#EFF6FF' : '#F8FAFC',
-                    color: isAutoRippleOn ? '#1D4ED8' : '#64748B',
-                    border: '1px solid ' + (isAutoRippleOn ? '#BFDBFE' : '#CBD5E1'),
-                    fontSize: '11px',
+                    background: isAutoRippleOn ? '#EFF6FF' : '#FFFFFF',
+                    color: isAutoRippleOn ? '#1D4ED8' : '#344054',
+                    border: '1px solid ' + (isAutoRippleOn ? '#BFDBFE' : '#D0D5DD'),
+                    fontSize: '11.5px',
                     fontWeight: 700,
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '5px',
-                    boxShadow: isAutoRippleOn ? '0 1px 2px rgba(37, 99, 235, 0.1)' : 'none'
+                    boxShadow: isAutoRippleOn ? '0 1px 2px rgba(37, 99, 235, 0.1)' : '0 1px 2px rgba(16, 24, 40, 0.04)',
+                    transition: 'all 0.15s ease'
                   }}
                   title="الموازنة التلقائية اللحظية: عند إضافة أو تعديل أو حذف أي صنف تتعدل بقية الوجبات تلقائياً لتغلق الماكروز بالملي"
                 >
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: isAutoRippleOn ? '#2563EB' : '#94A3B8', display: 'inline-block' }}></span>
+                  <Zap size={13} color={isAutoRippleOn ? '#2563EB' : '#64748B'} />
                   <span>الموازنة اللحظية: {isAutoRippleOn ? 'مفعلة' : 'متوقفة'}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleAddNewMeal}
-                  style={{ height: '30px', padding: '0 12px', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.15)' }}
+                  style={{
+                    height: '34px',
+                    padding: '0 14px',
+                    borderRadius: '8px',
+                    background: '#673DE6',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    boxShadow: '0 1px 3px rgba(103, 61, 230, 0.25)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#5025D1'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#673DE6'; }}
                 >
-                  <Plus size={13} />
+                  <Plus size={14} />
                   <span>إضافة وجبة</span>
                 </button>
               </div>
             </div>
 
             {/* Meals Grid (2-Column Balanced Sleek Grid) */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '12px' }}>
-              {program.nutrition?.meals?.map((meal) => (
-                <div
-                  key={meal.id}
-                  style={{
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '8px',
-                    padding: '12px 14px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '10px',
-                    boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)'
-                  }}
-                >
-                  {/* Meal Header */}
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px', marginBottom: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                        <strong style={{ fontSize: '12.5px', color: '#0F172A', fontWeight: 800 }}>{meal.name}</strong>
-                        <span style={{ fontSize: '10px', color: '#64748B', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1px 5px', borderRadius: '6px', fontWeight: 600 }}>{meal.time}</span>
-                        <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '2px', borderRadius: '8px', border: '1px solid #E2E8F0', gap: '2px' }}>
-                          {[
-                            { id: 'NONE', label: 'اعتيادية' },
-                            { id: 'PRE_WORKOUT', label: 'قبل التمرين' },
-                            { id: 'POST_WORKOUT', label: 'بعد التمرين' }
-                          ].map((opt) => {
-                            const isAct = (meal.workout_timing || 'NONE') === opt.id;
-                            return (
-                              <button
-                                key={opt.id}
-                                type="button"
-                                onClick={() => {
-                                  setProgram(prev => ({
-                                    ...prev,
-                                    nutrition: {
-                                      ...prev.nutrition,
-                                      meals: prev.nutrition.meals.map(m => m.id === meal.id ? { ...m, workout_timing: opt.id } : m)
-                                    }
-                                  }));
-                                }}
-                                style={{
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  padding: '2px 7px',
-                                  fontSize: '9.5px',
-                                  fontWeight: 700,
-                                  borderRadius: '6px',
-                                  background: isAct ? (opt.id === 'PRE_WORKOUT' ? '#FEF3C7' : opt.id === 'POST_WORKOUT' ? '#DCFCE7' : '#0F172A') : 'transparent',
-                                  color: isAct ? (opt.id === 'PRE_WORKOUT' ? '#92400E' : opt.id === 'POST_WORKOUT' ? '#166534' : '#FFFFFF') : '#64748B',
-                                  boxShadow: isAct ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
-                                  transition: 'all 0.12s ease'
-                                }}
-                              >
-                                {opt.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        {meal.items && meal.items.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => handleAutoBalanceMeal(meal.id)}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: '12px' }}>
+              {program.nutrition?.meals?.map((meal) => {
+                const cleanTitle = getCleanMealTitle(meal.name);
+                const subtitleMatch = String(meal.name || '').match(/\(([^)]+)\)/);
+                const subtitle = subtitleMatch ? subtitleMatch[1].trim() : '';
+
+                return (
+                  <div
+                    key={meal.id}
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #EAECF0',
+                      borderRadius: '16px',
+                      padding: '14px 16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: '10px',
+                      boxShadow: '0 1px 3px rgba(16, 24, 40, 0.03)',
+                      boxSizing: 'border-box',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {/* Meal Header */}
+                    <div>
+                      {/* Row 1: Clean bold title on one single line + Time on right, Action buttons on left */}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginBottom: '8px',
+                        width: '100%'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                          <strong
                             style={{
-                              padding: '2px 8px',
-                              borderRadius: '8px',
-                              background: '#ECFDF5',
-                              border: '1px solid #A7F3D0',
-                              color: '#065F46',
-                              fontSize: '10px',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '3px'
+                              fontSize: '14px',
+                              color: '#101828',
+                              fontWeight: 800,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
                             }}
-                            title="موازنة أصناف هذه الوجبة بجرامات واقعية متناسقة تسد حصتها من الماكروز"
+                            title={meal.name}
                           >
-                            <Zap size={10} />
-                            <span>موازنة الوجبة ذكياً</span>
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => setAddFoodModal({ open: true, mealId: meal.id })}
-                          style={{ padding: '2px 7px', borderRadius: '8px', background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#0F172A', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }}
-                        >
-                          + صنف غذائي
-                        </button>
-                        {handleDuplicateMeal && (
+                            {cleanTitle}
+                          </strong>
+                          <span style={{
+                            fontSize: '11px',
+                            color: '#475467',
+                            background: '#F2F4F7',
+                            border: '1px solid #EAECF0',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            fontWeight: 700,
+                            flexShrink: 0,
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {meal.time}
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                          {meal.items && meal.items.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => handleAutoBalanceMeal(meal.id)}
+                              style={{
+                                height: '28px',
+                                padding: '0 10px',
+                                borderRadius: '8px',
+                                background: '#ECFDF5',
+                                border: '1px solid #A7F3D0',
+                                color: '#065F46',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                transition: 'all 0.12s ease',
+                                boxShadow: '0 1px 2px rgba(6, 95, 70, 0.04)'
+                              }}
+                              title="موازنة أصناف هذه الوجبة بجرامات واقعية متناسقة تسد حصتها من الماكروز"
+                              onMouseEnter={(e) => { e.currentTarget.style.background = '#D1FAE5'; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = '#ECFDF5'; }}
+                            >
+                              <Zap size={12} />
+                              <span>موازنة</span>
+                            </button>
+                          )}
+
                           <button
                             type="button"
-                            onClick={() => handleDuplicateMeal(meal.id)}
+                            onClick={() => setAddFoodModal({ open: true, mealId: meal.id })}
                             style={{
-                              padding: '2px 7px',
+                              height: '28px',
+                              padding: '0 12px',
                               borderRadius: '8px',
-                              background: '#F8FAFC',
-                              border: '1px solid #CBD5E1',
-                              color: '#0F172A',
-                              fontSize: '10px',
+                              background: '#673DE6',
+                              border: 'none',
+                              color: '#FFFFFF',
+                              fontSize: '11px',
                               fontWeight: 700,
                               cursor: 'pointer',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '3px',
+                              gap: '4px',
+                              boxShadow: '0 1px 2px rgba(103, 61, 230, 0.2)',
                               transition: 'all 0.12s ease'
                             }}
-                            title="نسخ هذه الوجبة بالكامل بجميع أصنافها"
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#5025D1'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = '#673DE6'; }}
                           >
-                            <Copy size={11} />
-                            <span>نسخ الوجبة</span>
+                            <Plus size={12} />
+                            <span>صنف غذائي</span>
                           </button>
+
+                          {handleDuplicateMeal && (
+                            <button
+                              type="button"
+                              onClick={() => handleDuplicateMeal(meal.id)}
+                              style={{
+                                height: '28px',
+                                padding: '0 10px',
+                                borderRadius: '8px',
+                                background: '#FFFFFF',
+                                border: '1px solid #D0D5DD',
+                                color: '#344054',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                transition: 'all 0.12s ease',
+                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04)'
+                              }}
+                              title="نسخ هذه الوجبة بالكامل بجميع أصنافها"
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#F9FAFB';
+                                e.currentTarget.style.borderColor = '#CBD5E1';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#FFFFFF';
+                                e.currentTarget.style.borderColor = '#D0D5DD';
+                              }}
+                            >
+                              <Copy size={12} />
+                              <span>نسخ</span>
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMeal(meal.id)}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              border: '1px solid #D0D5DD',
+                              background: '#FFFFFF',
+                              color: '#94A3B8',
+                              cursor: 'pointer',
+                              padding: 0,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: '8px',
+                              transition: 'all 0.12s ease',
+                              boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04)'
+                            }}
+                            title="حذف الوجبة"
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = '#DC2626';
+                              e.currentTarget.style.borderColor = '#FECACA';
+                              e.currentTarget.style.background = '#FEF2F2';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = '#94A3B8';
+                              e.currentTarget.style.borderColor = '#D0D5DD';
+                              e.currentTarget.style.background = '#FFFFFF';
+                            }}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Row 2: Timing segmented control + subtitle */}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        borderBottom: '1px solid #F1F5F9',
+                        paddingBottom: '8px',
+                        marginBottom: '8px',
+                        gap: '8px',
+                        width: '100%'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>توقيت الوجبة:</span>
+                          <div style={{ display: 'inline-flex', background: '#F2F4F7', padding: '2px', borderRadius: '8px', border: '1px solid #EAECF0', gap: '2px' }}>
+                            {[
+                              { id: 'NONE', label: 'اعتيادية' },
+                              { id: 'PRE_WORKOUT', label: 'قبل التمرين' },
+                              { id: 'POST_WORKOUT', label: 'بعد التمرين' }
+                            ].map((opt) => {
+                              const isAct = (meal.workout_timing || 'NONE') === opt.id;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setProgram(prev => ({
+                                      ...prev,
+                                      nutrition: {
+                                        ...prev.nutrition,
+                                        meals: prev.nutrition.meals.map(m => m.id === meal.id ? { ...m, workout_timing: opt.id } : m)
+                                      }
+                                    }));
+                                  }}
+                                  style={{
+                                    border: isAct ? (opt.id === 'PRE_WORKOUT' ? '1px solid #FCD34D' : opt.id === 'POST_WORKOUT' ? '1px solid #86EFAC' : '1px solid #CBD5E1') : '1px solid transparent',
+                                    cursor: 'pointer',
+                                    padding: '3px 9px',
+                                    fontSize: '10px',
+                                    fontWeight: isAct ? 800 : 600,
+                                    borderRadius: '6px',
+                                    background: isAct ? (opt.id === 'PRE_WORKOUT' ? '#FEF3C7' : opt.id === 'POST_WORKOUT' ? '#DCFCE7' : '#FFFFFF') : 'transparent',
+                                    color: isAct ? (opt.id === 'PRE_WORKOUT' ? '#92400E' : opt.id === 'POST_WORKOUT' ? '#166534' : '#101828') : '#475467',
+                                    boxShadow: isAct ? '0 1px 2px rgba(16, 24, 40, 0.08)' : 'none',
+                                    transition: 'all 0.12s ease'
+                                  }}
+                                >
+                                  {opt.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {subtitle && (
+                          <span
+                            style={{
+                              fontSize: '9.5px',
+                              color: '#64748B',
+                              fontWeight: 600,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              maxWidth: '220px'
+                            }}
+                            title={subtitle}
+                          >
+                            {subtitle}
+                          </span>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteMeal(meal.id)}
-                          style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
-                          title="حذف الوجبة"
-                          onMouseEnter={(e) => { e.currentTarget.style.color = '#DC2626'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.color = '#94A3B8'; }}
-                        >
-                          <Trash2 size={12} />
-                        </button>
+                      </div>
+
+                      {/* Meal Food Items (Precision Grid with Full Visible Name) */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                        {meal.items?.map((item, iIdx) => {
+                          const upper = String(item.code || item.name).toUpperCase();
+                          const amt = Number(item.amount) || 0;
+                          let hint = '';
+                          if (['CHICKEN', 'دجاج', 'فراخ', 'TURKEY'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 0.75)} نيء)`;
+                          else if (['BEEF', 'لحم', 'كفتة'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 0.72)} نيء)`;
+                          else if (['FISH', 'سمك', 'فيليه', 'SHRIMP', 'جمبري', 'SALMON'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 0.80)} نيء)`;
+                          else if (['RICE', 'أرز', 'ارز'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 2.6)} جاف)`;
+                          else if (['PASTA', 'مكرونة'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 2.3)} جافة)`;
+                          else if (['OATS', 'شوفان'].some(c => upper.includes(c))) hint = `(~${Math.round(amt * 2.8)} مطبوخ)`;
+
+                          return (
+                            <div
+                              key={item.id || iIdx}
+                              style={{
+                                background: '#F8FAFC',
+                                border: '1px solid #EAECF0',
+                                borderRadius: '10px',
+                                padding: '9px 12px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '5px',
+                                boxSizing: 'border-box',
+                                transition: 'all 0.12s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#FFFFFF';
+                                e.currentTarget.style.borderColor = '#CBD5E1';
+                                e.currentTarget.style.boxShadow = '0 2px 4px rgba(16, 24, 40, 0.04)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#F8FAFC';
+                                e.currentTarget.style.borderColor = '#EAECF0';
+                                e.currentTarget.style.boxShadow = 'none';
+                              }}
+                            >
+                              {/* Row 1: Item Name & Hint on Right, Grams Input on Left */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', width: '100%', minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flex: 1 }}>
+                                  <span
+                                    style={{
+                                      color: '#101828',
+                                      fontWeight: 700,
+                                      fontSize: '13px',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis'
+                                    }}
+                                    title={item.name}
+                                  >
+                                    {item.name}
+                                  </span>
+
+                                  {hint && (
+                                    <span
+                                      style={{
+                                        fontSize: '9.5px',
+                                        color: '#0284C7',
+                                        fontWeight: 700,
+                                        background: '#F0F9FF',
+                                        border: '1px solid #BAE6FD',
+                                        padding: '1px 6px',
+                                        borderRadius: '6px',
+                                        whiteSpace: 'nowrap',
+                                        flexShrink: 0
+                                      }}
+                                    >
+                                      {hint}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Grams Amount Box on Left */}
+                                <div style={{
+                                  width: '64px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  background: '#FFFFFF',
+                                  border: '1px solid #CBD5E1',
+                                  borderRadius: '8px',
+                                  padding: '0 4px',
+                                  height: '26px',
+                                  boxSizing: 'border-box',
+                                  flexShrink: 0
+                                }}>
+                                  <input
+                                    type="text"
+                                    className="bare-input inline-pill-input clean-inline-input"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    dir="ltr"
+                                    value={item.amount !== undefined ? item.amount : 100}
+                                    onChange={(e) => {
+                                      const val = e.target.value.replace(/[^0-9]/g, '');
+                                      handleUpdateFoodAmount(meal.id, iIdx, val);
+                                    }}
+                                    style={{
+                                      width: '32px',
+                                      height: '22px',
+                                      minHeight: 0,
+                                      border: 'none',
+                                      borderRadius: 0,
+                                      boxShadow: 'none',
+                                      textAlign: 'center',
+                                      fontWeight: 800,
+                                      fontSize: '12.5px',
+                                      outline: 'none',
+                                      color: '#101828',
+                                      background: 'transparent',
+                                      direction: 'ltr',
+                                      padding: 0
+                                    }}
+                                  />
+                                  <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#475467', marginRight: '2px', flexShrink: 0 }}>
+                                    {item.unit || 'جم'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Row 2: Calories & Macros on Right (under the name), Actions on Left (under grams) */}
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: '8px',
+                                width: '100%',
+                                paddingTop: '2px'
+                              }}>
+                                {/* Nutrition Strip on Right */}
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  flexWrap: 'nowrap',
+                                  fontSize: '11px',
+                                  fontFamily: 'JetBrains Mono, Cairo, monospace',
+                                  direction: 'ltr'
+                                }}>
+                                  <span style={{ fontWeight: 800, color: '#0F172A' }}>
+                                    {item.cal || 0} kcal
+                                  </span>
+                                  <span style={{ color: '#CBD5E1', fontWeight: 400 }}>·</span>
+                                  <span style={{ color: '#0284C7', fontWeight: 800 }}>P {item.p || 0}g</span>
+                                  <span style={{ color: '#CBD5E1', fontWeight: 400 }}>·</span>
+                                  <span style={{ color: '#D97706', fontWeight: 800 }}>C {item.c || 0}g</span>
+                                  <span style={{ color: '#CBD5E1', fontWeight: 400 }}>·</span>
+                                  <span style={{ color: '#475467', fontWeight: 800 }}>F {item.f || 0}g</span>
+                                </div>
+
+                                {/* Quick Actions on Left (Centered with Grams Box) */}
+                                <div style={{
+                                  width: '64px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '6px',
+                                  flexShrink: 0
+                                }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => setSwapFoodModal({ open: true, mealId: meal.id, itemIdx: iIdx, currentItem: item })}
+                                    style={{
+                                      width: '24px',
+                                      height: '24px',
+                                      border: '1px solid #E2E8F0',
+                                      background: '#FFFFFF',
+                                      color: '#64748B',
+                                      cursor: 'pointer',
+                                      padding: 0,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      borderRadius: '6px',
+                                      transition: 'all 0.15s ease',
+                                      boxShadow: '0 1px 2px rgba(15, 23, 42, 0.03)'
+                                    }}
+                                    title="تبديل الصنف ببديل متكافئ بالمللي"
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.color = '#2563EB';
+                                      e.currentTarget.style.borderColor = '#BFDBFE';
+                                      e.currentTarget.style.background = '#EFF6FF';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.color = '#64748B';
+                                      e.currentTarget.style.borderColor = '#E2E8F0';
+                                      e.currentTarget.style.background = '#FFFFFF';
+                                    }}
+                                  >
+                                    <ArrowRightLeft size={12} />
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteFood(meal.id, iIdx)}
+                                    style={{
+                                      width: '24px',
+                                      height: '24px',
+                                      border: '1px solid #E2E8F0',
+                                      background: '#FFFFFF',
+                                      color: '#94A3B8',
+                                      cursor: 'pointer',
+                                      padding: 0,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      borderRadius: '6px',
+                                      transition: 'all 0.15s ease',
+                                      boxShadow: '0 1px 2px rgba(15, 23, 42, 0.03)'
+                                    }}
+                                    title="حذف الصنف"
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.color = '#DC2626';
+                                      e.currentTarget.style.borderColor = '#FECACA';
+                                      e.currentTarget.style.background = '#FEF2F2';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.color = '#94A3B8';
+                                      e.currentTarget.style.borderColor = '#E2E8F0';
+                                      e.currentTarget.style.background = '#FFFFFF';
+                                    }}
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    {/* Meal Food Items (Precision Grid: Aligned Grams, Centered Calories, English Macros & Swap Action) */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      {meal.items?.map((item, iIdx) => (
-                        <div
-                          key={item.id || iIdx}
-                          style={{
-                            background: '#F8FAFC',
-                            border: '1px solid #E2E8F0',
-                            borderRadius: '6px',
-                            padding: '6px 10px',
-                            display: 'grid',
-                            gridTemplateColumns: 'minmax(105px, 1fr) 95px 75px 210px 48px',
-                            alignItems: 'center',
-                            gap: '8px'
-                          }}
-                        >
-                          {/* 1. Food Name & Category Badge & Raw/Cooked Hint */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, overflow: 'hidden' }}>
-                            <span style={{ color: '#0F172A', fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {item.name}
-                            </span>
-                            {/* Raw / Cooked equivalence hint */}
-                            {(() => {
-                              const upper = String(item.code || item.name).toUpperCase();
-                              const amt = Number(item.amount) || 0;
-                              let hint = '';
-                              if (['CHICKEN', 'دجاج', 'فراخ', 'TURKEY'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 0.75)} جم نيء)`;
-                              else if (['BEEF', 'لحم', 'كفتة'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 0.72)} جم نيء)`;
-                              else if (['FISH', 'سمك', 'فيليه', 'SHRIMP', 'جمبري', 'SALMON'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 0.80)} جم نيء)`;
-                              else if (['RICE', 'أرز', 'ارز'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 2.6)} جم جاف)`;
-                              else if (['PASTA', 'مكرونة'].some(c => upper.includes(c))) hint = `(~${Math.round(amt / 2.3)} جم جافة)`;
-                              else if (['OATS', 'شوفان'].some(c => upper.includes(c))) hint = `(~${Math.round(amt * 2.8)} جم مطبوخ)`;
-                              if (!hint) return null;
-                              return <span style={{ fontSize: '9px', color: '#0284C7', fontWeight: 700, whiteSpace: 'nowrap' }}>{hint}</span>;
-                            })()}
-                            {item.category && (
-                              <span style={{ fontSize: '9.5px', fontWeight: 600, padding: '1px 5px', borderRadius: '6px', background: '#FFFFFF', color: '#64748B', border: '1px solid #E2E8F0', flexShrink: 0 }}>
-                                {item.category === 'PROTEIN' ? 'بروتين' : item.category === 'CARB' ? 'نشويات' : item.category === 'FAT' ? 'دهون' : 'خضار'}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {/* 2. Grams Amount Box (Fixed width, vertically aligned, no spin-arrow crop) */}
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '0 6px', height: '27px', width: '74px', boxSizing: 'border-box' }}>
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                dir="ltr"
-                                value={item.amount !== undefined ? item.amount : 100}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/[^0-9]/g, '');
-                                  handleUpdateFoodAmount(meal.id, iIdx, val);
-                                }}
-                                style={{
-                                  width: '38px',
-                                  border: 'none',
-                                  textAlign: 'center',
-                                  fontWeight: 800,
-                                  fontSize: '12px',
-                                  outline: 'none',
-                                  color: '#0F172A',
-                                  background: 'transparent',
-                                  direction: 'ltr',
-                                  padding: 0
-                                }}
-                              />
-                              <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B', marginRight: '2px', flexShrink: 0 }}>{item.unit || 'جم'}</span>
-                            </div>
-                          </div>
-
-                          {/* 3. Calories (Fixed width, centered) */}
-                          <div style={{ textAlign: 'center', direction: 'ltr', whiteSpace: 'nowrap' }}>
-                            <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>
-                              {item.cal || 0} kcal
-                            </span>
-                          </div>
-
-                          {/* 4. Macros (Fixed width, English Protein/Carbs/Fat with bold numbers) */}
-                          <div style={{ fontSize: '10px', color: '#64748B', textAlign: 'left', direction: 'ltr', whiteSpace: 'nowrap' }}>
-                            <span>Protein: <strong style={{ color: '#0F172A', fontWeight: 800 }}>{item.p || 0}g</strong> · Carbs: <strong style={{ color: '#0F172A', fontWeight: 800 }}>{item.c || 0}g</strong> · Fat: <strong style={{ color: '#0F172A', fontWeight: 800 }}>{item.f || 0}g</strong></span>
-                          </div>
-
-                          {/* 5. Actions: Smart Swap + Delete */}
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                            <button
-                              type="button"
-                              onClick={() => setSwapFoodModal({ open: true, mealId: meal.id, itemIdx: iIdx, currentItem: item })}
-                              style={{ border: 'none', background: 'transparent', color: '#64748B', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
-                              title="تبديل الصنف ببديل متكافئ بالمللي"
-                              onMouseEnter={(e) => { e.currentTarget.style.color = '#2563EB'; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.color = '#64748B'; }}
-                            >
-                              <ArrowRightLeft size={12} />
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteFood(meal.id, iIdx)}
-                              style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
-                              title="حذف الصنف"
-                              onMouseEnter={(e) => { e.currentTarget.style.color = '#DC2626'; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.color = '#94A3B8'; }}
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                    {/* Meal Footer Macros */}
+                    <div style={{
+                      borderTop: '1px solid #F1F5F9',
+                      paddingTop: '8px',
+                      marginTop: '4px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '11px',
+                      color: '#475467'
+                    }}>
+                      <span style={{ fontWeight: 700, color: '#475569' }}>
+                        المجموع: <strong style={{ color: '#101828', fontSize: '12px', fontWeight: 800 }}>{meal.macros?.calories || 0} kcal</strong>
+                      </span>
+                      <span style={{ fontWeight: 600, fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                        بروتين: <strong style={{ color: '#0284C7', fontWeight: 800 }}>{meal.macros?.protein || 0}g</strong> • كارب: <strong style={{ color: '#B45309', fontWeight: 800 }}>{meal.macros?.carbs || 0}g</strong> • دهون: <strong style={{ color: '#101828', fontWeight: 800 }}>{meal.macros?.fats || 0}g</strong>
+                      </span>
                     </div>
                   </div>
-
-                  {/* Meal Footer Macros */}
-                  <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '6px', marginTop: '2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10.5px', color: '#64748B' }}>
-                    <span style={{ fontWeight: 700, color: '#475569' }}>المجموع: <strong style={{ color: '#0F172A', fontSize: '11.5px' }}>{meal.macros?.calories || 0} kcal</strong></span>
-                    <span style={{ fontWeight: 600 }}>
-                      بروتين: <strong style={{ color: '#0F172A' }}>{meal.macros?.protein || 0}g</strong> • كارب: <strong style={{ color: '#0F172A' }}>{meal.macros?.carbs || 0}g</strong> • دهون: <strong style={{ color: '#0F172A' }}>{meal.macros?.fats || 0}g</strong>
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
 
@@ -666,7 +1059,7 @@ export default function CoachEditorNutritionTab(props) {
               style={{
                 background: '#FFFFFF',
                 borderRadius: '16px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid #EAECF0',
                 width: '100%',
                 maxWidth: '460px',
                 padding: '24px',
@@ -679,12 +1072,12 @@ export default function CoachEditorNutritionTab(props) {
               {/* Modal Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F172A' }}>
+                  <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#101828' }}>
                     <Target size={18} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>تعديل المستهدفات اليومية</h3>
-                    <span style={{ fontSize: '11px', color: '#64748B' }}>تحديد مستهدفات السعرات والماكروز اليومية للخطة</span>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#101828' }}>تعديل المستهدفات اليومية</h3>
+                    <span style={{ fontSize: '11px', color: '#475467' }}>تحديد مستهدفات السعرات والماكروز اليومية للخطة</span>
                   </div>
                 </div>
                 <button
@@ -820,9 +1213,9 @@ export default function CoachEditorNutritionTab(props) {
               </div>
 
               {/* Calculated Cals from Entered Macros */}
-              <div style={{ fontSize: '11px', color: '#64748B', background: '#F8FAFC', padding: '8px 12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '11px', color: '#475467', background: '#F9FAFB', padding: '8px 12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>مجموع سعرات الماكروز المحسوبة:</span>
-                <strong style={{ color: '#0F172A' }}>
+                <strong style={{ color: '#101828' }}>
                   {Math.round((Number(editTargetsState.protein) || 0) * 4 + (Number(editTargetsState.carbs) || 0) * 4 + (Number(editTargetsState.fats) || 0) * 9)} kcal
                 </strong>
               </div>
@@ -852,11 +1245,7 @@ export default function CoachEditorNutritionTab(props) {
                     padding: '8px 18px',
                     borderRadius: '8px',
                     border: 'none',
-                    background: '#0F172A',
-                    color: '#FFFFFF',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    cursor: 'pointer'
+                    background: '#673DE6', color: '#FFFFFF', fontSize: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 2px rgba(103, 61, 230, 0.2)'
                   }}
                 >
                   حفظ وتحديث المستهدفات

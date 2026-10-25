@@ -81,7 +81,7 @@ export default function ExerciseLogCard({ exercise, progressionEntry, draft, onC
               key={level}
               type="button"
               onClick={() => onChange(code, 'effort', level)}
-              style={{ flex: '1 1 30%', padding: '6px 8px', borderRadius: '9999px', border: selected ? '1.5px solid #2563EB' : '1px solid #CBD5E1', background: selected ? '#EFF6FF' : '#FFFFFF', color: selected ? '#1E3A8A' : '#475569', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer' }}
+              style={{ flex: '1 1 30%', padding: '6px 8px', borderRadius: '8px', border: selected ? '1.5px solid #2563EB' : '1px solid #CBD5E1', background: selected ? '#EFF6FF' : '#FFFFFF', color: selected ? '#1E3A8A' : '#475569', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer' }}
             >
               {EFFORT_LABELS_AR[level]}
             </button>
@@ -97,7 +97,7 @@ export default function ExerciseLogCard({ exercise, progressionEntry, draft, onC
             alignSelf: 'flex-start',
             height: '24px',
             padding: '0 8px',
-            borderRadius: '9999px',
+            borderRadius: '8px',
             border: '1px solid #D9E7F5',
             background: '#F8FBFF',
             color: '#284C7C',

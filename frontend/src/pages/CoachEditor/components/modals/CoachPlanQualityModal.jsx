@@ -95,7 +95,7 @@ export default function CoachPlanQualityModal({
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{
-              background: '#0F172A',
+              background: '#673DE6',
               color: '#FFFFFF',
               width: '32px',
               height: '32px',
@@ -351,7 +351,7 @@ export default function CoachPlanQualityModal({
                 padding: '8px 18px',
                 borderRadius: '8px',
                 border: 'none',
-                background: '#0F172A',
+                background: '#673DE6',
                 color: '#FFFFFF',
                 fontSize: '11.5px',
                 fontWeight: 800,
@@ -359,7 +359,7 @@ export default function CoachPlanQualityModal({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                boxShadow: '0 2px 6px rgba(15, 23, 42, 0.2)'
+                boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)'
               }}
             >
               {publishing ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}

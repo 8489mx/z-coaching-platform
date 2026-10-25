@@ -146,7 +146,7 @@ export function CoachSwapExerciseModal({
                 padding: '5px 8px',
                 borderRadius: '7px',
                 border: 'none',
-                background: activeTab === tab.id ? '#0F172A' : 'transparent',
+                background: activeTab === tab.id ? '#673DE6' : 'transparent',
                 color: activeTab === tab.id ? '#FFFFFF' : '#475569',
                 fontSize: '11px',
                 fontWeight: 700,
@@ -168,9 +168,9 @@ export function CoachSwapExerciseModal({
             placeholder="ابحث بالاسم العربي، الإنجليزي، أو الكود..."
             value={swapExSearch}
             onChange={(e) => setSwapExSearch(e.target.value)}
-            style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 28px 0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 12px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
           />
-          <Search size={13} style={{ position: 'absolute', right: '9px', top: '10px', color: '#94A3B8' }} />
+          <Search size={13} style={{ position: 'absolute', right: '11px', top: '11px', color: '#94A3B8' }} />
         </div>
 
         {/* Exercises List Container */}
@@ -213,9 +213,9 @@ export function CoachSwapExerciseModal({
                     </div>
                     <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'flex', gap: '6px', alignItems: 'center' }}>
                       <span>{getExerciseDisplayNames(twinEx).nameAr}</span>
-                      <span>•</span>
+                      <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
                       <span>{twinEx.equipment_ar || twinEx.equipment || 'أداة تمرين'}</span>
-                      <span>•</span>
+                      <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
                       <span>{twinEx.muscle_ar || twinEx.muscle_group || 'عضلة رئيسية'}</span>
                     </div>
                   </div>
@@ -454,9 +454,9 @@ export function CoachSwapExerciseModal({
                     </strong>
                     <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'flex', gap: '6px', alignItems: 'center' }}>
                       <span>{getExerciseDisplayNames(targetEx).nameAr}</span>
-                      <span>•</span>
+                      <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
                       <span>{targetEx.equipment_ar || targetEx.equipment || 'جهاز / أوزان'}</span>
-                      <span>•</span>
+                      <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
                       <span>{targetEx.muscle_ar || targetEx.muscle_group || 'عضلة رئيسية'}</span>
                     </div>
                   </div>
@@ -468,7 +468,7 @@ export function CoachSwapExerciseModal({
                       height: '28px',
                       padding: '0 12px',
                       borderRadius: '8px',
-                      background: '#0F172A',
+                      background: '#673DE6',
                       color: '#FFFFFF',
                       border: 'none',
                       fontSize: '11px',
@@ -563,7 +563,7 @@ export function CoachAddExerciseModal({
                 fontWeight: 700,
                 border: 'none',
                 cursor: 'pointer',
-                background: addExMuscleFilter === cat.id ? '#0F172A' : 'transparent',
+                background: addExMuscleFilter === cat.id ? '#673DE6' : 'transparent',
                 color: addExMuscleFilter === cat.id ? '#FFFFFF' : '#64748B',
                 boxShadow: addExMuscleFilter === cat.id ? '0 1px 3px rgba(15, 23, 42, 0.2)' : 'none',
                 transition: 'all 0.12s ease'
@@ -577,13 +577,13 @@ export function CoachAddExerciseModal({
         {/* Search & Equipment Filter Row */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Search size={13} color="#94A3B8" style={{ position: 'absolute', right: '10px' }} />
+            <Search size={13} color="#94A3B8" style={{ position: 'absolute', right: '12px' }} />
             <input
               type="text"
               placeholder="ابحث باسم التمرين (عربي / إنجليزي)..."
               value={exModalSearch}
               onChange={(e) => setExModalSearch(e.target.value)}
-              style={{ width: '100%', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 30px 0 28px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 28px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
             />
             {exModalSearch && (
               <button
@@ -694,7 +694,7 @@ export function CoachAddExerciseModal({
                       type="button"
                       style={{
                         padding: '4px 10px',
-                        background: '#0F172A',
+                        background: '#673DE6',
                         color: '#FFFFFF',
                         border: 'none',
                         borderRadius: '7px',

@@ -27,105 +27,32 @@ export default function CoachEditor() {
   const editor = useCoachEditorData();
 
   const {
-    clientCodeParam,
-    trainingCycle,
-    _searchParams,
-    _setSearchParams,
-    _loading,
-    _setLoading,
-    saving,
-    _setSaving,
-    publishing,
-    _setPublishing,
-    program,
-    setProgram,
-    activeSessionDemand,
-    weeklyVolumeAudit,
-    coachNotes,
-    setCoachNotes,
-    activeSessionIdx,
-    setActiveSessionIdx,
-    activeWorkspaceTab,
-    setActiveWorkspaceTab,
-    notification,
-    _setNotification,
-    selectedWeek,
-    setSelectedWeek,
-    activeVideoModalEx,
-    setActiveVideoModalEx,
-    _autoRippleEnabled,
-    _setAutoRippleEnabled,
-    clientsList,
-    _setClientsList,
-    queueFilter,
-    setQueueFilter,
-    queueSearch,
-    setQueueSearch,
-    allExercisesList,
-    _setAllExercisesList,
-    cardioSwapModal,
-    setCardioSwapModal,
-    isLabModalOpen,
-    setIsLabModalOpen,
-    addFoodModal,
-    setAddFoodModal,
-    swapFoodModal,
-    setSwapFoodModal,
-    addExModal,
-    setAddExModal,
-    swapExModal,
-    setSwapExModal,
-    mobilityModal,
-    setMobilityModal,
-    allMobilityList,
-    _setAllMobilityList,
-    _showReasoning,
-    _setShowReasoning,
-    exModalSearch,
-    setExModalSearch,
-    addExMuscleFilter,
-    setAddExMuscleFilter,
-    addExEquipmentFilter,
-    setAddExEquipmentFilter,
-    foodModalSearch,
-    setFoodModalSearch,
-    mobilityModalSearch,
-    setMobilityModalSearch,
-    swapFoodSearch,
-    setSwapFoodSearch,
-    swapExSearch,
-    setSwapExSearch,
-    handleSelectClient,
-    showToast,
-    _handleUpdateFoodAmount,
-    _handleDeleteFood,
-    _handleAddNewMeal,
-    _handleDuplicateMeal,
-    _handleDeleteMeal,
-    handleAddFoodToMeal,
-    handleExecuteFoodSwap,
-    handleExecuteExerciseSwap,
-    handleUpdateExerciseParam,
-    handleMoveExercise,
-    handleDuplicateSession,
-    handleDeleteExercise,
-    handleAddExerciseToSession,
-    handleSelectCardioModality,
-    handleUpdateCardioParam,
-    handleAddMobilityToSession,
-    handleRemoveMobilityFromSession,
-    handleSaveDraft,
-    handleApproveAndPublish,
-    filteredQueue,
-    displayedQueue,
-    urgentCount,
-    pendingPlanCount,
-    needsUpdateCount,
-    currentWeekData,
-    currentSessions,
-    activeSession,
-    _FOOD_DATABASE_LIST,
-    _CARDIO_MODALITY_OPTIONS
+    clientCodeParam, trainingCycle, _searchParams, _setSearchParams, _loading, _setLoading,
+    saving, _setSaving, publishing, _setPublishing, program, setProgram,
+    activeSessionDemand, weeklyVolumeAudit, coachNotes, setCoachNotes,
+    activeSessionIdx, setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab,
+    notification, _setNotification, selectedWeek, setSelectedWeek,
+    activeVideoModalEx, setActiveVideoModalEx, _autoRippleEnabled, _setAutoRippleEnabled,
+    clientsList, _setClientsList, queueFilter, setQueueFilter, queueTierFilter, setQueueTierFilter,
+    queueSearch, setQueueSearch, allExercisesList, _setAllExercisesList,
+    cardioSwapModal, setCardioSwapModal, isLabModalOpen, setIsLabModalOpen,
+    addFoodModal, setAddFoodModal, swapFoodModal, setSwapFoodModal,
+    addExModal, setAddExModal, swapExModal, setSwapExModal,
+    mobilityModal, setMobilityModal, allMobilityList, _setAllMobilityList,
+    _showReasoning, _setShowReasoning, exModalSearch, setExModalSearch,
+    addExMuscleFilter, setAddExMuscleFilter, addExEquipmentFilter, setAddExEquipmentFilter,
+    foodModalSearch, setFoodModalSearch, mobilityModalSearch, setMobilityModalSearch,
+    swapFoodSearch, setSwapFoodSearch, swapExSearch, setSwapExSearch,
+    handleSelectClient, showToast, _handleUpdateFoodAmount, _handleDeleteFood,
+    _handleAddNewMeal, _handleDuplicateMeal, _handleDeleteMeal, handleAddFoodToMeal,
+    handleExecuteFoodSwap, handleExecuteExerciseSwap, handleUpdateExerciseParam,
+    handleMoveExercise, handleDuplicateSession, handleDeleteExercise,
+    handleAddExerciseToSession, handleSelectCardioModality, handleUpdateCardioParam,
+    handleAddMobilityToSession, handleRemoveMobilityFromSession,
+    handleSaveDraft, handleApproveAndPublish, filteredQueue, displayedQueue,
+    urgentCount, pendingPlanCount, needsUpdateCount,
+    currentWeekData, currentSessions, activeSession,
+    _FOOD_DATABASE_LIST, _CARDIO_MODALITY_OPTIONS
   } = editor;
 
   const [isPlanQualityOpen, setIsPlanQualityOpen] = React.useState(false);
@@ -136,18 +63,20 @@ export default function CoachEditor() {
         dir="rtl"
         style={{
           display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'flex-start',
-          gap: '12px',
+          gap: '16px',
+          alignItems: 'stretch',
           fontFamily: 'Cairo, sans-serif',
           width: '100%',
-          boxSizing: 'border-box'
+          height: 'calc(100vh - 132px)',
+          maxHeight: 'calc(100vh - 132px)',
+          boxSizing: 'border-box',
+          overflow: 'hidden'
         }}
       >
         {/* =========================================================================
             0. CLIENTS LIST - beside the editor, always open (one click per client)
             ========================================================================= */}
-        <aside style={{ flex: '0 0 250px', minWidth: '230px', maxWidth: '100%', boxSizing: 'border-box' }}>
+        <aside style={{ flex: '0 0 315px', minWidth: '295px', maxWidth: '315px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
           <CoachClientsQueue
             urgentCount={urgentCount}
             pendingPlanCount={pendingPlanCount}
@@ -155,6 +84,8 @@ export default function CoachEditor() {
             clientsList={clientsList}
             queueFilter={queueFilter}
             setQueueFilter={setQueueFilter}
+            queueTierFilter={queueTierFilter}
+            setQueueTierFilter={setQueueTierFilter}
             queueSearch={queueSearch}
             setQueueSearch={setQueueSearch}
             displayedQueue={displayedQueue}
@@ -169,10 +100,16 @@ export default function CoachEditor() {
           style={{
             flex: '1 1 640px',
             minWidth: 0,
+            height: '100%',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            paddingLeft: '6px',
+            paddingRight: '6px',
+            scrollbarWidth: 'thin'
           }}
         >
         {/* =========================================================================
@@ -199,15 +136,15 @@ export default function CoachEditor() {
           handleSelectClient={handleSelectClient}
         />
 
-        {/* 2. Unified Clean Workspace Tabs */}
+        {/* 2. Unified Clean Workspace Tabs - Hostinger Design System */}
         <div 
           style={{ 
             display: 'flex', 
-            gap: '4px', 
-            background: '#F1F5F9',
-            border: '1px solid #E2E8F0',
-            borderRadius: '8px',
-            padding: '3px'
+            gap: '6px', 
+            background: '#F2F4F7',
+            border: '1px solid #EAECF0',
+            borderRadius: '12px',
+            padding: '4px'
           }}
         >
           {[
@@ -224,32 +161,32 @@ export default function CoachEditor() {
                 onClick={() => setActiveWorkspaceTab(tab.id)}
                 style={{
                   flex: 1,
-                  padding: '7px 10px',
-                  borderRadius: '6px',
+                  height: '38px',
+                  borderRadius: '8px',
                   border: 'none',
-                  background: isSel ? '#0F172A' : 'transparent',
-                  color: isSel ? '#FFFFFF' : '#64748B',
+                  background: isSel ? '#FFFFFF' : 'transparent',
+                  color: isSel ? '#101828' : '#475467',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  boxShadow: isSel ? '0 2px 4px rgba(15, 23, 42, 0.2)' : 'none',
-                  transition: 'all 0.12s ease'
+                  gap: '8px',
+                  fontSize: '12.5px',
+                  fontWeight: isSel ? 700 : 500,
+                  boxShadow: isSel ? '0 1px 3px rgba(16, 24, 40, 0.08)' : 'none',
+                  transition: 'all 0.15s ease'
                 }}
               >
-                <Icon size={14} color={isSel ? '#FFFFFF' : '#64748B'} />
+                <Icon size={15} color={isSel ? '#673DE6' : '#667085'} />
                 <span>{tab.label}</span>
                 {tab.count && (
                   <span style={{
-                    fontSize: '10px',
-                    fontWeight: 800,
-                    padding: '0 5px',
-                    borderRadius: '10px',
-                    background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
-                    color: isSel ? '#FFFFFF' : '#475569'
+                    fontSize: '10.5px',
+                    fontWeight: 700,
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    background: isSel ? '#F4F0FD' : '#EAECF0',
+                    color: isSel ? '#673DE6' : '#475467'
                   }}>
                     {tab.count}
                   </span>

@@ -286,7 +286,7 @@ export default function FinancialsRenewalsDashboard() {
         {/* 1. Header Banner */}
         <div style={{
           background: '#FFFFFF',
-          border: '1px solid #E2E8F0',
+          border: '1px solid #EAECF0',
           borderRadius: '12px',
           padding: '14px 18px',
           display: 'flex',
@@ -297,7 +297,7 @@ export default function FinancialsRenewalsDashboard() {
           boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ background: '#0F172A', color: '#FFFFFF', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#F4F0FD', color: '#673DE6', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Wallet size={17} />
             </div>
             <div>
@@ -316,50 +316,90 @@ export default function FinancialsRenewalsDashboard() {
               type="button"
               onClick={() => setShowRadarStudio(!showRadarStudio)}
               style={{
-                background: showRadarStudio ? '#0F172A' : '#F8FAFC',
-                border: showRadarStudio ? '1px solid #0F172A' : '1px solid #CBD5E1',
-                padding: '5px 12px',
+                background: showRadarStudio ? '#673DE6' : '#FFFFFF',
+                border: showRadarStudio ? '1px solid #673DE6' : '1px solid #D0D5DD',
+                padding: '6px 14px',
                 borderRadius: '8px',
-                fontSize: '11px',
+                fontSize: '11.5px',
                 fontWeight: 700,
-                color: showRadarStudio ? '#FFFFFF' : '#334155',
+                color: showRadarStudio ? '#FFFFFF' : '#344054',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                transition: 'all 0.12s ease'
+                boxShadow: showRadarStudio ? '0 2px 6px rgba(103, 61, 230, 0.25)' : '0 1px 2px rgba(16, 24, 40, 0.03)',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (!showRadarStudio) {
+                  e.currentTarget.style.background = '#F9FAFB';
+                  e.currentTarget.style.borderColor = '#CBD5E1';
+                } else {
+                  e.currentTarget.style.background = '#5630C7';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!showRadarStudio) {
+                  e.currentTarget.style.background = '#FFFFFF';
+                  e.currentTarget.style.borderColor = '#D0D5DD';
+                } else {
+                  e.currentTarget.style.background = '#673DE6';
+                }
               }}
               title="إظهار/إخفاء استوديو رادار الاحتفاظ والتجديد الذكي"
             >
-              <Activity size={13} color={showRadarStudio ? '#38BDF8' : '#0284C7'} />
+              <Activity size={13} color={showRadarStudio ? '#FFFFFF' : '#673DE6'} />
               <span>استوديو رادار الاحتفاظ</span>
             </button>
 
             <a
               href="/coach/reminders"
               style={{
-                background: '#F8FAFC',
-                border: '1px solid #CBD5E1',
-                padding: '5px 12px',
+                background: '#FFFFFF',
+                border: '1px solid #D0D5DD',
+                padding: '6px 14px',
                 borderRadius: '8px',
-                fontSize: '11px',
-                fontWeight: 700,
-                color: '#334155',
+                fontSize: '11.5px',
+                fontWeight: 600,
+                color: '#344054',
                 textDecoration: 'none',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                transition: 'all 0.12s ease'
+                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#F9FAFB';
+                e.currentTarget.style.borderColor = '#CBD5E1';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#FFFFFF';
+                e.currentTarget.style.borderColor = '#D0D5DD';
               }}
               title="الانتقال السريع إلى مركز تذكيرات الواتساب"
             >
-              <MessageSquare size={13} color="#0284C7" />
+              <MessageSquare size={13} color="#25D366" />
               <span>مركز تذكيرات الواتساب</span>
             </a>
 
-            <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>
-              إجمالي المشتركين: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>{financialsData.length}</strong>
-            </span>
+            <div style={{
+              fontSize: '11px',
+              color: '#475569',
+              fontFamily: 'Cairo, sans-serif',
+              background: '#F8FAFC',
+              border: '1px solid #EAECF0',
+              padding: '5px 12px',
+              borderRadius: '8px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              <span>إجمالي المشتركين:</span>
+              <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                {financialsData.length}
+              </strong>
+            </div>
           </div>
         </div>
 
@@ -367,7 +407,7 @@ export default function FinancialsRenewalsDashboard() {
         {showRadarStudio && (
           <div style={{
             background: '#FFFFFF',
-            border: '1px solid #E2E8F0',
+            border: '1px solid #EAECF0',
             borderRadius: '12px',
             padding: '16px',
             boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)',
@@ -391,13 +431,13 @@ export default function FinancialsRenewalsDashboard() {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 10px', fontSize: '11px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '8px', padding: '4px 10px', fontSize: '11px' }}>
                   <span style={{ color: '#64748B' }}>معدل التجديد التقديري: </span>
                   <strong style={{ color: '#059669', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                     {radarCohort.projected_retention_rate_pct}%
                   </strong>
                 </div>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '4px 10px', fontSize: '11px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '8px', padding: '4px 10px', fontSize: '11px' }}>
                   <span style={{ color: '#64748B' }}>متوسط صحة الاحتفاظ: </span>
                   <strong style={{ color: '#0284C7', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                     {radarCohort.average_retention_score} / 100
@@ -415,7 +455,7 @@ export default function FinancialsRenewalsDashboard() {
                 style={{
                   background: renewalFilter === 'HIGH_PROPENSITY' ? '#ECFDF5' : '#F8FAFC',
                   border: renewalFilter === 'HIGH_PROPENSITY' ? '2px solid #059669' : '1px solid #E2E8F0',
-                  borderRadius: '10px',
+                  borderRadius: '16px',
                   padding: '10px 12px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease'
@@ -452,7 +492,7 @@ export default function FinancialsRenewalsDashboard() {
                 style={{
                   background: renewalFilter === 'NURTURE_ENGAGE' ? '#FFFBEB' : '#F8FAFC',
                   border: renewalFilter === 'NURTURE_ENGAGE' ? '2px solid #D97706' : '1px solid #E2E8F0',
-                  borderRadius: '10px',
+                  borderRadius: '16px',
                   padding: '10px 12px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease'
@@ -489,7 +529,7 @@ export default function FinancialsRenewalsDashboard() {
                 style={{
                   background: renewalFilter === 'AT_RISK' ? '#FEF2F2' : '#F8FAFC',
                   border: renewalFilter === 'AT_RISK' ? '2px solid #DC2626' : '1px solid #E2E8F0',
-                  borderRadius: '10px',
+                  borderRadius: '16px',
                   padding: '10px 12px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease'
@@ -570,10 +610,10 @@ export default function FinancialsRenewalsDashboard() {
             onClick={() => { setRenewalFilter('ALL'); setTierFilter('ALL'); }}
             style={{ 
               background: '#FFFFFF', 
-              border: (renewalFilter === 'ALL' && tierFilter === 'ALL') ? '2px solid #0284C7' : '1px solid #E2E8F0', 
+              border: (renewalFilter === 'ALL' && tierFilter === 'ALL') ? '2px solid #673DE6' : '1px solid #E2E8F0', 
               borderRadius: '12px', 
               padding: '12px 14px', 
-              boxShadow: (renewalFilter === 'ALL' && tierFilter === 'ALL') ? '0 4px 12px rgba(2, 132, 199, 0.12)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
+              boxShadow: (renewalFilter === 'ALL' && tierFilter === 'ALL') ? '0 4px 12px rgba(103, 61, 230, 0.15)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
               cursor: 'pointer',
               transition: 'all 0.15s ease'
             }}
@@ -581,8 +621,8 @@ export default function FinancialsRenewalsDashboard() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>معدل تجديد المشتركين (Retention)</span>
-              <div style={{ background: '#F0F9FF', padding: '4px', borderRadius: '8px' }}>
-                <BadgePercent size={14} color="#0284C7" />
+              <div style={{ background: '#F4F0FD', padding: '4px', borderRadius: '8px' }}>
+                <BadgePercent size={14} color="#673DE6" />
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
@@ -675,7 +715,7 @@ export default function FinancialsRenewalsDashboard() {
         {/* 3. Tier Revenue Breakdown Bar (Interactive) */}
         <div style={{
           background: '#FFFFFF',
-          border: '1px solid #E2E8F0',
+          border: '1px solid #EAECF0',
           borderRadius: '12px',
           padding: '12px 16px',
           display: 'flex',
@@ -693,7 +733,7 @@ export default function FinancialsRenewalsDashboard() {
                 padding: '4px 8px'
               }}
             >
-              <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#B45309' }}>
+              <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #EAECF0', color: '#B45309' }}>
                 MAX
               </span>
               <span style={{ fontSize: '11.5px', color: '#475569', fontFamily: 'Cairo, sans-serif' }}>
@@ -701,7 +741,7 @@ export default function FinancialsRenewalsDashboard() {
               </span>
             </div>
 
-            <span style={{ color: '#CBD5E1' }}>•</span>
+            <span style={{ color: '#CBD5E1', margin: '0 4px' }}>|</span>
 
             <div 
               style={{ 
@@ -711,7 +751,7 @@ export default function FinancialsRenewalsDashboard() {
                 padding: '4px 8px'
               }}
             >
-              <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0284C7' }}>
+              <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #EAECF0', color: '#0284C7' }}>
                 ELITE
               </span>
               <span style={{ fontSize: '11.5px', color: '#475569', fontFamily: 'Cairo, sans-serif' }}>
@@ -728,13 +768,13 @@ export default function FinancialsRenewalsDashboard() {
         {/* 4. Filter Toolbar & Renewals Table */}
         <div style={{
           background: '#FFFFFF',
-          border: '1px solid #E2E8F0',
+          border: '1px solid #EAECF0',
           borderRadius: '12px',
           overflow: 'hidden',
           boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)'
         }}>
           {/* Table Controls */}
-          <div style={{ padding: '10px 14px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ padding: '10px 14px', background: '#F8FAFC', borderBottom: '1px solid #EAECF0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
             {/* Filter Tabs */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
@@ -755,28 +795,43 @@ export default function FinancialsRenewalsDashboard() {
                       type="button"
                       onClick={() => setRenewalFilter(f.id)}
                       style={{
-                        padding: '3px 8px',
+                        padding: '5px 11px',
                         borderRadius: '8px',
-                        fontSize: '11px',
-                        fontWeight: isSel ? 800 : 600,
-                        border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                        background: isSel ? '#0F172A' : '#FFFFFF',
-                        color: isSel ? '#FFFFFF' : '#475569',
+                        fontSize: '11.5px',
+                        fontWeight: isSel ? 700 : 600,
+                        border: isSel ? '1px solid #673DE6' : '1px solid #D0D5DD',
+                        background: isSel ? '#673DE6' : '#FFFFFF',
+                        color: isSel ? '#FFFFFF' : '#344054',
                         cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '4px'
+                        gap: '5px',
+                        boxShadow: isSel ? '0 2px 5px rgba(103, 61, 230, 0.22)' : '0 1px 2px rgba(16, 24, 40, 0.02)',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSel) {
+                          e.currentTarget.style.background = '#F9FAFB';
+                          e.currentTarget.style.borderColor = '#CBD5E1';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSel) {
+                          e.currentTarget.style.background = '#FFFFFF';
+                          e.currentTarget.style.borderColor = '#D0D5DD';
+                        }
                       }}
                     >
                       <span>{f.label}</span>
                       {f.count !== undefined && (
                         <span style={{
-                          fontSize: '9.5px',
+                          fontSize: '10px',
                           fontWeight: 800,
-                          padding: '0 4px',
+                          padding: '1px 6px',
                           borderRadius: '6px',
-                          background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
-                          color: isSel ? '#FFFFFF' : '#0F172A'
+                          background: isSel ? 'rgba(255,255,255,0.22)' : '#F1F5F9',
+                          color: isSel ? '#FFFFFF' : '#475569',
+                          fontFamily: 'JetBrains Mono, Cairo, sans-serif'
                         }}>
                           {f.count}
                         </span>
@@ -788,19 +843,19 @@ export default function FinancialsRenewalsDashboard() {
 
               {/* Filtered Sum Badge */}
               <div style={{
-                fontSize: '10px',
+                fontSize: '11px',
                 fontWeight: 700,
                 color: '#475569',
-                background: '#FFFFFF',
-                border: '1px solid #CBD5E1',
-                padding: '3px 8px',
-                borderRadius: '6px',
+                background: '#F4F0FD',
+                border: '1px solid #DDD6FE',
+                padding: '4px 10px',
+                borderRadius: '8px',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '5px'
               }}>
                 <span>قيمة الفلتر:</span>
-                <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
+                <strong style={{ color: '#673DE6', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                   {Math.round(filteredTotalRevenue).toLocaleString('en-US')}
                 </strong>
                 <span>ج.م</span>
@@ -815,292 +870,376 @@ export default function FinancialsRenewalsDashboard() {
             </div>
           </div>
 
-          {/* Table Header */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '70px 1.3fr 75px 85px 125px 115px 95px 205px',
-            padding: '8px 14px',
-            background: '#F1F5F9',
-            fontSize: '11px',
-            fontWeight: 800,
-            color: '#475569',
-            borderBottom: '1px solid #E2E8F0'
-          }}>
-            <div>الكود</div>
-            <div>اسم المشترك والتواصل</div>
-            <div>الباقة</div>
-            <div>المعدل الشهري</div>
-            <div>تاريخ وموعد التجديد</div>
-            <div>رادار التجديد</div>
-            <div>طريقة السداد</div>
-            <div style={{ textAlign: 'center' }}>الإجراء المالي والمتابعة</div>
-          </div>
+          {/* Table Container */}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12.5px' }}>
+              <thead>
+                <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #EAECF0', color: '#475467', fontWeight: 600, fontSize: '12px' }}>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', width: '85px', whiteSpace: 'nowrap' }}>الكود</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'right', minWidth: '220px' }}>المشترك</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', width: '90px', whiteSpace: 'nowrap' }}>الباقة</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', width: '110px', whiteSpace: 'nowrap' }}>المعدل الشهري</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', width: '150px', whiteSpace: 'nowrap' }}>موعد وحالة التجديد</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', width: '120px', whiteSpace: 'nowrap' }}>رادار التجديد</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', width: '110px', whiteSpace: 'nowrap' }}>طريقة السداد</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', width: '250px', whiteSpace: 'nowrap' }}>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredClients.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" style={{ padding: '48px 16px', textAlign: 'center', color: '#667085', fontSize: '13px' }}>
+                      لا يوجد مشتركون مطابقون للفلتر المحدد
+                    </td>
+                  </tr>
+                ) : (
+                  filteredClients.map((client) => {
+                    const isUrgent = client.daysRemaining > 0 && client.daysRemaining <= 3;
+                    const isOverdue = client.daysRemaining < 0;
+                    const isRenewed = client.status === 'RENEWED';
+                    const cleanCode = String(client.client_code || client.id || '').replace(/^client[-_]?/i, '').replace('#', '');
+                    const hasInjuries = Boolean(
+                      (Array.isArray(client.injuries) && client.injuries.some(i => i && i !== 'none')) ||
+                      (typeof client.injuries === 'string' && client.injuries.trim() && client.injuries !== 'none') ||
+                      (client.intakeSubmissions?.[0]?.answers?.injuries_map?.has_injuries) ||
+                      (client.answers?.injuries_map?.has_injuries)
+                    );
 
-          {/* Table Body */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {filteredClients.length === 0 ? (
-              <div style={{ padding: '40px 10px', textAlign: 'center', color: '#64748B', fontSize: '12px' }}>
-                لا يوجد مشتركون مطابقون للفلتر
-              </div>
-            ) : (
-              filteredClients.map((client) => {
-                const isUrgent = client.daysRemaining > 0 && client.daysRemaining <= 3;
-                const isOverdue = client.daysRemaining < 0;
-                const isRenewed = client.status === 'RENEWED';
-                const cleanCode = String(client.client_code || client.id || '').replace(/^client[-_]?/i, '').replace('#', '');
-                const hasInjuries = Boolean(
-                  (Array.isArray(client.injuries) && client.injuries.some(i => i && i !== 'none')) ||
-                  (typeof client.injuries === 'string' && client.injuries.trim() && client.injuries !== 'none') ||
-                  (client.intakeSubmissions?.[0]?.answers?.injuries_map?.has_injuries) ||
-                  (client.answers?.injuries_map?.has_injuries)
-                );
-
-                return (
-                  <div
-                    key={client.id}
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: '70px 1.3fr 75px 85px 125px 115px 95px 205px',
-                      padding: '10px 14px',
-                      alignItems: 'center',
-                      borderBottom: '1px solid #F1F5F9',
-                      background: isUrgent ? '#FFFDF5' : isOverdue ? '#FFF8F8' : '#FFFFFF',
-                      fontSize: '11.5px',
-                      transition: 'background-color 0.1s ease'
-                    }}
-                  >
-                    {/* Col 1: Code */}
-                    <div>
-                      <ClientCodeBadge code={client.client_code || client.id} item={client} size="sm" />
-                    </div>
-
-                    {/* Col 2: Name + Phone + Injury */}
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <strong 
-                          style={{ fontSize: '12px', color: '#0F172A', cursor: 'pointer' }}
-                          onClick={() => window.open(`/customers/${cleanCode}`, '_blank')}
-                          title="عرض ملف التطور الزمني للمشترك"
-                        >
-                          {client.full_name || client.name}
-                        </strong>
-                        {hasInjuries && (
-                          <span 
-                            style={{
-                              fontSize: '9px',
-                              fontWeight: 700,
-                              padding: '1px 5px',
-                              borderRadius: '6px',
-                              background: '#FEF2F2',
-                              border: '1px solid #FECACA',
-                              color: '#DC2626',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '2px'
-                            }}
-                            title="تنبيه طبي: المشترك لديه إصابة مسجلة"
-                          >
-                            <ShieldAlert size={9} />
-                            <span>إصابة</span>
-                          </span>
-                        )}
-                      </div>
-                      <span style={{ fontSize: '10.5px', color: '#64748B', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
-                        {client.phone_number}
-                      </span>
-                    </div>
-
-                    {/* Col 3: Package Badge */}
-                    <div>
-                      <ClientPackageBadge item={client} size="xs" />
-                    </div>
-
-                    {/* Col 4: Fee */}
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
-                      <strong style={{ fontFamily: 'JetBrains Mono, Cairo, sans-serif', fontSize: '12.5px', color: '#0F172A' }}>
-                        {Math.round(client.monthlyFee).toLocaleString('en-US')}
-                      </strong>
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>ج.م/شهر</span>
-                    </div>
-
-                    {/* Col 5: Expiry & Days Left */}
-                    <div>
-                      <span style={{ display: 'block', fontSize: '11px', color: '#0F172A', fontWeight: 600 }}>
-                        {client.formattedExpiry}
-                      </span>
-                      <span style={{
-                        fontSize: '9.5px',
-                        fontWeight: 700,
-                        color: isRenewed ? '#059669' : client.status === 'FROZEN' ? '#B45309' : isOverdue ? '#DC2626' : isUrgent ? '#B45309' : '#475569'
-                      }}>
-                        {isRenewed ? 'تم التجديد (نشط 30 يوم)' : client.status === 'FROZEN' ? 'مجمد مؤقتاً (الأيام محفوظة)' : isOverdue ? `منتهي منذ ${Math.abs(client.daysRemaining)} يوم` : `متبقي ${client.daysRemaining} يوم`}
-                      </span>
-                    </div>
-
-                    {/* Col 6: Retention Radar Propensity Badge */}
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRadarClient(client)}
+                    return (
+                      <tr
+                        key={client.id}
                         style={{
-                          padding: '3px 7px',
-                          borderRadius: '8px',
-                          border: `1px solid ${client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? '#A7F3D0' : client.retentionEvaluation?.category === 'AT_RISK' ? '#FECACA' : '#FDE68A'}`,
-                          background: client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? '#ECFDF5' : client.retentionEvaluation?.category === 'AT_RISK' ? '#FEF2F2' : '#FFFBEB',
-                          color: client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? '#059669' : client.retentionEvaluation?.category === 'AT_RISK' ? '#DC2626' : '#D97706',
-                          fontSize: '10px',
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '3px',
-                          transition: 'all 0.12s ease'
+                          borderBottom: '1px solid #F2F4F7',
+                          background: isUrgent ? '#FFFDF5' : isOverdue ? '#FFF8F8' : 'transparent',
+                          transition: 'background 0.12s ease'
                         }}
-                        title="انقر لفتح فحص رادار الاحتفاظ والرسالة التكتيكية"
+                        onMouseEnter={(e) => {
+                          if (!isUrgent && !isOverdue) e.currentTarget.style.background = '#F9FAFB';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isUrgent && !isOverdue) e.currentTarget.style.background = 'transparent';
+                        }}
                       >
-                        <Activity size={11} />
-                        <span style={{ fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
-                          {client.retentionEvaluation?.total_retention_score ?? 80}%
-                        </span>
-                        <span style={{ fontSize: '9px', fontWeight: 700 }}>
-                          {client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? 'مؤكد' : client.retentionEvaluation?.category === 'AT_RISK' ? 'خطر' : 'دعم'}
-                        </span>
-                      </button>
-                    </div>
+                        {/* 1. Code */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          <ClientCodeBadge code={client.client_code || client.id} item={client} size="sm" />
+                        </td>
 
-                    {/* Col 7: Payment Method */}
-                    <div style={{ fontSize: '10.5px', color: '#64748B' }}>
-                      {client.paymentMethod}
-                    </div>
+                        {/* 2. Client Name & Phone */}
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <strong
+                              style={{
+                                color: '#111827',
+                                fontSize: '13.5px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'color 0.12s ease'
+                              }}
+                              onClick={() => window.open(`/customers/${cleanCode}`, '_blank')}
+                              onMouseEnter={(e) => (e.currentTarget.style.color = '#673DE6')}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = '#111827')}
+                              title="عرض ملف المشترك"
+                            >
+                              {client.full_name || client.name}
+                            </strong>
+                            {hasInjuries && (
+                              <span style={{
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                padding: '2px 6px',
+                                borderRadius: '6px',
+                                background: '#FEF3F2',
+                                border: '1px solid #FECDCA',
+                                color: '#B42318',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px'
+                              }}>
+                                <ShieldAlert size={10} />
+                                <span>إصابة</span>
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ marginTop: '3px' }}>
+                            <span dir="ltr" style={{ fontSize: '11.5px', color: '#667085', fontFamily: 'JetBrains Mono, monospace' }}>
+                              {client.phone_number || '-'}
+                            </span>
+                          </div>
+                        </td>
 
-                    {/* Col 8: Actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', flexWrap: 'wrap' }}>
-                      {isRenewed ? (
-                        <span style={{ fontSize: '10.5px', color: '#059669', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                          <CheckCircle2 size={12} />
-                          <span>مسدد بنجاح</span>
-                        </span>
-                      ) : (
-                        <>
+                        {/* 3. Package */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          <ClientPackageBadge item={client} size="xs" />
+                        </td>
+
+                        {/* 4. Monthly Fee */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', fontWeight: 700, color: '#111827' }}>
+                            {Math.round(client.monthlyFee).toLocaleString('en-US')}
+                          </span>
+                          <span style={{ fontSize: '11px', color: '#667085', marginRight: '4px', fontWeight: 600 }}>ج.م</span>
+                        </td>
+
+                        {/* 5. Expiry Date & Status Badge */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '12px', fontWeight: 600, color: '#111827' }}>
+                            {client.formattedExpiry}
+                          </div>
+                          <div style={{ marginTop: '4px' }}>
+                            {isRenewed ? (
+                              <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: '#ECFDF3', color: '#027A48', border: '1px solid #A6F4C7', display: 'inline-block' }}>
+                                تم التجديد (30 يوم)
+                              </span>
+                            ) : client.status === 'FROZEN' ? (
+                              <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: '#F8FAFC', color: '#475467', border: '1px solid #E2E8F0', display: 'inline-block' }}>
+                                مجمد مؤقتاً
+                              </span>
+                            ) : isOverdue ? (
+                              <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: '#FEF3F2', color: '#B42318', border: '1px solid #FECDCA', display: 'inline-block' }}>
+                                متأخر {Math.abs(client.daysRemaining)} يوم
+                              </span>
+                            ) : isUrgent ? (
+                              <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: '#FFFAEB', color: '#B54708', border: '1px solid #FEDF89', display: 'inline-block' }}>
+                                متبقي {client.daysRemaining} يوم
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: '#F8FAFC', color: '#475467', border: '1px solid #EAECF0', display: 'inline-block' }}>
+                                متبقي {client.daysRemaining} يوم
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* 6. Retention Radar */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           <button
                             type="button"
-                            onClick={() => handleQuickRenew(client)}
+                            onClick={() => setSelectedRadarClient(client)}
                             style={{
                               padding: '3px 8px',
-                              borderRadius: '8px',
-                              background: '#0F172A',
-                              color: '#FFFFFF',
-                              border: 'none',
-                              fontSize: '10.5px',
+                              borderRadius: '6px',
+                              border: `1px solid ${
+                                client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? '#A6F4C7' :
+                                client.retentionEvaluation?.category === 'AT_RISK' ? '#FECDCA' : '#FEDF89'
+                              }`,
+                              background: client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? '#ECFDF3' :
+                                client.retentionEvaluation?.category === 'AT_RISK' ? '#FEF3F2' : '#FFFAEB',
+                              color: client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? '#027A48' :
+                                client.retentionEvaluation?.category === 'AT_RISK' ? '#B42318' : '#B54708',
+                              fontSize: '11px',
                               fontWeight: 700,
                               cursor: 'pointer',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '3px'
+                              gap: '4px',
+                              transition: 'all 0.12s ease'
                             }}
-                            title="تسجيل سداد وتجديد الاشتراك"
+                            title="انقر لفتح فحص رادار الاحتفاظ والرسالة التكتيكية"
                           >
-                            <CreditCard size={11} />
-                            <span>تجديد</span>
+                            <Activity size={12} />
+                            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                              {client.retentionEvaluation?.total_retention_score ?? 80}%
+                            </span>
+                            <span>
+                              {client.retentionEvaluation?.category === 'HIGH_PROPENSITY' ? 'مؤكد' :
+                               client.retentionEvaluation?.category === 'AT_RISK' ? 'خطر' : 'دعم'}
+                            </span>
                           </button>
+                        </td>
 
-                          {/* Freeze / Resume Button */}
-                          <button
-                            type="button"
-                            onClick={() => handleToggleFreeze(client)}
-                            style={{
-                              padding: '3px 7px',
-                              borderRadius: '8px',
-                              background: client.status === 'FROZEN' ? '#F0FDF4' : '#F8FAFC',
-                              color: client.status === 'FROZEN' ? '#16A34A' : '#475569',
-                              border: client.status === 'FROZEN' ? '1px solid #86EFAC' : '1px solid #CBD5E1',
-                              fontSize: '10.5px',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '3px'
-                            }}
-                            title={client.status === 'FROZEN' ? 'استئناف الاشتراك وتمديد تاريخ الانتهاء' : 'تجميد الاشتراك وتثبيت الأيام المتبقية'}
-                          >
-                            {client.status === 'FROZEN' ? <Play size={11} /> : <Pause size={11} />}
-                            <span>{client.status === 'FROZEN' ? 'استئناف' : 'تجميد'}</span>
-                          </button>
+                        {/* 7. Payment Method */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          <span style={{ fontSize: '11.5px', color: '#475467', fontWeight: 500 }}>
+                            {client.paymentMethod || 'إنستاباي'}
+                          </span>
+                        </td>
 
-                          <button
-                            type="button"
-                            onClick={() => handleSendRenewalWhatsApp(client)}
-                            style={{
-                              padding: '3px 7px',
-                              borderRadius: '8px',
-                              background: '#25D366',
-                              color: '#FFFFFF',
-                              border: 'none',
-                              fontSize: '10.5px',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '3px'
-                            }}
-                            title="إرسال رسالة تذكير بالتجديد عبر واتساب"
-                          >
-                            <Send size={11} />
-                            <span>تذكير</span>
-                          </button>
-                        </>
-                      )}
+                        {/* 8. Actions (Unified Hostinger Style) */}
+                        <td style={{ padding: '12px 16px', textAlign: 'left' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                            {isRenewed ? (
+                              <span style={{ fontSize: '11.5px', color: '#027A48', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '0 8px' }}>
+                                <CheckCircle2 size={14} />
+                                <span>تم السداد</span>
+                              </span>
+                            ) : (
+                              <>
+                                {/* Primary Renew Button */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleQuickRenew(client)}
+                                  style={{
+                                    height: '30px',
+                                    padding: '0 12px',
+                                    borderRadius: '8px',
+                                    background: '#673DE6',
+                                    color: '#FFFFFF',
+                                    border: 'none',
+                                    fontSize: '11.5px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    boxShadow: '0 1px 2px rgba(103, 61, 230, 0.2)',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                  onMouseEnter={(e) => (e.currentTarget.style.background = '#5025D1')}
+                                  onMouseLeave={(e) => (e.currentTarget.style.background = '#673DE6')}
+                                  title="تسجيل سداد وتجديد الاشتراك"
+                                >
+                                  <CreditCard size={12} />
+                                  <span>تجديد</span>
+                                </button>
 
-                      {/* Going to the plan or the file is navigation, not a financial action: icon only. */}
-                      <button
-                        type="button"
-                        onClick={() => window.open(`/coach/editor/${cleanCode}`, '_blank')}
-                        aria-label="فتح خطة المشترك"
-                        style={{
-                          width: '26px',
-                          height: '24px',
-                          borderRadius: '8px',
-                          background: '#F0F9FF',
-                          color: '#0284C7',
-                          border: '1px solid #BAE6FD',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: 0
-                        }}
-                        title="فتح محرر خطة المشترك التدريبية والغذائية"
-                      >
-                        <Dumbbell size={12} />
-                      </button>
+                                {/* Freeze / Resume Secondary Button */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleFreeze(client)}
+                                  style={{
+                                    height: '30px',
+                                    padding: '0 10px',
+                                    borderRadius: '8px',
+                                    background: '#FFFFFF',
+                                    border: '1px solid #D0D5DD',
+                                    color: client.status === 'FROZEN' ? '#027A48' : '#344054',
+                                    fontSize: '11.5px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = '#F9FAFB';
+                                    e.currentTarget.style.borderColor = '#CBD5E1';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = '#FFFFFF';
+                                    e.currentTarget.style.borderColor = '#D0D5DD';
+                                  }}
+                                  title={client.status === 'FROZEN' ? 'استئناف الاشتراك وتمديد تاريخ الانتهاء' : 'تجميد الاشتراك وتثبيت الأيام المتبقية'}
+                                >
+                                  {client.status === 'FROZEN' ? <Play size={12} /> : <Pause size={12} />}
+                                  <span>{client.status === 'FROZEN' ? 'استئناف' : 'تجميد'}</span>
+                                </button>
 
-                      <button
-                        type="button"
-                        onClick={() => window.open(`/customers/${cleanCode}`, '_blank')}
-                        aria-label="عرض ملف المشترك"
-                        style={{
-                          width: '26px',
-                          height: '24px',
-                          borderRadius: '8px',
-                          background: '#F8FAFC',
-                          color: '#334155',
-                          border: '1px solid #CBD5E1',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: 0
-                        }}
-                        title="عرض ملف التطور الزمني والمقارنة البصرية للمشترك"
-                      >
-                        <Clock size={12} color="#475569" />
-                      </button>
-                    </div>
+                                {/* WhatsApp Reminder Secondary Button */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleSendRenewalWhatsApp(client)}
+                                  style={{
+                                    height: '30px',
+                                    padding: '0 10px',
+                                    borderRadius: '8px',
+                                    background: '#FFFFFF',
+                                    border: '1px solid #D0D5DD',
+                                    color: '#344054',
+                                    fontSize: '11.5px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = '#F9FAFB';
+                                    e.currentTarget.style.borderColor = '#CBD5E1';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = '#FFFFFF';
+                                    e.currentTarget.style.borderColor = '#D0D5DD';
+                                  }}
+                                  title="إرسال رسالة تذكير بالتجديد عبر واتساب"
+                                >
+                                  <Send size={11} color="#027A48" />
+                                  <span>تذكير</span>
+                                </button>
+                              </>
+                            )}
 
-                  </div>
-                );
-              })
-            )}
+                            {/* Plan Editor Icon Link */}
+                            <a
+                              href={`/coach/editor/${cleanCode}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="فتح خطة المشترك"
+                              style={{
+                                width: '30px',
+                                height: '30px',
+                                borderRadius: '8px',
+                                background: '#FFFFFF',
+                                border: '1px solid #D0D5DD',
+                                color: '#475467',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#F9FAFB';
+                                e.currentTarget.style.borderColor = '#CBD5E1';
+                                e.currentTarget.style.color = '#673DE6';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#FFFFFF';
+                                e.currentTarget.style.borderColor = '#D0D5DD';
+                                e.currentTarget.style.color = '#475467';
+                              }}
+                              title="فتح محرر خطة المشترك التدريبية والغذائية"
+                            >
+                              <Dumbbell size={13} />
+                            </a>
+
+                            {/* Profile Timeline Icon Link */}
+                            <a
+                              href={`/customers/${cleanCode}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="عرض ملف المشترك"
+                              style={{
+                                width: '30px',
+                                height: '30px',
+                                borderRadius: '8px',
+                                background: '#FFFFFF',
+                                border: '1px solid #D0D5DD',
+                                color: '#475467',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#F9FAFB';
+                                e.currentTarget.style.borderColor = '#CBD5E1';
+                                e.currentTarget.style.color = '#673DE6';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#FFFFFF';
+                                e.currentTarget.style.borderColor = '#D0D5DD';
+                                e.currentTarget.style.color = '#475467';
+                              }}
+                              title="عرض ملف التطور الزمني والمقارنة البصرية"
+                            >
+                              <Clock size={13} />
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
 
         </div>
@@ -1112,14 +1251,15 @@ export default function FinancialsRenewalsDashboard() {
             bottom: '24px',
             left: '50%',
             transform: 'translateX(-50%)',
-            background: '#0F172A',
+            background: '#1E1B4B',
             color: '#FFFFFF',
+            border: '1px solid #4338CA',
             padding: '8px 18px',
-            borderRadius: '12px',
+            borderRadius: '10px',
             fontSize: '12px',
             fontWeight: 700,
             zIndex: 99999,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.25)'
+            boxShadow: '0 8px 24px rgba(0,0,0,0.25)'
           }}>
             {toast}
           </div>
