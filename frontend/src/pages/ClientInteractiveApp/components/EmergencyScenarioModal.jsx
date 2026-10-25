@@ -35,7 +35,7 @@ export default function EmergencyScenarioModal({
           maxWidth: '440px',
           background: '#FFFFFF',
           color: '#0F172A',
-          borderRadius: '20px',
+          borderRadius: '16px',
           border: '1px solid #E2E8F0',
           padding: '20px',
           direction: 'rtl',

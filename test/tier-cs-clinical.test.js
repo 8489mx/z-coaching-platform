@@ -19,9 +19,9 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       const evaluationContext = { assessmentDate: "2026-08-16" };
       const normalDecision = evaluateIntake(baseIntake, evaluationContext);
 
-      // 1. Normal trainee without hypertension reaches RIR 0 in Peak Overload week
+      // 1. Normal intermediate trainee without hypertension reaches RIR 1 in Peak Overload week
       const normalMeso = buildTrainingMesoCycle(normalDecision, { rawIntake: baseIntake });
-      assert.equal(normalMeso.weeks[3].target_rir, 0, "Normal peak week should reach RIR 0");
+      assert.equal(normalMeso.weeks[3].target_rir, 1, "Normal intermediate peak week should reach RIR 1");
       assert.equal(normalMeso.clinical_guardrails.hypertension_guard_active, false);
 
       // Normal Day 2 has LEG_PRESS_MACHINE
@@ -534,8 +534,8 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       assert.equal(normalMeso.weeks[2].target_rir, 1, "Normal Week 3 RIR should drop to 1");
       assert.equal(hyperMeso.weeks[2].target_rir, 2, "Hypertensive Week 3 RIR must be clamped to 2 (>= 2)");
 
-      // Week 4: Peak Overload (Normal reaches 0 muscular failure, Hypertensive strictly clamped to 2)
-      assert.equal(normalMeso.weeks[3].target_rir, 0, "Normal Week 4 Peak Overload should reach RIR 0 (muscular failure)");
+      // Week 4: Peak Overload (Normal intermediate reaches RIR 1, Hypertensive strictly clamped to 2)
+      assert.equal(normalMeso.weeks[3].target_rir, 1, "Normal intermediate Week 4 Peak Overload should reach RIR 1");
       assert.equal(hyperMeso.weeks[3].target_rir, 2, "Hypertensive Week 4 Peak Overload MUST be clamped to RIR 2 to prevent arterial pressure spikes");
 
       // Verify every single exercise in Week 4 for hypertensive trainee has RIR >= 2
@@ -546,8 +546,8 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       });
 
       // Week 5: Deload
-      assert.equal(normalMeso.weeks[4].target_rir, 4, "Normal Week 5 Deload RIR should be 4");
-      assert.equal(hyperMeso.weeks[4].target_rir, 4, "Hypertensive Week 5 Deload RIR should be 4");
+      assert.equal(normalMeso.weeks[4].target_rir, 3, "Normal intermediate Week 5 Deload RIR should be 3");
+      assert.equal(hyperMeso.weeks[4].target_rir, 3, "Hypertensive intermediate Week 5 Deload RIR should be 3");
     });
 
     test("E2E Subtest 3: Full Mesocycle Session Safety - Elimination of Inversion, Leg Press, Valsalva & Flexion Warmups", async () => {

@@ -79,14 +79,14 @@ export function CoachTrainingTab({
   const _hasHypertensionViolation = hasHypertension && (sessionBannedExercises.length > 0 || sessionLowRirExercises.length > 0);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} dir="rtl">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }} dir="rtl">
       
       {/* Days Selector & Clean Header */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+      <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '14px', padding: '14px 18px', boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           
-          {/* Days Tabs */}
-          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+          {/* Days Tabs - Hostinger Design System */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {currentSessions.map((sess, sIdx) => {
               const isCurrent = activeSessionIdx === sIdx;
               return (
@@ -95,21 +95,30 @@ export function CoachTrainingTab({
                   type="button"
                   onClick={() => setActiveSessionIdx(sIdx)}
                   style={{
-                    padding: '6px 14px',
-                    borderRadius: '6px',
-                    border: isCurrent ? '1px solid #0F172A' : '1px solid #CBD5E1',
-                    background: isCurrent ? '#0F172A' : '#FFFFFF',
-                    color: isCurrent ? '#FFFFFF' : '#334155',
-                    fontSize: '12px',
-                    fontWeight: isCurrent ? 800 : 600,
+                    height: '36px',
+                    padding: '0 16px',
+                    borderRadius: '8px',
+                    border: isCurrent ? '1px solid #673DE6' : '1px solid #D0D5DD',
+                    background: isCurrent ? '#673DE6' : '#FFFFFF',
+                    color: isCurrent ? '#FFFFFF' : '#344054',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    boxShadow: isCurrent ? '0 1px 3px rgba(103, 61, 230, 0.25)' : '0 1px 2px rgba(16, 24, 40, 0.03)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isCurrent) e.currentTarget.style.background = '#F9FAFB';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isCurrent) e.currentTarget.style.background = '#FFFFFF';
                   }}
                 >
                   <span>{sess.name}</span>
-                  <span style={{ fontSize: '10px', opacity: 0.8 }}>({sess.exercises?.length || 0})</span>
+                  <span style={{ fontSize: '11px', opacity: 0.85 }}>({sess.exercises?.length || 0})</span>
                 </button>
               );
             })}
@@ -120,22 +129,25 @@ export function CoachTrainingTab({
                 type="button"
                 onClick={() => handleDuplicateSession(activeSessionIdx)}
                 style={{
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  border: '1px dashed #CBD5E1',
-                  background: '#F8FAFC',
-                  color: '#475569',
-                  fontSize: '11.5px',
-                  fontWeight: 700,
+                  height: '36px',
+                  padding: '0 14px',
+                  borderRadius: '8px',
+                  border: '1px dashed #D0D5DD',
+                  background: '#FFFFFF',
+                  color: '#475467',
+                  fontSize: '12px',
+                  fontWeight: 600,
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: '5px',
                   transition: 'all 0.15s ease'
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
                 title="تكرار ونسخ تمارين اليوم التدريبي الحالي بالكامل"
               >
-                <Copy size={12} />
+                <Copy size={13} color="#667085" />
                 <span>نسخ هذا اليوم</span>
               </button>
             )}
@@ -143,8 +155,8 @@ export function CoachTrainingTab({
 
           {/* Target Muscle Summary */}
           {activeSession?.target_muscles && !/عضلات مستهدفة متوازنة|متوازنة/i.test(activeSession.target_muscles) && (
-            <div style={{ fontSize: '11px', color: '#64748B' }}>
-              العضلات المستهدفة: <strong style={{ color: '#0F172A' }}>{activeSession.target_muscles}</strong>
+            <div style={{ fontSize: '12px', color: '#475467' }}>
+              العضلات المستهدفة: <strong style={{ color: '#101828', fontWeight: 600 }}>{activeSession.target_muscles}</strong>
             </div>
           )}
         </div>
@@ -154,133 +166,110 @@ export function CoachTrainingTab({
       {activeSessionDemand && (
         <div style={{
           background: '#FFFFFF',
-          border: '1px solid #E2E8F0',
-          borderRadius: '10px',
-          padding: '10px 14px',
+          border: '1px solid #EAECF0',
+          borderRadius: '16px',
+          padding: '10px 16px',
           display: 'flex',
           flexDirection: 'column',
           gap: '8px',
-          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)'
+          boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{
                 fontSize: '11px',
-                fontWeight: 800,
-                padding: '3px 9px',
+                fontWeight: 700,
+                padding: '2px 9px',
                 borderRadius: '6px',
-                background: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '#FEF2F2' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '#F0FDF4' : '#EFF6FF',
-                color: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '#DC2626' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '#166534' : '#2563EB',
-                border: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '1px solid #FECACA' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '1px solid #BBF7D0' : '1px solid #BFDBFE'
+                background: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '#FEF3F2' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '#ECFDF3' : '#EFF8FF',
+                color: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '#B42318' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '#027A48' : '#175CD3',
+                border: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '1px solid #FECDCA' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '1px solid #A6F4C7' : '1px solid #B2DDFF'
               }}>
                 {activeSessionDemand.demand_label_ar}
               </span>
-              <span style={{ fontSize: '11px', color: '#475569' }}>
-                مجموع الجولات: <strong>{activeSessionDemand.total_sets} جولة</strong> ({activeSessionDemand.heavy_compounds_count} حركات مركبة) — مدة الجلسة المقدرة: ~{activeSessionDemand.estimated_duration_min} دقيقة
+              <span style={{ fontSize: '11.5px', color: '#475467' }}>
+                مجموع الجولات: <strong style={{ color: '#101828' }}>{activeSessionDemand.total_sets} جولة</strong> ({activeSessionDemand.heavy_compounds_count} حركات مركبة) — مدة الجلسة المقدرة: ~{activeSessionDemand.estimated_duration_min} دقيقة
               </span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
-              <span style={{ color: '#64748B' }}>الاقتران الغذائي:</span>
-              <span style={{ fontWeight: 700, color: '#0F172A', background: '#F8FAFC', padding: '2px 8px', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
-                حصة كارب قبل/بعد التمرين: {Math.round((activeSessionDemand.peri_workout_carb_ratio || 0.55) * 100)}%
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '11px', color: '#475467', background: '#F9FAFB', padding: '2px 9px', borderRadius: '6px', border: '1px solid #EAECF0' }}>
+                حصة كارب التمرين: <strong style={{ color: '#101828' }}>{Math.round((activeSessionDemand.peri_workout_carb_ratio || 0.55) * 100)}%</strong>
               </span>
+
+              {weeklyVolumeAudit?.analysis && (() => {
+                const activeMuscles = Object.entries(weeklyVolumeAudit.analysis).filter(([_, data]) => data.weekly_sets > 0);
+                const flaggedMuscles = activeMuscles.filter(([_, data]) => data.status === 'BELOW_MEV' || data.status === 'EXCEEDS_MRV');
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {flaggedMuscles.length > 0 && (
+                      <span style={{ fontSize: '10.5px', fontWeight: 600, color: '#B42318', background: '#FEF3F2', border: '1px solid #FECDCA', padding: '1px 8px', borderRadius: '6px' }}>
+                        {flaggedMuscles.length} تنبيه حجم أسبوعي
+                      </span>
+                    )}
+                    {activeMuscles.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllVolumeLandmarks(prev => !prev)}
+                        style={{
+                          background: showAllVolumeLandmarks ? '#F4F0FD' : '#FFFFFF',
+                          border: showAllVolumeLandmarks ? '1px solid #673DE6' : '1px solid #D0D5DD',
+                          color: showAllVolumeLandmarks ? '#673DE6' : '#344054',
+                          borderRadius: '6px',
+                          padding: '2px 10px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'all 0.12s ease'
+                        }}
+                      >
+                        {showAllVolumeLandmarks ? 'إخفاء الحجم الأسبوعي' : `معالم الحجم الأسبوعي (${activeMuscles.length})`}
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
-          {/* Muscle Volume Landmarks Executive Bar */}
-          {weeklyVolumeAudit?.analysis && (() => {
+          {/* Muscle Volume Landmarks Executive Details */}
+          {weeklyVolumeAudit?.analysis && showAllVolumeLandmarks && (() => {
             const activeMuscles = Object.entries(weeklyVolumeAudit.analysis).filter(([_, data]) => data.weekly_sets > 0);
-            const flaggedMuscles = activeMuscles.filter(([_, data]) => data.status === 'BELOW_MEV' || data.status === 'EXCEEDS_MRV');
-            
             return (
-              <div style={{ paddingTop: '6px', borderTop: '1px dashed #E2E8F0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '11px', color: '#0F172A', fontWeight: 800 }}>معالم الحجم الأسبوعي:</span>
-                    {flaggedMuscles.length === 0 ? (
-                      <span style={{ fontSize: '10.5px', color: '#166534', background: '#DCFCE7', border: '1px solid #BBF7D0', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
-                        كافة المجموعات العضلية ({activeMuscles.length}) متوازنة فسيولوجياً ضمن نطاق الاستجابة البنائية (MAV)
-                      </span>
-                    ) : (
-                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                        {flaggedMuscles.map(([key, data]) => (
-                          <span
-                            key={key}
-                            style={{
-                              fontSize: '10px',
-                              padding: '2px 7px',
-                              borderRadius: '6px',
-                              background: data.status === 'EXCEEDS_MRV' ? '#FEE2E2' : '#FEF3C7',
-                              color: data.status === 'EXCEEDS_MRV' ? '#B91C1C' : '#B45309',
-                              border: data.status === 'EXCEEDS_MRV' ? '1px solid #FCA5A5' : '1px solid #FDE68A',
-                              fontWeight: 700
-                            }}
-                          >
-                            تنبيه: {data.muscle_name_ar} {data.weekly_sets} جولة ({data.status_label_ar})
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {activeMuscles.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setShowAllVolumeLandmarks(prev => !prev)}
+              <div style={{ paddingTop: '8px', borderTop: '1px solid #EAECF0', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                {activeMuscles.map(([key, data]) => {
+                  const isBelowMev = data.status === 'BELOW_MEV';
+                  const isExceedsMrv = data.status === 'EXCEEDS_MRV';
+                  return (
+                    <span
+                      key={key}
                       style={{
-                        background: '#F8FAFC',
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '6px',
-                        padding: '2px 8px',
                         fontSize: '10.5px',
-                        color: '#475569',
-                        fontWeight: 700,
-                        cursor: 'pointer'
+                        padding: '2px 8px',
+                        borderRadius: '8px',
+                        background: isExceedsMrv ? '#FEF3F2' : isBelowMev ? '#FFFAEB' : '#F2F4F7',
+                        color: isExceedsMrv ? '#B42318' : isBelowMev ? '#B54708' : '#344054',
+                        border: isExceedsMrv ? '1px solid #FECDCA' : isBelowMev ? '1px solid #FEDF89' : '1px solid #EAECF0',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
                       }}
+                      title={data.status_label_ar}
                     >
-                      {showAllVolumeLandmarks ? 'إخفاء التفاصيل' : `عرض تفاصيل العضلات (${activeMuscles.length})`}
-                    </button>
-                  )}
-                </div>
-
-                {showAllVolumeLandmarks && (
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px' }}>
-                    {activeMuscles.map(([key, data]) => {
-                      const isBelowMev = data.status === 'BELOW_MEV';
-                      const isExceedsMrv = data.status === 'EXCEEDS_MRV';
-                      return (
-                        <span
-                          key={key}
-                          style={{
-                            fontSize: '10.5px',
-                            padding: '2px 8px',
-                            borderRadius: '6px',
-                            background: isExceedsMrv ? '#FEE2E2' : isBelowMev ? '#FEF3C7' : '#F1F5F9',
-                            color: isExceedsMrv ? '#B91C1C' : isBelowMev ? '#B45309' : '#334155',
-                            border: isExceedsMrv ? '1px solid #FCA5A5' : isBelowMev ? '1px solid #FDE68A' : '1px solid #E2E8F0',
-                            fontWeight: 600,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                          title={data.status_label_ar}
-                        >
-                          <strong>{data.muscle_name_ar}:</strong>
-                          <span>{data.weekly_sets} جولة</span>
-                          <span style={{ fontSize: '9px', opacity: 0.8 }}>({data.mav_range})</span>
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
+                      <strong>{data.muscle_name_ar}:</strong>
+                      <span>{data.weekly_sets} جولة</span>
+                      <span style={{ fontSize: '9px', opacity: 0.85 }}>({data.mav_range})</span>
+                    </span>
+                  );
+                })}
               </div>
             );
           })()}
         </div>
       )}
 
-      {/* Exercise Cards */}
+      {/* Exercise Cards - Hostinger Design System */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {activeSession?.exercises?.map((ex, eIdx) => {
           const isContraindicated = hasHypertension && bannedExercisesList.includes(String(ex.code || ''));
@@ -290,314 +279,372 @@ export function CoachTrainingTab({
             <div
               key={ex.id || eIdx}
               style={{
-                background: isContraindicated ? '#FEF2F2' : '#FFFFFF',
-                border: isContraindicated ? '1.5px solid #F87171' : '1px solid #E2E8F0',
-                borderRadius: '10px',
+                background: isContraindicated ? '#FEF3F2' : '#FFFFFF',
+                border: isContraindicated ? '1.5px solid #FECDCA' : '1px solid #EAECF0',
+                borderRadius: '16px',
                 padding: '12px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                boxShadow: isContraindicated ? '0 1px 3px rgba(217, 45, 32, 0.1)' : '0 1px 2px rgba(16, 24, 40, 0.03)',
+                transition: 'border-color 0.15s ease'
+              }}
+            >
+              {/* Exercise Identity & Consolidated Controls Bar */}
+              <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                gap: '12px',
-                boxShadow: isContraindicated ? '0 3px 10px rgba(239, 68, 68, 0.1)' : '0 1px 3px rgba(15, 23, 42, 0.02)'
-              }}
-            >
-              {/* Title & Info & Visuals */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{
-                  width: '26px',
-                  height: '26px',
-                  borderRadius: '6px',
-                  background: isContraindicated ? '#DC2626' : '#0F172A',
-                  color: '#FFFFFF',
+                gap: '10px'
+              }}>
+                {/* Title & Info & Visuals */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '240px', flex: '1 1 auto' }}>
+                  <span style={{
+                    width: '30px',
+                    height: '30px',
+                    borderRadius: '9px',
+                    background: isContraindicated ? '#FEE4E2' : '#F4F0FD',
+                    color: isContraindicated ? '#D92D20' : '#673DE6',
+                    border: isContraindicated ? '1px solid #FECDCA' : '1px solid #EDE8FA',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    flexShrink: 0
+                  }}>
+                    {eIdx + 1}
+                  </span>
+
+                  {/* Visual Thumbnails & Video Button */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}>
+                    <div 
+                      style={{ 
+                        width: '40px', 
+                        height: '40px', 
+                        borderRadius: '9px', 
+                        overflow: 'hidden', 
+                        background: '#F2F4F7', 
+                        border: '1px solid #EAECF0', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        position: 'relative'
+                      }}
+                      title="وضعية البداية والاستطالة"
+                    >
+                      <img 
+                        src={ex.image_stretch || `/exercises/${ex.code}/0.jpg`} 
+                        alt="" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        loading="lazy"
+                      />
+                      <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.9)', padding: '0 3px', borderRadius: '4px' }}>1</span>
+                    </div>
+                    <div 
+                      style={{ 
+                        width: '40px', 
+                        height: '40px', 
+                        borderRadius: '9px', 
+                        overflow: 'hidden', 
+                        background: '#F2F4F7', 
+                        border: '1px solid #EAECF0', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        position: 'relative'
+                      }}
+                      title="وضعية الانقباض العضلي"
+                    >
+                      <img 
+                        src={ex.image_contraction || `/exercises/${ex.code}/1.jpg`} 
+                        alt="" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        loading="lazy"
+                      />
+                      <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.9)', padding: '0 3px', borderRadius: '4px' }}>2</span>
+                    </div>
+                    
+                    {/* Video Trigger Button */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveVideoModalEx(ex)}
+                      title="مشاهدة الفيديو التوضيحي للأداء"
+                      style={{
+                        width: '32px',
+                        height: '40px',
+                        borderRadius: '9px',
+                        background: '#EFF8FF',
+                        border: '1px solid #B2DDFF',
+                        color: '#175CD3',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}
+                    >
+                      <Play size={13} />
+                    </button>
+                  </div>
+
+                  <div style={{ minWidth: 0 }}>
+                    {/* Primary English Exercise Name */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <strong
+                        style={{
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          color: isContraindicated ? '#B42318' : '#101828',
+                          fontFamily: "'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+                          letterSpacing: '0.2px',
+                          direction: 'ltr',
+                          display: 'inline-block',
+                        }}
+                      >
+                        {getExerciseDisplayNames(ex).nameEn}
+                      </strong>
+
+                      {ex.equipment && (
+                        <span style={{ fontSize: '10px', padding: '1px 7px', borderRadius: '6px', background: '#F2F4F7', color: '#475467', border: '1px solid #EAECF0', fontWeight: 500 }}>
+                          {ex.equipment}
+                        </span>
+                      )}
+
+                      {isContraindicated && (
+                        <span style={{ fontSize: '9.5px', fontWeight: 600, background: '#D92D20', color: '#FFFFFF', padding: '1px 7px', borderRadius: '6px' }}>
+                          محظور لمرضى الضغط
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Secondary Arabic Exercise Name */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 500,
+                          color: isContraindicated ? '#B42318' : '#475467',
+                          fontFamily: 'Cairo, sans-serif',
+                        }}
+                      >
+                        {getExerciseDisplayNames(ex).nameAr}
+                      </span>
+
+                      {ex.code && ex.code !== getExerciseDisplayNames(ex).nameEn && (
+                        <span style={{ fontSize: '8.5px', color: '#667085', fontFamily: 'monospace' }}>
+                          ({ex.code})
+                        </span>
+                      )}
+                    </div>
+
+                    {ex.safetyNote && (
+                      <div style={{ fontSize: '11px', color: '#475467', marginTop: '1px' }}>
+                        {ex.safetyNote}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Consolidated Control Bar */}
+                <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: 800,
-                  flexShrink: 0
+                  gap: '6px',
+                  flexWrap: 'wrap',
+                  background: '#F8FAFC',
+                  border: '1px solid #EAECF0',
+                  borderRadius: '12px',
+                  padding: '4px 6px'
                 }}>
-                  {eIdx + 1}
-                </span>
+                  {/* Sets Stepper */}
+                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D0D5DD', borderRadius: '8px', background: '#FFFFFF', padding: '0 6px', height: '30px' }}>
+                    <span style={{ fontSize: '10.5px', color: '#475467', marginLeft: '4px', fontWeight: 600 }}>جولات:</span>
+                    <button type="button" onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'sets', Math.max(1, (ex.sets || 3) - 1))} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, padding: '0 3px', fontSize: '13px', color: '#344054' }}>-</button>
+                    <strong style={{ fontSize: '12px', minWidth: '16px', textAlign: 'center', margin: '0 1px', color: '#101828' }}>{ex.sets}</strong>
+                    <button type="button" onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'sets', (ex.sets || 3) + 1)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, padding: '0 3px', fontSize: '13px', color: '#344054' }}>+</button>
+                  </div>
 
-                {/* Visual Thumbnails (Stretch & Contraction) & Video Button */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                  <div 
-                    style={{ 
-                      width: '42px', 
-                      height: '42px', 
-                      borderRadius: '6px', 
-                      overflow: 'hidden', 
-                      background: '#F1F5F9', 
-                      border: '1px solid #E2E8F0', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      position: 'relative'
-                    }}
-                    title="وضعية البداية والاستطالة"
-                  >
-                    <img 
-                      src={ex.image_stretch || `/exercises/${ex.code}/0.jpg`} 
-                      alt="" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      loading="lazy"
+                  {/* Reps */}
+                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D0D5DD', borderRadius: '8px', background: '#FFFFFF', padding: '0 8px', height: '30px' }}>
+                    <span style={{ fontSize: '10.5px', color: '#475467', marginLeft: '4px', fontWeight: 600 }}>تكرار:</span>
+                    <input
+                      type="text"
+                      value={ex.reps}
+                      onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'reps', e.target.value)}
+                      className="bare-input inline-pill-input clean-inline-input"
+                      style={{ width: '56px', border: 'none', background: 'transparent', textAlign: 'center', fontWeight: 700, fontSize: '12px', outline: 'none', color: '#101828', direction: 'ltr', minHeight: 0, height: '22px', padding: 0 }}
                     />
-                    <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 800, color: '#64748B', background: 'rgba(255,255,255,0.85)', padding: '0 4px', borderRadius: '6px' }}>1</span>
                   </div>
-                  <div 
-                    style={{ 
-                      width: '42px', 
-                      height: '42px', 
-                      borderRadius: '6px', 
-                      overflow: 'hidden', 
-                      background: '#F1F5F9', 
-                      border: '1px solid #E2E8F0', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      position: 'relative'
-                    }}
-                    title="وضعية الانقباض العضلي"
-                  >
-                    <img 
-                      src={ex.image_contraction || `/exercises/${ex.code}/1.jpg`} 
-                      alt="" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      loading="lazy"
-                    />
-                    <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 800, color: '#64748B', background: 'rgba(255,255,255,0.85)', padding: '0 4px', borderRadius: '6px' }}>2</span>
+
+                  {/* RIR Stepper Control */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    border: isLowRir ? '1.5px solid #FDA29B' : '1px solid #D0D5DD',
+                    borderRadius: '8px',
+                    background: isLowRir ? '#FEF3F2' : '#FFFFFF',
+                    padding: '0 6px',
+                    height: '30px'
+                  }}>
+                    <span style={{ fontSize: '10.5px', color: isLowRir ? '#B42318' : '#475467', marginLeft: '4px', fontWeight: 600 }}>الشدة:</span>
+                    <button 
+                      type="button" 
+                      onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'rir', Math.max(0, (ex.rir ?? 1) - 1))} 
+                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, padding: '0 3px', fontSize: '13px', color: isLowRir ? '#B42318' : '#344054' }}
+                    >
+                      -
+                    </button>
+                    <strong style={{ fontSize: '11px', minWidth: '34px', textAlign: 'center', margin: '0 1px', color: isLowRir ? '#B42318' : '#101828' }}>
+                      RIR {ex.rir ?? 1}
+                    </strong>
+                    <button 
+                      type="button" 
+                      onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'rir', Math.min(3, (ex.rir ?? 1) + 1))} 
+                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, padding: '0 3px', fontSize: '13px', color: isLowRir ? '#B42318' : '#344054' }}
+                    >
+                      +
+                    </button>
+                    {isLowRir && (
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#B42318', marginRight: '3px' }}>
+                        (الحد: 2)
+                      </span>
+                    )}
                   </div>
-                  
-                  {/* Video Trigger Button */}
+
+                  {/* Rest Stepper Control */}
+                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D0D5DD', borderRadius: '8px', background: '#FFFFFF', padding: '0 6px', height: '30px' }}>
+                    <span style={{ fontSize: '10.5px', color: '#475467', marginLeft: '4px', fontWeight: 600 }}>راحة:</span>
+                    <button 
+                      type="button" 
+                      onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'restSec', Math.max(30, (ex.restSec || 75) - 15))} 
+                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, padding: '0 3px', fontSize: '13px', color: '#344054' }}
+                    >
+                      -
+                    </button>
+                    <strong style={{ fontSize: '11px', minWidth: '28px', textAlign: 'center', margin: '0 1px', color: '#101828' }}>
+                      {ex.restSec || 75}s
+                    </strong>
+                    <button 
+                      type="button" 
+                      onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'restSec', Math.min(180, (ex.restSec || 75) + 15))} 
+                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, padding: '0 3px', fontSize: '13px', color: '#344054' }}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ width: '1px', height: '20px', background: '#E2E8F0', margin: '0 2px' }} />
+
+                  {/* Move Up / Move Down Order Controls */}
+                  {handleMoveExercise && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#FFFFFF', padding: '1px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveExercise(activeSessionIdx, eIdx, 'UP')}
+                        disabled={eIdx === 0}
+                        title="تقديم التمرين للأعلى"
+                        style={{
+                          height: '26px',
+                          width: '26px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: eIdx === 0 ? 'transparent' : '#FFFFFF',
+                          color: eIdx === 0 ? '#D0D5DD' : '#344054',
+                          cursor: eIdx === 0 ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <ArrowUp size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveExercise(activeSessionIdx, eIdx, 'DOWN')}
+                        disabled={eIdx === (activeSession?.exercises?.length || 0) - 1}
+                        title="تأخير التمرين للأسفل"
+                        style={{
+                          height: '26px',
+                          width: '26px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: eIdx === (activeSession?.exercises?.length || 0) - 1 ? 'transparent' : '#FFFFFF',
+                          color: eIdx === (activeSession?.exercises?.length || 0) - 1 ? '#D0D5DD' : '#344054',
+                          cursor: eIdx === (activeSession?.exercises?.length || 0) - 1 ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <ArrowDown size={12} />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Smart Swap Button */}
                   <button
                     type="button"
-                    onClick={() => setActiveVideoModalEx(ex)}
-                    title="مشاهدة الفيديو التوضيحي للأداء"
+                    onClick={() => setSwapExModal({ open: true, sessionIdx: activeSessionIdx, exIdx: eIdx, currentEx: ex })}
                     style={{
-                      width: '32px',
-                      height: '42px',
-                      borderRadius: '6px',
-                      background: '#EFF6FF',
-                      border: '1px solid #BFDBFE',
-                      color: '#2563EB',
+                      height: '30px',
+                      padding: '0 10px',
+                      borderRadius: '8px',
+                      background: '#FFFFFF',
+                      border: '1px solid #D0D5DD',
+                      color: '#344054',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                      transition: 'all 0.12s ease'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                    title="تبديل التمرين الذكي بنفس الزاوية والأمان"
+                  >
+                    <ArrowRightLeft size={12} color="#673DE6" />
+                    <span>بديل</span>
+                  </button>
+
+                  {/* Delete */}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteExercise(activeSessionIdx, eIdx)}
+                    style={{
+                      height: '30px',
+                      width: '30px',
+                      borderRadius: '8px',
+                      background: '#FFFFFF',
+                      border: '1px solid #D0D5DD',
+                      color: '#B42318',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      flexShrink: 0
+                      boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                      transition: 'all 0.12s ease'
                     }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#FEF3F2';
+                      e.currentTarget.style.borderColor = '#FECDCA';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#FFFFFF';
+                      e.currentTarget.style.borderColor = '#D0D5DD';
+                    }}
+                    title="حذف التمرين"
                   >
-                    <Play size={14} />
+                    <Trash2 size={13} />
                   </button>
                 </div>
-
-                <div style={{ minWidth: 0 }}>
-                  {/* Primary English Exercise Name (Large & Prominent) */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <strong
-                      style={{
-                        fontSize: '13.5px',
-                        fontWeight: 800,
-                        color: isContraindicated ? '#991B1B' : '#0F172A',
-                        fontFamily: "'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-                        letterSpacing: '0.2px',
-                        direction: 'ltr',
-                        display: 'inline-block',
-                      }}
-                    >
-                      {getExerciseDisplayNames(ex).nameEn}
-                    </strong>
-
-                    {ex.equipment && (
-                      <span style={{ fontSize: '10px', padding: '2px 7px', borderRadius: '6px', background: '#F1F5F9', color: '#475569', border: '1px solid #E2E8F0', fontWeight: 600 }}>
-                        {ex.equipment}
-                      </span>
-                    )}
-
-                    {isContraindicated && (
-                      <span style={{ fontSize: '9.5px', fontWeight: 800, background: '#DC2626', color: '#FFFFFF', padding: '2px 8px', borderRadius: '6px' }}>
-                        محظور لمرضى الضغط (فالسافا)
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Secondary Arabic Exercise Name (Smaller, Muted & Secondary) */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        color: isContraindicated ? '#B91C1C' : '#64748B',
-                        fontFamily: 'Cairo, sans-serif',
-                      }}
-                    >
-                      {getExerciseDisplayNames(ex).nameAr}
-                    </span>
-
-                    {ex.code && ex.code !== getExerciseDisplayNames(ex).nameEn && (
-                      <span style={{ fontSize: '8.5px', color: '#94A3B8', fontFamily: 'monospace' }}>
-                        ({ex.code})
-                      </span>
-                    )}
-                  </div>
-
-                  {ex.safetyNote && (
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
-                      {ex.safetyNote}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Inline Parameters */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                {/* Sets */}
-                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#F8FAFC', padding: '0 6px', height: '30px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>جولات:</span>
-                  <button type="button" onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'sets', Math.max(1, (ex.sets || 3) - 1))} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px' }}>-</button>
-                  <strong style={{ fontSize: '13px', minWidth: '18px', textAlign: 'center', margin: '0 2px', color: '#0F172A' }}>{ex.sets}</strong>
-                  <button type="button" onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'sets', (ex.sets || 3) + 1)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px' }}>+</button>
-                </div>
-
-                {/* Reps */}
-                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '6px', background: '#F8FAFC', padding: '0 8px', height: '30px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>تكرار:</span>
-                  <input
-                    type="text"
-                    value={ex.reps}
-                    onChange={(e) => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'reps', e.target.value)}
-                    style={{ width: '70px', border: 'none', background: 'transparent', textAlign: 'center', fontWeight: 800, fontSize: '12px', outline: 'none', color: '#0F172A', direction: 'ltr' }}
-                  />
-                </div>
-
-                {/* RIR Stepper Control (No Sharp Native Dropdowns) */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  border: isLowRir ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
-                  borderRadius: '8px',
-                  background: isLowRir ? '#FEF2F2' : '#F8FAFC',
-                  padding: '0 6px',
-                  height: '30px'
-                }}>
-                  <span style={{ fontSize: '11px', color: isLowRir ? '#DC2626' : '#64748B', marginLeft: '6px', fontWeight: 700 }}>الشدة:</span>
-                  <button 
-                    type="button" 
-                    onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'rir', Math.max(0, (ex.rir ?? 1) - 1))} 
-                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px', color: isLowRir ? '#DC2626' : '#0F172A' }}
-                  >
-                    -
-                  </button>
-                  <strong style={{ fontSize: '11.5px', minWidth: '38px', textAlign: 'center', margin: '0 2px', color: isLowRir ? '#DC2626' : '#0F172A' }}>
-                    RIR {ex.rir ?? 1}
-                  </strong>
-                  <button 
-                    type="button" 
-                    onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'rir', Math.min(3, (ex.rir ?? 1) + 1))} 
-                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px', color: isLowRir ? '#DC2626' : '#0F172A' }}
-                  >
-                    +
-                  </button>
-                  {isLowRir && (
-                    <span style={{ fontSize: '9px', fontWeight: 800, color: '#DC2626', marginRight: '4px' }}>
-                      (الحد: 2)
-                    </span>
-                  )}
-                </div>
-
-                {/* Rest Stepper Control (Steps by 15s - No Sharp Native Dropdowns) */}
-                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #CBD5E1', borderRadius: '8px', background: '#F8FAFC', padding: '0 6px', height: '30px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748B', marginLeft: '6px', fontWeight: 700 }}>راحة:</span>
-                  <button 
-                    type="button" 
-                    onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'restSec', Math.max(30, (ex.restSec || 75) - 15))} 
-                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px', color: '#0F172A' }}
-                  >
-                    -
-                  </button>
-                  <strong style={{ fontSize: '11.5px', minWidth: '32px', textAlign: 'center', margin: '0 2px', color: '#0F172A' }}>
-                    {ex.restSec || 75}s
-                  </strong>
-                  <button 
-                    type="button" 
-                    onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'restSec', Math.min(180, (ex.restSec || 75) + 15))} 
-                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 4px', fontSize: '13px', color: '#0F172A' }}
-                  >
-                    +
-                  </button>
-                </div>
-
-                {/* Move Up / Move Down Order Controls */}
-                {handleMoveExercise && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#F1F5F9', padding: '2px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleMoveExercise(activeSessionIdx, eIdx, 'UP')}
-                      disabled={eIdx === 0}
-                      title="تقديم التمرين للأعلى"
-                      style={{
-                        height: '26px',
-                        width: '26px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: eIdx === 0 ? 'transparent' : '#FFFFFF',
-                        color: eIdx === 0 ? '#CBD5E1' : '#0F172A',
-                        cursor: eIdx === 0 ? 'not-allowed' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: eIdx === 0 ? 'none' : '0 1px 2px rgba(15, 23, 42, 0.05)'
-                      }}
-                    >
-                      <ArrowUp size={12} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleMoveExercise(activeSessionIdx, eIdx, 'DOWN')}
-                      disabled={eIdx === (activeSession?.exercises?.length || 0) - 1}
-                      title="تأخير التمرين للأسفل"
-                      style={{
-                        height: '26px',
-                        width: '26px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: eIdx === (activeSession?.exercises?.length || 0) - 1 ? 'transparent' : '#FFFFFF',
-                        color: eIdx === (activeSession?.exercises?.length || 0) - 1 ? '#CBD5E1' : '#0F172A',
-                        cursor: eIdx === (activeSession?.exercises?.length || 0) - 1 ? 'not-allowed' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: eIdx === (activeSession?.exercises?.length || 0) - 1 ? 'none' : '0 1px 2px rgba(15, 23, 42, 0.05)'
-                      }}
-                    >
-                      <ArrowDown size={12} />
-                    </button>
-                  </div>
-                )}
-
-                {/* Smart Swap Button */}
-                <button
-                  type="button"
-                  onClick={() => setSwapExModal({ open: true, sessionIdx: activeSessionIdx, exIdx: eIdx, currentEx: ex })}
-                  style={{ height: '30px', padding: '0 10px', borderRadius: '8px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700 }}
-                  title="تبديل التمرين الذكي بنفس الزاوية والأمان"
-                >
-                  <ArrowRightLeft size={12} color="#2563EB" />
-                  <span>بديل</span>
-                </button>
-
-                {/* Delete */}
-                <button
-                  type="button"
-                  onClick={() => handleDeleteExercise(activeSessionIdx, eIdx)}
-                  style={{ height: '30px', width: '30px', borderRadius: '8px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  title="حذف التمرين"
-                >
-                  <Trash2 size={13} />
-                </button>
               </div>
               <ProgressionTimeline entry={clientProgression?.exercises?.[ex.code || ex.id]} />
             </div>
@@ -606,22 +653,22 @@ export function CoachTrainingTab({
       </div>
 
       {/* Post-Workout Stretches Bar */}
-      <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+      <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '16px', padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            <HeartPulse size={14} />
+          <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#101828', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+            <HeartPulse size={15} color="#673DE6" />
             <span>إطالات الاستشفاء:</span>
           </span>
           
           {(!activeSession?.post_workout_stretches || activeSession.post_workout_stretches.length === 0) ? (
-            <span style={{ fontSize: '11.5px', color: '#94A3B8' }}>إطالات عامة للعضلات المستهدفة</span>
+            <span style={{ fontSize: '12px', color: '#667085' }}>إطالات عامة للعضلات المستهدفة</span>
           ) : (
-            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
               {activeSession.post_workout_stretches.map((m, mIdx) => (
-                <span key={mIdx} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '3px 9px', borderRadius: '6px', fontSize: '11px', color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                <span key={mIdx} style={{ background: '#F9FAFB', border: '1px solid #EAECF0', padding: '3px 10px', borderRadius: '6px', fontSize: '11.5px', color: '#101828', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 500 }}>
                   <span>{m.name || m.name_ar}</span>
-                  <button type="button" onClick={() => handleRemoveMobilityFromSession(activeSessionIdx, mIdx, 'STRETCH')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#DC2626' }}>
-                    <X size={11} />
+                  <button type="button" onClick={() => handleRemoveMobilityFromSession(activeSessionIdx, mIdx, 'STRETCH')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#B42318' }}>
+                    <X size={12} />
                   </button>
                 </span>
               ))}
@@ -632,34 +679,51 @@ export function CoachTrainingTab({
         <button
           type="button"
           onClick={() => setMobilityModal({ open: true, type: 'STRETCH', sessionIdx: activeSessionIdx })}
-          style={{ padding: '4px 12px', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#0F172A', borderRadius: '7px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+          style={{
+            height: '32px',
+            padding: '0 14px',
+            background: '#FFFFFF',
+            border: '1px solid #D0D5DD',
+            color: '#344054',
+            borderRadius: '8px',
+            fontSize: '11.5px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+            transition: 'all 0.15s ease'
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
         >
           + إضافة إطالة
         </button>
       </div>
 
-      {/* Centered Add Exercise Button */}
+      {/* Centered Add Exercise Button - Hostinger Accent */}
       <div style={{ textAlign: 'center', marginTop: '6px' }}>
         <button
           type="button"
           onClick={() => setAddExModal({ open: true, sessionIdx: activeSessionIdx })}
           style={{
-            height: '36px',
-            padding: '0 18px',
+            height: '38px',
+            padding: '0 20px',
             borderRadius: '8px',
-            border: '1px solid #CBD5E1',
-            background: '#FFFFFF',
-            color: '#0F172A',
-            fontSize: '12px',
+            border: '1px solid #673DE6',
+            background: '#F4F0FD',
+            color: '#673DE6',
+            fontSize: '12.5px',
             fontWeight: 700,
             cursor: 'pointer',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)'
+            boxShadow: '0 1px 3px rgba(103, 61, 230, 0.15)',
+            transition: 'all 0.15s ease'
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#EDE8FA')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = '#F4F0FD')}
         >
-          <Plus size={14} />
+          <Plus size={15} />
           <span>إضافة تمرين جديد لـ ({activeSession?.name})</span>
         </button>
       </div>

@@ -26,6 +26,7 @@ import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../se
 import { assessServiceScope, outsideScopeResponse } from "../services/serviceScope.js";
 import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSwapOilText, liveSwapTargetGrams, liveSwapServingText } from "../services/liveFoodSwapValue.js";
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
+import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1352,6 +1353,12 @@ export const getActiveProgramByUserId = async (req, res) => {
        training_session = applyDeloadToSession(training_session);
     }
 
+    // P0 Clinical Safety: Ensure active clinical lockout suspends active session delivery to mobile app
+    const clinicalLock = await getActiveClinicalLockout(user.id);
+    if (clinicalLock?.locked) {
+      training_session = null;
+    }
+
     const client_view = {
       target_macros,
       meals,
@@ -1372,6 +1379,15 @@ export const getActiveProgramByUserId = async (req, res) => {
       master_program: program.program_data,
       lifestyle: { bedtime_hour: await resolveClientBedtimeHour(user.id) },
       clinical_constraints: await resolveClientClinicalConstraints(user.id),
+      clinical_lockout: clinicalLock?.locked ? {
+        active: true,
+        checkin_id: clinicalLock.checkin_id || null,
+        week_number: clinicalLock.week_number || null,
+        locked_at: clinicalLock.locked_at || null,
+        reason_ar: clinicalLock.directive_ar,
+        emergency_directive: clinicalLock.directive_ar,
+        requires_medical_clearance: true,
+      } : { active: false },
       progression: await loadProgressionState(user.id),
       training_cycle: resolveTrainingCycleStatus(program),
       pending_draft_id: pendingDraft ? pendingDraft.id : null,

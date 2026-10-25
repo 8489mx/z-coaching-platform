@@ -113,7 +113,7 @@ export default function CurvedSelect({
         onClick={() => setIsOpen((open) => !open)}
         onKeyDown={handleKeyDown}
       >
-        <span className="curved-select-value">{selectedOption ? selectedOption.label : ''}</span>
+        <span className="curved-select-value" style={{ textAlign: style?.textAlign || 'center' }}>{selectedOption ? selectedOption.label : ''}</span>
         <ChevronDown size={14} className={`curved-select-chevron${isOpen ? ' is-open' : ''}`} aria-hidden="true" />
       </button>
       {isOpen && (
@@ -130,6 +130,7 @@ export default function CurvedSelect({
                 idx === activeIndex ? 'is-active' : '',
                 opt.disabled ? 'is-disabled' : ''
               ].filter(Boolean).join(' ')}
+              style={{ textAlign: style?.textAlign || 'center' }}
               onMouseEnter={() => setActiveIndex(idx)}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => commit(opt)}

@@ -2,7 +2,7 @@ import { API_BASE } from '../config/api';
 import { buildClientLinks } from '../utils/clientLinks';
 import { getClientTier, ClientCodeBadge, ClientPackageBadge } from '../utils/tierBadgeHelper';
 import React, { useState, useMemo } from 'react';
-import { Send, MessageSquare, CheckCircle2, Copy, ExternalLink, Smartphone, ShieldAlert, Check, ChevronDown, ChevronRight, ChevronLeft, Dumbbell, Link } from 'lucide-react';
+import { Send, MessageSquare, CheckCircle2, Copy, ExternalLink, Smartphone, ShieldAlert, Check, ChevronDown, ChevronRight, ChevronLeft, Dumbbell, Link, Clock, AlertTriangle, Sparkles } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import { TableSearch } from '@/shared/components/table-search';
 import { RefreshButton } from '@/shared/components/refresh-button';
@@ -13,7 +13,7 @@ export default function WhatsAppRemindersHub() {
   const [selectedCategory, setSelectedCategory] = useState('ALL'); // 'ALL' | REMINDER_CATEGORIES keys
   const [selectedTier, setSelectedTier] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedClientId, setSelectedClientId] = useState(1);
+  const [selectedClientId, setSelectedClientId] = useState(null);
   const [activeTemplateKey, setActiveTemplateKey] = useState(REMINDER_CATEGORIES.CHECKIN_DUE);
   const [customMessage, setCustomMessage] = useState('');
   const [_isEditingTemplate, setIsEditingTemplate] = useState(false);
@@ -79,7 +79,7 @@ export default function WhatsAppRemindersHub() {
           });
           setClientsData(enriched);
           if (enriched.length > 0) {
-             setSelectedClientId(enriched[0].client_code || enriched[0].id);
+             setSelectedClientId(enriched[0].id);
           }
         }
       }
@@ -124,32 +124,39 @@ export default function WhatsAppRemindersHub() {
   }, [clientsData, searchQuery, selectedTier, selectedCategory]);
 
   const activeClient = useMemo(() => {
-    return clientsData.find(c => (c.client_code || c.id) == selectedClientId) || clientsData[0];
-  }, [clientsData, selectedClientId]);
+    if (!filteredClients.length) return clientsData[0] || null;
+    if (selectedClientId !== null && selectedClientId !== undefined) {
+      const matchInFiltered = filteredClients.find(c => String(c.id) === String(selectedClientId));
+      if (matchInFiltered) return matchInFiltered;
+      const matchInAll = clientsData.find(c => String(c.id) === String(selectedClientId));
+      if (matchInAll) return matchInAll;
+    }
+    return filteredClients[0] || clientsData[0] || null;
+  }, [filteredClients, clientsData, selectedClientId]);
 
   const activeIndex = useMemo(() => {
     if (!activeClient || filteredClients.length === 0) return -1;
-    return filteredClients.findIndex(c => (c.client_code || c.id) === (activeClient.client_code || activeClient.id));
+    return filteredClients.findIndex(c => String(c.id) === String(activeClient.id));
   }, [filteredClients, activeClient]);
 
   const handlePrevClient = React.useCallback(() => {
     if (filteredClients.length === 0) return;
-    const currentIdx = filteredClients.findIndex(c => (c.client_code || c.id) === (activeClient?.client_code || activeClient?.id));
+    const currentIdx = filteredClients.findIndex(c => String(c.id) === String(activeClient?.id));
     const nextIdx = currentIdx > 0 ? currentIdx - 1 : filteredClients.length - 1;
     const target = filteredClients[nextIdx];
     if (target) {
-      setSelectedClientId(target.client_code || target.id);
+      setSelectedClientId(target.id);
       setActiveTemplateKey(target.defaultCat);
     }
   }, [filteredClients, activeClient]);
 
   const handleNextClient = React.useCallback(() => {
     if (filteredClients.length === 0) return;
-    const currentIdx = filteredClients.findIndex(c => (c.client_code || c.id) === (activeClient?.client_code || activeClient?.id));
+    const currentIdx = filteredClients.findIndex(c => String(c.id) === String(activeClient?.id));
     const nextIdx = currentIdx < filteredClients.length - 1 ? currentIdx + 1 : 0;
     const target = filteredClients[nextIdx];
     if (target) {
-      setSelectedClientId(target.client_code || target.id);
+      setSelectedClientId(target.id);
       setActiveTemplateKey(target.defaultCat);
     }
   }, [filteredClients, activeClient]);
@@ -263,20 +270,20 @@ export default function WhatsAppRemindersHub() {
         {/* 1. Header Banner & Live Stats */}
         <div style={{
           background: '#FFFFFF',
-          border: '1px solid #E2E8F0',
-          borderRadius: '12px',
-          padding: '14px 18px',
+          border: '1px solid #EAECF0',
+          borderRadius: '14px',
+          padding: '14px 20px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '12px',
+          gap: '14px',
           boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)'
         }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ background: '#0284C7', color: '#FFFFFF', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <MessageSquare size={17} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ background: '#F4F0FD', color: '#673DE6', width: '38px', height: '38px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <MessageSquare size={19} />
               </div>
               <div>
                 <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#0F172A' }}>
@@ -290,74 +297,111 @@ export default function WhatsAppRemindersHub() {
           </div>
 
           {/* Quick Metrics Strip (Interactive Filters) */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
             <RefreshButton onClick={fetchClients} loading={loading} />
+            
+            {/* 1. Checkin Due */}
             <div 
               onClick={() => setSelectedCategory(selectedCategory === REMINDER_CATEGORIES.CHECKIN_DUE ? 'ALL' : REMINDER_CATEGORIES.CHECKIN_DUE)}
               style={{ 
-                background: selectedCategory === REMINDER_CATEGORIES.CHECKIN_DUE ? '#E0F2FE' : '#F0F9FF', 
-                border: selectedCategory === REMINDER_CATEGORIES.CHECKIN_DUE ? '1.5px solid #0284C7' : '1px solid #BAE6FD', 
-                padding: '6px 12px', 
-                borderRadius: '8px', 
-                textAlign: 'center',
+                background: '#FFFFFF', 
+                border: selectedCategory === REMINDER_CATEGORIES.CHECKIN_DUE ? '1.5px solid #0284C7' : '1px solid #E2E8F0', 
+                padding: '8px 14px', 
+                borderRadius: '16px', 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
                 cursor: 'pointer',
-                transition: 'all 0.12s ease'
+                boxShadow: selectedCategory === REMINDER_CATEGORIES.CHECKIN_DUE ? '0 2px 8px rgba(2, 132, 199, 0.12)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
+                transition: 'all 0.15s ease'
               }}
               title="انقر لفلترة التقييمات المستحقة"
             >
-              <span style={{ fontSize: '10px', color: '#0284C7', fontWeight: 700, display: 'block' }}>شيك إن مستحق</span>
-              <strong style={{ fontSize: '14px', color: '#0369A1', fontFamily: 'JetBrains Mono' }}>{dueCheckinsCount}</strong>
+              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#F0F9FF', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Clock size={16} />
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block', lineHeight: 1.2 }}>شيك إن مستحق</span>
+                <strong style={{ fontSize: '15px', color: '#0F172A', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}>{dueCheckinsCount}</strong>
+              </div>
             </div>
 
+            {/* 2. Checkin Overdue */}
             <div 
               onClick={() => setSelectedCategory(selectedCategory === REMINDER_CATEGORIES.CHECKIN_OVERDUE ? 'ALL' : REMINDER_CATEGORIES.CHECKIN_OVERDUE)}
               style={{ 
-                background: selectedCategory === REMINDER_CATEGORIES.CHECKIN_OVERDUE ? '#FEE2E2' : '#FEF2F2', 
-                border: selectedCategory === REMINDER_CATEGORIES.CHECKIN_OVERDUE ? '1.5px solid #DC2626' : '1px solid #FECACA', 
-                padding: '6px 12px', 
-                borderRadius: '8px', 
-                textAlign: 'center',
+                background: '#FFFFFF', 
+                border: selectedCategory === REMINDER_CATEGORIES.CHECKIN_OVERDUE ? '1.5px solid #E11D48' : '1px solid #E2E8F0', 
+                padding: '8px 14px', 
+                borderRadius: '16px', 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
                 cursor: 'pointer',
-                transition: 'all 0.12s ease'
+                boxShadow: selectedCategory === REMINDER_CATEGORIES.CHECKIN_OVERDUE ? '0 2px 8px rgba(225, 29, 72, 0.12)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
+                transition: 'all 0.15s ease'
               }}
               title="انقر لفلترة التقييمات المتأخرة"
             >
-              <span style={{ fontSize: '10px', color: '#DC2626', fontWeight: 700, display: 'block' }}>تقييم متأخر</span>
-              <strong style={{ fontSize: '14px', color: '#991B1B', fontFamily: 'JetBrains Mono' }}>{overdueCheckinsCount}</strong>
+              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#FFF1F2', color: '#E11D48', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <AlertTriangle size={16} />
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block', lineHeight: 1.2 }}>تقييم متأخر</span>
+                <strong style={{ fontSize: '15px', color: '#0F172A', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}>{overdueCheckinsCount}</strong>
+              </div>
             </div>
 
+            {/* 3. Renewal Upcoming */}
             <div 
               onClick={() => setSelectedCategory(selectedCategory === REMINDER_CATEGORIES.RENEWAL_UPCOMING ? 'ALL' : REMINDER_CATEGORIES.RENEWAL_UPCOMING)}
               style={{ 
-                background: selectedCategory === REMINDER_CATEGORIES.RENEWAL_UPCOMING ? '#FEF3C7' : '#FFFBEB', 
-                border: selectedCategory === REMINDER_CATEGORIES.RENEWAL_UPCOMING ? '1.5px solid #B45309' : '1px solid #FDE68A', 
-                padding: '6px 12px', 
-                borderRadius: '8px', 
-                textAlign: 'center',
+                background: '#FFFFFF', 
+                border: selectedCategory === REMINDER_CATEGORIES.RENEWAL_UPCOMING ? '1.5px solid #D97706' : '1px solid #E2E8F0', 
+                padding: '8px 14px', 
+                borderRadius: '16px', 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
                 cursor: 'pointer',
-                transition: 'all 0.12s ease'
+                boxShadow: selectedCategory === REMINDER_CATEGORIES.RENEWAL_UPCOMING ? '0 2px 8px rgba(217, 119, 6, 0.12)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
+                transition: 'all 0.15s ease'
               }}
               title="انقر لفلترة التجديدات القريبة"
             >
-              <span style={{ fontSize: '10px', color: '#B45309', fontWeight: 700, display: 'block' }}>تجديد قريب</span>
-              <strong style={{ fontSize: '14px', color: '#92400E', fontFamily: 'JetBrains Mono' }}>{renewalsCount}</strong>
+              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#FFFBEB', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Sparkles size={16} />
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block', lineHeight: 1.2 }}>تجديد قريب</span>
+                <strong style={{ fontSize: '15px', color: '#0F172A', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}>{renewalsCount}</strong>
+              </div>
             </div>
 
+            {/* 4. Sent Today */}
             <div 
               onClick={() => setSelectedCategory('ALL')}
               style={{ 
-                background: selectedCategory === 'ALL' ? '#D1FAE5' : '#ECFDF5', 
-                border: selectedCategory === 'ALL' ? '1.5px solid #059669' : '1px solid #A7F3D0', 
-                padding: '6px 12px', 
-                borderRadius: '8px', 
-                textAlign: 'center',
+                background: '#FFFFFF', 
+                border: selectedCategory === 'ALL' ? '1.5px solid #059669' : '1px solid #E2E8F0', 
+                padding: '8px 14px', 
+                borderRadius: '16px', 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
                 cursor: 'pointer',
-                transition: 'all 0.12s ease'
+                boxShadow: selectedCategory === 'ALL' ? '0 2px 8px rgba(5, 150, 105, 0.12)' : '0 1px 2px rgba(15, 23, 42, 0.02)',
+                transition: 'all 0.15s ease'
               }}
               title="انقر لعرض كافة التنبيهات"
             >
-              <span style={{ fontSize: '10px', color: '#059669', fontWeight: 700, display: 'block' }}>تم إرسالها اليوم</span>
-              <strong style={{ fontSize: '14px', color: '#065F46', fontFamily: 'JetBrains Mono' }}>{dispatchedCount}</strong>
+              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#F0FDF4', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <CheckCircle2 size={16} />
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block', lineHeight: 1.2 }}>تم إرسالها اليوم</span>
+                <strong style={{ fontSize: '15px', color: '#0F172A', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}>{dispatchedCount}</strong>
+              </div>
             </div>
           </div>
         </div>
@@ -365,17 +409,18 @@ export default function WhatsAppRemindersHub() {
         {/* 2. Operational Filter Bar */}
         <div style={{
           background: '#FFFFFF',
-          border: '1px solid #E2E8F0',
-          borderRadius: '12px',
-          padding: '10px 14px',
+          border: '1px solid #EAECF0',
+          borderRadius: '14px',
+          padding: '10px 16px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '10px'
+          gap: '10px',
+          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)'
         }}>
           {/* Category Tabs */}
-          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {[
               { id: 'ALL', label: 'كافة التنبيهات', count: clientsData.length },
               { id: REMINDER_CATEGORIES.CHECKIN_DUE, label: 'تذكير التقييم', count: dueCheckinsCount },
@@ -391,29 +436,29 @@ export default function WhatsAppRemindersHub() {
                   type="button"
                   onClick={() => setSelectedCategory(cat.id)}
                   style={{
-                    padding: '4px 10px',
+                    padding: '6px 14px',
                     borderRadius: '8px',
-                    fontSize: '11px',
-                    fontWeight: isSel ? 800 : 600,
+                    fontSize: '11.5px',
+                    fontWeight: isSel ? 700 : 600,
                     border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                    background: isSel ? '#0F172A' : '#F8FAFC',
+                    background: isSel ? '#0F172A' : '#FFFFFF',
                     color: isSel ? '#FFFFFF' : '#475569',
+                    boxShadow: isSel ? '0 1px 3px rgba(15, 23, 42, 0.12)' : 'none',
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '4px',
-                    boxShadow: isSel ? '0 1px 3px rgba(15, 23, 42, 0.15)' : 'none',
+                    gap: '6px',
                     transition: 'all 0.12s ease'
                   }}
                 >
                   <span>{cat.label}</span>
                   {cat.count !== undefined && (
                     <span style={{
-                      fontSize: '9.5px',
+                      fontSize: '10px',
                       fontWeight: 800,
-                      padding: '0 5px',
-                      borderRadius: '8px',
-                      background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
+                      padding: '1px 6px',
+                      borderRadius: '6px',
+                      background: isSel ? 'rgba(255,255,255,0.2)' : '#F1F5F9',
                       color: isSel ? '#FFFFFF' : '#0F172A'
                     }}>
                       {cat.count}
@@ -425,8 +470,8 @@ export default function WhatsAppRemindersHub() {
           </div>
 
           {/* Tier Tabs & Search */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '2px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '3px', borderRadius: '8px', border: '1px solid #EAECF0' }}>
               {[
                 { id: 'ALL', label: 'الكل' },
                 { id: 'MAX', label: 'MAX' },
@@ -439,9 +484,9 @@ export default function WhatsAppRemindersHub() {
                     type="button"
                     onClick={() => setSelectedTier(t.id)}
                     style={{
-                      padding: '3px 9px',
+                      padding: '4px 12px',
                       borderRadius: '6px',
-                      fontSize: '10.5px',
+                      fontSize: '11px',
                       fontWeight: 800,
                       fontFamily: t.id !== 'ALL' ? 'JetBrains Mono, sans-serif' : 'inherit',
                       border: 'none',
@@ -467,13 +512,13 @@ export default function WhatsAppRemindersHub() {
           {/* RIGHT COLUMN: Table of Actionable Clients */}
           <div style={{
             background: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            borderRadius: '12px',
+            border: '1px solid #EAECF0',
+            borderRadius: '14px',
             overflow: 'hidden',
             boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)'
           }}>
-            <div style={{ padding: '10px 14px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>
+            <div style={{ padding: '12px 18px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <strong style={{ fontSize: '13px', color: '#0F172A', fontWeight: 700 }}>
                 قائمة المشتركين ومستحقات المتابعة ({filteredClients.length})
               </strong>
               <span style={{ fontSize: '11px', color: '#64748B' }}>
@@ -488,7 +533,7 @@ export default function WhatsAppRemindersHub() {
                 </div>
               ) : (
                 filteredClients.map((client) => {
-                  const isSelected = activeClient?.id === client.id;
+                  const isSelected = activeClient ? String(activeClient.id) === String(client.id) : false;
                   const isDispatched = !!dispatchedMap[client.id];
                   const hasInjuries = Boolean(
                     (Array.isArray(client.injuries) && client.injuries.some(i => i && i !== 'none')) ||
@@ -522,7 +567,7 @@ export default function WhatsAppRemindersHub() {
                         padding: '10px 14px',
                         borderBottom: '1px solid #F1F5F9',
                         background: isSelected ? '#F8FAFC' : '#FFFFFF',
-                        borderRight: isSelected ? '3px solid #0F172A' : '3px solid transparent',
+                        borderRight: isSelected ? '3px solid #673DE6' : '3px solid transparent',
                         cursor: 'pointer',
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -565,7 +610,7 @@ export default function WhatsAppRemindersHub() {
                           
                           <div style={{ fontSize: '10.5px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                             <span style={{ fontFamily: 'JetBrains Mono' }}>{client.phone_number}</span>
-                            <span>•</span>
+                            <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
                             <span>{client.goal_label || 'خسارة دهون'}</span>
                           </div>
                         </div>
@@ -608,18 +653,21 @@ export default function WhatsAppRemindersHub() {
                           }}
                           style={{
                             padding: '4px 9px',
-                            borderRadius: '8px',
-                            background: '#25D366',
-                            color: '#FFFFFF',
-                            border: 'none',
+                            borderRadius: '6px',
+                            border: '1px solid #D0D5DD',
+                            background: '#FFFFFF',
+                            color: '#027A48',
                             fontSize: '10.5px',
-                            fontWeight: 700,
+                            fontWeight: 600,
                             cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '4px',
-                            boxShadow: '0 1px 2px rgba(37, 211, 102, 0.2)'
+                            boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
+                            transition: 'all 0.15s ease'
                           }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#F0FDF4')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
                         >
                           <Send size={11} />
                           <span>إرسال</span>
@@ -635,12 +683,12 @@ export default function WhatsAppRemindersHub() {
           {/* LEFT COLUMN: WhatsApp Interactive Message Studio & Live Customizer */}
           <div style={{
             background: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            borderRadius: '12px',
-            padding: '16px',
+            border: '1px solid #EAECF0',
+            borderRadius: '14px',
+            padding: '18px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
+            gap: '14px',
             position: 'sticky',
             top: '80px',
             boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)'
@@ -654,9 +702,13 @@ export default function WhatsAppRemindersHub() {
                   </strong>
                   <ClientPackageBadge item={activeClient} size="xs" />
                 </div>
-                <span style={{ fontSize: '11px', color: '#64748B', marginTop: '2px', display: 'block' }}>
-                  المستلم: <strong style={{ color: '#0F172A' }}>{activeClient ? (activeClient.full_name || activeClient.name) : 'لا يوجد مشترك محدد'}</strong> {activeClient ? `(#${activeClient.client_code || activeClient.id})` : ''}
-                </span>
+                <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>المستلم:</span>
+                  {activeClient && (
+                    <ClientCodeBadge code={activeClient.client_code || activeClient.id} item={activeClient} size="xs" />
+                  )}
+                  <strong style={{ color: '#0F172A' }}>{activeClient ? (activeClient.full_name || activeClient.name) : 'لا يوجد مشترك محدد'}</strong>
+                </div>
               </div>
 
               {/* Client Quick Stepper */}
@@ -667,7 +719,7 @@ export default function WhatsAppRemindersHub() {
                   disabled={filteredClients.length <= 1}
                   title="المشترك السابق (اختصار: [ أو Alt+Up)"
                   style={{
-                    padding: '4px 8px',
+                    padding: '4px 10px',
                     borderRadius: '8px',
                     border: '1px solid #CBD5E1',
                     background: '#F8FAFC',
@@ -703,7 +755,7 @@ export default function WhatsAppRemindersHub() {
                   disabled={filteredClients.length <= 1}
                   title="المشترك التالي (اختصار: ] أو Alt+Down)"
                   style={{
-                    padding: '4px 8px',
+                    padding: '4px 10px',
                     borderRadius: '8px',
                     border: '1px solid #CBD5E1',
                     background: '#F8FAFC',
@@ -731,7 +783,7 @@ export default function WhatsAppRemindersHub() {
                 gap: '6px',
                 flexWrap: 'wrap',
                 background: '#F8FAFC',
-                border: '1px solid #E2E8F0',
+                border: '1px solid #EAECF0',
                 borderRadius: '8px',
                 padding: '6px 10px'
               }}>
@@ -749,7 +801,7 @@ export default function WhatsAppRemindersHub() {
                     background: '#FFFFFF',
                     border: '1px solid #BAE6FD',
                     padding: '2px 8px',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px'
@@ -774,7 +826,7 @@ export default function WhatsAppRemindersHub() {
                     background: '#FFFFFF',
                     border: '1px solid #CBD5E1',
                     padding: '2px 8px',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -799,7 +851,7 @@ export default function WhatsAppRemindersHub() {
                     background: '#FFFFFF',
                     border: '1px solid #CBD5E1',
                     padding: '2px 8px',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -847,7 +899,7 @@ export default function WhatsAppRemindersHub() {
                     fontSize: '10px',
                     fontWeight: 700,
                     padding: '2px 7px',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     background: '#E2E8F0',
                     color: '#334155',
                     whiteSpace: 'nowrap'
@@ -871,7 +923,7 @@ export default function WhatsAppRemindersHub() {
                       right: 0,
                       left: 0,
                       background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      border: '1px solid #EAECF0',
                       borderRadius: '12px',
                       boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
                       zIndex: 50,
@@ -962,9 +1014,9 @@ export default function WhatsAppRemindersHub() {
                 onChange={(e) => setCustomMessage(e.target.value)}
                 style={{
                   width: '100%',
-                  borderRadius: '8px',
+                  borderRadius: '14px',
                   border: '1px solid #CBD5E1',
-                  padding: '10px 12px',
+                  padding: '12px 14px',
                   fontSize: '11.5px',
                   fontFamily: 'Cairo, sans-serif',
                   lineHeight: '1.6',
@@ -986,9 +1038,9 @@ export default function WhatsAppRemindersHub() {
               onClick={() => handleSendWhatsApp(activeClient, customMessage)}
               style={{
                 width: '100%',
-                padding: '10px 14px',
-                borderRadius: '8px',
-                background: '#25D366',
+                padding: '12px 18px',
+                borderRadius: '6px',
+                background: 'linear-gradient(135deg, #25D366 0%, #1EBE5D 100%)',
                 color: '#FFFFFF',
                 border: 'none',
                 fontSize: '13px',
@@ -998,7 +1050,7 @@ export default function WhatsAppRemindersHub() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 2px 8px rgba(37, 211, 102, 0.3)',
+                boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)',
                 transition: 'all 0.15s ease'
               }}
             >
@@ -1010,8 +1062,8 @@ export default function WhatsAppRemindersHub() {
             <div style={{
               background: '#F8FAFC',
               border: '1px dashed #CBD5E1',
-              borderRadius: '8px',
-              padding: '6px 10px',
+              borderRadius: '12px',
+              padding: '8px 12px',
               fontSize: '10px',
               color: '#64748B',
               textAlign: 'center',
@@ -1022,11 +1074,11 @@ export default function WhatsAppRemindersHub() {
               flexWrap: 'wrap'
             }}>
               <span><strong>[</strong> المشترك السابق</span>
-              <span>•</span>
+              <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
               <span><strong>]</strong> المشترك التالي</span>
-              <span>•</span>
+              <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
               <span><strong>Ctrl+Enter</strong> إرسال واتساب</span>
-              <span>•</span>
+              <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
               <span><strong>Alt+C</strong> نسخ النص</span>
             </div>
           </div>
@@ -1040,14 +1092,14 @@ export default function WhatsAppRemindersHub() {
             bottom: '24px',
             left: '50%',
             transform: 'translateX(-50%)',
-            background: '#0F172A',
+            background: '#673DE6',
             color: '#FFFFFF',
             padding: '8px 18px',
             borderRadius: '12px',
             fontSize: '12px',
             fontWeight: 700,
             zIndex: 99999,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.25)'
+            boxShadow: '0 4px 16px rgba(103, 61, 230, 0.35)'
           }}>
             {toast}
           </div>

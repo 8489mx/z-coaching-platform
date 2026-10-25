@@ -83,13 +83,13 @@ test('Milestone 11: Full Mesocycle Clinical PDF Audit Suite', async (suite) => {
     assert.equal(mesocycle.weeks[0].week_number, 1);
     assert.equal(mesocycle.weeks[4].week_number, 5);
     assert.equal(mesocycle.weeks[4].phase, 'DELOAD');
-    assert.equal(mesocycle.weeks[4].target_rir, 4);
+    assert.equal(mesocycle.weeks[4].target_rir, 3);
 
-    // Verify all sessions in deload have RIR 4 and reduced volume
+    // Verify all sessions in deload have RIR 3 and reduced volume
     const deloadWeek = mesocycle.weeks[4];
     for (const session of deloadWeek.sessions) {
       for (const ex of session.exercises) {
-        assert.equal(ex.target_rir, 4);
+        assert.equal(ex.target_rir, 3);
       }
     }
   });

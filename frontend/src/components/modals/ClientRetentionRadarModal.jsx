@@ -82,17 +82,17 @@ export default function ClientRetentionRadarModal({
         {/* Header */}
         <div style={{
           padding: '16px 20px',
-          borderBottom: '1px solid #F1F5F9',
+          borderBottom: '1px solid #EAECF0',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          background: '#F8FAFC',
+          background: '#FFFFFF',
           borderTopLeftRadius: '16px',
           borderTopRightRadius: '16px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ 
-              background: '#0F172A', 
+              background: '#673DE6', 
               color: '#FFFFFF', 
               width: '32px', 
               height: '32px', 
@@ -186,7 +186,7 @@ export default function ClientRetentionRadarModal({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
             
             <div style={{
-              background: '#F8FAFC',
+              background: '#FFFFFF',
               border: '1px solid #E2E8F0',
               borderRadius: '10px',
               padding: '10px 12px'
@@ -203,7 +203,7 @@ export default function ClientRetentionRadarModal({
             </div>
 
             <div style={{
-              background: '#F8FAFC',
+              background: '#FFFFFF',
               border: '1px solid #E2E8F0',
               borderRadius: '10px',
               padding: '10px 12px'
@@ -220,7 +220,7 @@ export default function ClientRetentionRadarModal({
             </div>
 
             <div style={{
-              background: '#F8FAFC',
+              background: '#FFFFFF',
               border: '1px solid #E2E8F0',
               borderRadius: '10px',
               padding: '10px 12px'
@@ -237,7 +237,7 @@ export default function ClientRetentionRadarModal({
             </div>
 
             <div style={{
-              background: '#F8FAFC',
+              background: '#FFFFFF',
               border: '1px solid #E2E8F0',
               borderRadius: '10px',
               padding: '10px 12px'
@@ -270,7 +270,7 @@ export default function ClientRetentionRadarModal({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 {evaluation.risk_factors.map((rf, idx) => (
                   <div key={idx} style={{ fontSize: '11px', color: '#991B1B', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#DC2626', display: 'inline-block' }}></span>
+                    <span style={{ color: '#DC2626', fontWeight: 700 }}>•</span>
                     <span>{rf}</span>
                   </div>
                 ))}
@@ -280,7 +280,7 @@ export default function ClientRetentionRadarModal({
 
           {/* Tactical Outreach Message Generator */}
           <div style={{
-            background: '#F8FAFC',
+            background: '#FFFFFF',
             border: '1px solid #E2E8F0',
             borderRadius: '12px',
             padding: '14px'

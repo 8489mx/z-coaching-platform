@@ -6,18 +6,18 @@
 
 .curved-select-trigger {
   width: 100%;
-  min-height: 40px;
-  padding: 8px 12px;
+  min-height: 38px;
+  padding: 6px 12px;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
   font: inherit;
-  text-align: start;
+  text-align: center;
   cursor: pointer;
   transition: border-color 0.16s ease, box-shadow 0.16s ease;
 }
@@ -25,8 +25,8 @@
 .curved-select-trigger:focus-visible,
 .curved-select-trigger[aria-expanded="true"] {
   outline: none;
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.35);
+  border-color: #A78BFA;
+  box-shadow: 0 0 0 3px rgba(103, 61, 230, 0.12);
 }
 
 .curved-select-trigger:disabled {
@@ -40,6 +40,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
 }
 
 .curved-select-chevron {
@@ -54,7 +55,7 @@
 
 .curved-select-list {
   position: absolute;
-  inset-inline: 0;
+  inset-inline-start: 0;
   top: calc(100% + 4px);
   z-index: 60;
   max-height: 260px;
@@ -62,27 +63,36 @@
   margin: 0;
   padding: 6px;
   list-style: none;
-  border-radius: 12px !important;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+  border-radius: 10px !important;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+  min-width: 100%;
+  width: max-content;
+  max-width: 360px;
+  box-sizing: border-box;
 }
 
 .curved-select-option {
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
   font-size: 0.85rem;
-  color: var(--text);
+  color: #1E293B;
   cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  transition: background-color 0.12s ease;
 }
 
 .curved-select-option.is-active {
-  background: rgba(147, 197, 253, 0.22);
+  background: #FAF7FD;
+  color: #673DE6;
 }
 
 .curved-select-option.is-selected {
   font-weight: 700;
-  color: #1d4ed8;
+  color: #673DE6;
+  background: #F4EFFE;
 }
 
 .curved-select-option.is-disabled {
@@ -90,6 +100,22 @@
   cursor: not-allowed;
 }
 
+.dark .curved-select-list {
+  background: #1E293B;
+  border-color: #334155;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.dark .curved-select-option {
+  color: #F8FAFC;
+}
+
+.dark .curved-select-option.is-active {
+  background: rgba(103, 61, 230, 0.25);
+  color: #C4B5FD;
+}
+
 .dark .curved-select-option.is-selected {
-  color: #93c5fd;
+  color: #C4B5FD;
+  background: rgba(103, 61, 230, 0.35);
 }

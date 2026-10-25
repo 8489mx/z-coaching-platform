@@ -12,6 +12,7 @@ import {
 import { 
   CARD_FORMATS, 
   calculateTransformationStats, 
+  formatWeeksCountAr,
   renderTransformationCard, 
   downloadCanvasAsPng, 
   buildTransformationWhatsAppShare 
@@ -308,7 +309,7 @@ export default function InteractivePhotoComparisonStudio({
           {/* مبدل زاوية التصوير */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>الزاوية:</span>
-            <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '2px' }}>
+            <div style={{ display: 'inline-flex', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '2px' }}>
               {[
                 { id: 'FRONT', label: 'أمامي' },
                 { id: 'SIDE', label: 'جانبي' },
@@ -320,14 +321,14 @@ export default function InteractivePhotoComparisonStudio({
                   onClick={() => setAngle(a.id)}
                   style={{
                     border: 'none',
-                    background: angle === a.id ? '#0F172A' : 'transparent',
+                    background: angle === a.id ? '#673DE6' : 'transparent',
                     color: angle === a.id ? '#FFFFFF' : '#64748B',
                     padding: '4px 10px',
                     borderRadius: '6px',
                     fontSize: '11px',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    transition: 'all 0.12s ease'
+                    transition: 'all 0.15s ease'
                   }}
                 >
                   {a.label}
@@ -341,80 +342,92 @@ export default function InteractivePhotoComparisonStudio({
         {/* محددات الأسابيع وزر توليد الكارت */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           
-          {/* محدد أسبوع قبل */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
-            <span style={{ color: '#64748B', fontWeight: 600 }}>من:</span>
-            <CurvedSelect
-              value={beforeWeekIdx}
-              onChange={(e) => setBeforeWeekIdx(Number(e.target.value))}
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                padding: '3px 6px',
-                borderRadius: '8px',
-                border: '1px solid #CBD5E1',
-                background: '#FFFFFF',
-                color: '#0F172A',
-                outline: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              {availableWeeks.map((w, idx) => (
-                <option key={idx} value={idx}>
-                  الأسبوع {w.week} ({w.weight} كجم)
-                </option>
-              ))}
-            </CurvedSelect>
+          {/* كبسولة محددات المقارنة المنظمة */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: '#F8FAFC',
+            padding: '3px 8px',
+            borderRadius: '8px',
+            border: '1px solid #E2E8F0'
+          }}>
+            <span style={{ color: '#64748B', fontWeight: 700, fontSize: '11px' }}>من:</span>
+            <div style={{ minWidth: '135px' }}>
+              <CurvedSelect
+                value={beforeWeekIdx}
+                onChange={(e) => setBeforeWeekIdx(Number(e.target.value))}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#0F172A',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+              >
+                {availableWeeks.map((w, idx) => (
+                  <option key={idx} value={idx}>
+                    الأسبوع {w.week} ({w.weight} كجم)
+                  </option>
+                ))}
+              </CurvedSelect>
+            </div>
+
+            <span style={{ color: '#673DE6', fontWeight: 800, fontSize: '12px', userSelect: 'none' }}>←</span>
+
+            <span style={{ color: '#64748B', fontWeight: 700, fontSize: '11px' }}>إلى:</span>
+            <div style={{ minWidth: '135px' }}>
+              <CurvedSelect
+                value={afterWeekIdx}
+                onChange={(e) => setAfterWeekIdx(Number(e.target.value))}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#0F172A',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+              >
+                {availableWeeks.map((w, idx) => (
+                  <option key={idx} value={idx}>
+                    الأسبوع {w.week} ({w.weight} كجم)
+                  </option>
+                ))}
+              </CurvedSelect>
+            </div>
           </div>
 
-          <span style={{ color: '#94A3B8', fontWeight: 800 }}>←</span>
-
-          {/* محدد أسبوع بعد */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
-            <span style={{ color: '#64748B', fontWeight: 600 }}>إلى:</span>
-            <CurvedSelect
-              value={afterWeekIdx}
-              onChange={(e) => setAfterWeekIdx(Number(e.target.value))}
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                padding: '3px 6px',
-                borderRadius: '8px',
-                border: '1px solid #CBD5E1',
-                background: '#FFFFFF',
-                color: '#0F172A',
-                outline: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              {availableWeeks.map((w, idx) => (
-                <option key={idx} value={idx}>
-                  الأسبوع {w.week} ({w.weight} كجم)
-                </option>
-              ))}
-            </CurvedSelect>
-          </div>
-
-          {/* زر توليد كارت التحول التسويقي */}
+          {/* زر توليد كارت التحول التسويقي الفاخر */}
           <button
             type="button"
             onClick={() => setShowMarketingModal(true)}
             style={{
-              padding: '4px 12px',
+              padding: '6px 12px',
               borderRadius: '8px',
               border: 'none',
-              background: '#0F172A',
-              color: '#C4952D',
+              background: '#673DE6',
+              color: '#FFFFFF',
               fontSize: '11px',
-              fontWeight: 800,
+              fontWeight: 700,
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: '0 2px 5px rgba(15, 23, 42, 0.2)'
+              boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)',
+              transition: 'all 0.15s ease'
             }}
           >
-            <Award size={13} color="#C4952D" />
+            <Award size={13} color="#FFFFFF" />
             <span>كارت التحول التسويقي</span>
           </button>
 
@@ -424,7 +437,7 @@ export default function InteractivePhotoComparisonStudio({
             onClick={() => setIsFullscreen(true)}
             title="تكبير شاشة المقارنة"
             style={{
-              padding: '5px 8px',
+              padding: '6px 8px',
               borderRadius: '8px',
               border: '1px solid #CBD5E1',
               background: '#FFFFFF',
@@ -432,7 +445,8 @@ export default function InteractivePhotoComparisonStudio({
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              transition: 'all 0.15s ease'
             }}
           >
             <Maximize2 size={13} />
@@ -579,13 +593,13 @@ export default function InteractivePhotoComparisonStudio({
       {/* 3. شريط إحصائيات التحول الدقيقة */}
       <div style={{ padding: '10px 14px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px', flexWrap: 'wrap', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <TrendingUp size={14} color="#0F172A" />
+          <TrendingUp size={14} color="#673DE6" />
           <strong style={{ color: '#0F172A' }}>صافي نتائج التحول والقياسات:</strong>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '11px' }}>
           <span>
-            فارق الوزن: <strong style={{ color: stats.weightDiff < 0 ? '#16A34A' : (stats.weightDiff === 0 ? '#0284C7' : '#DC2626'), fontFamily: 'JetBrains Mono' }}>
+            فارق الوزن: <strong style={{ color: stats.weightDiff < 0 ? '#16A34A' : (stats.weightDiff === 0 ? '#64748B' : '#DC2626'), fontFamily: 'JetBrains Mono' }}>
               {stats.weightDiff > 0 ? `+${stats.weightDiff}` : stats.weightDiff} كجم
             </strong>
           </span>
@@ -595,10 +609,10 @@ export default function InteractivePhotoComparisonStudio({
             </strong>
           </span>
           <span style={{ color: '#64748B' }}>
-            المدة: <strong style={{ color: '#0F172A' }}>{stats.weeksCount} أسابيع</strong>
+            المدة: <strong style={{ color: '#0F172A' }}>{formatWeeksCountAr(stats.weeksCount)}</strong>
           </span>
           <span style={{ color: '#64748B' }}>
-            الالتزام: <strong style={{ color: '#C4952D' }}>{stats.adherenceRate}%</strong>
+            الالتزام: <strong style={{ color: '#673DE6' }}>{stats.adherenceRate}%</strong>
           </span>
         </div>
       </div>
@@ -637,9 +651,9 @@ export default function InteractivePhotoComparisonStudio({
             }}
           >
             {/* ترويسة النافذة */}
-            <div style={{ padding: '12px 18px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
+            <div style={{ padding: '12px 18px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FAF7FD' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Award size={16} color="#C4952D" />
+                <Award size={16} color="#673DE6" />
                 <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
                   توليد كارت التحول التسويقي الفاخر (Z Marketing Studio)
                 </h3>
@@ -650,7 +664,7 @@ export default function InteractivePhotoComparisonStudio({
                 style={{
                   border: '1px solid #E2E8F0',
                   background: '#FFFFFF',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   width: '30px',
                   height: '30px',
                   display: 'flex',
@@ -665,7 +679,7 @@ export default function InteractivePhotoComparisonStudio({
             </div>
 
             {/* محتوى النافذة */}
-            <div style={{ padding: '16px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: '16px', background: '#F1F5F9' }}>
+            <div style={{ padding: '16px', display: 'grid', gridTemplateColumns: '1fr 340px', gap: '16px', background: '#F8FAFC' }}>
               
               {/* المعاينة الحية للكارت */}
               <div style={{ background: '#0F172A', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '440px', position: 'relative' }}>
@@ -676,7 +690,7 @@ export default function InteractivePhotoComparisonStudio({
                     maxHeight: '480px', 
                     borderRadius: '8px', 
                     boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                    border: '1px solid rgba(196, 149, 45, 0.3)'
+                    border: '1px solid rgba(103, 61, 230, 0.3)'
                   }} 
                 />
                 {isGeneratingCard && (
@@ -703,20 +717,21 @@ export default function InteractivePhotoComparisonStudio({
                         style={{
                           textAlign: 'right',
                           padding: '7px 10px',
-                          borderRadius: '6px',
-                          border: selectedFormat === f.id ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
-                          background: selectedFormat === f.id ? '#F8FAFC' : '#FFFFFF',
+                          borderRadius: '8px',
+                          border: selectedFormat === f.id ? '1.5px solid #673DE6' : '1px solid #E2E8F0',
+                          background: selectedFormat === f.id ? '#FAF7FD' : '#FFFFFF',
                           cursor: 'pointer',
                           display: 'flex',
                           justifyContent: 'space-between',
-                          alignItems: 'center'
+                          alignItems: 'center',
+                          transition: 'all 0.15s ease'
                         }}
                       >
                         <div>
                           <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{f.name}</strong>
                           <span style={{ fontSize: '10px', color: '#64748B' }}>{f.recommendedFor}</span>
                         </div>
-                        {selectedFormat === f.id && <Check size={14} color="#C4952D" />}
+                        {selectedFormat === f.id && <Check size={14} color="#673DE6" />}
                       </button>
                     ))}
                   </div>
@@ -735,7 +750,7 @@ export default function InteractivePhotoComparisonStudio({
                     style={{
                       width: '100%',
                       padding: '7px 10px',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       fontSize: '11.5px',
                       color: '#0F172A',
@@ -747,14 +762,13 @@ export default function InteractivePhotoComparisonStudio({
                 {/* 3. خيارات الخصوصية */}
                 <div style={{ background: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>إعدادات الخصوصية وحماية الهوية:</span>
-                  
 
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', cursor: 'pointer' }}>
                     <input 
                       type="checkbox"
                       checked={hideClientName}
                       onChange={(e) => setHideClientName(e.target.checked)}
-                      style={{ accentColor: '#C4952D', cursor: 'pointer' }}
+                      style={{ accentColor: '#673DE6', cursor: 'pointer' }}
                     />
                     <span>إخفاء الاسم الكامل (إظهار كود المشترك فقط)</span>
                   </label>
@@ -768,9 +782,9 @@ export default function InteractivePhotoComparisonStudio({
                     style={{
                       width: '100%',
                       padding: '10px',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       border: 'none',
-                      background: '#0F172A',
+                      background: '#673DE6',
                       color: '#FFFFFF',
                       fontSize: '12px',
                       fontWeight: 800,
@@ -779,10 +793,11 @@ export default function InteractivePhotoComparisonStudio({
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
-                      boxShadow: '0 2px 6px rgba(15,23,42,0.25)'
+                      boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)',
+                      transition: 'all 0.15s ease'
                     }}
                   >
-                    <Download size={14} color="#C4952D" />
+                    <Download size={14} color="#FFFFFF" />
                     <span>تحميل الكارت بصيغة PNG عالية الدقة</span>
                   </button>
 
@@ -792,7 +807,7 @@ export default function InteractivePhotoComparisonStudio({
                     style={{
                       width: '100%',
                       padding: '8px',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       border: '1px solid #86EFAC',
                       background: '#F0FDF4',
                       color: '#16A34A',
@@ -802,7 +817,8 @@ export default function InteractivePhotoComparisonStudio({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '6px'
+                      gap: '6px',
+                      transition: 'all 0.15s ease'
                     }}
                   >
                     <Share2 size={13} />
@@ -815,9 +831,15 @@ export default function InteractivePhotoComparisonStudio({
             </div>
 
             {/* فوتر النافذة */}
-            <div style={{ padding: '10px 18px', background: '#FFFFFF', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px' }}>
-              <span style={{ color: '#64748B' }}>
-                الكارت يوثق نزول <strong>{Math.abs(stats.weightDiff)} كجم</strong> خلال <strong>{stats.weeksCount} أسابيع</strong> بنسبة التزام <strong>{stats.adherenceRate}%</strong>
+            <div style={{ padding: '12px 18px', background: '#FFFFFF', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11.5px' }}>
+              <span style={{ color: '#475569' }}>
+                {stats.weightDiff < 0 ? (
+                  <>الكارت يوثق نزول <strong>{Math.abs(stats.weightDiff)} كجم</strong> خلال <strong>{formatWeeksCountAr(stats.weeksCount)}</strong> بنسبة التزام <strong>{stats.adherenceRate}%</strong></>
+                ) : stats.weightDiff > 0 ? (
+                  <>الكارت يوثق زيادة <strong>{Math.abs(stats.weightDiff)} كجم</strong> خلال <strong>{formatWeeksCountAr(stats.weeksCount)}</strong> بنسبة التزام <strong>{stats.adherenceRate}%</strong></>
+                ) : (
+                  <>الكارت يوثق <strong>ثبات الوزن</strong> خلال <strong>{formatWeeksCountAr(stats.weeksCount)}</strong> بنسبة التزام <strong>{stats.adherenceRate}%</strong></>
+                )}
               </span>
               <button
                 type="button"
@@ -931,7 +953,7 @@ export default function InteractivePhotoComparisonStudio({
               <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
-                style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#0F172A', color: '#FFFFFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#673DE6', color: '#FFFFFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)' }}
               >
                 إغلاق الاستوديو
               </button>

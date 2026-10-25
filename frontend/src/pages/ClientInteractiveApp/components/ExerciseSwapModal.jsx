@@ -90,7 +90,7 @@ export default function ExerciseSwapModal({
           maxWidth: '480px',
           background: '#FFFFFF',
           color: '#0F172A',
-          borderRadius: '20px',
+          borderRadius: '16px',
           padding: '20px',
           direction: 'rtl',
           boxShadow: '0 10px 40px rgba(0, 0, 0, 0.25)',

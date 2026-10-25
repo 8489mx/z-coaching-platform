@@ -533,7 +533,7 @@ export default function IntakeAuditDetailModal({
                       padding: '8px 18px',
                       borderRadius: '8px',
                       border: 'none',
-                      background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+                      background: '#673DE6',
                       color: '#FFFFFF',
                       fontSize: '12.5px',
                       fontWeight: 800,
@@ -541,7 +541,7 @@ export default function IntakeAuditDetailModal({
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '8px',
-                      boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)'
+                      boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)'
                     }}
                   >
                     <Zap size={14} color="#FBBF24" />

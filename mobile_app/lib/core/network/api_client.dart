@@ -20,8 +20,8 @@ class ApiResponse<T> {
     return ApiResponse(isSuccess: true, data: data, statusCode: statusCode);
   }
 
-  factory ApiResponse.failure(String message, {int statusCode = 500}) {
-    return ApiResponse(isSuccess: false, errorMessage: message, statusCode: statusCode);
+  factory ApiResponse.failure(String message, {int statusCode = 500, T? data}) {
+    return ApiResponse(isSuccess: false, errorMessage: message, statusCode: statusCode, data: data);
   }
 }
 
@@ -123,7 +123,7 @@ class ApiClient {
       } else if (decoded is Map && decoded['error'] != null) {
         message = decoded['error'].toString();
       }
-      return ApiResponse.failure(message, statusCode: response.statusCode);
+      return ApiResponse.failure(message, statusCode: response.statusCode, data: decoded);
     }
   }
 }

@@ -92,9 +92,9 @@ export default function FoodSwapModal({
             style={{
               width: '100%',
               height: '38px',
-              borderRadius: '10px',
+              borderRadius: '8px',
               border: '1px solid #CBD5E1',
-              padding: '0 12px',
+              padding: '0 16px',
               fontSize: '0.82rem',
               fontWeight: 600,
               outline: 'none',

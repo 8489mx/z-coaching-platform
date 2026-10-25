@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { X, Copy, Check, Send } from 'lucide-react';
+import { X, Copy, Check, Send, MessageCircle } from 'lucide-react';
 import { copyToClipboard } from '../../utils/clipboardUtils';
 import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
+import { ClientCodeBadge } from '../../utils/tierBadgeHelper';
 
 export default function WhatsAppModal({ client, onClose }) {
   const [template, setTemplate] = useState('intake');
@@ -116,7 +117,7 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
           width: '100%',
           maxWidth: '560px',
           background: '#FFFFFF',
-          borderRadius: '14px',
+          borderRadius: '16px',
           border: '1px solid #E2E8F0',
           boxShadow: '0 20px 40px rgba(15, 23, 42, 0.2)',
           overflow: 'hidden',
@@ -136,13 +137,25 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '3px', height: '18px', background: '#0284C7', borderRadius: '2px' }} />
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              background: '#F4F0FD',
+              color: '#673DE6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <MessageCircle size={18} />
+            </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#101828' }}>
                 مركز رسائل الواتساب الذكية
               </h3>
               <span style={{ fontSize: '11px', color: '#64748B' }}>
-                المشترك: <strong style={{ color: '#0F172A' }}>{clientName}</strong> (#{clientCode}) • {clientPhone}
+                المشترك: <ClientCodeBadge code={clientCode} size="xs" style={{ margin: '0 4px' }} /> <strong style={{ color: '#0F172A' }}>{clientName}</strong> | {clientPhone}
               </span>
             </div>
           </div>
@@ -192,8 +205,8 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
                     style={{
                       height: '36px',
                       borderRadius: '8px',
-                      border: isActive ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
-                      background: isActive ? '#0F172A' : '#F8FAFC',
+                      border: isActive ? '1.5px solid #673DE6' : '1px solid #E2E8F0',
+                      background: isActive ? '#673DE6' : '#F8FAFC',
                       color: isActive ? '#FFFFFF' : '#475569',
                       fontSize: '11.5px',
                       fontWeight: 700,

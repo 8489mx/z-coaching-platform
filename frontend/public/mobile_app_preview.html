@@ -7537,6 +7537,23 @@
       loadSavedUnitPreferences();
       renderCheckinScheduleCard();
       const params = new URLSearchParams(window.location.search);
+      const paramName = params.get('name');
+      const paramCode = params.get('code') || params.get('client_code');
+      if (paramName) {
+        try {
+          const cleanFullName = decodeURIComponent(paramName).replace(/مشترك\s*#?\d+/g, '').trim();
+          const firstName = cleanFullName.split(/\s+/)[0] || cleanFullName;
+          const greetingEl = document.querySelector('#screen-today h1');
+          if (greetingEl) {
+            greetingEl.textContent = `صباح الخير، ${firstName}`;
+          }
+          const profileNameEl = document.querySelector('#screen-account h2');
+          if (profileNameEl) {
+            profileNameEl.textContent = cleanFullName;
+          }
+        } catch (_) {}
+      }
+
       if (params.get('raw') === '1') {
         document.body.classList.remove('phone-mode');
         document.body.classList.add('raw-preview');

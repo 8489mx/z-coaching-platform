@@ -169,7 +169,6 @@ export default function IntakeSubmissions() {
         window.open(`/coach/editor?user_id=${lookup}&submission_id=${submission.id}`, '_blank');
         fetchSubmissions();
       } else {
-        // A case outside the service comes back with its reasons and what to tell the client.
         const reasons = Array.isArray(data.reasons_ar) ? data.reasons_ar : [];
         alert([
           data.error || 'فشل توليد مسودة الخطة',
@@ -232,59 +231,137 @@ export default function IntakeSubmissions() {
   const approvedCount = submissions.filter(s => s.status === 'APPROVED').length;
 
   const statCards = [
-    { id: 'ALL', title: 'كافة الاستمارات', value: submissions.length, unit: 'استمارة', label: 'إجمالي المسجلين', icon: Layers, shortcut: '1' },
-    { id: 'IN_PROGRESS', title: 'استمارات جارية', value: inProgressCount, unit: 'استمارة', label: 'قيد التعبئة', icon: Edit3, shortcut: '2' },
-    { id: 'PENDING', title: 'بانتظار المراجعة', value: pendingCount, unit: 'استمارة', label: 'مكتملة الإجابات', icon: Clock, shortcut: '3' },
-    { id: 'PAID', title: 'مؤكدة الدفع', value: paidCount, unit: 'استمارة', label: 'تم التحويل', icon: CreditCard, shortcut: '4' },
-    { id: 'DRAFT', title: 'مسودات الخطط', value: draftCount, unit: 'خطة', label: 'جاهزة للاعتماد', icon: FileText, shortcut: '5' },
-    { id: 'APPROVED', title: 'البرامج المعتمدة', value: approvedCount, unit: 'برنامج', label: 'منشورة للمتدرب', icon: CheckCircle2, shortcut: '6' },
+    { 
+      id: 'ALL', 
+      title: 'كافة الاستمارات', 
+      value: submissions.length, 
+      unit: 'استمارة', 
+      label: 'إجمالي المسجلين', 
+      icon: Layers,
+      visuals: {
+        bg: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
+        border: '1px solid #E9D7FE',
+        color: '#673DE6',
+        shadow: '0 1px 3px rgba(103, 61, 230, 0.08)'
+      }
+    },
+    { 
+      id: 'IN_PROGRESS', 
+      title: 'استمارات جارية', 
+      value: inProgressCount, 
+      unit: 'استمارة', 
+      label: 'قيد التعبئة', 
+      icon: Edit3,
+      visuals: {
+        bg: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
+        border: '1px solid #BFDBFE',
+        color: '#1D4ED8',
+        shadow: '0 1px 3px rgba(29, 78, 216, 0.08)'
+      }
+    },
+    { 
+      id: 'PENDING', 
+      title: 'بانتظار المراجعة', 
+      value: pendingCount, 
+      unit: 'استمارة', 
+      label: 'مكتملة الإجابات', 
+      icon: Clock,
+      visuals: {
+        bg: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
+        border: '1px solid #FDE68A',
+        color: '#B45309',
+        shadow: '0 1px 3px rgba(180, 83, 9, 0.08)'
+      }
+    },
+    { 
+      id: 'PAID', 
+      title: 'مؤكدة الدفع', 
+      value: paidCount, 
+      unit: 'استمارة', 
+      label: 'تم التحويل', 
+      icon: CreditCard,
+      visuals: {
+        bg: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
+        border: '1px solid #BBF7D0',
+        color: '#059669',
+        shadow: '0 1px 3px rgba(5, 150, 105, 0.08)'
+      }
+    },
+    { 
+      id: 'DRAFT', 
+      title: 'مسودات الخطط', 
+      value: draftCount, 
+      unit: 'خطة', 
+      label: 'جاهزة للاعتماد', 
+      icon: FileText,
+      visuals: {
+        bg: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
+        border: '1px solid #C7D2FE',
+        color: '#4338CA',
+        shadow: '0 1px 3px rgba(67, 56, 202, 0.08)'
+      }
+    },
+    { 
+      id: 'APPROVED', 
+      title: 'البرامج المعتمدة', 
+      value: approvedCount, 
+      unit: 'برنامج', 
+      label: 'منشورة للمتدرب', 
+      icon: CheckCircle2,
+      visuals: {
+        bg: 'linear-gradient(135deg, #ECFDF5 0%, #D1FADF 100%)',
+        border: '1px solid #A7F3D0',
+        color: '#047857',
+        shadow: '0 1px 3px rgba(4, 120, 87, 0.08)'
+      }
+    },
   ];
 
   return (
     <AdminLayout>
-      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
         {/* 1. Page Header */}
         <PageHeader
           title="استمارات المشتركين"
           description="متابعة استمارات المشتركين الجدد وتوليد الخطط واعتمادها فورياً."
           actions={(
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <RefreshButton onClick={fetchSubmissions} loading={loading} shortcut="R" />
-            <Link
-              to="/intake/form"
-              target="_blank"
-              style={{
-                height: '36px',
-                padding: '0 16px',
-                fontSize: '12.5px',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                borderRadius: '8px',
-                background: '#0F172A',
-                color: '#FFFFFF',
-                textDecoration: 'none',
-                boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
-            >
-              <ExternalLink size={14} />
-              <span>رابط الاستمارة</span>
-            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <RefreshButton onClick={fetchSubmissions} loading={loading} shortcut="R" />
+              <Link
+                to="/intake/form"
+                target="_blank"
+                style={{
+                  height: '34px',
+                  padding: '0 16px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '8px',
+                  border: '1px solid #D0D5DD',
+                  background: '#FFFFFF',
+                  color: '#344054',
+                  textDecoration: 'none',
+                  boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+              >
+                <ExternalLink size={14} color="#667085" />
+                <span>رابط الاستمارة</span>
+              </Link>
             </div>
           )}
         />
 
         {/* 2. 6-Column Interactive KPI Filter Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '14px' }}>
           {statCards.map((st, i) => {
             const Icon = st.icon;
             const isSel = filter === st.id;
-            // Same rule as the daily dashboard: an empty count steps back instead of shouting zero.
             const isEmpty = Number(st.value) === 0 && !isSel;
             return (
               <div 
@@ -293,62 +370,51 @@ export default function IntakeSubmissions() {
                 role="button"
                 tabIndex={0}
                 style={{
-                  background: isSel ? '#F8FAFC' : '#FFFFFF',
-                  border: isSel ? '2px solid #0F172A' : '1px solid #E2E8F0',
-                  borderRadius: '12px',
-                  padding: '14px 16px',
-                  boxShadow: isSel ? '0 4px 12px rgba(15, 23, 42, 0.08)' : '0 1px 3px rgba(15, 23, 42, 0.02)',
+                  background: isSel ? '#FAF5FF' : '#FFFFFF',
+                  border: isSel ? '1.5px solid #673DE6' : '1px solid #EAECF0',
+                  borderRadius: '14px',
+                  padding: '16px 18px',
+                  boxShadow: isSel ? '0 1px 3px rgba(103, 61, 230, 0.12)' : '0 1px 2px rgba(16, 24, 40, 0.05)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '10px',
+                  gap: '12px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: isSel ? 800 : 700, color: isSel ? '#0F172A' : (isEmpty ? '#94A3B8' : '#64748B'), whiteSpace: 'nowrap' }}>{st.title}</span>
-                    <span style={{
-                      fontSize: '9.5px',
-                      fontFamily: 'JetBrains Mono, monospace',
-                      padding: '1px 5px',
-                      borderRadius: '6px',
-                      background: isSel ? '#0F172A' : '#F1F5F9',
-                      color: isSel ? '#FFFFFF' : '#64748B',
-                      border: `1px solid ${isSel ? '#0F172A' : '#CBD5E1'}`,
-                      fontWeight: 700
-                    }}>
-                      [{st.shortcut}]
-                    </span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: isSel ? '#673DE6' : (isEmpty ? '#98A2B3' : '#475467'), whiteSpace: 'nowrap' }}>{st.title}</span>
                   </div>
                   <div style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '8px',
-                    background: isSel ? '#0F172A' : '#F8FAFC',
-                    border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                    color: isSel ? '#FFFFFF' : (isEmpty ? '#94A3B8' : '#0F172A'),
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: st.visuals.bg,
+                    border: st.visuals.border,
+                    color: st.visuals.color,
+                    boxShadow: st.visuals.shadow,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
                     transition: 'all 0.15s ease'
                   }}>
-                    <Icon size={14} />
+                    <Icon size={18} strokeWidth={2.2} color={st.visuals.color} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 900, color: isEmpty ? '#CBD5E1' : '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ fontSize: '1.65rem', fontWeight: 700, color: isEmpty ? '#CBD5E1' : '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
                       {st.value}
                     </span>
                     {st.unit && (
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 500, color: '#667085' }}>
                         {st.unit}
                       </span>
                     )}
                   </div>
-                  <span style={{ fontSize: '10.5px', color: isSel ? '#0F172A' : '#94A3B8', fontWeight: isSel ? 700 : 600, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: '11px', color: isSel ? '#673DE6' : '#98A2B3', fontWeight: isSel ? 600 : 500, whiteSpace: 'nowrap' }}>
                     {st.label}
                   </span>
                 </div>
@@ -364,19 +430,19 @@ export default function IntakeSubmissions() {
           actions={(
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               {/* Search Box */}
-              <TableSearch value={searchTerm} onChange={setSearchTerm} inputRef={searchInputRef} placeholder="بحث في الاستمارات" width="210px" />
+              <TableSearch value={searchTerm} onChange={setSearchTerm} inputRef={searchInputRef} placeholder="بحث في الاستمارات" width="220px" />
 
               {/* Active Filter Indicator Tag */}
               {filter !== 'ALL' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F1F5F9', padding: '4px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '11px', color: '#0F172A', fontWeight: 700 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F4F0FD', padding: '4px 12px', borderRadius: '8px', border: '1px solid #EDE8FA', fontSize: '11.5px', color: '#673DE6', fontWeight: 600 }}>
                   <span>التصفية: {statCards.find(c => c.id === filter)?.title}</span>
                   <button
                     type="button"
                     onClick={() => setFilter('ALL')}
-                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#64748B' }}
+                    style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#673DE6' }}
                     title="إلغاء التصفية وعرض الكل"
                   >
-                    <X size={12} />
+                    <X size={13} />
                   </button>
                 </div>
               )}
@@ -384,59 +450,57 @@ export default function IntakeSubmissions() {
           )}
         >
           {loading ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
+            <div style={{ padding: '40px', textAlign: 'center', color: '#667085', fontSize: '13px' }}>
               جاري تحميل الاستمارات...
             </div>
           ) : filteredSubmissions.length === 0 ? (
-            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '12px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
+            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F9FAFB', border: '1px dashed #D0D5DD', borderRadius: '12px' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#F2F4F7', color: '#475467', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
                 <CheckCircle2 size={18} />
               </div>
-              <strong style={{ fontSize: '13px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا توجد استمارات مطابقة</strong>
-              <small style={{ fontSize: '11.5px', color: '#64748B' }}>لم يتم العثور على أي استمارة مسجلة تحت هذا التصنيف أو البحث.</small>
+              <strong style={{ fontSize: '13px', color: '#101828', display: 'block', marginBottom: '2px', fontWeight: 600 }}>لا توجد استمارات مطابقة</strong>
+              <small style={{ fontSize: '12px', color: '#667085' }}>لم يتم العثور على أي استمارة مسجلة تحت هذا التصنيف أو البحث.</small>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '12px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
+            <div style={{ overflowX: 'auto', border: '1px solid #EAECF0', borderRadius: '14px', background: '#FFFFFF', boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12.5px' }}>
                 <thead>
-                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
-                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '85px' }}>كود العميل</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>اسم المتدرب</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '110px' }}>رقم الهاتف</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '85px' }}>الباقة</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '90px' }}>السعر</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '100px' }}>حالة الدفع</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '100px' }}>حالة الاستمارة</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'left', minWidth: '300px' }}>الإجراءات</th>
+                  <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #EAECF0', color: '#475467', fontWeight: 600 }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '85px' }}>كود العميل</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right' }}>اسم المتدرب</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '110px' }}>رقم الهاتف</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '85px' }}>الباقة</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '90px' }}>السعر</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '105px' }}>حالة الدفع</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '110px' }}>حالة الاستمارة</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', minWidth: '300px' }}>الإجراءات</th>
                   </tr>
                 </thead>
-                                <tbody>
+                <tbody>
                   {filteredSubmissions.map((sub) => {
                     const clientName = sub.user?.full_name || sub.answers?.personal?.firstName || 'متدرب جديد';
                     const clientPhone = sub.user?.phone_number || sub.answers?.personal?.phone || '-';
                     const rawCode = sub.user?.client_code || sub.answers?.client_code || sub.client_code || '1';
                     const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
-                    const rawPkg = sub.user?.subscription_package || sub.package_name || sub.subscription_package || sub.user?.package || 'ELITE';
-                    const _clean = String(rawPkg).trim().toUpperCase();
                     const isMax = getClientTier(sub) === 'MAX';
                     const rawPrice = sub.user?.subscription_price || sub.subscription_price || (isMax ? 3500 : 2500);
 
                     return (
                       <tr 
                         key={sub.id} 
-                        style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s ease' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                        style={{ borderBottom: '1px solid #EAECF0', transition: 'background 0.15s ease' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
                         {/* 1. Code */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           <ClientCodeBadge code={cleanCode} item={sub} />
                         </td>
 
                         {/* 2. Name */}
-                        <td style={{ padding: '10px 14px', textAlign: 'right' }}>
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                            <strong style={{ color: '#0F172A', fontSize: '13px' }}>{clientName}</strong>
+                            <strong style={{ color: '#101828', fontSize: '13px', fontWeight: 600 }}>{clientName}</strong>
                             {(() => {
                               const fasting = extractClientFastingProfile(sub, sub.answers);
                               const injuries = sub.answers?.injuries_map?.selected_areas || sub.answers?.training?.selectedInjuries || [];
@@ -448,75 +512,58 @@ export default function IntakeSubmissions() {
                                 const code = typeof x === 'string' ? x : x?.conditionCode;
                                 return code && code !== 'NONE';
                               }) : [];
-                              const hasConditions = validConditions.length > 0;
+                              const hasMedical = validConditions.length > 0;
 
-                              const allergies = sub.answers?.strict_allergies || sub.answers?.nutrition?.excludedFoodsList || [];
-                              const validAllergies = Array.isArray(allergies) ? allergies.filter(x => x && x !== 'NONE') : [];
+                              const foodAllergies = sub.answers?.food_allergies?.selected || sub.answers?.nutrition?.allergies || [];
+                              const validAllergies = Array.isArray(foodAllergies) ? foodAllergies.filter(x => x && x !== 'NONE') : [];
                               const hasAllergies = validAllergies.length > 0;
 
                               return (
                                 <>
                                   {fasting.primaryFastingBadge && (
                                     <span style={{
-                                      fontSize: '10px',
-                                      padding: '2px 7px',
-                                      borderRadius: '6px',
-                                      background: fasting.primaryFastingBadge.bg,
-                                      border: `1px solid ${fasting.primaryFastingBadge.border}`,
-                                      color: fasting.primaryFastingBadge.color,
-                                      fontWeight: 800
+                                      fontSize: '10.5px',
+                                      padding: '3px 9px', borderRadius: '6px',
+                                      background: '#F2F4F7',
+                                      border: '1px solid #EAECF0',
+                                      color: '#344054',
+                                      fontWeight: 600
                                     }}>
                                       {fasting.primaryFastingBadge.label}
                                     </span>
                                   )}
-                                  {fasting.intermittentBadge && (
-                                    <span style={{
-                                      fontSize: '10px',
-                                      padding: '2px 7px',
-                                      borderRadius: '6px',
-                                      background: fasting.intermittentBadge.bg,
-                                      border: `1px solid ${fasting.intermittentBadge.border}`,
-                                      color: fasting.intermittentBadge.color,
-                                      fontWeight: 800
-                                    }}>
-                                      {fasting.intermittentBadge.label}
-                                    </span>
-                                  )}
                                   {hasInjuries && (
                                     <span style={{
-                                      fontSize: '10px',
-                                      padding: '2px 7px',
-                                      borderRadius: '6px',
-                                      background: '#FEF2F2',
-                                      border: '1px solid #FECACA',
-                                      color: '#DC2626',
-                                      fontWeight: 800
-                                    }} title="توجد إصابات مسجلة بالاستمارة">
+                                      fontSize: '10.5px',
+                                      padding: '3px 9px', borderRadius: '6px',
+                                      background: '#FEF3F2',
+                                      border: '1px solid #FECDCA',
+                                      color: '#B42318',
+                                      fontWeight: 600
+                                    }} title="توجد إصابات مسجلة">
                                       إصابة
                                     </span>
                                   )}
-                                  {hasConditions && (
+                                  {hasMedical && (
                                     <span style={{
-                                      fontSize: '10px',
-                                      padding: '2px 7px',
-                                      borderRadius: '6px',
-                                      background: '#FFFBEB',
-                                      border: '1px solid #FDE68A',
-                                      color: '#D97706',
-                                      fontWeight: 800
-                                    }} title="توجد حالات صحية مسجلة">
-                                      حالة صحية
+                                      fontSize: '10.5px',
+                                      padding: '3px 9px', borderRadius: '6px',
+                                      background: '#FFFAEB',
+                                      border: '1px solid #FEDF89',
+                                      color: '#B54708',
+                                      fontWeight: 600
+                                    }} title="توجد حالات طبية مسجلة">
+                                      طبي
                                     </span>
                                   )}
                                   {hasAllergies && (
                                     <span style={{
-                                      fontSize: '10px',
-                                      padding: '2px 7px',
-                                      borderRadius: '6px',
-                                      background: '#FDF2F8',
-                                      border: '1px solid #FBCFE8',
-                                      color: '#DB2777',
-                                      fontWeight: 800
+                                      fontSize: '10.5px',
+                                      padding: '3px 9px', borderRadius: '6px',
+                                      background: '#F2F4F7',
+                                      border: '1px solid #EAECF0',
+                                      color: '#475467',
+                                      fontWeight: 600
                                     }} title="توجد حساسيات طعام مسجلة">
                                       حساسية
                                     </span>
@@ -528,41 +575,40 @@ export default function IntakeSubmissions() {
                         </td>
 
                         {/* 3. Phone */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11.5px', color: '#475569' }}>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: '#475467' }}>
                             {clientPhone}
                           </span>
                         </td>
 
                         {/* 4. Package */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           <ClientPackageBadge item={sub} />
                         </td>
 
                         {/* 5. Price */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                           <span style={{ 
-                            background: '#F8FAFC', 
-                            border: '1px solid #E2E8F0', 
-                            padding: '3px 9px', 
-                            borderRadius: '6px', 
+                            background: '#F9FAFB', 
+                            border: '1px solid #EAECF0', 
+                            padding: '3px 10px', borderRadius: '6px', 
                             display: 'inline-flex',
                             alignItems: 'baseline',
                             gap: '3px',
                             justifyContent: 'center'
                           }}>
                             <span style={{ 
-                              color: '#0F172A', 
-                              fontSize: '11px', 
-                              fontWeight: 800, 
+                              color: '#101828', 
+                              fontSize: '11.5px', 
+                              fontWeight: 700, 
                               fontFamily: 'JetBrains Mono, Cairo, sans-serif'
                             }}>
                               {Number(rawPrice).toLocaleString('en-US')}
                             </span>
                             <span style={{ 
-                              fontSize: '9.5px', 
-                              fontWeight: 700, 
-                              color: '#64748B', 
+                              fontSize: '10px', 
+                              fontWeight: 600, 
+                              color: '#667085', 
                               fontFamily: 'Cairo, sans-serif' 
                             }}>
                               ج.م
@@ -571,45 +617,44 @@ export default function IntakeSubmissions() {
                         </td>
 
                         {/* 5. Payment Status */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           {sub.payment_status === 'PAID' || sub.status === 'PAYMENT_CONFIRMED' || sub.status === 'APPROVED' ? (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#16A34A', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                            <span style={{ background: '#ECFDF3', border: '1px solid #A6F4C7', color: '#027A48', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               مدفوع (مؤكد)
                             </span>
                           ) : (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#D97706', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                            <span style={{ background: '#FFFAEB', border: '1px solid #FEDF89', color: '#B54708', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               بانتظار الدفع
                             </span>
                           )}
                         </td>
 
                         {/* 6. Intake Status */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           {sub.status === 'APPROVED' ? (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#16A34A', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 800, display: 'inline-block' }}>
+                            <span style={{ background: '#ECFDF3', border: '1px solid #A6F4C7', color: '#027A48', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               معتمد ومنشور
                             </span>
                           ) : sub.status === 'DRAFT_GENERATED' ? (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0284C7', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                            <span style={{ background: '#F4F0FD', border: '1px solid #EDE8FA', color: '#673DE6', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               مسودة جاهزة
                             </span>
                           ) : sub.status === 'PENDING_COACH_REVIEW' ? (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#D97706', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                            <span style={{ background: '#FFFAEB', border: '1px solid #FEDF89', color: '#B54708', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               بانتظار المراجعة
                             </span>
                           ) : (
-                            <span style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', padding: '2px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, display: 'inline-block' }}>
+                            <span style={{ background: '#F2F4F7', border: '1px solid #EAECF0', color: '#475467', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               قيد التعبئة
                             </span>
                           )}
                         </td>
 
                         {/* 7. Actions */}
-                        <td style={{ padding: '10px 14px', textAlign: 'left' }}>
+                        <td style={{ padding: '12px 16px', textAlign: 'left' }}>
                           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                             
                             {/* WhatsApp Nudge Button */}
-                            {/* WhatsApp Nudge / Chat */}
                             <button
                               type="button"
                               onClick={() => {
@@ -625,30 +670,28 @@ export default function IntakeSubmissions() {
                                 }
                               }}
                               style={{
-                                padding: '5px 10px',
-                                borderRadius: '8px',
-                                border: '1px solid #E2E8F0',
-                                background: 'transparent',
-                                color: '#16A34A',
+                                height: '32px', padding: '0 13px', borderRadius: '8px',
+                                border: '1px solid #D0D5DD',
+                                background: '#FFFFFF',
+                                color: '#027A48',
                                 fontSize: '11.5px',
-                                fontWeight: 700,
+                                fontWeight: 600,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '5px',
+                                gap: '4px',
+                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
                                 transition: 'all 0.15s ease'
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'transparent';
-                                e.currentTarget.style.borderColor = '#BBF7D0';
+                                e.currentTarget.style.background = '#F9FAFB';
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'transparent';
-                                e.currentTarget.style.borderColor = '#E2E8F0';
+                                e.currentTarget.style.background = '#FFFFFF';
                               }}
                               title={sub.status === 'IN_PROGRESS' ? 'إرسال تذكير لإكمال الاستمارة' : 'مركز رسائل الواتساب'}
                             >
-                              <MessageCircle size={13} />
+                              <MessageCircle size={13} color="#027A48" />
                               <span>واتساب</span>
                             </button>
 
@@ -657,21 +700,24 @@ export default function IntakeSubmissions() {
                               type="button"
                               onClick={() => handleToggleAnswers(sub)}
                               style={{
-                                padding: '5px 9px',
-                                borderRadius: '8px',
-                                border: '1px solid #CBD5E1',
+                                height: '32px', padding: '0 13px', borderRadius: '8px',
+                                border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
-                                color: '#475569',
-                                fontSize: '11px',
-                                fontWeight: 700,
+                                color: '#344054',
+                                fontSize: '11.5px',
+                                fontWeight: 600,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px'
+                                gap: '4px',
+                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
+                                transition: 'all 0.15s ease'
                               }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
                               title="عرض إجابات الاستمارة"
                             >
-                              <Eye size={12} />
+                              <Eye size={13} color="#667085" />
                               <span>إجابات</span>
                             </button>
 
@@ -680,24 +726,24 @@ export default function IntakeSubmissions() {
                               <Link
                                 to={`/coach/timeline/${cleanCode}`}
                                 style={{
-                                  padding: '5px 9px',
-                                  borderRadius: '8px',
-                                  border: '1px solid #CBD5E1',
+                                  height: '32px', padding: '0 13px', borderRadius: '8px',
+                                  border: '1px solid #D0D5DD',
                                   background: '#FFFFFF',
-                                  color: '#475569',
-                                  fontSize: '11px',
-                                  fontWeight: 700,
+                                  color: '#344054',
+                                  fontSize: '11.5px',
+                                  fontWeight: 600,
                                   textDecoration: 'none',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '4px',
+                                  boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
                                   transition: 'all 0.15s ease'
                                 }}
-                                onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
                                 onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
                                 title="سجل التطور الزمني والمقارنات"
                               >
-                                <TrendingUp size={12} />
+                                <TrendingUp size={13} color="#667085" />
                                 <span>التطور</span>
                               </Link>
                             )}
@@ -709,43 +755,45 @@ export default function IntakeSubmissions() {
                                 disabled={verifyingPaymentId === sub.id}
                                 onClick={() => handleVerifyPayment(sub)}
                                 style={{
-                                  padding: '5px 10px',
-                                  borderRadius: '8px',
-                                  border: '1px solid #86EFAC',
-                                  background: '#F0FDF4',
-                                  color: '#16A34A',
-                                  fontSize: '11px',
-                                  fontWeight: 700,
-                                  cursor: verifyingPaymentId === sub.id ? 'wait' : 'pointer'
+                                  height: '32px', padding: '0 13px', borderRadius: '8px',
+                                  border: '1px solid #A6F4C7',
+                                  background: '#ECFDF3',
+                                  color: '#027A48',
+                                  fontSize: '11.5px',
+                                  fontWeight: 600,
+                                  cursor: verifyingPaymentId === sub.id ? 'wait' : 'pointer',
+                                  boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
+                                  transition: 'all 0.15s ease'
                                 }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = '#D1FADF')}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = '#ECFDF3')}
                                 title="تأكيد استلام التحويل وتفعيل الحساب فوراً"
                               >
                                 {verifyingPaymentId === sub.id ? 'جاري التأكيد...' : 'تأكيد الدفع'}
                               </button>
                             )}
 
-                            {/* Generate / Edit Program CTA in #0F172A */}
+                            {/* Generate / Edit Program CTA - Hostinger Neutral Secondary Style */}
                             <button
                               type="button"
                               onClick={() => handleGenerateDraft(sub)}
                               disabled={generatingId === sub.id}
                               style={{
-                                padding: '5px 12px',
-                                borderRadius: '8px',
-                                background: '#0F172A',
-                                color: '#FFFFFF',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                border: 'none',
+                                height: '32px', padding: '0 15px', borderRadius: '8px',
+                                border: '1px solid #D0D5DD',
+                                background: '#FFFFFF',
+                                color: '#344054',
+                                fontSize: '11.5px',
+                                fontWeight: 600,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '4px',
-                                boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
+                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
                                 transition: 'all 0.15s ease'
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
                             >
                               <span>{sub.status === 'APPROVED' ? 'تعديل الخطة' : sub.status === 'DRAFT_GENERATED' ? 'فتح بالمحرر' : 'توليد الخطة'}</span>
                             </button>

@@ -126,11 +126,11 @@ test('Adaptive Biomechanical Progression & Joint Pain Firewall in Check-in Suite
 
     const adaptedWeek = adapted.adapted_training_week;
     assert.equal(adaptedWeek.phase, 'DELOAD');
-    assert.equal(adaptedWeek.target_rir, 4);
+    assert.equal(adaptedWeek.target_rir, 3);
 
     for (const session of adaptedWeek.sessions) {
       for (const ex of session.exercises) {
-        assert.equal(ex.rir, 4, 'Target RIR during deload must be 4');
+        assert.equal(ex.rir, 3, 'Target RIR during deload must be 3');
         assert.ok(ex.sets <= origSets, `Deload sets (${ex.sets}) must be <= base sets (${origSets})`);
         assert.ok(ex.sets >= 2, 'Minimum deload sets floor is 2');
       }
@@ -163,7 +163,7 @@ test('Adaptive Biomechanical Progression & Joint Pain Firewall in Check-in Suite
     const ex0 = adapted.adapted_training_week.sessions[0].exercises[0];
     assert.equal(ex0.is_biomechanical_swap, true);
     assert.equal(ex0.original_exercise_code, 'BARBELL_BACK_SQUAT');
-    assert.equal(ex0.rir, 4);
+    assert.equal(ex0.rir, 3);
     assert.equal(ex0.sets, 2);
   });
 
@@ -200,7 +200,7 @@ test('Adaptive Biomechanical Progression & Joint Pain Firewall in Check-in Suite
     const swappedEx = mergedWeek.sessions[0].exercises[0];
     assert.equal(swappedEx.is_biomechanical_swap, true);
     assert.equal(swappedEx.original_exercise_code, 'BARBELL_BACK_SQUAT');
-    assert.equal(swappedEx.rir, 4);
+    assert.equal(swappedEx.rir, 3);
     assert.equal(swappedEx.sets, 2);
 
     // 3. Nutrition integrity preserved (zero meals lost)

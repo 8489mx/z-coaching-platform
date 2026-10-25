@@ -7,22 +7,28 @@ import {
   Clock,
   MessageCircle,
   Download,
-  ExternalLink
+  ExternalLink,
+  Search,
+  X,
+  ChevronDown,
+  Check,
+  RotateCw,
+  Filter,
+  Calendar,
+  AlertCircle
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import WhatsAppModal from '../components/modals/WhatsAppModal';
 import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
-import { PageHeader } from '@/shared/components/page-header';
-import { TierFilter } from '@/shared/components/tier-filter';
-import { TableSearch } from '@/shared/components/table-search';
-import { RefreshButton } from '@/shared/components/refresh-button';
-import { FormSection } from '@/shared/components/form-section';
 import NewClientQuickModal from '../components/modals/NewClientQuickModal';
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import ClientSlideOverDrawer from '../components/customers/ClientSlideOverDrawer';
+import { TableSearch } from '@/shared/components/table-search';
+import { TierFilter } from '@/shared/components/tier-filter';
+import { RefreshButton } from '@/shared/components/refresh-button';
 
 export default function Customers() {
   const [searchParams] = useSearchParams();
@@ -32,20 +38,57 @@ export default function Customers() {
   const [selectedDrawerClient, setSelectedDrawerClient] = useState(null);
   const searchInputRef = useRef(null);
 
-  // Filters
+  // Filters State
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
+  const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'ACTIVE' | 'EXPIRING_SOON' | 'EXPIRED' | 'FROZEN'
   const [fastingFilter, setFastingFilter] = useState('ALL'); // 'ALL' | 'INTERMITTENT' | 'RAMADAN' | 'COPTIC'
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 25;
+  
+  // Dropdown UI States (Zero Native Dropdowns / Zero Sharp Corners)
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [isFastingDropdownOpen, setIsFastingDropdownOpen] = useState(false);
+  const statusDropdownRef = useRef(null);
+  const fastingDropdownRef = useRef(null);
 
-  // WhatsApp & Renewal Hub State
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  // Modals & Actions State
   const [whatsappModalClient, setWhatsappModalClient] = useState(null);
   const [renewalModalClient, setRenewalModalClient] = useState(null);
   const [freezingClientId, setFreezingClientId] = useState(null);
 
+  // Fetch Clients Data
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/v1/clients`);
+      const data = await res.json();
+      if (data.clients) setClients(data.clients);
+    } catch (e) {
+      console.error('fetchClients error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchClients();
+  }, []);
+
+  // Handle Outside Click for Custom Curved Dropdowns
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target)) {
+        setIsStatusDropdownOpen(false);
+      }
+      if (fastingDropdownRef.current && !fastingDropdownRef.current.contains(e.target)) {
+        setIsFastingDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Handle URL query parameters (code, fasting, search)
@@ -74,6 +117,7 @@ export default function Customers() {
     }
   }, [searchParams, clients]);
 
+  // Export to CSV
   const exportClientsToCSV = () => {
     if (!clients || clients.length === 0) {
       alert('لا توجد بيانات مشتركين لتصديرها حالياً.');
@@ -103,19 +147,7 @@ export default function Customers() {
     document.body.removeChild(link);
   };
 
-  const fetchClients = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_BASE}/api/v1/clients`);
-      const data = await res.json();
-      if (data.clients) setClients(data.clients);
-    } catch (e) {
-      console.error('fetchClients error:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Toggle Subscription Freeze
   const handleToggleFreeze = async (client) => {
     const isCurrentlyFrozen = client.subscription_status === 'FROZEN';
     const targetStatus = isCurrentlyFrozen ? 'ACTIVE' : 'FROZEN';
@@ -152,10 +184,6 @@ export default function Customers() {
     }
   };
 
-  const _handleSuperAdminOverrideCheckin = (clientId) => {
-    window.location.href = `/check-in?user_id=${clientId}&override=true`;
-  };
-
   // Filter Clients
   const filteredClients = clients.filter(client => {
     const term = searchTerm.trim().toLowerCase().replace(/^#+/, '');
@@ -164,11 +192,21 @@ export default function Customers() {
 
     const fasting = extractClientFastingProfile(client);
 
-    // Fasting Filter
+    // 1. Fasting Filter
     if (fastingFilter === 'COPTIC' && !fasting.isCoptic) return false;
     if (fastingFilter === 'RAMADAN' && !fasting.isRamadan) return false;
     if (fastingFilter === 'INTERMITTENT' && !fasting.isIntermittent) return false;
 
+    // 2. Status Filter
+    if (statusFilter !== 'ALL') {
+      const rawStatus = String(client.subscription_status || client.status || 'ACTIVE').toUpperCase();
+      if (statusFilter === 'ACTIVE' && rawStatus !== 'ACTIVE') return false;
+      if (statusFilter === 'EXPIRING_SOON' && rawStatus !== 'EXPIRING_SOON') return false;
+      if (statusFilter === 'EXPIRED' && rawStatus !== 'EXPIRED') return false;
+      if (statusFilter === 'FROZEN' && rawStatus !== 'FROZEN') return false;
+    }
+
+    // 3. Search Matching
     let matchesSearch = true;
     if (term) {
       if (/^\d+$/.test(termCode)) {
@@ -184,21 +222,23 @@ export default function Customers() {
       }
     }
 
+    // 4. Package Tier Filter
     const resolvedTier = getClientTier(client);
-
     if (tierFilter === 'MAX' && resolvedTier !== 'MAX') return false;
     if (tierFilter === 'ELITE' && resolvedTier !== 'ELITE') return false;
 
     return matchesSearch;
   });
 
+  // Reset pagination on filter change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, tierFilter, fastingFilter]);
+  }, [searchTerm, tierFilter, statusFilter, fastingFilter, pageSize]);
 
   const totalPages = Math.ceil(filteredClients.length / pageSize) || 1;
   const paginatedClients = filteredClients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  // Keyboard Shortcuts
   useEffect(() => {
     function handleKeyDown(e) {
       if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) {
@@ -214,6 +254,8 @@ export default function Customers() {
         searchInputRef.current?.focus();
       } else if (e.key === 'Escape') {
         if (searchTerm) setSearchTerm('');
+        if (isStatusDropdownOpen) setIsStatusDropdownOpen(false);
+        if (isFastingDropdownOpen) setIsFastingDropdownOpen(false);
         if (selectedDrawerClient) setSelectedDrawerClient(null);
         if (whatsappModalClient) setWhatsappModalClient(null);
         if (renewalModalClient) setRenewalModalClient(null);
@@ -232,424 +274,804 @@ export default function Customers() {
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [searchTerm, selectedDrawerClient, whatsappModalClient, renewalModalClient, isNewClientModalOpen, totalPages]);
+  }, [searchTerm, isStatusDropdownOpen, isFastingDropdownOpen, selectedDrawerClient, whatsappModalClient, renewalModalClient, isNewClientModalOpen, totalPages]);
 
+  // Aggregate Counters for Filters
   const maxCount = clients.filter(c => getClientTier(c) === 'MAX').length;
   const eliteCount = clients.length - maxCount;
   const activeCount = clients.filter(c => (c.subscription_status || c.status) === 'ACTIVE').length;
+  const expiringSoonCount = clients.filter(c => (c.subscription_status || c.status) === 'EXPIRING_SOON').length;
+  const expiredCount = clients.filter(c => (c.subscription_status || c.status) === 'EXPIRED').length;
+  const frozenCount = clients.filter(c => (c.subscription_status || c.status) === 'FROZEN').length;
   const totalCoptic = clients.filter(c => extractClientFastingProfile(c).isCoptic).length;
   const totalRamadan = clients.filter(c => extractClientFastingProfile(c).isRamadan).length;
   const totalIntermittent = clients.filter(c => extractClientFastingProfile(c).isIntermittent).length;
 
-  const statCards = [
-    { id: 'ALL', title: 'إجمالي المشتركين', value: clients.length, unit: 'مشترك', label: 'كافة المسجلين', icon: Users, isFilter: false },
-    { id: 'ACTIVE_STAT', title: 'الاشتراكات السارية', value: activeCount, unit: 'مشترك', label: 'حسابات نشطة', icon: ShieldCheck, isFilter: false },
+  const STATUS_OPTIONS = [
+    { id: 'ALL', label: 'كافة الحالات', count: clients.length },
+    { id: 'ACTIVE', label: 'الاشتراكات السارية', count: activeCount },
+    { id: 'EXPIRING_SOON', label: 'أوشكت على الانتهاء', count: expiringSoonCount },
+    { id: 'EXPIRED', label: 'المنتهية', count: expiredCount },
+    { id: 'FROZEN', label: 'المجمدة مؤقتاً', count: frozenCount },
   ];
 
+  const FASTING_OPTIONS = [
+    { id: 'ALL', label: 'كافة أنماط الصيام', count: clients.length },
+    { id: 'INTERMITTENT', label: 'صيام متقطع', count: totalIntermittent },
+    { id: 'RAMADAN', label: 'صيام رمضان', count: totalRamadan },
+    { id: 'COPTIC', label: 'صيام مسيحي', count: totalCoptic },
+  ];
+
+  const hasActiveFilters = Boolean(searchTerm.trim() || tierFilter !== 'ALL' || statusFilter !== 'ALL' || fastingFilter !== 'ALL');
+
+  const resetAllFilters = () => {
+    setSearchTerm('');
+    setTierFilter('ALL');
+    setStatusFilter('ALL');
+    setFastingFilter('ALL');
+  };
+
   return (
-    <AdminLayout>
-      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+    <AdminLayout onOpenNewClient={() => setIsNewClientModalOpen(true)}>
+      <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: '20px', fontFamily: "'Cairo', sans-serif" }}>
         
-        {/* 1. Page Header */}
-        <PageHeader
-          title="قائمة المشتركين"
-          description="متابعة حسابات المشتركين والباقات المعتمدة وإجراء المتابعات الفورية."
-          actions={(
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <RefreshButton onClick={fetchClients} loading={loading} />
+        {/* 1. Hostinger Header Bar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: '#111827', letterSpacing: '-0.02em' }}>
+              إدارة المشتركين
+            </h1>
+            <p style={{ margin: 0, fontSize: '13px', color: '#667085', fontWeight: 500 }}>
+              متابعة حسابات المشتركين، الباقات المعتمدة، الاشتراكات السارية، وإجراء المتابعات الفورية
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <RefreshButton onClick={fetchClients} loading={loading} title="تحديث قائمة المشتركين" />
+
+            <button
+              type="button"
+              onClick={exportClientsToCSV}
+              style={{
+                height: '34px',
+                padding: '0 14px',
+                borderRadius: '8px',
+                border: '1px solid #D0D5DD',
+                background: '#FFFFFF',
+                color: '#344054',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#F9FAFB';
+                e.currentTarget.style.borderColor = '#CBD5E1';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#FFFFFF';
+                e.currentTarget.style.borderColor = '#D0D5DD';
+              }}
+              title="تصدير جدول المشتركين بترميز عربي متوافق مع Excel"
+            >
+              <Download size={14} color="#027A48" />
+              <span>تصدير Excel / CSV</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setIsNewClientModalOpen(true)}
               style={{
                 height: '36px',
-                padding: '0 16px',
-                background: '#0F172A',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 800,
-                cursor: 'pointer',
+                padding: '0 18px',
+                fontSize: '12.5px',
+                fontWeight: 700,
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)'
+                borderRadius: '8px',
+                background: '#673DE6',
+                color: '#FFFFFF',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 1px 3px rgba(103, 61, 230, 0.25)',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#5025D1';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#673DE6';
+                e.currentTarget.style.transform = 'none';
               }}
             >
-              <Plus size={15} />
-              <span>إضافة مشترك جديد +</span>
+              <Plus size={15} strokeWidth={2.2} />
+              <span>إضافة مشترك جديد</span>
             </button>
-            </div>
-          )}
-        />
-
-        {/* 2. Page numbers. The package filter used to live here as two of these cards; it is one
-            control in the table toolbar now, the same one the other screens use. */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
-          {statCards.map((st, i) => {
-            const Icon = st.icon;
-            return (
-              <div
-                key={i}
-                style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '12px',
-                  padding: '16px 18px',
-                  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>{st.title}</span>
-                  <div style={{
-                    width: '30px',
-                    height: '30px',
-                    borderRadius: '8px',
-                    background: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
-                    color: '#0F172A',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    <Icon size={15} />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                    <span style={{ fontSize: '1.65rem', fontWeight: 900, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo, sans-serif', lineHeight: 1 }}>
-                      {st.value}
-                    </span>
-                    {st.unit && (
-                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B' }}>
-                        {st.unit}
-                      </span>
-                    )}
-                  </div>
-                  <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                    {st.label}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+          </div>
         </div>
 
-        {/* 3. Clients Table Section */}
-        <FormSection
-          title="قائمة المشتركين المعتمدين"
-          description="إدارة كافة المشتركين المسجلين في النظام، ومتابعة الخطط والتقييمات."
-          actions={(
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              {/* Export to Excel / CSV */}
-              <button
-                type="button"
-                onClick={exportClientsToCSV}
-                style={{
-                  height: '32px',
-                  padding: '0 12px',
-                  borderRadius: '8px',
-                  border: '1px solid #CBD5E1',
-                  background: '#FFFFFF',
-                  color: '#0F172A',
-                  fontSize: '11.5px',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
-                }}
-                title="تصدير جدول المشتركين بترميز عربي متوافق مع Excel"
-              >
-                <Download size={13} color="#16A34A" />
-                <span>تصدير Excel / CSV</span>
-              </button>
+        {/* 2. Main Data Card — Unified Hostinger Data Table Card */}
+        <div style={{
+          background: '#FFFFFF',
+          border: '1px solid #EAECF0',
+          borderRadius: '14px',
+          boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          
+          {/* Top Filter & Search Toolbar */}
+          <div style={{
+            padding: '14px 18px',
+            borderBottom: '1px solid #EAECF0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px',
+            background: '#FFFFFF'
+          }}>
+            
+            {/* Right: Search + Filter Controls */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', flex: 1, minWidth: '320px' }}>
+              
+              {/* Unified Hostinger Search Box */}
+              <TableSearch
+                value={searchTerm}
+                onChange={setSearchTerm}
+                inputRef={searchInputRef}
+                placeholder="بحث بالاسم، الكود (#101)، الهاتف... (/)"
+                width="280px"
+              />
 
-              <TableSearch value={searchTerm} onChange={setSearchTerm} inputRef={searchInputRef} width="230px" />
+              {/* Tier Segmented Pills */}
+              <TierFilter
+                value={tierFilter}
+                onChange={setTierFilter}
+                counts={{ ALL: clients.length, MAX: maxCount, ELITE: eliteCount }}
+              />
 
-              <TierFilter value={tierFilter} onChange={setTierFilter} counts={{ ALL: clients.length, MAX: maxCount, ELITE: eliteCount }} />
+              {/* Status Filter Custom Curved Dropdown */}
+              <div ref={statusDropdownRef} style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                  style={{
+                    height: '34px',
+                    padding: '0 14px',
+                    borderRadius: '8px',
+                    border: '1px solid #D0D5DD',
+                    background: statusFilter !== 'ALL' ? '#F4F0FD' : '#FFFFFF',
+                    color: statusFilter !== 'ALL' ? '#673DE6' : '#344054',
+                    fontSize: '12px',
+                    fontWeight: statusFilter !== 'ALL' ? 700 : 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (statusFilter === 'ALL') e.currentTarget.style.background = '#F9FAFB';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (statusFilter === 'ALL') e.currentTarget.style.background = '#FFFFFF';
+                  }}
+                >
+                  <Filter size={12} color={statusFilter !== 'ALL' ? '#673DE6' : '#667085'} />
+                  <span>{STATUS_OPTIONS.find(o => o.id === statusFilter)?.label || 'حالة الاشتراك'}</span>
+                  <ChevronDown size={12} color={statusFilter !== 'ALL' ? '#673DE6' : '#667085'} />
+                </button>
 
-              {/* Fasting Filter Pills */}
-              <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                {[
-                  { id: 'ALL', label: 'كافة الأنماط', count: clients.length },
-                  { id: 'INTERMITTENT', label: 'متقطع', count: totalIntermittent },
-                  { id: 'RAMADAN', label: 'رمضان', count: totalRamadan },
-                  { id: 'COPTIC', label: 'مسيحي', count: totalCoptic }
-                ].map(f => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setFastingFilter(f.id)}
-                    style={{
-                      padding: '4px 8px',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      border: 'none',
-                      cursor: 'pointer',
-                      background: fastingFilter === f.id ? '#0F172A' : 'transparent',
-                      color: fastingFilter === f.id ? '#FFFFFF' : '#64748B',
-                      boxShadow: fastingFilter === f.id ? '0 2px 5px rgba(15, 23, 42, 0.25)' : 'none',
-                      transition: 'background 0.12s ease, color 0.12s ease'
-                    }}
-                  >
-                    {f.label} ({f.count})
-                  </button>
-                ))}
+                {isStatusDropdownOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 4px)',
+                    right: 0,
+                    width: '190px',
+                    background: '#FFFFFF',
+                    borderRadius: '16px',
+                    border: '1px solid #EAECF0',
+                    boxShadow: '0 10px 25px -4px rgba(16, 24, 40, 0.12)',
+                    padding: '6px',
+                    zIndex: 50,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2px'
+                  }}>
+                    {STATUS_OPTIONS.map(opt => {
+                      const isSelected = statusFilter === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            setStatusFilter(opt.id);
+                            setIsStatusDropdownOpen(false);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            background: isSelected ? '#F4F0FD' : 'transparent',
+                            color: isSelected ? '#673DE6' : '#344054',
+                            fontSize: '12px',
+                            fontWeight: isSelected ? 700 : 500,
+                            cursor: 'pointer',
+                            textAlign: 'right',
+                            transition: 'background 0.12s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = '#F9FAFB';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = 'transparent';
+                          }}
+                        >
+                          <span>{opt.label}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '11px', color: isSelected ? '#673DE6' : '#98A2B3', fontWeight: 600 }}>
+                              ({opt.count})
+                            </span>
+                            {isSelected && <Check size={13} color="#673DE6" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
+
+              {/* Fasting Filter Custom Curved Dropdown */}
+              <div ref={fastingDropdownRef} style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsFastingDropdownOpen(!isFastingDropdownOpen)}
+                  style={{
+                    height: '34px',
+                    padding: '0 14px',
+                    borderRadius: '8px',
+                    border: '1px solid #D0D5DD',
+                    background: fastingFilter !== 'ALL' ? '#F4F0FD' : '#FFFFFF',
+                    color: fastingFilter !== 'ALL' ? '#673DE6' : '#344054',
+                    fontSize: '12px',
+                    fontWeight: fastingFilter !== 'ALL' ? 700 : 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (fastingFilter === 'ALL') e.currentTarget.style.background = '#F9FAFB';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (fastingFilter === 'ALL') e.currentTarget.style.background = '#FFFFFF';
+                  }}
+                >
+                  <Calendar size={12} color={fastingFilter !== 'ALL' ? '#673DE6' : '#667085'} />
+                  <span>{FASTING_OPTIONS.find(o => o.id === fastingFilter)?.label || 'نمط الصيام'}</span>
+                  <ChevronDown size={12} color={fastingFilter !== 'ALL' ? '#673DE6' : '#667085'} />
+                </button>
+
+                {isFastingDropdownOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 4px)',
+                    right: 0,
+                    width: '185px',
+                    background: '#FFFFFF',
+                    borderRadius: '16px',
+                    border: '1px solid #EAECF0',
+                    boxShadow: '0 10px 25px -4px rgba(16, 24, 40, 0.12)',
+                    padding: '6px',
+                    zIndex: 50,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2px'
+                  }}>
+                    {FASTING_OPTIONS.map(opt => {
+                      const isSelected = fastingFilter === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            setFastingFilter(opt.id);
+                            setIsFastingDropdownOpen(false);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            background: isSelected ? '#F4F0FD' : 'transparent',
+                            color: isSelected ? '#673DE6' : '#344054',
+                            fontSize: '12px',
+                            fontWeight: isSelected ? 700 : 500,
+                            cursor: 'pointer',
+                            textAlign: 'right',
+                            transition: 'background 0.12s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = '#F9FAFB';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = 'transparent';
+                          }}
+                        >
+                          <span>{opt.label}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '11px', color: isSelected ? '#673DE6' : '#98A2B3', fontWeight: 600 }}>
+                              ({opt.count})
+                            </span>
+                            {isSelected && <Check size={13} color="#673DE6" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Reset Filters Button */}
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetAllFilters}
+                  style={{
+                    height: '34px',
+                    padding: '0 14px',
+                    borderRadius: '8px',
+                    border: '1px solid #EAECF0',
+                    background: '#F9FAFB',
+                    color: '#667085',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'color 0.12s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#B42318')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#667085')}
+                >
+                  <X size={13} />
+                  <span>إعادة ضبط</span>
+                </button>
+              )}
             </div>
-          )}
-        >
+
+            {/* Left: Summary Count */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '12.5px', color: '#667085', fontWeight: 500 }}>
+                عرض <strong style={{ color: '#111827', fontWeight: 700 }}>{filteredClients.length}</strong> من أصل <strong style={{ color: '#111827', fontWeight: 700 }}>{clients.length}</strong> مشترك
+              </span>
+            </div>
+          </div>
+
+          {/* Table Container */}
           {loading ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
-              جاري تحميل المشتركين...
+            <div style={{
+              padding: '60px 20px',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px'
+            }}>
+              <RotateCw size={24} className="animate-spin" color="#673DE6" />
+              <span style={{ fontSize: '13px', color: '#667085', fontWeight: 600 }}>
+                جاري تحميل قائمة المشتركين...
+              </span>
             </div>
           ) : filteredClients.length === 0 ? (
-            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '12px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F1F5F9', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
-                <Users size={18} />
+            <div style={{
+              padding: '48px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '10px',
+                background: '#F2F4F7',
+                color: '#475467',
+                border: '1px solid #EAECF0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 12px auto'
+              }}>
+                <Users size={20} strokeWidth={1.8} />
               </div>
-              <strong style={{ fontSize: '13px', color: '#0F172A', display: 'block', marginBottom: '2px' }}>لا يوجد مشتركون مطابقون</strong>
-              <small style={{ fontSize: '11.5px', color: '#64748B' }}>لم يتم العثور على أي مشترك تحت هذا البحث أو الفلتر.</small>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>
+                لا يوجد مشتركون مطابقون
+              </div>
+              <p style={{ fontSize: '12.5px', color: '#667085', margin: '0 0 14px 0', maxWidth: '420px', lineHeight: 1.5 }}>
+                {hasActiveFilters 
+                  ? 'لم يتم العثور على أي مشترك يطابق معايير الفلترة أو البحث المحددة.' 
+                  : 'لم يتم تسجيل أي مشتركين في النظام حتى الآن.'}
+              </p>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetAllFilters}
+                  style={{
+                    height: '32px',
+                    padding: '0 14px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                    background: '#FFFFFF',
+                    border: '1px solid #D0D5DD',
+                    color: '#344054',
+                    cursor: 'pointer',
+                    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#F9FAFB';
+                    e.currentTarget.style.borderColor = '#CBD5E1';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#FFFFFF';
+                    e.currentTarget.style.borderColor = '#D0D5DD';
+                  }}
+                >
+                  مسح الفلاتر والبحث
+                </button>
+              )}
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', border: '1px solid #E2E8F0', borderRadius: '12px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12.5px' }}>
                 <thead>
-                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontWeight: 700 }}>
-                    <th style={{ padding: '10px 14px', textAlign: 'center', width: '85px' }}>الكود</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'right' }}>المشترك</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>الهاتف</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>الباقة</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'center' }}>حالة الاشتراك</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'left' }}>إجراءات سريعة</th>
+                  <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #EAECF0', color: '#475467', fontWeight: 600, fontSize: '12px' }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '85px' }}>الكود</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right' }}>المشترك</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '130px' }}>الهاتف</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '100px' }}>الباقة</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '140px' }}>حالة الاشتراك</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '120px' }}>المدة المتبقية</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', width: '250px' }}>إجراءات المشترك</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedClients.map((client) => {
                     const cleanCode = String(client.client_code || client.id).replace(/^client[-_]?/i, '');
+                    const fasting = extractClientFastingProfile(client);
+                    const rawStatus = String(client.subscription_status || client.status || 'ACTIVE').toUpperCase();
+                    const daysRemaining = client.days_remaining;
 
                     return (
                       <tr 
                         key={client.id} 
-                        style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s ease' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                        style={{ borderBottom: '1px solid #F2F4F7', transition: 'background 0.12s ease' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
-                        {/* Code */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                        {/* 1. Client Code */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           <span
                             onClick={() => setSelectedDrawerClient(client)}
-                            style={{ cursor: 'pointer', display: 'inline-block' }}
-                            title="فتح لوح تفاصيل المشترك السريع"
+                            style={{
+                              cursor: 'pointer',
+                              display: 'inline-block',
+                              fontFamily: 'JetBrains Mono, monospace',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              color: '#344054',
+                              background: '#F2F4F7',
+                              border: '1px solid #EAECF0',
+                              borderRadius: '6px',
+                              padding: '3px 8px',
+                              transition: 'all 0.12s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = '#673DE6';
+                              e.currentTarget.style.color = '#673DE6';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = '#EAECF0';
+                              e.currentTarget.style.color = '#344054';
+                            }}
+                            title="فتح تفاصيل المشترك"
                           >
-                            <ClientCodeBadge code={cleanCode} item={client} />
+                            #{cleanCode}
                           </span>
                         </td>
 
-                        {/* Name */}
-                        <td style={{ padding: '10px 14px', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        {/* 2. Full Name & Fasting Badges */}
+                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <strong 
                               onClick={() => setSelectedDrawerClient(client)}
-                              style={{ color: '#0F172A', fontSize: '13px', cursor: 'pointer' }}
-                              title="فتح لوح تفاصيل المشترك السريع"
+                              style={{
+                                color: '#111827',
+                                fontSize: '13.5px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'color 0.12s ease'
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.color = '#673DE6')}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = '#111827')}
+                              title="فتح لوح تفاصيل المشترك"
                             >
-                              {client.full_name || 'مشترك جديد'}
+                              {client.full_name || client.name || 'مشترك جديد'}
                             </strong>
-                            {(() => {
-                              const fasting = extractClientFastingProfile(client);
-                              return (
-                                <>
-                                  {fasting.primaryFastingBadge && (
-                                    <span style={{
-                                      fontSize: '10px',
-                                      padding: '1px 6px',
-                                      borderRadius: '6px',
-                                      background: fasting.primaryFastingBadge.bg,
-                                      border: `1px solid ${fasting.primaryFastingBadge.border}`,
-                                      color: fasting.primaryFastingBadge.color,
-                                      fontWeight: 800
-                                    }}>
-                                      {fasting.primaryFastingBadge.label}
-                                    </span>
-                                  )}
-                                  {fasting.intermittentBadge && (
-                                    <span style={{
-                                      fontSize: '10px',
-                                      padding: '1px 6px',
-                                      borderRadius: '6px',
-                                      background: fasting.intermittentBadge.bg,
-                                      border: `1px solid ${fasting.intermittentBadge.border}`,
-                                      color: fasting.intermittentBadge.color,
-                                      fontWeight: 800
-                                    }}>
-                                      {fasting.intermittentBadge.label}
-                                    </span>
-                                  )}
-                                </>
-                              );
-                            })()}
+
+                            {fasting.primaryFastingBadge && (
+                              <span style={{
+                                fontSize: '10.5px',
+                                padding: '2px 7px',
+                                borderRadius: '6px',
+                                background: '#F2F4F7',
+                                border: '1px solid #EAECF0',
+                                color: '#475467',
+                                fontWeight: 600
+                              }}>
+                                {fasting.primaryFastingBadge.label}
+                              </span>
+                            )}
+                            {fasting.intermittentBadge && (
+                              <span style={{
+                                fontSize: '10.5px',
+                                padding: '2px 7px',
+                                borderRadius: '6px',
+                                background: '#F2F4F7',
+                                border: '1px solid #EAECF0',
+                                color: '#475467',
+                                fontWeight: 600
+                              }}>
+                                {fasting.intermittentBadge.label}
+                              </span>
+                            )}
                           </div>
                         </td>
 
-                        {/* Phone */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11.5px', color: '#475569' }}>
-                            {client.phone_number}
+                        {/* 3. Phone */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: '#475467' }}>
+                            {client.phone_number || '-'}
                           </span>
                         </td>
 
-                        {/* Tier */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                        {/* 4. Tier Badge */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           <ClientPackageBadge item={client} />
                         </td>
 
-                        {/* Status */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                          {client.subscription_status === 'FROZEN' ? (
-                            <span style={{ background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
+                        {/* 5. Subscription Status Badge (Zero Dots / Pure Text) */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          {rawStatus === 'FROZEN' ? (
+                            <span style={{
+                              background: '#F8FAFC',
+                              color: '#475467',
+                              border: '1px solid #E2E8F0',
+                              padding: '3px 10px',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
+                              fontWeight: 600,
+                              display: 'inline-block'
+                            }}>
                               مجمد مؤقتاً
                             </span>
-                          ) : client.subscription_status === 'EXPIRED' ? (
-                            <span style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
+                          ) : rawStatus === 'EXPIRED' ? (
+                            <span style={{
+                              background: '#FEF3F2',
+                              color: '#B42318',
+                              border: '1px solid #FECDCA',
+                              padding: '3px 10px',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
+                              fontWeight: 600,
+                              display: 'inline-block'
+                            }}>
                               منتهي الصلاحية
                             </span>
-                          ) : client.subscription_status === 'EXPIRING_SOON' ? (
-                            <span style={{ background: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
-                              ينتهي خلال {client.days_remaining} يوم
+                          ) : rawStatus === 'EXPIRING_SOON' ? (
+                            <span style={{
+                              background: '#FFFAEB',
+                              color: '#B54708',
+                              border: '1px solid #FEDF89',
+                              padding: '3px 10px',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
+                              fontWeight: 600,
+                              display: 'inline-block'
+                            }}>
+                              ينتهي قريباً
                             </span>
                           ) : (
-                            <span style={{ background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, display: 'inline-block' }}>
-                              نشط ({client.days_remaining !== undefined ? `${client.days_remaining} يوم` : 'معتمد'})
+                            <span style={{
+                              background: '#ECFDF3',
+                              color: '#027A48',
+                              border: '1px solid #A6F4C7',
+                              padding: '3px 10px',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
+                              fontWeight: 600,
+                              display: 'inline-block'
+                            }}>
+                              نشط
                             </span>
                           )}
                         </td>
 
-                        {/* Actions */}
-                        <td style={{ padding: '10px 14px', textAlign: 'left' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                            {/* 1. Check-in Review Dashboard Link (New Tab) */}
+                        {/* 6. Remaining Duration */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          <span style={{
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: typeof daysRemaining === 'number' 
+                              ? (daysRemaining <= 3 ? '#B54708' : '#475467') 
+                              : '#667085'
+                          }}>
+                            {typeof daysRemaining === 'number'
+                              ? (daysRemaining > 0 ? `باقي ${daysRemaining} يوم` : (daysRemaining === 0 ? 'ينتهي اليوم' : `متأخر ${Math.abs(daysRemaining)} يوم`))
+                              : 'ساري'}
+                          </span>
+                        </td>
+
+                        {/* 7. Action Buttons (Secondary White Button Style) */}
+                        <td style={{ padding: '12px 16px', textAlign: 'left' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            {/* Check-in Review */}
                             <a
                               href={`/coach/checkin-review?code=${cleanCode}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{
-                                padding: '4px 10px',
+                                height: '30px',
+                                padding: '0 10px',
                                 borderRadius: '8px',
-                                background: '#0F172A',
-                                color: '#FFFFFF',
-                                fontSize: '11px',
-                                fontWeight: 800,
+                                border: '1px solid #D0D5DD',
+                                background: '#FFFFFF',
+                                color: '#344054',
+                                fontSize: '11.5px',
+                                fontWeight: 600,
                                 textDecoration: 'none',
-                                boxShadow: '0 1px 3px rgba(15, 23, 42, 0.2)',
+                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '4px',
                                 transition: 'all 0.15s ease'
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#F9FAFB';
+                                e.currentTarget.style.borderColor = '#CBD5E1';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#FFFFFF';
+                                e.currentTarget.style.borderColor = '#D0D5DD';
+                              }}
                               title="الانتقال لمراجعة تقييم المشترك في تبويب مستقل"
                             >
                               <span>التقييم</span>
-                              <ExternalLink size={10} style={{ opacity: 0.8 }} />
+                              <ExternalLink size={11} color="#667085" />
                             </a>
 
-                            {/* 2. Program Editor Button (New Tab) */}
+                            {/* Program Editor (Primary Branded Action) */}
                             <a
                               href={`/coach/editor/${cleanCode}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{
-                                padding: '4px 9px',
+                                height: '30px',
+                                padding: '0 11px',
                                 borderRadius: '8px',
-                                border: '1px solid #CBD5E1',
-                                background: '#FFFFFF',
-                                color: '#0F172A',
-                                fontSize: '11px',
+                                border: '1px solid #DDD6FE',
+                                background: '#F4F0FD',
+                                color: '#673DE6',
+                                fontSize: '11.5px',
                                 fontWeight: 700,
                                 textDecoration: 'none',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '3px',
+                                gap: '4px',
+                                boxShadow: '0 1px 2px rgba(103, 61, 230, 0.08)',
                                 transition: 'all 0.15s ease'
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#EDE8FA';
+                                e.currentTarget.style.borderColor = '#C4B5FD';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#F4F0FD';
+                                e.currentTarget.style.borderColor = '#DDD6FE';
+                              }}
                               title="فتح محرر الخطة في تبويب مستقل"
                             >
                               <span>الخطة</span>
-                              <ExternalLink size={10} style={{ opacity: 0.7 }} />
+                              <ExternalLink size={11} color="#673DE6" />
                             </a>
 
-                            {/* 3. WhatsApp Modal Trigger */}
+                            {/* WhatsApp */}
                             <button
                               type="button"
                               onClick={() => setWhatsappModalClient(client)}
                               style={{
-                                padding: '4px 8px',
+                                height: '30px',
+                                padding: '0 10px',
                                 borderRadius: '8px',
-                                border: '1px solid #86EFAC',
-                                background: '#F0FDF4',
-                                color: '#16A34A',
-                                fontSize: '11px',
-                                fontWeight: 700,
+                                border: '1px solid #D0D5DD',
+                                background: '#FFFFFF',
+                                color: '#027A48',
+                                fontSize: '11.5px',
+                                fontWeight: 600,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '4px',
+                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
                                 transition: 'all 0.15s ease'
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.background = '#DCFCE7';
-                                e.currentTarget.style.borderColor = '#4ADE80';
+                                e.currentTarget.style.background = '#F9FAFB';
+                                e.currentTarget.style.borderColor = '#CBD5E1';
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.background = '#F0FDF4';
-                                e.currentTarget.style.borderColor = '#86EFAC';
+                                e.currentTarget.style.background = '#FFFFFF';
+                                e.currentTarget.style.borderColor = '#D0D5DD';
                               }}
                               title="مركز رسائل الواتساب الذكية"
                             >
-                              <MessageCircle size={12} />
+                              <MessageCircle size={12} color="#027A48" />
                               <span>واتساب</span>
                             </button>
 
-                            {/* 4. Client Slide-over Drawer Trigger (Hub for Profile, Freeze, Renew & Timeline) */}
+                            {/* Client Profile Drawer */}
                             <button
                               type="button"
                               onClick={() => setSelectedDrawerClient(client)}
                               style={{
-                                padding: '4px 8px',
+                                height: '30px',
+                                padding: '0 10px',
                                 borderRadius: '8px',
-                                border: '1px solid #E2E8F0',
-                                background: '#F8FAFC',
-                                color: '#334155',
-                                fontSize: '11px',
-                                fontWeight: 700,
+                                border: '1px solid #D0D5DD',
+                                background: '#FFFFFF',
+                                color: '#344054',
+                                fontSize: '11.5px',
+                                fontWeight: 600,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '4px',
+                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
                                 transition: 'all 0.15s ease'
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.background = '#F1F5F9';
+                                e.currentTarget.style.background = '#F9FAFB';
                                 e.currentTarget.style.borderColor = '#CBD5E1';
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.background = '#F8FAFC';
-                                e.currentTarget.style.borderColor = '#E2E8F0';
+                                e.currentTarget.style.background = '#FFFFFF';
+                                e.currentTarget.style.borderColor = '#D0D5DD';
                               }}
-                              title="عرض تفاصيل المشترك، تجميد/تجديد الاشتراك، وسجل التطور"
+                              title="عرض تفاصيل المشترك وسجل التطور"
                             >
-                              <Clock size={12} color="#475569" />
+                              <Clock size={12} color="#667085" />
                               <span>الملف</span>
                             </button>
                           </div>
@@ -659,74 +1081,123 @@ export default function Customers() {
                   })}
                 </tbody>
               </table>
-
-              {/* Clean Executive Pagination Bar */}
-              {totalPages > 1 && (
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '10px 14px',
-                  background: '#F8FAFC',
-                  borderTop: '1px solid #E2E8F0',
-                  fontSize: '11.5px',
-                  color: '#64748B',
-                  fontWeight: 600,
-                  flexWrap: 'wrap',
-                  gap: '8px'
-                }}>
-                  <span>
-                    عرض المشتركين من {(currentPage - 1) * pageSize + 1} إلى {Math.min(currentPage * pageSize, filteredClients.length)} من أصل {filteredClients.length} مشترك
-                  </span>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <button
-                      type="button"
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: '8px',
-                        border: '1px solid #CBD5E1',
-                        background: currentPage === 1 ? '#F1F5F9' : '#FFFFFF',
-                        color: currentPage === 1 ? '#94A3B8' : '#0F172A',
-                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                        fontWeight: 700,
-                        fontSize: '11px'
-                      }}
-                    >
-                      السابق
-                    </button>
-
-                    <span style={{ padding: '0 8px', color: '#0F172A', fontWeight: 800 }}>
-                      صفحة {currentPage} من {totalPages}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: '8px',
-                        border: '1px solid #CBD5E1',
-                        background: currentPage === totalPages ? '#F1F5F9' : '#FFFFFF',
-                        color: currentPage === totalPages ? '#94A3B8' : '#0F172A',
-                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                        fontWeight: 700,
-                        fontSize: '11px'
-                      }}
-                    >
-                      التالي
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           )}
-        </FormSection>
 
-        {/* WhatsApp Modal */}
+          {/* 3. Hostinger Data Table Pagination Footer */}
+          {!loading && filteredClients.length > 0 && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '12px 18px',
+              background: '#FFFFFF',
+              borderTop: '1px solid #EAECF0',
+              fontSize: '12px',
+              color: '#475467',
+              fontWeight: 500,
+              flexWrap: 'wrap',
+              gap: '12px'
+            }}>
+              {/* Record Summary */}
+              <span>
+                عرض المشتركين من <strong style={{ color: '#111827' }}>{(currentPage - 1) * pageSize + 1}</strong> إلى <strong style={{ color: '#111827' }}>{Math.min(currentPage * pageSize, filteredClients.length)}</strong> من أصل <strong style={{ color: '#111827' }}>{filteredClients.length}</strong> مشترك
+              </span>
+
+              {/* Pagination Controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {/* Page Size Selector */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '8px' }}>
+                  <span style={{ fontSize: '11.5px', color: '#667085' }}>لكل صفحة:</span>
+                  {[25, 50, 100].map(sz => (
+                    <button
+                      key={sz}
+                      type="button"
+                      onClick={() => setPageSize(sz)}
+                      style={{
+                        padding: '2px 7px',
+                        borderRadius: '6px',
+                        border: '1px solid',
+                        borderColor: pageSize === sz ? '#673DE6' : '#EAECF0',
+                        background: pageSize === sz ? '#F4F0FD' : '#FFFFFF',
+                        color: pageSize === sz ? '#673DE6' : '#475467',
+                        fontSize: '11.5px',
+                        fontWeight: pageSize === sz ? 700 : 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {sz}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Prev Button */}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  style={{
+                    height: '30px',
+                    padding: '0 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #D0D5DD',
+                    background: currentPage === 1 ? '#F9FAFB' : '#FFFFFF',
+                    color: currentPage === 1 ? '#98A2B3' : '#344054',
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    boxShadow: currentPage === 1 ? 'none' : '0 1px 2px rgba(16, 24, 40, 0.03)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentPage !== 1) e.currentTarget.style.background = '#F9FAFB';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentPage !== 1) e.currentTarget.style.background = '#FFFFFF';
+                  }}
+                >
+                  السابق
+                </button>
+
+                {/* Page Indicator */}
+                <span style={{ padding: '0 6px', color: '#111827', fontWeight: 600, fontSize: '12px' }}>
+                  صفحة {currentPage} من {totalPages}
+                </span>
+
+                {/* Next Button */}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  style={{
+                    height: '30px',
+                    padding: '0 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #D0D5DD',
+                    background: currentPage === totalPages ? '#F9FAFB' : '#FFFFFF',
+                    color: currentPage === totalPages ? '#98A2B3' : '#344054',
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    boxShadow: currentPage === totalPages ? 'none' : '0 1px 2px rgba(16, 24, 40, 0.03)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentPage !== totalPages) e.currentTarget.style.background = '#F9FAFB';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentPage !== totalPages) e.currentTarget.style.background = '#FFFFFF';
+                  }}
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        {/* Modals & Slide-over Drawers (100% Functionality Preserved) */}
         {whatsappModalClient && (
           <WhatsAppModal
             isOpen={Boolean(whatsappModalClient)}
@@ -735,14 +1206,12 @@ export default function Customers() {
           />
         )}
 
-        {/* New Client Quick Creation Modal */}
         <NewClientQuickModal
           isOpen={isNewClientModalOpen}
           onClose={() => setIsNewClientModalOpen(false)}
           onClientCreated={() => fetchClients()}
         />
 
-        {/* Flexible Renewal Modal */}
         <FlexibleRenewalModal
           isOpen={Boolean(renewalModalClient)}
           onClose={() => setRenewalModalClient(null)}
@@ -753,7 +1222,6 @@ export default function Customers() {
           }}
         />
 
-        {/* Client Slide-Over Details Drawer */}
         <ClientSlideOverDrawer
           isOpen={Boolean(selectedDrawerClient)}
           onClose={() => setSelectedDrawerClient(null)}

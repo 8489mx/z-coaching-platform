@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { HelpCircle, X, Check, Loader2, Trash2, Plus } from 'lucide-react';
 import CurvedSelect from '../common/CurvedSelect';
 
 export default function EditQuestionModal({
@@ -82,255 +83,426 @@ export default function EditQuestionModal({
 
   return (
     <div 
-      className="modal fade show d-block" 
-      tabIndex="-1" 
-      style={{ backgroundColor: "rgba(15, 23, 42, 0.7)", backdropFilter: "blur(6px)", zIndex: 1070 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(15, 23, 42, 0.6)',
+        backdropFilter: 'blur(4px)',
+        zIndex: 99999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px'
+      }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '580px', margin: '1.75rem auto' }}>
-        <div 
-          className="modal-content border-0 shadow-2xl bg-white position-relative" 
-          style={{ 
-            borderRadius: "20px", 
-            border: '1px solid #edf2f7',
-            boxShadow: '0 25px 60px -15px rgba(38, 28, 106, 0.22)',
-            overflow: 'hidden'
-          }} 
-          dir="rtl"
-        >
-          {/* Header */}
-          <div className="p-4 bg-white d-flex align-items-center justify-content-between border-bottom" style={{ borderColor: '#f1f5f9' }}>
-            <div className="d-flex align-items-center gap-3">
-              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '42px', height: '42px', background: '#E5F0FF', color: '#0284C7', border: '1.5px solid #BAE6FD' }}>
-                <i className="ti ti-edit fs-5"></i>
+      <div 
+        style={{
+          background: '#FFFFFF',
+          borderRadius: '16px',
+          maxWidth: '560px',
+          width: '100%',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: '90vh'
+        }}
+        dir="rtl"
+      >
+        {/* Header */}
+        <div style={{
+          padding: '16px 20px',
+          borderBottom: '1px solid #EAECF0',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: '#FFFFFF'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              background: '#F4F0FD',
+              color: '#673DE6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <HelpCircle size={18} />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#101828' }}>
+                {question ? 'تعديل سؤال في الاستمارة' : 'إضافة سؤال جديد إلى الاستمارة'}
+              </h3>
+              <span style={{ fontSize: '11.5px', color: '#667085' }}>
+                التحكم الكامل في صياغة السؤال ونوع الإدخال ودرجة الإلزامية
+              </span>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              border: '1px solid #EAECF0',
+              background: '#F8FAFC',
+              color: '#64748B',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease'
+            }}
+            title="إغلاق"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            
+            {/* Question Title */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                نص السؤال (بالعربية) <span style={{ color: '#DC2626' }}>*</span>
+              </label>
+              <input
+                type="text"
+                style={{
+                  width: '100%',
+                  height: '40px',
+                  borderRadius: '8px',
+                  border: '1px solid #D0D5DD',
+                  padding: '0 12px',
+                  fontSize: '13px',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+                placeholder="مثال: هل تعاني من حساسية لأي نوع طعام؟"
+                value={formData.title_ar}
+                onChange={(e) => setFormData({ ...formData, title_ar: e.target.value })}
+                required
+              />
+            </div>
+
+            {/* Section & Type */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                  قسم الاستمارة
+                </label>
+                <CurvedSelect
+                  value={formData.section}
+                  onChange={(e) => setFormData({ ...formData, section: e.target.value })}
+                  style={{ width: '100%', height: '40px' }}
+                >
+                  <option value="personal">البيانات الشخصية</option>
+                  <option value="goals">الأهداف الرياضية</option>
+                  <option value="measurements">القياسات البدنية</option>
+                  <option value="lifestyle">أسلوب الحياة والنشاط</option>
+                  <option value="medical">الحالة الطبية والإصابات</option>
+                  <option value="nutrition">التغذية والوجبات</option>
+                  <option value="training">التدريب والكارديو</option>
+                </CurvedSelect>
               </div>
-              <div className="text-end">
-                <h5 className="fw-bold text-dark mb-0" style={{ fontSize: '1.1rem', letterSpacing: '-0.3px' }}>
-                  {question ? 'تعديل سؤال في الاستمارة' : 'إضافة سؤال جديد إلى الاستمارة'}
-                </h5>
-                <small className="text-muted d-block mt-1" style={{ fontSize: '0.78rem' }}>التحكم الكامل في صياغة وإلزامية السؤال</small>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                  نوع الحقل / الإجابة
+                </label>
+                <CurvedSelect
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  style={{ width: '100%', height: '40px' }}
+                >
+                  <option value="text">نص قصير (Text)</option>
+                  <option value="textarea">نص تفصيلي (Textarea)</option>
+                  <option value="number">رقمي (Number)</option>
+                  <option value="pill-select">أزرار اختيار فردي (Pill Select)</option>
+                  <option value="multi-pill-select">أزرار اختيار متعدد (Multi Pill)</option>
+                  <option value="select">قائمة منسدلة (Dropdown)</option>
+                  <option value="date">تاريخ (Date)</option>
+                  <option value="boolean">نعم / لا (Boolean)</option>
+                </CurvedSelect>
               </div>
             </div>
-            <button 
-              type="button" 
-              className="btn btn-sm rounded-circle d-flex align-items-center justify-content-center p-0 text-muted" 
-              style={{ width: '32px', height: '32px', background: '#f8fafc', border: '1px solid #e2e8f0' }}
-              onClick={onClose} 
-              aria-label="Close" 
-              title="إغلاق (Esc)"
-            >
-              <i className="ti ti-x fs-6"></i>
-            </button>
-          </div>
 
-          {/* Form Body */}
-          <form onSubmit={handleSubmit}>
-            <div className="p-4 bg-white text-end">
-              
-              {/* Question Title */}
-              <div className="mb-3">
-                <label className="form-label fw-bold text-dark small mb-1 d-block" style={{ fontSize: '0.84rem' }}>
-                  نص السؤال (بالعربية) <span className="text-danger">*</span>
+            {/* Placeholder Text */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                نص توضيحي داخل الحقل (Placeholder)
+              </label>
+              <input
+                type="text"
+                style={{
+                  width: '100%',
+                  height: '40px',
+                  borderRadius: '8px',
+                  border: '1px solid #D0D5DD',
+                  padding: '0 12px',
+                  fontSize: '12.5px',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+                placeholder="مثال: اكتب الإجابة بالتفصيل..."
+                value={formData.placeholder_ar}
+                onChange={(e) => setFormData({ ...formData, placeholder_ar: e.target.value })}
+              />
+            </div>
+
+            {/* Options builder for Select / Pill-Select */}
+            {(formData.type === 'select' || formData.type === 'pill-select' || formData.type === 'multi-pill-select') && (
+              <div style={{
+                padding: '14px',
+                borderRadius: '10px',
+                background: '#F8FAFC',
+                border: '1px solid #EAECF0'
+              }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '8px' }}>
+                  خيارات الإجابة المعروضة للمتدرب:
                 </label>
-                <input
-                  type="text"
-                  className="form-control fw-semibold text-end"
-                  style={{ height: '44px', borderRadius: '10px', fontSize: '0.86rem', border: '1.5px solid #e2e8f0', padding: '0 14px' }}
-                  placeholder="مثال: هل تعاني من حساسية لأي نوع طعام؟"
-                  value={formData.title_ar}
-                  onChange={(e) => setFormData({ ...formData, title_ar: e.target.value })}
-                  required
-                />
-              </div>
-
-              {/* Section & Type */}
-              <div className="row g-3 mb-3">
-                <div className="col-6">
-                  <label className="form-label fw-bold text-dark small mb-1 d-block" style={{ fontSize: '0.84rem' }}>
-                    قسم الاستمارة
-                  </label>
-                  <CurvedSelect
-                    className="form-select fw-semibold text-end"
-                    style={{ height: '44px', borderRadius: '10px', fontSize: '0.84rem', border: '1.5px solid #e2e8f0', paddingRight: '14px', paddingLeft: '35px' }}
-                    value={formData.section}
-                    onChange={(e) => setFormData({ ...formData, section: e.target.value })}
-                  >
-                    <option value="personal">1. البيانات الشخصية والأهداف</option>
-                    <option value="body">2. القياسات وأسلوب الحياة</option>
-                    <option value="medical">3. الحالة الطبية والإصابات</option>
-                    <option value="nutrition">4. التغذية والوجبات والحساسية</option>
-                    <option value="training">5. التدريب وأيام الجيم والكارديو</option>
-                  </CurvedSelect>
-                </div>
-
-                <div className="col-6">
-                  <label className="form-label fw-bold text-dark small mb-1 d-block" style={{ fontSize: '0.84rem' }}>
-                    نوع الحقل / الإجابة
-                  </label>
-                  <CurvedSelect
-                    className="form-select fw-semibold text-end"
-                    style={{ height: '44px', borderRadius: '10px', fontSize: '0.84rem', border: '1.5px solid #e2e8f0', paddingRight: '14px', paddingLeft: '35px' }}
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  >
-                    <option value="text">نص قصير (Text)</option>
-                    <option value="textarea">نص تفصيلي (Textarea)</option>
-                    <option value="number">رقمي (Number)</option>
-                    <option value="select">قائمة اختيارات فردية (Dropdown)</option>
-                    <option value="date">تاريخ (Date)</option>
-                  </CurvedSelect>
-                </div>
-              </div>
-
-              {/* Placeholder text */}
-              <div className="mb-3">
-                <label className="form-label text-muted small mb-1 d-block" style={{ fontSize: '0.8rem' }}>
-                  نص توضيحي داخل الحقل (Placeholder)
-                </label>
-                <input
-                  type="text"
-                  className="form-control text-end"
-                  style={{ height: '42px', borderRadius: '10px', fontSize: '0.84rem', border: '1.5px solid #e2e8f0', padding: '0 14px' }}
-                  placeholder="مثال: اكتب الإجابة بالتفصيل..."
-                  value={formData.placeholder_ar}
-                  onChange={(e) => setFormData({ ...formData, placeholder_ar: e.target.value })}
-                />
-              </div>
-
-              {/* Options builder for Select / Dropdown */}
-              {formData.type === 'select' && (
-                <div className="p-3 rounded-3 border mb-3" style={{ background: '#F0F9FF', borderColor: '#F0F9FF' }}>
-                  <label className="form-label fw-bold text-dark small mb-2 d-block text-end" style={{ fontSize: '0.82rem' }}>
-                    خيارات القائمة المنسدلة:
-                  </label>
-                  
-                  <div className="d-flex flex-column gap-1 mb-2">
-                    {formData.options.map((opt, idx) => (
-                      <div key={idx} className="d-flex justify-content-between align-items-center bg-white p-2 px-3 rounded-2 border" style={{ borderColor: '#e2e8f0' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveOption(idx)}
-                          className="btn btn-sm text-danger p-0 border-0"
-                          title="حذف الخيار"
-                        >
-                          <i className="ti ti-trash fs-6"></i>
-                        </button>
-                        <span className="fw-semibold text-dark text-end" style={{ fontSize: '0.82rem' }}>{opt.label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="d-flex gap-2">
-                    <button
-                      type="button"
-                      onClick={handleAddOption}
-                      className="btn btn-sm px-3 fw-bold rounded-pill text-slate-900 flex-shrink-0"
-                      style={{ background: '#0284C7', fontSize: '0.8rem', height: '36px' }}
-                    >
-                      إضافة خيار
-                    </button>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm text-end"
-                      style={{ borderRadius: '8px', fontSize: '0.82rem', height: '36px' }}
-                      placeholder="اسم الخيار الجديد..."
-                      value={newOptionText}
-                      onChange={(e) => setNewOptionText(e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Clean Segmented Buttons for Required & Active */}
-              <div className="row g-3 pt-3 border-top" style={{ borderColor: '#f1f5f9' }}>
-                <div className="col-6">
-                  <label className="form-label fw-bold text-dark small mb-1 d-block text-end" style={{ fontSize: '0.8rem' }}>
-                    درجة الإلزامية:
-                  </label>
-                  <div className="btn-group w-100" role="group">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, required: true })}
-                      className={`btn btn-sm fw-bold ${formData.required ? 'btn-danger text-slate-900' : 'btn-outline-secondary'}`}
-                      style={{ fontSize: '0.78rem', height: '38px', borderRadius: '0 8px 8px 0' }}
-                    >
-                      إجباري *
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, required: false })}
-                      className={`btn btn-sm fw-bold ${!formData.required ? 'btn-primary text-slate-900' : 'btn-outline-secondary'}`}
-                      style={{ 
-                        fontSize: '0.78rem', 
-                        height: '38px', 
-                        borderRadius: '8px 0 0 8px',
-                        background: !formData.required ? '#0284C7' : undefined,
-                        borderColor: !formData.required ? '#0284C7' : undefined
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                  {formData.options.map((opt, idx) => (
+                    <div 
+                      key={idx} 
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        background: '#FFFFFF',
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #EAECF0'
                       }}
                     >
-                      اختياري
-                    </button>
-                  </div>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#101828' }}>{opt.label}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveOption(idx)}
+                        style={{
+                          border: 'none',
+                          background: 'transparent',
+                          color: '#DC2626',
+                          cursor: 'pointer',
+                          padding: '2px 4px'
+                        }}
+                        title="حذف الخيار"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  ))}
+                  {formData.options.length === 0 && (
+                    <span style={{ fontSize: '11.5px', color: '#94A3B8', fontStyle: 'italic' }}>
+                      لم تتم إضافة خيارات بعد. أضف خيارات في الحقل أدناه.
+                    </span>
+                  )}
                 </div>
 
-                <div className="col-6">
-                  <label className="form-label fw-bold text-dark small mb-1 d-block text-end" style={{ fontSize: '0.8rem' }}>
-                    حالة الظهور في الاستمارة:
-                  </label>
-                  <div className="btn-group w-100" role="group">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, active: true })}
-                      className={`btn btn-sm fw-bold ${formData.active ? 'btn-success text-slate-900' : 'btn-outline-secondary'}`}
-                      style={{ fontSize: '0.78rem', height: '38px', borderRadius: '0 8px 8px 0' }}
-                    >
-                      مفعّل بالاستمارة
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, active: false })}
-                      className={`btn btn-sm fw-bold ${!formData.active ? 'btn-secondary text-slate-900' : 'btn-outline-secondary'}`}
-                      style={{ fontSize: '0.78rem', height: '38px', borderRadius: '8px 0 0 8px' }}
-                    >
-                      مخفي مؤقتاً
-                    </button>
-                  </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    style={{
+                      flex: 1,
+                      height: '36px',
+                      borderRadius: '8px',
+                      border: '1px solid #CBD5E1',
+                      padding: '0 10px',
+                      fontSize: '12px',
+                      outline: 'none',
+                      background: '#FFFFFF'
+                    }}
+                    placeholder="اسم الخيار الجديد..."
+                    value={newOptionText}
+                    onChange={(e) => setNewOptionText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddOption();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddOption}
+                    style={{
+                      height: '36px',
+                      padding: '0 14px',
+                      borderRadius: '8px',
+                      background: '#F4F0FD',
+                      color: '#673DE6',
+                      border: '1px solid #DDD6FE',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Plus size={14} />
+                    <span>إضافة</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Clean Segmented Buttons for Required & Active */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', paddingTop: '10px', borderTop: '1px solid #F2F4F7' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '6px' }}>
+                  درجة الإلزامية:
+                </label>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, required: true })}
+                    style={{
+                      flex: 1,
+                      height: '34px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      border: formData.required ? '1px solid #DC2626' : '1px solid #D0D5DD',
+                      background: formData.required ? '#FEF2F2' : '#FFFFFF',
+                      color: formData.required ? '#DC2626' : '#475467',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    إجباري *
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, required: false })}
+                    style={{
+                      flex: 1,
+                      height: '34px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      border: !formData.required ? '1px solid #673DE6' : '1px solid #D0D5DD',
+                      background: !formData.required ? '#F4F0FD' : '#FFFFFF',
+                      color: !formData.required ? '#673DE6' : '#475467',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    اختياري
+                  </button>
                 </div>
               </div>
 
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '6px' }}>
+                  حالة الظهور في الاستمارة:
+                </label>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, active: true })}
+                    style={{
+                      flex: 1,
+                      height: '34px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      border: formData.active ? '1px solid #16A34A' : '1px solid #D0D5DD',
+                      background: formData.active ? '#F0FDF4' : '#FFFFFF',
+                      color: formData.active ? '#16A34A' : '#475467',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    مفعّل
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, active: false })}
+                    style={{
+                      flex: 1,
+                      height: '34px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      border: !formData.active ? '1px solid #64748B' : '1px solid #D0D5DD',
+                      background: !formData.active ? '#F1F5F9' : '#FFFFFF',
+                      color: !formData.active ? '#475569' : '#475467',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    مخفي
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* Footer Buttons */}
-            <div className="p-3 px-4 bg-light border-top d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
-              <button 
-                type="button" 
-                className="btn btn-outline-secondary rounded-pill px-4 fw-semibold" 
-                style={{ height: '40px', fontSize: '0.84rem' }}
-                onClick={onClose}
-              >
-                إلغاء
-              </button>
-              <button 
-                type="submit" 
-                disabled={loading} 
-                className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-white"
-                style={{ 
-                  height: '40px', 
-                  fontSize: '0.86rem', 
-                  background: '#0F172A', 
-                  border: 'none', 
-                  boxShadow: '0 4px 14px rgba(15, 23, 42, 0.28)' 
-                }}
-              >
-                {loading ? (
-                  <><span className="spinner-border spinner-border-sm"></span> جاري الحفظ...</>
-                ) : (
-                  <><i className="ti ti-device-floppy fs-6"></i> حفظ التغييرات</>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{
+            padding: '14px 20px',
+            background: '#F9FAFB',
+            borderTop: '1px solid #EAECF0',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '10px'
+          }}>
+            <button 
+              type="button" 
+              onClick={onClose}
+              style={{
+                height: '36px',
+                padding: '0 16px',
+                borderRadius: '8px',
+                border: '1px solid #D0D5DD',
+                background: '#FFFFFF',
+                color: '#344054',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              إلغاء
+            </button>
+            <button 
+              type="submit" 
+              disabled={loading}
+              style={{ 
+                height: '36px', 
+                padding: '0 20px',
+                borderRadius: '8px',
+                background: '#673DE6',
+                color: '#FFFFFF',
+                border: 'none',
+                fontSize: '12.5px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)' 
+              }}
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>جاري الحفظ...</span>
+                </>
+              ) : (
+                <>
+                  <Check size={14} />
+                  <span>حفظ السؤال</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

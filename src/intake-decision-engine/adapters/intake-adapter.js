@@ -345,7 +345,16 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       }
     });
     // The intake form always pre-fills diabetes.type ('type2'), so only an explicit selection or insulin use counts.
+    // Differentiate Type 1 and Insulin-Dependent Diabetes
+    if (intake.medical_conditions?.diabetes?.type === 'type1') {
+      if (!conds.some(c => c.conditionCode === 'TYPE_1_DIABETES')) {
+        conds.push({ conditionCode: 'TYPE_1_DIABETES', stability: 'STABLE' });
+      }
+    }
     if (intake.medical_conditions?.diabetes?.uses_insulin === true) {
+      if (!conds.some(c => c.conditionCode === 'INSULIN_DEPENDENT_DIABETES')) {
+        conds.push({ conditionCode: 'INSULIN_DEPENDENT_DIABETES', stability: 'STABLE' });
+      }
       if (!conds.some(c => c.conditionCode === 'DIABETES')) {
         conds.push({ conditionCode: 'DIABETES', stability: 'STABLE' });
       }
@@ -569,7 +578,20 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const waist = parseCleanNumber(body.waistCm, parseCleanNumber(intake.waist_cm || intake.circumferences?.waist_cm, Math.round(height * 0.45)));
   const neck = parseCleanNumber(body.neckCm, parseCleanNumber(intake.circumferences?.neck_cm, null));
   const hip = parseCleanNumber(body.hipCm, parseCleanNumber(intake.circumferences?.hips_cm, null));
-  let bodyFat = parseCleanNumber(body.bodyFat, null);
+  let rawBodyFatInput = 
+    body.bodyFat ?? body.body_fat ?? body.bodyFatPct ?? body.body_fat_pct ?? body.body_fat_percent ?? body.bodyFatPercentage ??
+    intake.bodyFat ?? intake.body_fat ?? intake.bodyFatPct ?? intake.body_fat_pct ?? intake.body_fat_percent ?? intake.bodyFatPercentage ??
+    intake.body?.bodyFatPct ?? intake.body?.body_fat_pct;
+
+  let bodyFat = parseCleanNumber(rawBodyFatInput, null);
+
+  if (bodyFat !== null && bodyFat > 0 && bodyFat <= 0.60) {
+    bodyFat = Math.round(bodyFat * 100 * 10) / 10;
+  }
+
+  if (bodyFat !== null && (bodyFat < 3 || bodyFat > 65)) {
+    bodyFat = null;
+  }
 
   // Calculate US Navy Body Fat if neckCm and waistCm are provided and direct bodyFat is missing
   if (!bodyFat && neck && waist && waist > neck) {
@@ -594,6 +616,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     heightCm: height,
     weightKg: weight,
     waistCm: waist,
+
+
     weightTrend: ["LOSING", "STABLE", "GAINING"].includes(body.weightTrend) ? body.weightTrend : "STABLE",
     measurementQuality: quality,
     progressPhotosAvailable: Boolean(body.progressPhotosAvailable || (body.photos && Object.keys(body.photos).length > 0))
@@ -644,7 +668,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const CONDITION_MAP = {
     DIABETES: "DIABETES",
     TYPE_2_DIABETES: "DIABETES",
-    TYPE_1_DIABETES: "DIABETES",
+    TYPE_1_DIABETES: "TYPE_1_DIABETES",
+    INSULIN_DEPENDENT_DIABETES: "INSULIN_DEPENDENT_DIABETES",
     INSULIN_RESISTANCE: "INSULIN_RESISTANCE",
     HYPERTENSION: "HYPERTENSION",
     HIGH_BLOOD_PRESSURE: "HYPERTENSION",
@@ -728,6 +753,24 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       }
     }
   });
+
+  // Clinical Safety: Inspect medications for insulin therapy
+  const INSULIN_KEYS_INTAKE = ["INSULIN", "LANTUS", "NOVORAPID", "APIDRA", "TRESIBA", "MIXTARD", "HUMALOG", "LEVEMIR", "انسولين"];
+  const allMedsText = [
+    ...(Array.isArray(medical.medications) ? medical.medications : []),
+    ...(Array.isArray(intake.current_meds_supplements_list) ? intake.current_meds_supplements_list : []),
+    String(intake.current_meds_supplements || "")
+  ].join(" ").toUpperCase();
+  if (INSULIN_KEYS_INTAKE.some(k => allMedsText.includes(k))) {
+    if (!conditions.some(c => c.conditionCode === "INSULIN_DEPENDENT_DIABETES")) {
+      conditions.push({
+        conditionCode: "INSULIN_DEPENDENT_DIABETES",
+        stability: "STABLE",
+        otherConditionText: null,
+        physicianInstructions: []
+      });
+    }
+  }
 
   const canonicalMedical = {
     conditions,

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { HeartPulse, Search, Plus, X, Play, Copy, Check, RotateCw, Flame, ShieldCheck, Layers, Edit3, Upload, ArrowRightLeft, Lock, Activity, Dumbbell, RefreshCw } from 'lucide-react';
+import { HeartPulse, Search, Plus, X, Play, Copy, Check, RotateCw, Flame, ShieldCheck, Layers, Edit3, Upload, ArrowRightLeft, Lock, Activity, Dumbbell, RefreshCw, Target } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
 import { PageHeader } from '@/shared/components/page-header';
+import { TableSearch } from '@/shared/components/table-search';
 import defaultMobilityCatalog from '../data/mobilityCatalog.json';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import CurvedSelect from '../components/common/CurvedSelect';
@@ -25,7 +26,7 @@ function MobilityImageFrame({ src, label, icon: Icon = Activity }) {
       borderRadius: '10px', 
       overflow: 'hidden', 
       background: '#F1F5F9', 
-      border: '1px solid #E2E8F0', 
+      border: '1px solid #EAECF0', 
       height: '135px', 
       display: 'flex', 
       alignItems: 'center', 
@@ -215,6 +216,14 @@ export default function MobilityLibrary() {
     showToast('تم نسخ التوجيه بنجاح');
   };
 
+  const handleCopyVideoLink = (url, id) => {
+    if (!url) return;
+    navigator.clipboard.writeText(url);
+    setCopiedId(`video_${id}`);
+    setTimeout(() => setCopiedId(null), 2000);
+    showToast('تم نسخ رابط الفيديو بنجاح');
+  };
+
   // Open Edit Modal for any exercise / drill
   const openEditModal = (drill) => {
     setEditingDrill(drill);
@@ -387,8 +396,7 @@ export default function MobilityLibrary() {
                 height: '34px',
                 padding: '0 14px',
                 borderRadius: '8px',
-                background: '#0F172A',
-                color: '#FFFFFF',
+                background: '#673DE6', color: '#FFFFFF',
                 border: 'none',
                 fontSize: '12px',
                 fontWeight: 700,
@@ -406,17 +414,17 @@ export default function MobilityLibrary() {
         />
 
         {/* Exercise & Mobility Studio Switcher */}
-        <div style={{ display: 'flex', gap: '6px', background: '#F8FAFC', padding: '4px', borderRadius: '10px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
+        <div style={{ display: 'inline-flex', gap: '4px', background: '#F2F4F7', padding: '3px', borderRadius: '8px', border: '1px solid #EAECF0', width: 'fit-content' }}>
           <Link
             to="/exercises"
             style={{
               padding: '6px 14px',
               borderRadius: '8px',
               fontSize: '12px',
-              fontWeight: 700,
+              fontWeight: 600,
               border: 'none',
               textDecoration: 'none',
-              color: '#64748B',
+              color: '#475467',
               background: 'transparent',
               display: 'inline-flex',
               alignItems: 'center',
@@ -435,11 +443,10 @@ export default function MobilityLibrary() {
               padding: '6px 14px',
               borderRadius: '8px',
               fontSize: '12px',
-              fontWeight: 800,
+              fontWeight: 600,
               border: 'none',
               cursor: 'default',
-              background: '#0F172A',
-              color: '#FFFFFF',
+              background: '#673DE6', color: '#FFFFFF',
               boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
               display: 'inline-flex',
               alignItems: 'center',
@@ -452,10 +459,10 @@ export default function MobilityLibrary() {
         </div>
 
         {/* 2. Unified Control Bar (Tabs + Search + Sub-filters) */}
-        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)' }}>
+        <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
             {/* Primary Category Tabs */}
-            <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '4px', borderRadius: '10px', border: '1px solid #E2E8F0', flexWrap: 'wrap' }}>
+            <div style={{ display: 'inline-flex', gap: '3px', background: '#F2F4F7', padding: '3px', borderRadius: '8px', border: '1px solid #EAECF0', flexWrap: 'wrap' }}>
               {tabs.map((t) => {
                 const Icon = t.icon;
                 const isSel = activeTab === t.id;
@@ -468,7 +475,7 @@ export default function MobilityLibrary() {
                       padding: '6px 14px',
                       borderRadius: '8px',
                       fontSize: '12px',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       border: 'none',
                       cursor: 'pointer',
                       background: isSel ? '#0F172A' : 'transparent',
@@ -482,16 +489,7 @@ export default function MobilityLibrary() {
                   >
                     <Icon size={14} color={isSel ? '#FFFFFF' : '#64748B'} />
                     <span>{t.label}</span>
-                    <span style={{
-                      fontSize: '9px',
-                      fontFamily: 'JetBrains Mono, monospace',
-                      padding: '1px 5px',
-                      borderRadius: '8px',
-                      background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
-                      color: isSel ? '#FFFFFF' : '#64748B'
-                    }}>
-                      {t.shortcut}
-                    </span>
+                    
                     <span style={{
                       fontSize: '10px',
                       fontWeight: 800,
@@ -518,7 +516,7 @@ export default function MobilityLibrary() {
                 }}
                 style={{
                   height: '34px',
-                  padding: '0 12px',
+                  padding: '0 14px',
                   borderRadius: '8px',
                   background: '#FFFFFF',
                   border: '1px solid #CBD5E1',
@@ -540,44 +538,16 @@ export default function MobilityLibrary() {
                 <span>تحديث [R]</span>
               </button>
 
-              {/* Search Box */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  background: '#FFFFFF',
-                  border: '1px solid #CBD5E1',
-                  borderRadius: '8px',
-                  padding: '0 10px',
-                  height: '34px',
-                  width: '260px',
-                  gap: '6px'
-                }}
-              >
-                <Search size={14} color="#94A3B8" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="بحث باسم الحركة أو الأداة..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    border: 'none',
-                    outline: 'none',
-                    background: 'transparent',
-                    fontSize: '12px',
-                    width: '100%',
-                    color: '#0F172A'
-                  }}
-                />
-                {searchTerm ? (
-                  <button type="button" onClick={() => setSearchTerm('')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8' }}>
-                    <X size={13} />
-                  </button>
-                ) : (
-                  <span style={{ fontSize: '9.5px', color: '#94A3B8', fontFamily: 'JetBrains Mono, monospace', padding: '1px 5px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px' }}>/</span>
-                )}
-              </div>
+              {/* Unified Hostinger Search Box */}
+              <TableSearch
+                value={searchTerm}
+                onChange={setSearchTerm}
+                inputRef={searchInputRef}
+                placeholder="بحث باسم الحركة أو الأداة..."
+                width="260px"
+                showShortcut={true}
+                shortcutText="/"
+              />
             </div>
           </div>
 
@@ -600,14 +570,15 @@ export default function MobilityLibrary() {
                     type="button"
                     onClick={() => setSelectedArea(a.id)}
                     style={{
-                      padding: '4px 10px',
+                      padding: '5px 12px',
                       borderRadius: '8px',
                       fontSize: '11px',
                       fontWeight: selectedArea === a.id ? 800 : 600,
                       border: selectedArea === a.id ? '1px solid #0F172A' : '1px solid #CBD5E1',
-                      background: selectedArea === a.id ? '#0F172A' : '#F8FAFC',
+                      background: selectedArea === a.id ? '#0F172A' : '#FFFFFF',
                       color: selectedArea === a.id ? '#FFFFFF' : '#475569',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      transition: 'all 0.12s ease'
                     }}
                   >
                     {a.label}
@@ -633,123 +604,218 @@ export default function MobilityLibrary() {
                 key={drill.id}
                 style={{
                   background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid #EAECF0',
                   borderRadius: '12px',
                   padding: '14px 16px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   gap: '10px',
+                  overflow: 'hidden',
                   boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)',
                   transition: 'all 0.15s ease'
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#E2E8F0'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#EAECF0'; }}
               >
                 <div>
-                  {/* Balanced Executive Header: Title on Right (First to Read in RTL) & Badges on Left */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    gap: '10px',
-                    marginBottom: '10px'
-                  }}>
-                    {/* Drill Titles (Right Side in RTL) */}
-                    <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+                  {/* Executive Header: Title on Top (Full Width) & Badges Sub-Row */}
+                  <div style={{ marginBottom: '10px' }}>
+                    
+                    {/* Top Row: Full-width Exercise Title + Edit Button */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
                       <h4 style={{ 
-                        margin: '0 0 2px 0', 
-                        fontSize: '14.5px', 
+                        margin: 0, 
+                        fontSize: '13.5px', 
                         fontWeight: 800, 
                         color: '#0F172A', 
-                        lineHeight: 1.25,
+                        lineHeight: 1.3,
                         letterSpacing: '-0.01em',
-                        wordBreak: 'break-word'
-                      }}>
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        flex: 1,
+                        minWidth: 0
+                      }}
+                      title={drill.name_en || drill.name_ar}
+                      >
                         {drill.name_en || drill.name_ar}
                       </h4>
+
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(drill)}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '6px',
+                          border: '1px solid #CBD5E1',
+                          background: '#FFFFFF',
+                          color: '#64748B',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          flexShrink: 0,
+                          padding: 0
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = '#F1F5F9'; e.currentTarget.style.color = '#0F172A'; e.currentTarget.style.borderColor = '#94A3B8'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#64748B'; e.currentTarget.style.borderColor = '#CBD5E1'; }}
+                        title="تعديل بيانات وصور التمرين"
+                      >
+                        <Edit3 size={11} />
+                      </button>
+                    </div>
+
+                    {/* Sub-Row: Arabic Name on Right & Category/Equipment Badges on Left */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'nowrap' }}>
                       <div style={{ 
-                        fontSize: '11.5px', 
+                        fontSize: '11px', 
                         color: '#64748B', 
                         fontWeight: 600, 
-                        lineHeight: 1.3 
-                      }}>
+                        lineHeight: 1.3,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        flex: 1,
+                        minWidth: 0
+                      }}
+                      title={drill.name_ar}
+                      >
                         {drill.name_ar}
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                        <span style={{
+                          background: '#F1F5F9',
+                          border: '1px solid #CBD5E1',
+                          color: '#0F172A',
+                          padding: '1.5px 6px',
+                          borderRadius: '6px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          <Activity size={10} color="#0284C7" />
+                          <span>{tagLabel}</span>
+                        </span>
+
+                        <span style={{
+                          background: '#F8FAFC',
+                          border: '1px solid #EAECF0',
+                          color: '#475569',
+                          padding: '1.5px 6px',
+                          borderRadius: '6px',
+                          fontSize: '10px',
+                          fontWeight: 600,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          <Dumbbell size={10} color="#475569" />
+                          <span>{drill.equipment || 'وزن الجسم'}</span>
+                        </span>
                       </div>
                     </div>
 
-                    {/* Balanced Badges Cluster (Left Side in RTL) */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      flexWrap: 'wrap',
-                      justifyContent: 'flex-end',
-                      flexShrink: 0
-                    }}>
-                      <span style={{
-                        background: '#F1F5F9',
-                        border: '1px solid #CBD5E1',
-                        color: '#0F172A',
-                        padding: '2px 7px',
-                        borderRadius: '8px',
-                        fontSize: '10.5px',
-                        fontWeight: 700,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        <Activity size={11} color="#0284C7" />
-                        <span>{tagLabel}</span>
-                      </span>
-
-                      <span style={{
-                        background: '#F8FAFC',
-                        border: '1px solid #E2E8F0',
-                        color: '#475569',
-                        padding: '2px 7px',
-                        borderRadius: '8px',
-                        fontSize: '10.5px',
-                        fontWeight: 600,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        <Dumbbell size={11} color="#475569" />
-                        <span>{drill.equipment || 'وزن الجسم'}</span>
-                      </span>
-                    </div>
                   </div>
 
-                  {/* Dual-State Accurate Exercise Preview (Start & Finish Positions) */}
+                  {/* Dual-State Accurate Exercise Preview (Start & Finish Positions) + Video Strip */}
                   <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '8px',
-                    marginBottom: '8px',
                     background: '#F8FAFC',
                     padding: '6px',
                     borderRadius: '14px',
-                    border: '1px solid #E2E8F0'
+                    border: '1px solid #EAECF0',
+                    marginBottom: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px'
                   }}>
-                    <MobilityImageFrame
-                      src={drill.image_stretch || drill.images?.[0] || `/exercises/${drill.id}/0.jpg`}
-                      label="وضع البداية"
-                      icon={Activity}
-                    />
-                    <MobilityImageFrame
-                      src={drill.image_contraction || drill.images?.[1] || `/exercises/${drill.id}/1.jpg`}
-                      label="وضع الانقباض"
-                      icon={Activity}
-                    />
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '8px'
+                    }}>
+                      <MobilityImageFrame
+                        src={drill.image_stretch || drill.images?.[0] || `/exercises/${drill.id}/0.jpg`}
+                        label="وضع البداية"
+                        icon={Activity}
+                      />
+                      <MobilityImageFrame
+                        src={drill.image_contraction || drill.images?.[1] || `/exercises/${drill.id}/1.jpg`}
+                        label="وضع الانقباض"
+                        icon={Activity}
+                      />
+                    </div>
+
+                    {/* Integrated Video Player Strip under images */}
+                    {drill.video_url && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setActiveVideo(drill)}
+                          style={{
+                            flex: 1,
+                            height: '28px',
+                            borderRadius: '8px',
+                            border: '1px solid #D0D5DD',
+                            background: '#FFFFFF',
+                            color: '#0F172A',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04)',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = '#0F172A'; e.currentTarget.style.color = '#FFFFFF'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#0F172A'; }}
+                          title="مشاهدة فيديو الحركة"
+                        >
+                          <Play size={11} fill="currentColor" />
+                          <span>مشاهدة الفيديو</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleCopyVideoLink(drill.video_url, drill.id)}
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '8px',
+                            border: copiedId === `video_${drill.id}` ? '1px solid #86EFAC' : '1px solid #D0D5DD',
+                            background: copiedId === `video_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
+                            color: copiedId === `video_${drill.id}` ? '#16A34A' : '#64748B',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.15s ease',
+                            flexShrink: 0
+                          }}
+                          onMouseEnter={(e) => { if (copiedId !== `video_${drill.id}`) { e.currentTarget.style.background = '#F1F5F9'; e.currentTarget.style.color = '#0F172A'; } }}
+                          onMouseLeave={(e) => { if (copiedId !== `video_${drill.id}`) { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#64748B'; } }}
+                          title={copiedId === `video_${drill.id}` ? 'تم نسخ الرابط' : 'نسخ رابط الفيديو للحافظة'}
+                        >
+                          {copiedId === `video_${drill.id}` ? <Check size={12} color="#16A34A" /> : <Copy size={12} />}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Technique Cue */}
+                  {/* Technique Cue Box with embedded in-header copy button */}
                   {drill.cue_ar && (
                     <div style={{
                       background: '#F8FAFC',
+                      border: '1px solid #EAECF0',
                       borderRight: '3px solid #0F172A',
                       padding: '8px 10px',
                       borderRadius: '8px',
@@ -758,89 +824,41 @@ export default function MobilityLibrary() {
                       lineHeight: 1.45,
                       marginBottom: '6px'
                     }}>
-                      {drill.cue_ar}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#0F172A' }}>التوجيه الحركي:</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(drill.cue_ar, drill.id)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: copiedId === drill.id ? '#16A34A' : '#64748B',
+                            cursor: 'pointer',
+                            fontSize: '10.5px',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            padding: 0
+                          }}
+                          title="نسخ التوجيه للحافظة"
+                        >
+                          {copiedId === drill.id ? <Check size={11} color="#16A34A" /> : <Copy size={11} />}
+                          <span>{copiedId === drill.id ? 'تم النسخ' : 'نسخ'}</span>
+                        </button>
+                      </div>
+                      <p style={{ margin: 0 }}>{drill.cue_ar}</p>
                     </div>
                   )}
                 </div>
 
-                {/* Footer: Target & Quick Actions */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '8px', marginTop: '4px' }}>
-                  <div style={{ fontSize: '11px', color: '#475569', fontWeight: 700 }}>
-                    {drill.target_area_ar}
+                {/* Footer: Target Area Focus */}
+                {drill.target_area_ar && (
+                  <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '8px', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#475569' }}>
+                    <Target size={12} color="#673DE6" />
+                    <span>التركيز: <strong style={{ color: '#0F172A' }}>{drill.target_area_ar}</strong></span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    {/* Edit Button */}
-                    <button
-                      type="button"
-                      onClick={() => openEditModal(drill)}
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: '8px',
-                        background: '#F1F5F9',
-                        border: '1px solid #CBD5E1',
-                        color: '#0F172A',
-                        fontSize: '10.5px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        transition: 'all 0.12s ease'
-                      }}
-                      title="تعديل بيانات وصور التمرين"
-                    >
-                      <Edit3 size={11} />
-                      <span>تعديل</span>
-                    </button>
-
-                    {/* Copy Cue Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(drill.cue_ar, drill.id)}
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: '8px',
-                        background: '#F8FAFC',
-                        border: '1px solid #CBD5E1',
-                        color: '#475569',
-                        fontSize: '10.5px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                      title="نسخ التوجيه"
-                    >
-                      {copiedId === drill.id ? <Check size={11} color="#16A34A" /> : <Copy size={11} />}
-                      <span>{copiedId === drill.id ? 'تم' : 'نسخ'}</span>
-                    </button>
-
-                    {/* Video Button */}
-                    {drill.video_url && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveVideo(drill)}
-                        style={{
-                          padding: '4px 10px',
-                          borderRadius: '8px',
-                          background: '#0F172A',
-                          border: 'none',
-                          color: '#FFFFFF',
-                          fontSize: '10.5px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}
-                      >
-                        <Play size={10} fill="#FFFFFF" />
-                        <span>فيديو</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             );
           })}
@@ -881,7 +899,7 @@ export default function MobilityLibrary() {
                 background: '#F8FAFC'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#673DE6', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Edit3 size={14} />
                   </div>
                   <div>
@@ -1016,7 +1034,7 @@ export default function MobilityLibrary() {
                 </div>
 
                 {/* Dual Image Thumbnails Settings & Preview */}
-                <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #EAECF0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <div>
                       <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
@@ -1071,7 +1089,7 @@ export default function MobilityLibrary() {
                         </span>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '8px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#673DE6', color: '#FFFFFF', borderRadius: '8px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         <Upload size={12} />
                         <span>اختيار صورة من جهازك</span>
                         <input
@@ -1087,7 +1105,7 @@ export default function MobilityLibrary() {
                         placeholder="أو ضع مسار / رابط صورة البداية"
                         value={editFormData.image_stretch}
                         onChange={(e) => setEditFormData({ ...editFormData, image_stretch: e.target.value })}
-                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1104,7 +1122,7 @@ export default function MobilityLibrary() {
                         </span>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#0F172A', color: '#FFFFFF', borderRadius: '8px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#673DE6', color: '#FFFFFF', borderRadius: '8px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         <Upload size={12} />
                         <span>اختيار صورة من جهازك</span>
                         <input
@@ -1120,7 +1138,7 @@ export default function MobilityLibrary() {
                         placeholder="أو ضع مسار / رابط صورة الأداء"
                         value={editFormData.image_contraction}
                         onChange={(e) => setEditFormData({ ...editFormData, image_contraction: e.target.value })}
-                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
                   </div>
@@ -1138,7 +1156,7 @@ export default function MobilityLibrary() {
                   <button
                     type="submit"
                     disabled={savingEditDrill}
-                    style={{ padding: '8px 22px', borderRadius: '8px', background: '#0F172A', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '8px 22px', borderRadius: '8px', background: '#673DE6', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     {savingEditDrill ? 'جاري الحفظ...' : 'حفظ التعديلات'}
                   </button>
@@ -1151,7 +1169,7 @@ export default function MobilityLibrary() {
         {/* Add Drill Modal */}
         {isAddModalOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-            <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '18px 20px', boxShadow: '0 20px 40px rgba(15, 23, 42, 0.15)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #EAECF0', padding: '18px 20px', boxShadow: '0 20px 40px rgba(15, 23, 42, 0.15)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
                 <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>إضافة حركة كارديو / إطالة جديدة</h4>
                 <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748B' }}><X size={15} /></button>
@@ -1182,7 +1200,7 @@ export default function MobilityLibrary() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
                   <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ padding: '6px 14px', borderRadius: '8px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}>إلغاء</button>
-                  <button type="submit" disabled={savingNewDrill} style={{ padding: '6px 18px', borderRadius: '8px', background: '#0F172A', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}>{savingNewDrill ? 'جاري الحفظ...' : 'حفظ'}</button>
+                  <button type="submit" disabled={savingNewDrill} style={{ padding: '6px 18px', borderRadius: '8px', background: '#673DE6', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}>{savingNewDrill ? 'جاري الحفظ...' : 'حفظ'}</button>
                 </div>
               </form>
             </div>
@@ -1199,7 +1217,7 @@ export default function MobilityLibrary() {
 
         {/* Notification Toast */}
         {notification && (
-          <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: '#0F172A', color: '#FFFFFF', padding: '8px 16px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 700, zIndex: 99999 }}>
+          <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: '#673DE6', color: '#FFFFFF', padding: '8px 16px', borderRadius: '8px', fontSize: '11.5px', fontWeight: 700, zIndex: 99999 }}>
             {notification}
           </div>
         )}

@@ -40,7 +40,7 @@ export function CoachCardioSwapModal({
                     <span style={{ fontSize: '10px', color: '#B45309', display: 'block', marginTop: '2px' }}>{verdict.warning_ar}</span>
                   )}
                 </div>
-                <button type="button" disabled={!verdict.allowed} style={{ padding: '3px 8px', background: verdict.allowed ? '#0F172A' : '#CBD5E1', color: '#FFFFFF', border: 'none', borderRadius: '7px', fontSize: '10.5px', fontWeight: 700 }}>{verdict.allowed ? 'اختيار' : 'غير مناسب'}</button>
+                <button type="button" disabled={!verdict.allowed} style={{ padding: '3px 8px', background: verdict.allowed ? '#673DE6' : '#CBD5E1', color: '#FFFFFF', border: 'none', borderRadius: '7px', fontSize: '10.5px', fontWeight: 700 }}>{verdict.allowed ? 'اختيار' : 'غير مناسب'}</button>
               </div>
             );
           })}

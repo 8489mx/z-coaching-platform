@@ -201,7 +201,7 @@ export default function WorkoutTab({
             background: '#FFFFFF', 
             border: '1px solid #BAE6FD', 
             padding: '2px 8px', 
-            borderRadius: '9999px' 
+            borderRadius: '8px' 
           }}>
             {workoutSession.exercises?.length || 0} تمارين
           </span>
@@ -304,7 +304,7 @@ export default function WorkoutTab({
             style={{
               background: prehabCompleted ? '#F0FDF4' : '#FFFBEB',
               border: `1px solid ${prehabCompleted ? '#BBF7D0' : '#FDE68A'}`,
-              borderRadius: '20px',
+              borderRadius: '14px',
               padding: '16px',
               boxShadow: '0 2px 6px rgba(15, 23, 42, 0.03)',
               transition: 'all 0.2s ease'
@@ -555,7 +555,7 @@ export default function WorkoutTab({
                 style={{
                   flex: 1,
                   height: '28px',
-                  borderRadius: '9999px',
+                  borderRadius: '6px',
                   background: '#F8FBFF',
                   color: '#284C7C',
                   border: '1px solid #D9E7F5',
@@ -588,7 +588,7 @@ export default function WorkoutTab({
                 style={{
                   height: '28px',
                   padding: '0 10px',
-                  borderRadius: '9999px',
+                  borderRadius: '8px',
                   background: '#F8FBFF',
                   color: '#284C7C',
                   border: '1px solid #D9E7F5',

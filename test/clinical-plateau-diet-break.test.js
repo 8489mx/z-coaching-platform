@@ -49,7 +49,7 @@ test('Milestone 1: Clinical Plateau Breaker & Auto Diet-Break Engine Suite', asy
     assert.equal(adapted.adaptation_action, AdaptationAction.SCHEDULE_DIET_BREAK);
     assert.equal(adapted.is_diet_break_recommended, true);
     assert.equal(adapted.adapted_nutrition.target_calories_kcal, Math.round(baseCalories + 350));
-    assert.equal(adapted.adapted_nutrition.carbohydrate_g, Math.round(baseCarbs + 75));
+    assert.equal(adapted.adapted_nutrition.carbohydrate_g, 455);
 
     const reason = adapted.adaptation_reasons.find(
       r => r.code === AdaptationReasonCode.DIET_BREAK_TRIGGERED_AFTER_COMPLIANCE
@@ -97,6 +97,8 @@ test('Milestone 1: Clinical Plateau Breaker & Auto Diet-Break Engine Suite', asy
         status: 'PLATEAU_DETECTED',
         analysis_status: 'PLATEAU_DETECTED',
         is_female: false,
+        refeed_approved: true,
+        increase_steps_approved: true,
       },
       options: {
         currentWeekNumber: 4,

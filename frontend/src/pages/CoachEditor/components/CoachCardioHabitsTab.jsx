@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
-import { Zap, ArrowRightLeft, FileText, ShieldCheck, Plus, Trash2, Pill } from 'lucide-react';
+import {
+  Zap,
+  ArrowRightLeft,
+  FileText,
+  ShieldCheck,
+  Plus,
+  Trash2,
+  Pill,
+  Minus,
+  Footprints,
+  Droplets,
+  Moon,
+  Activity,
+  Flame
+} from 'lucide-react';
 import { getStandardSupplementCatalog } from '../../../utils/clinicalSupplementSafetyEngine';
 import { evaluateCardioInterferenceDecoupling, CARDIO_INTENSITIES } from '../../../utils/cardioInterferenceEngine';
 import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/cardioZonesEngine';
@@ -105,59 +119,249 @@ export function CoachCardioHabitsTab({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }} dir="rtl">
       
-      {/* Cardio Modality Card */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px 14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <strong style={{ fontSize: '13px', color: '#0F172A' }}>نظام وجهاز الكارديو:</strong>
+      {/* 1. Cardio Modality Card */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #EAECF0',
+        borderRadius: '14px',
+        padding: '14px 16px',
+        boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: '#F4F0FD',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#673DE6'
+            }}>
+              <Activity size={17} />
+            </div>
+            <div>
+              <strong style={{ fontSize: '13.5px', color: '#101828', fontWeight: 800 }}>نظام وجهاز الكارديو:</strong>
+              <div style={{ fontSize: '11px', color: '#64748B' }}>تحديد النمط والشدة وبروتوكول الفصل الجزيئي لمنع الهدم</div>
+            </div>
+          </div>
+
           <button
             type="button"
             onClick={() => setCardioSwapModal(true)}
-            style={{ padding: '6px 14px', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+            style={{
+              height: '34px',
+              padding: '0 14px',
+              borderRadius: '8px',
+              background: '#FFFFFF',
+              color: '#344054',
+              border: '1px solid #D0D5DD',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04)',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#F9FAFB';
+              e.currentTarget.style.borderColor = '#673DE6';
+              e.currentTarget.style.color = '#673DE6';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#FFFFFF';
+              e.currentTarget.style.borderColor = '#D0D5DD';
+              e.currentTarget.style.color = '#344054';
+            }}
           >
-            <ArrowRightLeft size={12} />
+            <ArrowRightLeft size={13} />
             <span>تبديل الجهاز / النمط</span>
           </button>
         </div>
 
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <strong style={{ color: '#0F172A', fontSize: '12.5px' }}>{program.cardio?.modality || 'مشي على سير مائل (Incline Treadmill)'}</strong>
-          
+        <div style={{
+          background: '#F8FAFC',
+          border: '1px solid #E2E8F0',
+          borderRadius: '12px',
+          padding: '12px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px'
+        }}>
+          {/* Modality Title */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{
+                background: '#FFFFFF',
+                border: '1px solid #CBD5E1',
+                padding: '4px 12px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 800,
+                color: '#101828',
+                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
+              }}>
+                {program.cardio?.modality || 'مشي على سير مائل (Incline Treadmill)'}
+              </span>
+            </div>
+            <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
+              بروتوكول هوائي محسوب للهدف الاستشفائي والدهون
+            </span>
+          </div>
+
           {/* Cardio Volume Controls */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', paddingTop: '6px', borderTop: '1px solid #E2E8F0' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '10px',
+            paddingTop: '8px',
+            borderTop: '1px solid #E2E8F0'
+          }}>
+            {/* Control 1: Weekly Sessions Stepper */}
             <div>
-              <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '2px', fontWeight: 600 }}>الجلسات أسبوعياً</label>
-              <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', height: '30px', padding: '0 4px' }}>
-                <button type="button" onClick={() => handleUpdateCardioParam('weekly_sessions', Math.max(1, (Number(program.cardio?.weekly_sessions) || 3) - 1))} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 6px' }}>-</button>
-                <span style={{ flex: 1, textAlign: 'center', fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>{program.cardio?.weekly_sessions || 3} جلسات</span>
-                <button type="button" onClick={() => handleUpdateCardioParam('weekly_sessions', (Number(program.cardio?.weekly_sessions) || 3) + 1)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 6px' }}>+</button>
+              <label style={{ fontSize: '11px', color: '#475467', display: 'block', marginBottom: '4px', fontWeight: 700 }}>الجلسات أسبوعياً</label>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                direction: 'ltr',
+                background: '#FFFFFF',
+                border: '1px solid #D0D5DD',
+                borderRadius: '8px',
+                height: '34px',
+                padding: '0 4px',
+                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateCardioParam('weekly_sessions', Math.max(1, (Number(program.cardio?.weekly_sessions) || 3) - 1))}
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    border: 'none',
+                    borderRadius: '6px',
+                    background: '#F1F5F9',
+                    color: '#344054',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.12s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#E2E8F0'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#F1F5F9'; }}
+                >
+                  <Minus size={13} strokeWidth={2.5} />
+                </button>
+                <span style={{ flex: 1, textAlign: 'center', fontSize: '12.5px', fontWeight: 800, color: '#101828' }} dir="rtl">
+                  {program.cardio?.weekly_sessions || 3} جلسات
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateCardioParam('weekly_sessions', (Number(program.cardio?.weekly_sessions) || 3) + 1)}
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    border: 'none',
+                    borderRadius: '6px',
+                    background: '#F1F5F9',
+                    color: '#344054',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.12s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#E2E8F0'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#F1F5F9'; }}
+                >
+                  <Plus size={13} strokeWidth={2.5} />
+                </button>
               </div>
             </div>
 
+            {/* Control 2: Duration Stepper */}
             <div>
-              <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '2px', fontWeight: 600 }}>مدة الجلسة (دقيقة)</label>
-              <div style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', height: '30px', padding: '0 4px' }}>
-                <button type="button" onClick={() => handleUpdateCardioParam('session_duration_min', Math.max(10, (Number(program.cardio?.session_duration_min) || 30) - 5))} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 6px' }}>-</button>
-                <span style={{ flex: 1, textAlign: 'center', fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>{program.cardio?.session_duration_min || 30} دقيقة</span>
-                <button type="button" onClick={() => handleUpdateCardioParam('session_duration_min', (Number(program.cardio?.session_duration_min) || 30) + 5)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 800, padding: '0 6px' }}>+</button>
+              <label style={{ fontSize: '11px', color: '#475467', display: 'block', marginBottom: '4px', fontWeight: 700 }}>مدة الجلسة (دقيقة)</label>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                direction: 'ltr',
+                background: '#FFFFFF',
+                border: '1px solid #D0D5DD',
+                borderRadius: '8px',
+                height: '34px',
+                padding: '0 4px',
+                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateCardioParam('session_duration_min', Math.max(10, (Number(program.cardio?.session_duration_min) || 30) - 5))}
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    border: 'none',
+                    borderRadius: '6px',
+                    background: '#F1F5F9',
+                    color: '#344054',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.12s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#E2E8F0'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#F1F5F9'; }}
+                >
+                  <Minus size={13} strokeWidth={2.5} />
+                </button>
+                <span style={{ flex: 1, textAlign: 'center', fontSize: '12.5px', fontWeight: 800, color: '#101828' }} dir="rtl">
+                  {program.cardio?.session_duration_min || 30} دقيقة
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateCardioParam('session_duration_min', (Number(program.cardio?.session_duration_min) || 30) + 5)}
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    border: 'none',
+                    borderRadius: '6px',
+                    background: '#F1F5F9',
+                    color: '#344054',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.12s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#E2E8F0'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#F1F5F9'; }}
+                >
+                  <Plus size={13} strokeWidth={2.5} />
+                </button>
               </div>
             </div>
 
+            {/* Control 3: Heart Rate Zone Select */}
             <div>
-              <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '2px', fontWeight: 600 }}>نطاق النبض المستهدف</label>
+              <label style={{ fontSize: '11px', color: '#475467', display: 'block', marginBottom: '4px', fontWeight: 700 }}>نطاق النبض المستهدف</label>
               <CurvedSelect
                 value={program.cardio?.target_heart_rate_zone || 'Zone 2'}
                 onChange={(e) => handleUpdateCardioParam('target_heart_rate_zone', e.target.value)}
                 style={{
                   width: '100%',
-                  height: '30px',
+                  height: '34px',
                   borderRadius: '8px',
-                  border: hiitBlocked ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
+                  border: hiitBlocked ? '1.5px solid #EF4444' : '1px solid #D0D5DD',
                   background: hiitBlocked ? '#FEF2F2' : '#FFFFFF',
-                  color: hiitBlocked ? '#DC2626' : '#0F172A',
-                  padding: '0 8px',
-                  fontSize: '11px',
+                  color: hiitBlocked ? '#DC2626' : '#101828',
+                  padding: '0 10px',
+                  fontSize: '11.5px',
                   fontWeight: 700,
-                  outline: 'none'
+                  outline: 'none',
+                  boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
                 }}
               >
                 <option value="Zone 1">Zone 1 (استشفاء خفيف)</option>
@@ -168,62 +372,113 @@ export function CoachCardioHabitsTab({
             </div>
           </div>
 
-          {/* Practical Talk-Test Biofeedback & AMPK-mTOR Molecular Decoupling */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '8px', paddingTop: '8px', borderTop: '1px solid #E2E8F0' }}>
-            <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '8px 10px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <Zap size={12} color="#2563EB" />
-                <span>بروتوكول اختبار التحدث (Talk-Test)</span>
-              </div>
-              <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: 1.4 }}>
-                {practicalCardio.talk_test_cue_ar}
-              </div>
-              {practicalCardio.clinical_guidance_ar && (
-                <div style={{ fontSize: '10px', color: '#B91C1C', fontWeight: 700, marginTop: '4px', lineHeight: 1.4 }}>
-                  {practicalCardio.clinical_guidance_ar}
+          {/* Practical Talk-Test & AMPK-mTOR Decoupling */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: '10px',
+            paddingTop: '8px',
+            borderTop: '1px solid #E2E8F0',
+            alignItems: 'stretch'
+          }}>
+            {/* Talk Test */}
+            <div style={{
+              background: '#FFFFFF',
+              border: '1px solid #CBD5E1',
+              borderRadius: '10px',
+              padding: '10px 12px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '6px',
+              height: '100%',
+              boxSizing: 'border-box'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#101828', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Zap size={14} color="#2563EB" />
+                  <span>بروتوكول اختبار التحدث (Talk-Test)</span>
                 </div>
-              )}
+                <div style={{ fontSize: '11px', color: '#475467', lineHeight: 1.5 }}>
+                  {practicalCardio.talk_test_cue_ar}
+                </div>
+                {practicalCardio.clinical_guidance_ar && (
+                  <div style={{ fontSize: '10.5px', color: '#B91C1C', fontWeight: 700, marginTop: '2px', lineHeight: 1.4 }}>
+                    {practicalCardio.clinical_guidance_ar}
+                  </div>
+                )}
+              </div>
               {interferenceAudit?.heart_rate_prescription?.range_display && (
-                <div style={{ fontSize: '10px', color: '#2563EB', fontWeight: 700, marginTop: '4px' }}>
+                <div style={{
+                  fontSize: '10.5px',
+                  color: '#1D4ED8',
+                  fontWeight: 800,
+                  marginTop: '4px',
+                  background: '#EFF6FF',
+                  border: '1px solid #BFDBFE',
+                  padding: '3px 10px',
+                  borderRadius: '6px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  width: 'fit-content'
+                }}>
                   النبض المستهدف (العمر {clientAge} سنة): {interferenceAudit.heart_rate_prescription.range_display}
                 </div>
               )}
             </div>
 
+            {/* AMPK-mTOR Molecular Decoupling */}
             <div style={{
               background: interferenceAudit.has_interference_risk ? '#FEF2F2' : '#F0FDF4',
               border: interferenceAudit.has_interference_risk ? '1px solid #FECACA' : '1px solid #BBF7D0',
-              borderRadius: '8px',
-              padding: '8px 10px'
+              borderRadius: '10px',
+              padding: '10px 12px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '6px',
+              height: '100%',
+              boxSizing: 'border-box'
             }}>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: interferenceAudit.has_interference_risk ? '#B91C1C' : '#166534', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <ShieldCheck size={12} color={interferenceAudit.has_interference_risk ? '#DC2626' : '#16A34A'} />
-                <span>الفصل الجزيئي لمنع الهدم العضلي (AMPK-mTOR)</span>
-              </div>
-              <div style={{ fontSize: '10.5px', color: interferenceAudit.has_interference_risk ? '#991B1B' : '#15803D', lineHeight: 1.4 }}>
-                {interferenceAudit.timing_verdict_ar}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{
+                  fontSize: '11.5px',
+                  fontWeight: 800,
+                  color: interferenceAudit.has_interference_risk ? '#B91C1C' : '#166534',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <ShieldCheck size={14} color={interferenceAudit.has_interference_risk ? '#DC2626' : '#16A34A'} />
+                  <span>الفصل الجزيئي لمنع الهدم العضلي (AMPK-mTOR)</span>
+                </div>
+                <div style={{
+                  fontSize: '11px',
+                  color: interferenceAudit.has_interference_risk ? '#991B1B' : '#15803D',
+                  lineHeight: 1.5
+                }}>
+                  {interferenceAudit.timing_verdict_ar}
+                </div>
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
-      {/* =========================================================================
-          SUPPLEMENTS SCHEDULE SECTION (DIRECT & EXECUTIVE)
-          ========================================================================= */}
+      {/* 2. Supplements Schedule Section */}
       <div style={{
         background: '#FFFFFF',
-        border: '1px solid #E2E8F0',
-        borderRadius: '12px',
-        padding: '14px'
+        border: '1px solid #EAECF0',
+        borderRadius: '14px',
+        padding: '14px 16px',
+        boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
       }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{
-              width: '30px',
-              height: '30px',
+              width: '32px',
+              height: '32px',
               borderRadius: '8px',
               background: '#EFF6FF',
               display: 'flex',
@@ -231,71 +486,101 @@ export function CoachCardioHabitsTab({
               justifyContent: 'center',
               color: '#2563EB'
             }}>
-              <Pill size={16} />
+              <Pill size={17} />
             </div>
             <div>
-              <strong style={{ fontSize: '13px', color: '#0F172A' }}>جدول المكملات الغذائية اليومية:</strong>
+              <strong style={{ fontSize: '13.5px', color: '#101828', fontWeight: 800 }}>جدول المكملات الغذائية اليومية:</strong>
               <div style={{ fontSize: '11px', color: '#64748B' }}>تحديد المكملات والجرعات ومواعيد التناول اليومية للمتدرب</div>
             </div>
           </div>
 
-          <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: '#F1F5F9', color: '#475569' }}>
+          <span style={{
+            fontSize: '11px',
+            fontWeight: 800,
+            padding: '3px 10px',
+            borderRadius: '6px',
+            background: currentSupplements.length > 0 ? '#DCFCE7' : '#F1F5F9',
+            color: currentSupplements.length > 0 ? '#166534' : '#475569',
+            border: currentSupplements.length > 0 ? '1px solid #BBF7D0' : '1px solid #E2E8F0'
+          }}>
             {currentSupplements.length} مكملات محددة
           </span>
         </div>
 
         {/* Add Supplement Picker */}
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
-          <CurvedSelect
-            value={selectedCatalogSupp}
-            onChange={(e) => setSelectedCatalogSupp(e.target.value)}
-            style={{
-              flex: 1,
-              height: '34px',
-              borderRadius: '8px',
-              border: '1px solid #CBD5E1',
-              padding: '0 10px',
-              fontSize: '12px',
-              fontWeight: 700,
-              color: '#0F172A',
-              outline: 'none',
-              background: '#FFFFFF'
-            }}
-          >
-            {supplementCatalog.map(supp => (
-              <option key={supp.code} value={supp.code}>
-                {supp.name_ar} ({supp.standard_dosage})
-              </option>
-            ))}
-          </CurvedSelect>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', maxWidth: '520px' }}>
+          <div style={{ flex: 1 }}>
+            <CurvedSelect
+              value={selectedCatalogSupp}
+              onChange={(e) => setSelectedCatalogSupp(e.target.value)}
+              style={{
+                width: '100%',
+                height: '36px',
+                borderRadius: '8px',
+                border: '1px solid #D0D5DD',
+                padding: '0 12px',
+                fontSize: '12px',
+                fontWeight: 700,
+                color: '#101828',
+                outline: 'none',
+                background: '#FFFFFF',
+                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
+              }}
+            >
+              {supplementCatalog.map(supp => (
+                <option key={supp.code} value={supp.code}>
+                  {supp.name_ar} ({supp.standard_dosage})
+                </option>
+              ))}
+            </CurvedSelect>
+          </div>
 
           <button
             type="button"
             onClick={handleAddSupplement}
             style={{
-              height: '34px',
-              padding: '0 14px',
+              height: '36px',
+              padding: '0 16px',
               borderRadius: '8px',
-              background: '#0F172A',
+              background: '#673DE6',
               color: '#FFFFFF',
               border: 'none',
-              fontSize: '11.5px',
+              fontSize: '12px',
               fontWeight: 700,
+              boxShadow: '0 1px 3px rgba(103, 61, 230, 0.25)',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '6px',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              transition: 'all 0.15s ease'
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#5025D1'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#673DE6'; }}
           >
-            <Plus size={14} />
+            <Plus size={14} strokeWidth={2.4} />
             <span>إضافة مكمل</span>
           </button>
         </div>
 
-        {/* Direct Supplements List */}
+        {/* Empty State vs List */}
         {currentSupplements.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '14px', color: '#94A3B8', fontSize: '11.5px', background: '#F8FAFC', borderRadius: '8px' }}>
-            لم يتم إدراج مكملات غذائية لهذا المشترك بعد. اختر من القائمة بالأعلى لإضافة مكمل.
+          <div style={{
+            textAlign: 'center',
+            padding: '14px 16px',
+            color: '#64748B',
+            fontSize: '12px',
+            background: '#F8FAFC',
+            border: '1px dashed #CBD5E1',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}>
+            <Pill size={16} color="#94A3B8" />
+            <span style={{ fontWeight: 600 }}>لم يتم إدراج مكملات غذائية لهذا المشترك بعد. اختر من القائمة بالأعلى لإضافة مكمل.</span>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -304,12 +589,12 @@ export function CoachCardioHabitsTab({
               display: 'grid',
               gridTemplateColumns: 'minmax(140px, 1.2fr) minmax(110px, 1fr) minmax(130px, 1fr) 36px',
               gap: '8px',
-              padding: '6px 10px',
+              padding: '8px 12px',
               background: '#F1F5F9',
               borderRadius: '8px',
               fontSize: '11px',
-              fontWeight: 700,
-              color: '#475569'
+              fontWeight: 800,
+              color: '#475467'
             }}>
               <span>اسم المكمل</span>
               <span>الجرعة المحددة</span>
@@ -331,15 +616,17 @@ export function CoachCardioHabitsTab({
                     gridTemplateColumns: 'minmax(140px, 1.2fr) minmax(110px, 1fr) minmax(130px, 1fr) 36px',
                     gap: '8px',
                     alignItems: 'center',
-                    padding: '8px 10px',
+                    padding: '8px 12px',
                     background: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '8px'
+                    border: '1px solid #EAECF0',
+                    borderRadius: '8px',
+                    transition: 'all 0.12s ease'
                   }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#CBD5E1'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.borderColor = '#EAECF0'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563EB', flexShrink: 0 }}></span>
-                    <strong style={{ fontSize: '12px', color: '#0F172A' }}>{suppName}</strong>
+                    <strong style={{ fontSize: '12.5px', color: '#101828', fontWeight: 800 }}>{suppName}</strong>
                   </div>
 
                   <div>
@@ -350,12 +637,12 @@ export function CoachCardioHabitsTab({
                       placeholder="مثال: 5 جم يومياً"
                       style={{
                         width: '100%',
-                        height: '28px',
+                        height: '30px',
                         borderRadius: '6px',
                         border: '1px solid #CBD5E1',
                         padding: '0 8px',
-                        fontSize: '11px',
-                        color: '#0F172A',
+                        fontSize: '11.5px',
+                        color: '#101828',
                         background: '#FFFFFF',
                         outline: 'none',
                         boxSizing: 'border-box'
@@ -371,12 +658,12 @@ export function CoachCardioHabitsTab({
                       placeholder="مثال: بعد التمرين مباشرة"
                       style={{
                         width: '100%',
-                        height: '28px',
+                        height: '30px',
                         borderRadius: '6px',
                         border: '1px solid #CBD5E1',
                         padding: '0 8px',
-                        fontSize: '11px',
-                        color: '#0F172A',
+                        fontSize: '11.5px',
+                        color: '#101828',
                         background: '#FFFFFF',
                         outline: 'none',
                         boxSizing: 'border-box'
@@ -399,11 +686,14 @@ export function CoachCardioHabitsTab({
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        padding: 0
+                        padding: 0,
+                        transition: 'all 0.12s ease'
                       }}
                       title="حذف المكمل"
+                      onMouseEnter={(e) => { e.currentTarget.style.background = '#FEE2E2'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = '#FEF2F2'; }}
                     >
-                      <Trash2 size={12} />
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 </div>
@@ -413,18 +703,68 @@ export function CoachCardioHabitsTab({
         )}
       </div>
 
-      {/* Daily Habits Bar */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px 14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <strong style={{ fontSize: '13px', color: '#0F172A' }}>المؤشرات والعادات اليومية (NEAT & Hydration):</strong>
-          <span style={{ fontSize: '10.5px', color: '#64748B' }}>انقر لتعديل الأرقام مباشرة</span>
+      {/* 3. Daily Habits Bar */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #EAECF0',
+        borderRadius: '14px',
+        padding: '14px 16px',
+        boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: '#FEF3C7',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#B45309'
+            }}>
+              <Flame size={17} />
+            </div>
+            <div>
+              <strong style={{ fontSize: '13.5px', color: '#101828', fontWeight: 800 }}>المؤشرات والعادات اليومية (NEAT & Hydration):</strong>
+              <div style={{ fontSize: '11px', color: '#64748B' }}>مستهدفات النشاط غير الرياضي، والترطيب، وساعات النوم</div>
+            </div>
+          </div>
+          <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>انقر لتعديل الأرقام مباشرة</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
           {/* Steps */}
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
-            <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>الخطوات اليومية المستهدفة</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{
+            background: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            borderRadius: '10px',
+            padding: '12px 14px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11.5px', color: '#475467', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Footprints size={14} color="#673DE6" />
+                الخطوات اليومية المستهدفة
+              </span>
+              <span style={{ fontSize: '10px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', background: '#F4F0FD', color: '#673DE6', border: '1px solid #EDE8FA' }}>
+                NEAT
+              </span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              background: '#FFFFFF',
+              border: '1px solid #D0D5DD',
+              borderRadius: '8px',
+              padding: '0 10px',
+              height: '38px',
+              boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
+            }}>
               <input
                 type="number"
                 step="500"
@@ -432,16 +772,53 @@ export function CoachCardioHabitsTab({
                 max="30000"
                 value={program.cardio?.neat_target_steps || 8500}
                 onChange={(e) => handleUpdateCardioParam('neat_target_steps', Number(e.target.value) || 8500)}
-                style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '13px', fontWeight: 800, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
+                style={{
+                  width: '68px',
+                  height: '100%',
+                  border: 'none',
+                  fontSize: '15px',
+                  fontWeight: 800,
+                  color: '#101828',
+                  outline: 'none',
+                  background: 'transparent',
+                  textAlign: 'center'
+                }}
               />
-              <span style={{ fontSize: '11px', color: '#64748B', whiteSpace: 'nowrap' }}>خطوة</span>
+              <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>خطوة / اليوم</span>
             </div>
           </div>
 
           {/* Water */}
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
-            <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>شرب الماء اليومي</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{
+            background: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            borderRadius: '10px',
+            padding: '12px 14px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11.5px', color: '#475467', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Droplets size={14} color="#0284C7" />
+                شرب الماء اليومي
+              </span>
+              <span style={{ fontSize: '10px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', background: '#E0F2FE', color: '#0369A1', border: '1px solid #BAE6FD' }}>
+                ترطيب
+              </span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              background: '#FFFFFF',
+              border: '1px solid #D0D5DD',
+              borderRadius: '8px',
+              padding: '0 10px',
+              height: '38px',
+              boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
+            }}>
               <input
                 type="number"
                 step="0.2"
@@ -449,16 +826,53 @@ export function CoachCardioHabitsTab({
                 max="10"
                 value={program.cardio?.daily_water_target_liters || 3.8}
                 onChange={(e) => handleUpdateCardioParam('daily_water_target_liters', Number(e.target.value) || 3.8)}
-                style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '13px', fontWeight: 800, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
+                style={{
+                  width: '48px',
+                  height: '100%',
+                  border: 'none',
+                  fontSize: '15px',
+                  fontWeight: 800,
+                  color: '#101828',
+                  outline: 'none',
+                  background: 'transparent',
+                  textAlign: 'center'
+                }}
               />
-              <span style={{ fontSize: '11px', color: '#64748B', whiteSpace: 'nowrap' }}>لتر</span>
+              <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>لتر / اليوم</span>
             </div>
           </div>
 
           {/* Sleep */}
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
-            <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>ساعات النوم المستهدفة</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{
+            background: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            borderRadius: '10px',
+            padding: '12px 14px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11.5px', color: '#475467', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Moon size={14} color="#4F46E5" />
+                ساعات النوم المستهدفة
+              </span>
+              <span style={{ fontSize: '10px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', background: '#EEF2FF', color: '#4338CA', border: '1px solid #C7D2FE' }}>
+                استشفاء
+              </span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              background: '#FFFFFF',
+              border: '1px solid #D0D5DD',
+              borderRadius: '8px',
+              padding: '0 10px',
+              height: '38px',
+              boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
+            }}>
               <input
                 type="number"
                 step="0.5"
@@ -466,26 +880,77 @@ export function CoachCardioHabitsTab({
                 max="12"
                 value={program.cardio?.sleep_target_hours || 8}
                 onChange={(e) => handleUpdateCardioParam('sleep_target_hours', Number(e.target.value) || 8)}
-                style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '13px', fontWeight: 800, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}
+                style={{
+                  width: '40px',
+                  height: '100%',
+                  border: 'none',
+                  fontSize: '15px',
+                  fontWeight: 800,
+                  color: '#101828',
+                  outline: 'none',
+                  background: 'transparent',
+                  textAlign: 'center'
+                }}
               />
-              <span style={{ fontSize: '11px', color: '#64748B', whiteSpace: 'nowrap' }}>ساعات</span>
+              <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748B', whiteSpace: 'nowrap' }}>ساعات / ليلة</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Coach Directives & Final Plan Notes */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '14px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-          <FileText size={15} color="#0F172A" />
-          <strong style={{ fontSize: '13px', color: '#0F172A' }}>ملاحظات وتوجيهات الكوتش الخاصة للمشترك:</strong>
+      {/* 4. Coach Directives & Final Plan Notes */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #EAECF0',
+        borderRadius: '14px',
+        padding: '14px 16px',
+        boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: '#F0FDF4',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#16A34A'
+            }}>
+              <FileText size={17} />
+            </div>
+            <div>
+              <strong style={{ fontSize: '13.5px', color: '#101828', fontWeight: 800 }}>ملاحظات وتوجيهات الكوتش الخاصة للمشترك:</strong>
+              <div style={{ fontSize: '11px', color: '#64748B' }}>تظهر هذه التوجيهات بوضوح في بداية وثيقة الـ PDF وتطبيق المتدرب</div>
+            </div>
+          </div>
         </div>
+
         <textarea
           rows={4}
           placeholder="اكتب التوجيهات الختامية والنصائح المخصصة للمشترك قبل اعتماد الخطة..."
           value={coachNotes}
           onChange={(e) => setCoachNotes(e.target.value)}
-          style={{ width: '100%', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', fontFamily: 'Cairo, sans-serif' }}
+          style={{
+            width: '100%',
+            borderRadius: '10px',
+            border: '1px solid #D0D5DD',
+            background: '#F8FAFC',
+            padding: '12px 14px',
+            fontSize: '12.5px',
+            lineHeight: 1.7,
+            color: '#101828',
+            outline: 'none',
+            boxSizing: 'border-box',
+            fontFamily: 'Cairo, sans-serif',
+            resize: 'vertical',
+            minHeight: '90px',
+            boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+            transition: 'border-color 0.15s ease'
+          }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = '#673DE6'; e.currentTarget.style.background = '#FFFFFF'; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = '#D0D5DD'; e.currentTarget.style.background = '#F8FAFC'; }}
         />
       </div>
 

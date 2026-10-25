@@ -1,22 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Search, X } from 'lucide-react';
 
 /**
- * One search box for every list the coach searches. Each screen used to draw its own - ten boxes in
- * four widths and four heights, and four different ways of saying the same shortcut inside the
- * placeholder itself: "(اضغط /)", "(اضغط / للتركيز)", "(اضغط / للبحث)..." and "[/]". The shortcut
- * is a key badge next to the field now, and the placeholder only says what is being searched.
- *
- * The page keeps its own state and its own ref, so its "/" shortcut and its filtering do not change.
+ * Unified Hostinger hPanel Search Input Component
+ * Pure white background, subtle border, quiet focus halo, clean layout.
  */
 export function TableSearch({
   value,
   onChange,
   inputRef = null,
-  placeholder = 'بحث بالاسم أو الكود أو الهاتف',
-  width = '240px',
+  placeholder = 'بحث بالاسم، الكود، أو الهاتف...',
+  width = '260px',
   showShortcut = true,
+  shortcutText = '/',
 }) {
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <div
       dir="rtl"
@@ -24,30 +23,43 @@ export function TableSearch({
         display: 'flex',
         alignItems: 'center',
         background: '#FFFFFF',
-        border: '1px solid #CBD5E1',
+        border: '1px solid',
+        borderColor: isFocused ? '#98A2B3' : '#D0D5DD',
         borderRadius: '8px',
-        padding: '0 10px',
-        height: '32px',
+        padding: '0 14px',
+        height: '34px',
         width,
-        minWidth: '170px',
-        gap: '6px',
+        maxWidth: '100%',
+        minWidth: '180px',
+        gap: '8px',
+        boxShadow: isFocused ? '0 0 0 2px rgba(16, 24, 40, 0.05)' : '0 1px 2px rgba(16, 24, 40, 0.03)',
+        transition: 'all 0.15s ease',
+        boxSizing: 'border-box'
       }}
     >
-      <Search size={13} color="#94A3B8" />
+      <Search size={14} color="#667085" style={{ flexShrink: 0 }} />
       <input
         ref={inputRef}
         type="text"
+        className="table-search-input"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         style={{
           border: 'none',
           outline: 'none',
           background: 'transparent',
-          fontSize: '11.5px',
+          boxShadow: 'none',
+          borderRadius: 0,
+          fontSize: '12.5px',
+          fontWeight: 500,
           width: '100%',
-          color: '#0F172A',
-          fontFamily: 'Cairo, sans-serif',
+          color: '#111827',
+          fontFamily: "'Cairo', sans-serif",
+          padding: 0,
+          margin: 0
         }}
       />
       {value ? (
@@ -56,7 +68,20 @@ export function TableSearch({
           onClick={() => onChange('')}
           aria-label="مسح البحث"
           title="مسح البحث"
-          style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8', display: 'flex', alignItems: 'center' }}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            padding: 0,
+            color: '#98A2B3',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            transition: 'color 0.12s ease'
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#475467')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#98A2B3')}
         >
           <X size={13} />
         </button>
@@ -65,18 +90,19 @@ export function TableSearch({
           <span
             aria-hidden="true"
             style={{
-              fontSize: '9.5px',
-              fontWeight: 800,
-              color: '#94A3B8',
-              background: '#F1F5F9',
-              border: '1px solid #E2E8F0',
+              fontSize: '10px',
+              fontWeight: 500,
+              color: '#98A2B3',
+              background: '#F8FAFC',
+              border: '1px solid #EAECF0',
               borderRadius: '6px',
               padding: '1px 5px',
               fontFamily: 'JetBrains Mono, monospace',
               flexShrink: 0,
+              userSelect: 'none'
             }}
           >
-            /
+            {shortcutText}
           </span>
         )
       )}

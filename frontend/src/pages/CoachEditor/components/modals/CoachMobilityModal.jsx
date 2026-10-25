@@ -29,7 +29,7 @@ export function CoachMobilityModal({
           placeholder="بحث باسم الحركة أو المنطقة..."
           value={mobilityModalSearch}
           onChange={(e) => setMobilityModalSearch(e.target.value)}
-          style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
+          style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 14px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
         />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '320px', overflowY: 'auto' }}>
@@ -54,7 +54,7 @@ export function CoachMobilityModal({
                   <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{drill.name_ar}</strong>
                   <span style={{ fontSize: '10px', color: '#64748B' }}>المنطقة: {drill.target_area_ar}</span>
                 </div>
-                <button type="button" style={{ padding: '2px 7px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>إضافة</button>
+                <button type="button" style={{ padding: '2px 7px', background: '#673DE6', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>إضافة</button>
               </div>
             ))}
         </div>

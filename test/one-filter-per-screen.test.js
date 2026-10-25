@@ -49,6 +49,6 @@ test("the financials revenue lines report revenue and no longer filter", () => {
 test("the shared control names the two packages the same way everywhere", () => {
   const control = read("frontend/src/shared/components/tier-filter.jsx");
   assert.match(control, /\{ id: 'ALL', label: 'كل الباقات' \}/);
-  assert.match(control, /\{ id: 'MAX', label: 'باقة ماكس' \}/);
-  assert.match(control, /\{ id: 'ELITE', label: 'باقة إيليت' \}/);
+  assert.match(control, /\{ id: 'MAX', label: 'باقة MAX' \}/);
+  assert.match(control, /\{ id: 'ELITE', label: 'باقة ELITE' \}/);
 });

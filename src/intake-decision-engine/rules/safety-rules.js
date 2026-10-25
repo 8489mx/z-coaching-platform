@@ -139,7 +139,7 @@ export function evaluateDangerousSymptoms(input) {
 // the coach still confirms he saw that paper before the plan is published (ACSM preparticipation
 // screening, Riebe 2015).
 const CLEARANCE_BEFORE_EXERCISE_CONDITIONS = new Set(["HEART_CONDITION"]);
-const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["LIVER_CONDITION", "BARIATRIC_SURGERY"]);
+const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["LIVER_CONDITION", "BARIATRIC_SURGERY", "TYPE_1_DIABETES", "INSULIN_DEPENDENT_DIABETES"]);
 
 export function evaluateMedicalConditions(input) {
   const result = emptyRuleResult();
@@ -154,6 +154,25 @@ export function evaluateMedicalConditions(input) {
           ReviewLevel.MEDICAL,
           "Diagnosed heart condition: read the cardiologist's clearance yourself before approving this plan.",
           `${sourcePath}.conditionCode`,
+        ),
+      );
+    }
+    if (condition.conditionCode === "TYPE_1_DIABETES" || condition.conditionCode === "INSULIN_DEPENDENT_DIABETES") {
+      result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "INSULIN_SAFETY_REVIEW_REQUIRED"));
+      result.reviewFlags.push(
+        reviewFlag(
+          "INSULIN_SAFETY_REVIEW_REQUIRED",
+          Scope.GLOBAL,
+          ReviewLevel.MEDICAL,
+          "Type 1 diabetes or insulin therapy requires physician coordination before plan publication. The platform does not alter medication doses.",
+          `${sourcePath}.conditionCode`,
+        ),
+      );
+      result.reasons.push(
+        reason(
+          "INSULIN_SAFETY_REVIEW_REQUIRED",
+          Scope.GLOBAL,
+          "Type 1 diabetes or insulin dependency mandates physician coordination before publishing the plan.",
         ),
       );
     }
@@ -438,6 +457,23 @@ export function evaluateUnclassifiedTextAndMedication(input) {
     );
   }
 
+  const INSULIN_MED_KEYS = ["INSULIN", "LANTUS", "NOVORAPID", "APIDRA", "TRESIBA", "MIXTARD", "HUMALOG", "LEVEMIR", "انسولين"];
+  const usesInsulin = input.medical.medications.some(m => {
+    const s = String(m || "").toUpperCase();
+    return INSULIN_MED_KEYS.some(k => s.includes(k));
+  });
+  if (usesInsulin) {
+    result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "INSULIN_SAFETY_REVIEW_REQUIRED"));
+    result.reviewFlags.push(
+      reviewFlag(
+        "INSULIN_SAFETY_REVIEW_REQUIRED",
+        Scope.GLOBAL,
+        ReviewLevel.MEDICAL,
+        "Insulin therapy reported in medications; physician coordination is required before plan approval. The platform does not adjust medication doses.",
+        "medical.medications",
+      ),
+    );
+  }
   if (input.medical.medications.length > 0) {
     result.statusCandidates.push(statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "MEDICATION_REPORTED"));
     result.reviewFlags.push(

@@ -1183,7 +1183,7 @@ export default function FullIntakeForm() {
                         }}
                         style={{
                           padding: '7px 14px',
-                          borderRadius: '20px',
+                          borderRadius: '8px',
                           fontSize: '11.5px',
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -1241,7 +1241,7 @@ export default function FullIntakeForm() {
                             onClick={() => toggleCondition(c.key)}
                         style={{
                           padding: '7px 14px',
-                          borderRadius: '20px',
+                          borderRadius: '8px',
                           fontSize: '11.5px',
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -1328,7 +1328,7 @@ export default function FullIntakeForm() {
                             onClick={() => setHeart({ doctor_clearance: option.value })}
                             style={{
                               padding: '7px 16px',
-                              borderRadius: '20px',
+                              borderRadius: '8px',
                               fontSize: '11.5px',
                               fontWeight: 700,
                               cursor: 'pointer',
@@ -1366,7 +1366,7 @@ export default function FullIntakeForm() {
                               onClick={() => toggleEvent(event.key)}
                               style={{
                                 padding: '7px 14px',
-                                borderRadius: '20px',
+                                borderRadius: '8px',
                                 fontSize: '11.5px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
@@ -1417,7 +1417,7 @@ export default function FullIntakeForm() {
                           onClick={() => toggleFemaleCase(c.key)}
                           style={{
                             padding: '7px 14px',
-                            borderRadius: '20px',
+                            borderRadius: '8px',
                             fontSize: '11.5px',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1477,7 +1477,7 @@ export default function FullIntakeForm() {
                             }}
                             style={{
                               padding: '7px 14px',
-                              borderRadius: '20px',
+                              borderRadius: '8px',
                               fontSize: '11.5px',
                               fontWeight: 700,
                               cursor: 'pointer',
@@ -1571,7 +1571,7 @@ export default function FullIntakeForm() {
                           }}
                           style={{
                             padding: '7px 14px',
-                            borderRadius: '20px',
+                            borderRadius: '8px',
                             fontSize: '11.5px',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1698,7 +1698,7 @@ export default function FullIntakeForm() {
                         }}
                         style={{
                           padding: '7px 14px',
-                          borderRadius: '20px',
+                          borderRadius: '8px',
                           fontSize: '11.5px',
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -2297,7 +2297,7 @@ export default function FullIntakeForm() {
                         }}
                         style={{
                           padding: '7px 14px',
-                          borderRadius: '20px',
+                          borderRadius: '8px',
                           fontSize: '11.5px',
                           fontWeight: 700,
                           cursor: 'pointer',

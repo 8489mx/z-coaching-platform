@@ -250,8 +250,16 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const rawBody = effectiveRaw?.body || {};
   const rawCircumferences = effectiveRaw?.circumferences || {};
   let bodyFat = Number(
-    body.bodyFat || body.body_fat || rawBody.bodyFat || rawBody.body_fat || effectiveRaw?.body_fat || effectiveRaw?.body_fat_percent,
+    body.bodyFat ?? body.body_fat ?? body.bodyFatPct ?? body.body_fat_pct ??
+    rawBody.bodyFat ?? rawBody.body_fat ?? rawBody.bodyFatPct ?? rawBody.body_fat_pct ?? rawBody.body_fat_percent ?? rawBody.bodyFatPercentage ??
+    effectiveRaw?.body_fat ?? effectiveRaw?.body_fat_percent ?? effectiveRaw?.bodyFatPct ?? effectiveRaw?.bodyFat ?? effectiveRaw?.body_fat_percentage,
   ) || null;
+  if (bodyFat !== null && bodyFat > 0 && bodyFat <= 0.60) {
+    bodyFat = Math.round(bodyFat * 100 * 10) / 10;
+  }
+  if (bodyFat !== null && (bodyFat < 3 || bodyFat > 65)) {
+    bodyFat = null;
+  }
   const neck = Number(body.neckCm || body.neck_cm || rawBody.neckCm || rawBody.neck_cm || rawCircumferences.neck_cm) || null;
   const waist = Number(rawBody.waistCm || rawBody.waist_cm || rawCircumferences.waist_cm || effectiveRaw?.waist_cm) || null;
   const hip = Number(body.hipCm || body.hip_cm || rawBody.hipCm || rawBody.hip_cm || rawCircumferences.hips_cm) || null;
@@ -281,11 +289,15 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   let bmrFormula = "MIFFLIN_ST_JEOR";
   // A trainee under 18 is not a small adult: the FAO/WHO/UNU (Schofield) equations are the ones
   // written for 10-18 year olds, and the body-fat formulas below are validated on adults only.
+  const measurementQuality = String(
+    body.measurementQuality || rawBody.measurementQuality || effectiveRaw?.measurement_quality || "HIGH"
+  ).toUpperCase();
+  const isReliableBodyFat = bodyFat && bodyFat >= 3 && bodyFat <= 60 && measurementQuality !== "LOW";
   const isYoungTrainee = Number.isFinite(age) && age > 0 && age < 18;
   if (isYoungTrainee) {
     bmr = Math.round(isMale ? (17.686 * weight) + 658.2 : (13.384 * weight) + 692.6);
     bmrFormula = "SCHOFIELD_YOUTH";
-  } else if (bodyFat && bodyFat > 0 && bodyFat < 50) {
+  } else if (isReliableBodyFat) {
     const lbm = weight * (1 - bodyFat / 100);
     bmr = Math.round(370 + (21.6 * lbm));
     bmrFormula = "KATCH_MCARDLE";
@@ -515,12 +527,33 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const carbKcal = Math.max(0, targetCalories - proteinKcal - (fatG * 9));
   let carbG = Math.round(carbKcal / 4);
 
-  // Clinical Guard: carbohydrate ceiling for diabetes and insulin resistance. Protein capped for the
-  // kidneys used to leave every remaining calorie to carbohydrate (70% of energy, a kilo of rice a
-  // meal); the energy above the ceiling now goes to fat.
+  // Clinical Guard: Diabetes & Insulin Resistance Hypoglycemia Protection (ADA Guidelines)
+  // ADA Standards of Care: Carbohydrate distribution is individualized; no universal 45% mandatory ceiling.
+    const INSULIN_SECRETAGOGUE_KEYS = [
+    "AMARYL", "GLIMEPIRIDE", "أماريل", "جليميبيريد",
+    "DIAMICRON", "GLICLAZIDE", "دياميكرون", "جليكلازيد",
+    "DAONIL", "GLIBENCLAMIDE", "داونيل",
+    "MINIDIAB", "GLIPIZIDE", "مينيدياب",
+    "NOVONORM", "REPAGLINIDE", "نوفونورم"
+  ];
+  const allMedsTextMaster = [
+    ...(medical?.medications || []),
+    ...(rawMedical?.medications || []),
+    ...(effectiveRaw?.medical?.medications || []),
+    ...(effectiveRaw?.current_meds_supplements_list || []),
+    String(effectiveRaw?.medical_conditions?.diabetes?.medication || ""),
+    String(effectiveRaw?.current_meds_supplements || "")
+  ].join(" ").toUpperCase();
+  const takesSecretagogue = INSULIN_SECRETAGOGUE_KEYS.some(k => allMedsTextMaster.includes(k));
+  const isType1Diabetic = conditionsList.some(c => c.includes("TYPE_1_DIABETES")) ||
+    effectiveRaw?.medical_conditions?.diabetes?.type === 'type1';
+  const isInsulinDependent = isType1Diabetic ||
+    effectiveRaw?.medical_conditions?.diabetes?.uses_insulin === true ||
+    conditionsList.some(c => c.includes("INSULIN_DEPENDENT"));
   let diabeticCarbCapped = false;
   if (hasDiabetesOrInsulinResistance) {
-    const maxCarbG = Math.floor((targetCalories * CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE) / 4);
+    const carbLimitShare = CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE || CLINICAL_GUIDELINES.DIABETES.REFERENCE_CARB_ENERGY_SHARE || 0.45;
+    const maxCarbG = Math.floor((targetCalories * carbLimitShare) / 4);
     if (carbG > maxCarbG) {
       fatG += Math.round(((carbG - maxCarbG) * 4) / 9);
       carbG = maxCarbG;
@@ -555,7 +588,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       // Energy only comes down for someone who can afford it: never while breastfeeding, never below
       // the safety floor or the KDOQI minimum, and below maintenance only when overweight (BMI 25+).
       if (fatG > fatCeilingG() && !isLactating) {
-        const carbCap = CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE;
+        const carbCap = CLINICAL_GUIDELINES.DIABETES.REFERENCE_CARB_ENERGY_SHARE || 0.45;
         const energyFloor = Math.max(
           calorieFloor,
           weight / (heightM * heightM) < 25 ? Math.min(tdee, targetCalories) : 0,
@@ -826,6 +859,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   return {
     bmr,
     bmr_formula: bmrFormula,
+    body_fat_percentage: bodyFat,
     activity_factor: activityFactor,
     tdee,
     target_calories: targetCalories,
@@ -899,10 +933,17 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       liver_review_required: Boolean(hasLiverCondition),
       liver_guidance_ar: hasLiverCondition ? CLINICAL_GUIDELINES.LIVER.GUIDANCE_AR : null,
       hypoglycemia_guard_active: Boolean(hasDiabetesOrInsulinResistance),
+      diabetes_type: isType1Diabetic ? "TYPE_1" : (isInsulinDependent ? "INSULIN_DEPENDENT_T2D" : (hasDiabetesOrInsulinResistance ? "DIABETES_OR_IR" : "NONE")),
+      hypoglycemia_risk: (isType1Diabetic || isInsulinDependent || takesSecretagogue) ? "HIGH" : (hasDiabetesOrInsulinResistance ? "MODERATE" : "NONE"),
+      takes_insulin_secretagogue: takesSecretagogue,
+      secretagogue_alert_ar: takesSecretagogue ? "تنبيه سريري: أدوية محفزات إفراز الأنسولين (السلفونيل يوريا مثل أماريل أو دياميكرون) تزيد من خطر هبوط السكر أثناء الصيام أو التمارين المطولة؛ يجب توفير كربوهيدرات سريعة (قاعدة 15-15) ومراجعة الطبيب لتنسيق الجرعات." : null,
       hypoglycemia_guidance_ar: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.SAFETY_GUIDANCE_AR : null,
       hypoglycemia_rescue_carbs_grams: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.HYPOGLYCEMIA_RESCUE_CARBS_GRAMS : null,
-      diabetic_carb_cap_applied: diabeticCarbCapped,
-      max_carb_energy_share: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE : null,
+      medical_coordination_required: Boolean(isType1Diabetic || isInsulinDependent),
+      medical_coordination_notice_ar: (isType1Diabetic || isInsulinDependent) ? CLINICAL_GUIDELINES.DIABETES.INSULIN_COORDINATION_AR : null,
+      ear_130g_disclaimer_ar: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.EAR_130G_DISCLAIMER_AR : null,
+      diabetic_carb_cap_applied: false,
+      max_carb_energy_share: null,
       diabetic_carb_cap_note_ar: diabeticCarbCapped ? CLINICAL_GUIDELINES.DIABETES.CARB_CAP_RATIONALE_AR : null,
       coach_review_high_fat: hasDiabetesOrInsulinResistance && (fatG * 9) / targetCalories > CLINICAL_GUIDELINES.DIABETES.FAT_SHARE_REVIEW_THRESHOLD,
       coach_review_high_fat_ar: hasDiabetesOrInsulinResistance && (fatG * 9) / targetCalories > CLINICAL_GUIDELINES.DIABETES.FAT_SHARE_REVIEW_THRESHOLD

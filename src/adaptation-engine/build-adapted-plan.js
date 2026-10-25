@@ -43,6 +43,46 @@ const OBSERVED_TDEE_STATUSES = new Set([
   CheckinAnalysisStatus.GAIN_STALL,
 ]);
 
+export function alignMacrosWithCalories(targetCalories, proteinG, carbsG, fatG, constraints = {}) {
+  // 1. Protein is inviolable: never altered to satisfy an energy rounding diff
+  const p = Math.max(0, Math.round(proteinG));
+
+  // 2. Computational lower bound for fat (default 20g or client constraint):
+  // NOTE: This is strictly an algorithmic guard against zero/negative lipid values during macro alignment.
+  // It is NOT a universal dietary target (optimal intake requires ~20-35% energy or 0.6-1.0 g/kg).
+  // The client's individualized planned target (fatG) is respected and preserved.
+  const minFat = Math.max(15, Number(constraints.min_fat_g ?? constraints.minFatG ?? 20));
+  const minCarbs = Math.max(0, Number(constraints.min_carbs_g ?? constraints.minCarbsG ?? 0));
+
+  let f = Math.max(minFat, Math.round(fatG));
+  const remainingForCarbs = targetCalories - (p * 4) - (f * 9);
+
+  let alignmentConflict = false;
+  let conflictReason = null;
+  let c = 0;
+
+  if (remainingForCarbs < minCarbs * 4) {
+    c = minCarbs;
+    alignmentConflict = true;
+    conflictReason = "CALORIC_BUDGET_BELOW_MINIMUM_MACRO_CONSTRAINTS";
+  } else {
+    c = Math.round(remainingForCarbs / 4);
+  }
+
+  const macroSum = p * 4 + c * 4 + f * 9;
+  const diff = targetCalories - macroSum;
+
+  return {
+    protein: p,
+    carbs: c,
+    fat: f,
+    macroSum,
+    diff,
+    alignment_conflict: alignmentConflict,
+    conflict_reason: conflictReason
+  };
+}
+
 export function buildAdaptedPlan(inputs) {
   requireObject(inputs, "inputs");
 
@@ -60,6 +100,9 @@ export function buildAdaptedPlan(inputs) {
   const baseEnergy =
     currentMasterProgram.nutrition_program?.macro_targets?.calories_kcal ||
     currentMasterProgram.nutrition_program?.targets?.calories_kcal ||
+    currentMasterProgram.nutrition_program?.targets?.target_calories_kcal ||
+    currentMasterProgram.nutrition_program?.targets?.target_calories ||
+    currentMasterProgram.nutrition_program?.target_calories_kcal ||
     currentMasterProgram.nutrition?.targets?.calories ||
     energyTargetStage?.target_calories ||
     energyTargetStage?.target_calories_kcal ||
@@ -133,13 +176,20 @@ export function buildAdaptedPlan(inputs) {
 
   if (isDietBreakEligible) {
     adaptationAction = AdaptationAction.SCHEDULE_DIET_BREAK;
-    const maintenanceCalories = Math.round(baseEnergy + 350);
-    const maintenanceCarbs = Math.round(baseCarbs + 75);
+    requiresCoachApproval = true;
+    const observedTdee = checkinAnalysis.adaptive_tdee?.ready ? Number(checkinAnalysis.adaptive_tdee.observed_tdee_kcal) : null;
+    const planTdee = Number(currentMasterProgram.nutrition_program?.targets?.tdee || currentMasterProgram.nutrition_program?.tdee);
+    const maintenanceCalories = Number.isFinite(observedTdee) && observedTdee > baseEnergy
+      ? Math.round(observedTdee)
+      : (Number.isFinite(planTdee) && planTdee > baseEnergy ? Math.round(planTdee) : Math.round(baseEnergy + 350));
+
     adaptedCalories = maintenanceCalories;
-    adaptedCarbs = maintenanceCarbs;
+    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs, adaptedFat);
+    adaptedCarbs = aligned.carbs;
+    adaptedFat = aligned.fat;
     reasons.push({
       code: AdaptationReasonCode.DIET_BREAK_TRIGGERED_AFTER_COMPLIANCE,
-      message_ar: "استراحة دايت مبرمجة (Diet Break)! بعد 6 أسابيع متصلة من الالتزام العالي (≥85%)، تم رفع السعرات إلى حد الصيانة (+350 سعرة من الكاربوهيدرات النظيفة) لمدة أسبوع لإعادة تنشيط هرمونات الحرق (Leptin و T3) وإراحة الجهاز العصبي قبل استئناف العجز.",
+      message_ar: `استراحة دايت مبرمجة (Diet Break)! بعد ${consecutiveHighComplianceWeeks} أسابيع متصلة من الالتزام العالي (≥85%)، تم رفع السعرات إلى حد الصيانة (${adaptedCalories} سعرة) لمدة أسبوع لإعادة تنشيط هرمونات الحرق (Leptin و T3) وإراحة الجهاز العصبي قبل استئناف العجز.`,
       message_en: "Adherence-gated Diet Break activated! Following 6 consecutive weeks of high compliance (≥85%), calories increased to maintenance (+350 kcal) for one week to restore leptin, thyroid output, and metabolic rate.",
     });
   } else if (isReverseDieting) {
@@ -155,7 +205,9 @@ export function buildAdaptedPlan(inputs) {
     } else {
       // Weight stable or minor increase <= 0.3kg -> add +75 kcal (+18g carbs)
       adaptedCalories += 75;
-      adaptedCarbs += 18;
+      const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs + 18, adaptedFat);
+      adaptedCarbs = aligned.carbs;
+      adaptedFat = aligned.fat;
       reasons.push({
         code: AdaptationReasonCode.REVERSE_DIET_SURPLUS_APPLIED || "REVERSE_DIET_SURPLUS_APPLIED",
         message_ar: "محرك الدايت العكسي (Reverse Dieting): استجابة فسيولوجية ممتازة وثبات في الوزن (تغير ≤ 0.3 كجم). تم رفع السعرات بمقدار +75 سعرة حرارية (+18 جم كاربوهيدرات معقدة) لإعادة تنشيط سرعة الحرق تدريجياً دون زيادة دهون.",
@@ -168,12 +220,24 @@ export function buildAdaptedPlan(inputs) {
     options.is_pms_active === true
   ) {
     adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
-    adaptedCalories = Math.round(baseEnergy + 150);
-    adaptedCarbs = Math.round(baseCarbs + 35);
+    const shouldApplyComfortBuffer = options.apply_pms_comfort_snack === true || checkinAnalysis.female_cycle_buffer?.apply_comfort_snack === true;
+    const comfortKcal = shouldApplyComfortBuffer
+      ? (Number(checkinAnalysis.female_cycle_buffer?.comfort_snack_added_kcal || checkinAnalysis.female_cycle_buffer?.comfort_snack_recommended_kcal) || 150)
+      : 0;
+    adaptedCalories = Math.round(baseEnergy + comfortKcal);
+    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, shouldApplyComfortBuffer ? adaptedCarbs + 35 : adaptedCarbs, adaptedFat);
+    adaptedCarbs = aligned.carbs;
+    adaptedFat = aligned.fat;
     reasons.push({
       code: AdaptationReasonCode.FEMALE_CYCLE_PMS_BUFFER_APPLIED,
-      message_ar: "صمام أمان الدورة الهرمونية (طور الـ Luteal / PMS): تم قفل أي خفض للسعرات لمنع الإجهاد الهرموني، مع إضافة +150 سعرة كاربوهيدرات معقدة مهدئة للرغبة في السكريات والحفاظ على توازن السيروتونين.",
-      message_en: "Female Cycle PMS Safety Gate active: Deficit cut locked; added +150 kcal complex carb comfort buffer to stabilize serotonin and curb cravings.",
+      message_ar: shouldApplyComfortBuffer
+        ? `صمام أمان الدورة الهرمونية (طور الـ Luteal / PMS): تم قفل خفض السعرات وتفعيل سناك الراحة (+${comfortKcal} سعرة) بتوجيه المدرب لدعم التوازن الهرموني وتهدئة الرغبة في السكريات.`
+        : `صمام أمان الدورة الهرمونية (طور الـ Luteal / PMS): تم قفل أي خفض للسعرات لمنع القرارات المتسرعة الناتجة عن الاحتباس المائي الهرموني (${adaptedCalories} سعرة محفوظة). يتوفر اقتراح استرشادي للمدرب بإمكانية سناك مهدئ (+150 سعرة) عند الحاجة.`,
+      message_en: shouldApplyComfortBuffer
+        ? `Female Cycle PMS Safety Gate: deficit cuts locked and comfort buffer (+${comfortKcal} kcal) applied under coach direction.`
+        : `Female Cycle PMS Safety Gate active: deficit cut locked; current baseline (${adaptedCalories} kcal) maintained against fluid retention. Discretionary comfort buffer available for coach review.`,
+      deficit_locked: true,
+      discretionary_comfort_buffer_available: !shouldApplyComfortBuffer
     });
   } else if (status === CheckinAnalysisStatus.INJURY_FLAGGED) {
 
@@ -222,8 +286,10 @@ export function buildAdaptedPlan(inputs) {
     }
     adaptationAction = AdaptationAction.APPLY_OBSERVED_TDEE;
     adaptedCalories = newCalories;
-    adaptedCarbs += carbDelta;
-    adaptedFat += fatDelta;
+    const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs + carbDelta, adaptedFat);
+    adaptedCarbs = aligned.carbs;
+    adaptedFat = aligned.fat;
+
     reasons.push({
       code: AdaptationReasonCode.OBSERVED_TDEE_APPLIED,
       message_ar: tdee.reason_ar,
@@ -232,8 +298,9 @@ export function buildAdaptedPlan(inputs) {
   } else if (status === CheckinAnalysisStatus.RAPID_LOSS_WARNING) {
     adaptationAction = AdaptationAction.INCREASE_CALORIES_RAPID_LOSS;
     adaptedCalories += 150;
-    adaptedCarbs += 30; // +120 kcal
-    adaptedFat += 3;    // +27 kcal
+    adaptedCarbs += 30;
+    adaptedFat += 3;
+
     reasons.push({
       code: AdaptationReasonCode.RAPID_LOSS_SURPLUS_APPLIED,
       message_ar: "معدل النزول سريع (>1.5% أسبوعياً). تمت إضافة 150 سعرة لحماية الكتلة العضلية ومنع الهبوط الأيضي.",
@@ -263,38 +330,75 @@ export function buildAdaptedPlan(inputs) {
   ) {
     const isFemale = options.isFemale ?? checkinAnalysis.is_female ?? (currentMasterProgram.client?.gender === 'female');
     const calorieFloor = isFemale ? 1200 : 1500;
+    // 1. Explicit Sign Validation: deficit deltas are negative, cut magnitude is strictly positive
+    const rawRequestedDelta = typeof checkinAnalysis.suggested_calorie_delta === "number"
+      ? checkinAnalysis.suggested_calorie_delta
+      : (typeof checkinAnalysis.calorie_adjustment === "number" ? checkinAnalysis.calorie_adjustment : -125);
+    const requestedCutMagnitude = Math.abs(Number(rawRequestedDelta) || 125);
+    const availableCut = Math.max(0, adaptedCalories - calorieFloor);
 
-    if (adaptedCalories - 125 < calorieFloor) {
-      adaptationAction = AdaptationAction.SCHEDULE_REFEED_DAY;
-      refeedConfig = Object.freeze({
+    if (availableCut <= 0 || availableCut < 75) {
+      adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
+      requiresCoachApproval = true;
+      const shouldScheduleRefeed = options.schedule_refeed_day === true || checkinAnalysis.refeed_approved === true;
+      const shouldIncreaseSteps = options.increase_steps === true || checkinAnalysis.increase_steps_approved === true;
+
+      if (shouldScheduleRefeed) {
+        adaptationAction = AdaptationAction.SCHEDULE_REFEED_DAY;
+        refeedConfig = Object.freeze({
         refeed_day: "SATURDAY",
         refeed_calories_kcal: Math.round(adaptedCalories + 350),
-        refeed_carbohydrate_g: Math.round(adaptedCarbs + 80),
+        refeed_carbohydrate_g: Math.round(adaptedCarbs + 88),
         purpose_ar: "يوم إعادة شحن عالي الكاربوهيدرات لكسر الثبات الأيضي بأمان دون النزول تحت الحد الفسيولوجي الأدنى للسعرات.",
         purpose_en: "High-carb Refeed Day to safely break metabolic plateau without breaching caloric floor.",
       });
-      adaptedDailySteps += 750;
+      }
+
+      if (shouldIncreaseSteps) {
+        adaptedDailySteps += Number(options.step_increase || 500);
+      }
       reasons.push({
         code: AdaptationReasonCode.DIET_BREAK_PLATEAU_BREAKER_APPLIED,
-        message_ar: `السعرات الحالية (${adaptedCalories}) بلغت الحد الفسيولوجي الأدنى الآمن (${calorieFloor} سعرة). تم قفل خفض السعرات لمنع الهبوط الأيضي، وتفعيل يوم شحن (Refeed) وزيادة 750 خطوة يومياً لكسر الثبات.`,
-        message_en: `Caloric floor protection active (${calorieFloor} kcal). Calorie cut prevented; scheduled Refeed and increased daily steps (+750) to break plateau safely.`,
+        message_ar: `السعرات الحالية (${adaptedCalories}) بلغت الحد الفسيولوجي الأدنى الآمن (${calorieFloor} سعرة). تم قفل أي خفض إضافي للسعرات لحماية الأمان الأيضي، وتثبيت الخطة الحالية مع تحويلها لمراجعة المدرب لتقييم الالتزام وجودة الوزن والنوم، وبحث خيارات يوم الشحن (Refeed) أو زيادة النشاط دون تجويع.`,
+        message_en: `Caloric floor protection active (${calorieFloor} kcal). Calorie cuts prevented; maintained current plan and routed for coach review to evaluate adherence, recovery, and discretionary Refeed or step adjustments.`,
+        floor_locked: true,
+        effective_delta: 0,
+        suggested_coach_options: {
+          discretionary_refeed: true,
+          discretionary_step_increase: 500,
+          verify_measurement_quality: true
+        }
       });
     } else {
       adaptationAction = AdaptationAction.REDUCE_CALORIES_FOR_PLATEAU;
-      const calDelta = typeof checkinAnalysis.suggested_calorie_delta === "number"
-        ? Math.abs(checkinAnalysis.suggested_calorie_delta)
-        : (typeof checkinAnalysis.calorie_adjustment === "number" && checkinAnalysis.calorie_adjustment < 0 ? Math.abs(checkinAnalysis.calorie_adjustment) : 125);
-      const carbDelta = typeof checkinAnalysis.suggested_carb_delta_g === "number"
-        ? Math.abs(checkinAnalysis.suggested_carb_delta_g)
-        : Math.round(calDelta / 4);
-      adaptedCalories -= calDelta;
-      adaptedCarbs -= carbDelta;
-      adaptedFat -= 3;    // -27 kcal
+      const effectiveCutMagnitude = Math.min(requestedCutMagnitude, availableCut);
+      const effectiveSignedDelta = -effectiveCutMagnitude;
+      const effectiveCalDelta = effectiveCutMagnitude;
+
+
+      adaptedCalories -= effectiveCalDelta;
+      const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs - Math.round(effectiveCalDelta / 4), adaptedFat);
+      adaptedCarbs = aligned.carbs;
+      adaptedFat = aligned.fat;
+
+
+
+
+
       adaptedDailySteps += 500;
+      if (effectiveCalDelta < requestedCutMagnitude) {
+        requiresCoachApproval = true;
+      }
       reasons.push({
         code: AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED,
-        message_ar: `ثبات في الوزن مع التزام تام. تم خفض ${calDelta} سعرة يومياً وزيادة النشاط لكسر الثبات.`,
-        message_en: `Weight plateau broken with a moderate ${calDelta} kcal reduction.`,
+        message_ar: effectiveCalDelta < requestedCutMagnitude
+          ? `ثبات في الوزن مع التزام تام. تم تقييد الخفض عند ${effectiveCalDelta} سعرة يومياً (بدلاً من ${requestedCutMagnitude}) احتراماً لحد الأمان الأدنى (${calorieFloor} سعرة)، مع زيادة النشاط 500 خطوة لكسر الثبات.`
+          : `ثبات في الوزن مع التزام تام. تم خفض ${effectiveCalDelta} سعرة يومياً وزيادة النشاط لكسر الثبات.`,
+        message_en: effectiveCalDelta < requestedCutMagnitude
+          ? `Plateau deficit capped at ${effectiveCalDelta} kcal (instead of requested ${requestedCutMagnitude}) to respect caloric floor (${calorieFloor} kcal). Increased daily steps (+500).`
+          : `Weight plateau broken with a moderate ${effectiveCalDelta} kcal reduction.`,
+        requested_delta: -requestedCutMagnitude,
+        effective_delta: effectiveSignedDelta
       });
     }
   } else {
@@ -357,13 +461,16 @@ export function buildAdaptedPlan(inputs) {
   // to fat up to 35%; what is left is not added and the coach decides. A plan whose balance already
   // put carbohydrate above 45% (a capped protein) keeps that share.
   const guardrails = currentMasterProgram.nutrition_program?.targets?.clinical_guardrails || currentMasterProgram.clinical_guardrails || {};
+  let diabeticMacrosBounded = false;
   if (guardrails.hypoglycemia_guard_active === true && adaptedCalories > 0) {
     const baseCarbShare = baseEnergy > 0 ? (baseCarbs * 4) / baseEnergy : 0;
+    const refCarbShare = CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE || CLINICAL_GUIDELINES.DIABETES.REFERENCE_CARB_ENERGY_SHARE || 0.45;
     const carbShare = guardrails.kidney_protein_capped === true
-      ? Math.max(CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE, baseCarbShare)
-      : CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE;
+      ? Math.max(refCarbShare, baseCarbShare)
+      : refCarbShare;
     const maxCarbG = Math.floor((adaptedCalories * carbShare) / 4);
     if (adaptedCarbs > maxCarbG) {
+      diabeticMacrosBounded = true;
       let excessKcal = (adaptedCarbs - maxCarbG) * 4;
       adaptedCarbs = maxCarbG;
       if (guardrails.kidney_protein_capped !== true) {
@@ -451,34 +558,97 @@ export function buildAdaptedPlan(inputs) {
   const targetWeekIndex = Math.min(nextWeekNumber - 1, Math.max(0, mesoWeeks.length - 1));
   let adaptedTrainingWeek = mesoWeeks[targetWeekIndex] ? JSON.parse(JSON.stringify(mesoWeeks[targetWeekIndex])) : null;
 
+  // P0 Clinical Safety: Lock and suspend all physical training sessions on cardiac emergency or clinical lockout
+  if (checkinAnalysis.training_locked === true || status === CheckinAnalysisStatus.CRITICAL_CARDIAC_FLAG) {
+    adaptedTrainingWeek = null;
+    reasons.push({
+      code: "CLINICAL_TRAINING_LOCKOUT",
+      message_ar: "تم إيقاف وتعليق كافة الحصص التدريبية بموجب قفل السلامة السريرية الطارئة (أعراض قلبية أو إغماء مرتبطة بالمجهود).",
+      message_en: "All workout sessions suspended under clinical emergency lockout."
+    });
+  }
+
   let isDeloadRecommended = false;
 
   if (adaptedTrainingWeek) {
-    // 1. Auto-Deload Detection & Volume Reduction
+    // 1. Differentiated Deload & Autoregulation
+    const clientExp = String(
+      options.experience ||
+      checkinAnalysis.experience ||
+      currentMasterProgram.client?.experience ||
+      currentMasterProgram.training_program?.experience ||
+      "BEGINNER"
+    ).toUpperCase();
+    const isClientAdvanced = clientExp === "ADVANCED";
+    const isClientIntermediate = clientExp === "INTERMEDIATE";
+    const isClientBeginner = !isClientAdvanced && !isClientIntermediate;
+
     const accumulatedWeeks = Number(options.weeks_of_accumulated_training || currentWeekNumber || 1);
     const fatigueScore = Number(options.accumulated_fatigue_score || checkinAnalysis.fatigue_score || (status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING ? 8 : 4));
-    const isDeloadTriggered = accumulatedWeeks >= 5 || (accumulatedWeeks >= 4 && (fatigueScore >= 7 || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING)) || options.force_deload === true;
+
+    const hasInsufficientLogData = options.has_insufficient_training_data === true ||
+      checkinAnalysis.has_insufficient_training_data === true ||
+      checkinAnalysis.unreliable_training_data === true;
+
+    let isDeloadTriggered = false;
+
+    if (hasInsufficientLogData) {
+      // Guard: never infer accumulated fatigue or force deload on incomplete logs
+      isDeloadTriggered = false;
+      requiresCoachApproval = true;
+      reasons.push({
+        code: "INSUFFICIENT_TRAINING_LOGS_HOLD",
+        message_ar: "بيانات التدريب المسجلة غير كافية لتقييم الإجهاد التراكمي بدقة؛ تم تثبيت الخطة وتوجيه القرار لمراجعة المدرب قبل تعديل الأحمال.",
+        message_en: "Insufficient workout logs to reliably determine fatigue accumulation. Preserved training plan and routed for coach review.",
+      });
+    } else if (options.force_deload === true || options.planned_deload === true || checkinAnalysis.deload_approved === true) {
+      isDeloadTriggered = true;
+    } else if (
+      Number(options.accumulated_fatigue_score || checkinAnalysis.fatigue_score) >= 7 ||
+      (accumulatedWeeks >= 4 && (fatigueScore >= 7 || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING))
+    ) {
+      isDeloadTriggered = true;
+    } else if (accumulatedWeeks >= 5) {
+      if (isClientBeginner && fatigueScore < 6 && options.planned_deload !== true) {
+        // Novice without fatigue continues progression/consolidation
+        isDeloadTriggered = false;
+        adaptedTrainingWeek.phase = "CONSOLIDATION";
+        adaptedTrainingWeek.focus_note = "أسبوع تثبيت الأداء للمبتدئ: استمرار التكنيك المحكم والتقدم الآمن دون الحاجة لتفريغ أحمال حاد.";
+        reasons.push({
+          code: "BEGINNER_CONSOLIDATION_MAINTAINED",
+          message_ar: `المتدرب في مرحلة التأسيس (مبتدئ) بمؤشر إجهاد منخفض (${fatigueScore}/10). تم الاستمرار في تثبيت الأداء الحركي دون فرض تفريغ أحمال إجباري.`,
+          message_en: `Beginner trainee with low fatigue score (${fatigueScore}/10). Preserved progression and technique consolidation without forced deload.`,
+        });
+      } else {
+        isDeloadTriggered = true;
+      }
+    }
 
     if (isDeloadTriggered && !isDietBreakEligible) {
       isDeloadRecommended = true;
       adaptationAction = AdaptationAction.SCHEDULE_DELOAD;
+      requiresCoachApproval = true;
       adaptedTrainingWeek.phase = "DELOAD";
-      adaptedTrainingWeek.focus_note = "أسبوع تفريغ أحمال تلقائي (Auto-Deload) لخفض إجهاد الجهاز العصبي والمفاصل";
-      adaptedTrainingWeek.target_rir = 4;
+      adaptedTrainingWeek.focus_note = isClientAdvanced
+        ? "أسبوع تفريغ أحمال تجديدي (Regenerative Deload) لتصفية الإجهاد العصبي المركزي"
+        : (isClientIntermediate ? "أسبوع تفريغ أحمال استراتيجي (Strategic Deload) لإراحة المفاصل والأوتار" : "أسبوع تفريغ أحمال خفيف للمبتدئ لتجديد النشاط");
+      adaptedTrainingWeek.target_rir = isClientAdvanced ? 4 : 3;
+
+      const deloadVolumeMod = isClientAdvanced ? 0.60 : (isClientIntermediate ? 0.70 : 0.75);
 
       for (const session of (adaptedTrainingWeek.sessions || [])) {
         for (const ex of (session.exercises || [])) {
-          ex.sets = Math.max(2, Math.round(Number(ex.sets || 3) * 0.60));
+          ex.sets = Math.max(2, Math.round(Number(ex.sets || 3) * deloadVolumeMod));
           ex.target_sets = ex.sets;
-          ex.rir = 4;
-          ex.target_rir = 4;
+          ex.rir = adaptedTrainingWeek.target_rir;
+          ex.target_rir = adaptedTrainingWeek.target_rir;
         }
       }
 
       reasons.push({
         code: AdaptationReasonCode.AUTO_DELOAD_FATIGUE_PRESCRIBED,
-        message_ar: `أسبوع تفريغ أحمال تلقائي (Deload Week): بعد ${accumulatedWeeks} أسابيع متواصلة من التحميل مع مؤشر إجهاد ${fatigueScore}/10، تم خفض الجولات 40% ورفع RIR إلى 4 للسماح للجهاز العصبي والمفاصل بالتعافي التام.`,
-        message_en: `Auto-Deload prescribed after ${accumulatedWeeks} consecutive training weeks with fatigue score ${fatigueScore}/10. Sets reduced by 40% with RIR 4.`,
+        message_ar: `أسبوع تفريغ أحمال (${adaptedTrainingWeek.phase}): بعد ${accumulatedWeeks} أسابيع تحميل مع مؤشر إجهاد ${fatigueScore}/10، تم خفض الجولات بنسبة ${Math.round((1 - deloadVolumeMod) * 100)}% وضبط RIR ${adaptedTrainingWeek.target_rir} للتعافي التام.`,
+        message_en: `Deload prescribed after ${accumulatedWeeks} consecutive training weeks with fatigue score ${fatigueScore}/10. Sets reduced by ${Math.round((1 - deloadVolumeMod) * 100)}% with RIR ${adaptedTrainingWeek.target_rir}.`,
       });
     }
 
@@ -595,6 +765,20 @@ export function buildAdaptedPlan(inputs) {
         }
       }
     }
+  }
+
+  // Post-Adjustment Invariant: Strict Calorie Floor Guard & Exact Macro Alignment
+  const clientIsFemale = options.isFemale ?? checkinAnalysis.is_female ?? (currentMasterProgram.client?.gender === 'female');
+  const finalCalorieFloor = clientIsFemale ? 1200 : 1500;
+  if (adaptedCalories < finalCalorieFloor) {
+    adaptedCalories = finalCalorieFloor;
+  }
+
+  if (!diabeticMacrosBounded && guardrails.hypoglycemia_guard_active !== true) {
+    const finalAligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs, adaptedFat);
+    adaptedProtein = finalAligned.protein;
+    adaptedCarbs = finalAligned.carbs;
+    adaptedFat = finalAligned.fat;
   }
 
   return Object.freeze({

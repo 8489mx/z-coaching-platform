@@ -411,7 +411,7 @@ export default function ProgramPdfView() {
   const clientName = sanitizeClientDisplayName(program?.client?.full_name || program?.client_name || user?.full_name || 'المشترك');
   const clientCode = program?.client?.client_code || program?.client_code || user?.client_code || user?.id || targetUserId;
   const rawTier = program?.client?.subscription_package || program?.client?.package_tier || user?.package_tier || user?.subscription_package || 'ELITE';
-  const packageTier = String(rawTier).toUpperCase().includes('MAX') ? 'باقة ماكس الشاملة (MAX)' : 'باقة إيليت المتقدمة (ELITE)';
+  const packageTier = String(rawTier).toUpperCase().includes('MAX') ? 'باقة MAX الشاملة' : 'باقة ELITE المتقدمة';
   const now = new Date();
   const arabicMonths = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
   const _issueDate = `${now.getDate()} ${arabicMonths[now.getMonth()]} ${now.getFullYear()}`;
@@ -597,10 +597,10 @@ export default function ProgramPdfView() {
           maxWidth: '210mm', 
           margin: '0 auto 20px auto', 
           background: '#FFFFFF',
-          border: '1px solid #CBD5E1',
-          borderRadius: '16px',
+          border: '1px solid #EAECF0',
+          borderRadius: '12px',
           padding: '12px 20px',
-          boxShadow: '0 4px 16px rgba(15, 23, 42, 0.06)',
+          boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -609,7 +609,7 @@ export default function ProgramPdfView() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#0284C7', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem', flexShrink: 0 }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#673DE6', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem', flexShrink: 0 }}>
             Z
           </div>
           <div style={{ minWidth: 0 }}>
@@ -626,10 +626,10 @@ export default function ProgramPdfView() {
           type="button" 
           onClick={handlePrint}
           style={{ 
-            background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)', 
+            background: '#673DE6', 
             color: '#FFFFFF',
             border: 'none', 
-            borderRadius: '10px',
+            borderRadius: '8px',
             padding: '10px 22px', 
             fontSize: '0.86rem', 
             fontWeight: 800, 

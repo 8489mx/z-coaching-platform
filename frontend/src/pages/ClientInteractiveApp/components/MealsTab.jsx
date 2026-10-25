@@ -312,7 +312,7 @@ export default function MealsTab({
                         background: '#F8FBFF',
                         color: '#284C7C',
                         border: '1px solid #D9E7F5',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         height: '24px',
                         padding: '0 8px',
                         fontSize: '0.67rem',

@@ -41,7 +41,7 @@ export function CoachSwapFoodModal({
             </h4>
             <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'flex', gap: '8px', alignItems: 'center' }}>
               <span>الكمية الحالية: <strong style={{ color: '#0F172A' }}>{swapFoodModal.currentItem.amount} {swapFoodModal.currentItem.unit || 'جم'}</strong> ({swapFoodModal.currentItem.cal || 0} kcal)</span>
-              <span>•</span>
+              <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
               <span style={{ color: '#2563EB', fontWeight: 600 }}>{getHandPortionTip(normCur)}</span>
             </div>
           </div>
@@ -57,9 +57,9 @@ export function CoachSwapFoodModal({
             placeholder="ابحث عن صنف بديل باسمه العربي أو الإنجليزي..."
             value={swapFoodSearch}
             onChange={(e) => setSwapFoodSearch(e.target.value)}
-            style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 28px 0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 12px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
           />
-          <Search size={13} style={{ position: 'absolute', right: '9px', top: '10px', color: '#94A3B8' }} />
+          <Search size={13} style={{ position: 'absolute', right: '11px', top: '11px', color: '#94A3B8' }} />
         </div>
 
         {/* Compatible Swaps List */}
@@ -169,7 +169,7 @@ export function CoachSwapFoodModal({
                       height: '28px',
                       padding: '0 12px',
                       borderRadius: '8px',
-                      background: '#0F172A',
+                      background: '#673DE6',
                       color: '#FFFFFF',
                       border: 'none',
                       fontSize: '11px',
@@ -211,7 +211,7 @@ export function CoachAddFoodModal({
           placeholder="ابحث باسم الصنف الغذائي..."
           value={foodModalSearch}
           onChange={(e) => setFoodModalSearch(e.target.value)}
-          style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
+          style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 14px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
         />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '320px', overflowY: 'auto' }}>
@@ -242,7 +242,7 @@ export function CoachAddFoodModal({
                       حصة معتمدة: <strong style={{ color: '#0F172A' }}>{fd.amount} {fd.unit}</strong> ({portionCal} kcal) • P: {portionP}g • C: {portionC}g • F: {portionF}g
                     </span>
                   </div>
-                  <button type="button" style={{ padding: '2px 7px', background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>+ إضافة</button>
+                  <button type="button" style={{ padding: '2px 7px', background: '#673DE6', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>+ إضافة</button>
                 </div>
               );
             })}
