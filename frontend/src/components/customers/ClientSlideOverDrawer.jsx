@@ -14,13 +14,12 @@ import {
   FileText,
   Copy,
   Check,
-  Calendar,
   Phone,
   Activity,
   Utensils
 } from 'lucide-react';
 import { API_BASE } from '../../config/api';
-import { ClientCodeBadge, ClientPackageBadge } from '../../utils/tierBadgeHelper';
+import { ClientPackageBadge } from '../../utils/tierBadgeHelper';
 import { extractClientFastingProfile } from '../../utils/seasonalFastingRadar';
 
 export default function ClientSlideOverDrawer({
@@ -137,7 +136,7 @@ export default function ClientSlideOverDrawer({
   }
 
   const clientName = client.full_name || client.name || 'مشترك جديد';
-  const clientInitial = clientName.trim().charAt(0) || 'م';
+  const _clientInitial = clientName.trim().charAt(0) || 'م';
 
   const isFrozen = client.subscription_status === 'FROZEN';
   const isExpired = client.subscription_status === 'EXPIRED';
@@ -594,6 +593,104 @@ export default function ClientSlideOverDrawer({
                 }}>
                   {isFrozen ? 'مجمد مؤقتاً' : isExpired ? 'منتهي الصلاحية' : 'اشتراك ساري'}
                 </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Sports Science Blueprint Card (Training, Nutrition, Cardio, Goal) */}
+          <div style={{
+            background: '#FFFFFF',
+            border: '1px solid #EAECF0',
+            borderRadius: '12px',
+            padding: '14px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '6px',
+                  background: '#F4F0FD',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#673DE6'
+                }}>
+                  <Utensils size={13} />
+                </div>
+                <strong style={{ fontSize: '12.5px', color: '#101828', fontWeight: 800 }}>
+                  ملخص الخطة التدريبية والغذائية
+                </strong>
+              </div>
+
+              <a
+                href={`/coach/editor/${cleanCode}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: '11px',
+                  color: '#673DE6',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <span>محرر الخطة الكامل</span>
+                <ExternalLink size={11} />
+              </a>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              {/* Training Box */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>البرنامج التدريبي:</span>
+                <strong style={{ fontSize: '12px', color: '#101828', display: 'block', marginTop: '2px' }}>
+                  {client.plan_summary?.trainingSplit || 'علوي / سفلي'}
+                </strong>
+                <span style={{ fontSize: '10.5px', color: '#673DE6', fontWeight: 700 }}>
+                  {client.plan_summary?.trainingDays || 4} أيام / أسبوع
+                </span>
+              </div>
+
+              {/* Nutrition Box */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>السعرات والماكروز:</span>
+                <strong style={{ fontSize: '12px', color: '#101828', display: 'block', marginTop: '2px', fontFamily: 'JetBrains Mono, monospace' }}>
+                  {Number(client.plan_summary?.nutritionCalories || 2150).toLocaleString()} سعرة
+                </strong>
+                <span style={{ fontSize: '10.5px', color: '#027A48', fontWeight: 700 }}>
+                  {client.plan_summary?.nutritionProtein || 160}g بروتين يومياً
+                </span>
+              </div>
+
+              {/* Cardio Box */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>الكارديو المخصص:</span>
+                <strong style={{ fontSize: '12px', color: '#175CD3', display: 'block', marginTop: '2px' }}>
+                  {client.plan_summary?.cardioSessions || 3} جلسات / أسبوع
+                </strong>
+                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 500 }}>
+                  Zone 2 منخفض الشدة
+                </span>
+              </div>
+
+              {/* Goal Box */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>الهدف المعتمد:</span>
+                <strong style={{ fontSize: '12px', color: '#673DE6', display: 'block', marginTop: '2px' }}>
+                  {client.plan_summary?.cleanGoal || 'تحسين اللياقة والكتلة'}
+                </strong>
+                {client.plan_summary?.hasMedical && (
+                  <span style={{ fontSize: '10px', color: '#B42318', fontWeight: 700, display: 'block', marginTop: '1px' }}>
+                    متابعة طبية خاصة
+                  </span>
+                )}
               </div>
             </div>
           </div>

@@ -3,19 +3,16 @@ import { useSearchParams } from 'react-router-dom';
 import {
   Users,
   Plus,
-  ShieldCheck,
   Clock,
   MessageCircle,
   Download,
   ExternalLink,
-  Search,
   X,
   ChevronDown,
   Check,
   RotateCw,
   Filter,
-  Calendar,
-  AlertCircle
+  Target
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -42,13 +39,13 @@ export default function Customers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'ACTIVE' | 'EXPIRING_SOON' | 'EXPIRED' | 'FROZEN'
-  const [fastingFilter, setFastingFilter] = useState('ALL'); // 'ALL' | 'INTERMITTENT' | 'RAMADAN' | 'COPTIC'
+  const [goalFilter, setGoalFilter] = useState('ALL'); // 'ALL' | 'FAT_LOSS' | 'MUSCLE_GAIN' | 'RECOMP' | 'HEALTH'
   
   // Dropdown UI States (Zero Native Dropdowns / Zero Sharp Corners)
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
-  const [isFastingDropdownOpen, setIsFastingDropdownOpen] = useState(false);
+  const [isGoalDropdownOpen, setIsGoalDropdownOpen] = useState(false);
   const statusDropdownRef = useRef(null);
-  const fastingDropdownRef = useRef(null);
+  const goalDropdownRef = useRef(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,8 +80,8 @@ export default function Customers() {
       if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target)) {
         setIsStatusDropdownOpen(false);
       }
-      if (fastingDropdownRef.current && !fastingDropdownRef.current.contains(e.target)) {
-        setIsFastingDropdownOpen(false);
+      if (goalDropdownRef.current && !goalDropdownRef.current.contains(e.target)) {
+        setIsGoalDropdownOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -190,12 +187,14 @@ export default function Customers() {
     const cleanClientCode = String(client.client_code || client.id || '').replace(/^#+/, '').replace(/^client[-_]?/i, '');
     const termCode = term.replace(/^client[-_]?/i, '');
 
-    const fasting = extractClientFastingProfile(client);
-
-    // 1. Fasting Filter
-    if (fastingFilter === 'COPTIC' && !fasting.isCoptic) return false;
-    if (fastingFilter === 'RAMADAN' && !fasting.isRamadan) return false;
-    if (fastingFilter === 'INTERMITTENT' && !fasting.isIntermittent) return false;
+    // 1. Goal Filter
+    if (goalFilter !== 'ALL') {
+      const g = String(client.plan_summary?.cleanGoal || client.goal || '').toLowerCase();
+      if (goalFilter === 'FAT_LOSS' && !g.includes('تنشيف')) return false;
+      if (goalFilter === 'MUSCLE_GAIN' && !g.includes('تضخيم')) return false;
+      if (goalFilter === 'RECOMP' && !g.includes('تشكيل') && !g.includes('ريكومب')) return false;
+      if (goalFilter === 'HEALTH' && !g.includes('صحة') && !g.includes('لياقة')) return false;
+    }
 
     // 2. Status Filter
     if (statusFilter !== 'ALL') {
@@ -217,8 +216,8 @@ export default function Customers() {
         matchesSearch = arabicSearchMatch(client.full_name, term) ||
           cleanClientCode === termCode ||
           (client.phone_number && client.phone_number.includes(term)) ||
-          (fasting.primaryFastingBadge && arabicSearchMatch(fasting.primaryFastingBadge.label, term)) ||
-          (fasting.intermittentBadge && arabicSearchMatch(fasting.intermittentBadge.label, term));
+          (client.plan_summary?.cleanGoal && arabicSearchMatch(client.plan_summary.cleanGoal, term)) ||
+          (client.plan_summary?.trainingSplit && arabicSearchMatch(client.plan_summary.trainingSplit, term));
       }
     }
 
@@ -233,7 +232,7 @@ export default function Customers() {
   // Reset pagination on filter change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, tierFilter, statusFilter, fastingFilter, pageSize]);
+  }, [searchTerm, tierFilter, statusFilter, goalFilter, pageSize]);
 
   const totalPages = Math.ceil(filteredClients.length / pageSize) || 1;
   const paginatedClients = filteredClients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -255,7 +254,7 @@ export default function Customers() {
       } else if (e.key === 'Escape') {
         if (searchTerm) setSearchTerm('');
         if (isStatusDropdownOpen) setIsStatusDropdownOpen(false);
-        if (isFastingDropdownOpen) setIsFastingDropdownOpen(false);
+        if (isGoalDropdownOpen) setIsGoalDropdownOpen(false);
         if (selectedDrawerClient) setSelectedDrawerClient(null);
         if (whatsappModalClient) setWhatsappModalClient(null);
         if (renewalModalClient) setRenewalModalClient(null);
@@ -274,7 +273,7 @@ export default function Customers() {
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [searchTerm, isStatusDropdownOpen, isFastingDropdownOpen, selectedDrawerClient, whatsappModalClient, renewalModalClient, isNewClientModalOpen, totalPages]);
+  }, [searchTerm, isStatusDropdownOpen, isGoalDropdownOpen, selectedDrawerClient, whatsappModalClient, renewalModalClient, isNewClientModalOpen, totalPages]);
 
   // Aggregate Counters for Filters
   const maxCount = clients.filter(c => getClientTier(c) === 'MAX').length;
@@ -283,9 +282,11 @@ export default function Customers() {
   const expiringSoonCount = clients.filter(c => (c.subscription_status || c.status) === 'EXPIRING_SOON').length;
   const expiredCount = clients.filter(c => (c.subscription_status || c.status) === 'EXPIRED').length;
   const frozenCount = clients.filter(c => (c.subscription_status || c.status) === 'FROZEN').length;
-  const totalCoptic = clients.filter(c => extractClientFastingProfile(c).isCoptic).length;
-  const totalRamadan = clients.filter(c => extractClientFastingProfile(c).isRamadan).length;
-  const totalIntermittent = clients.filter(c => extractClientFastingProfile(c).isIntermittent).length;
+
+  const fatLossCount = clients.filter(c => (c.plan_summary?.cleanGoal || '').includes('تنشيف')).length;
+  const muscleGainCount = clients.filter(c => (c.plan_summary?.cleanGoal || '').includes('تضخيم')).length;
+  const recompCount = clients.filter(c => (c.plan_summary?.cleanGoal || '').includes('تشكيل') || (c.plan_summary?.cleanGoal || '').includes('ريكومب')).length;
+  const healthCount = clients.filter(c => (c.plan_summary?.cleanGoal || '').includes('صحة') || (c.plan_summary?.cleanGoal || '').includes('لياقة')).length;
 
   const STATUS_OPTIONS = [
     { id: 'ALL', label: 'كافة الحالات', count: clients.length },
@@ -295,20 +296,21 @@ export default function Customers() {
     { id: 'FROZEN', label: 'المجمدة مؤقتاً', count: frozenCount },
   ];
 
-  const FASTING_OPTIONS = [
-    { id: 'ALL', label: 'كافة أنماط الصيام', count: clients.length },
-    { id: 'INTERMITTENT', label: 'صيام متقطع', count: totalIntermittent },
-    { id: 'RAMADAN', label: 'صيام رمضان', count: totalRamadan },
-    { id: 'COPTIC', label: 'صيام مسيحي', count: totalCoptic },
+  const GOAL_OPTIONS = [
+    { id: 'ALL', label: 'كافة الأهداف الرياضية', count: clients.length },
+    { id: 'FAT_LOSS', label: 'تنشيف ونزول دهون', count: fatLossCount },
+    { id: 'MUSCLE_GAIN', label: 'تضخيم وبناء عضلي', count: muscleGainCount },
+    { id: 'RECOMP', label: 'إعادة تشكيل (ريكومب)', count: recompCount },
+    { id: 'HEALTH', label: 'صحة عامة ولياقة', count: healthCount },
   ];
 
-  const hasActiveFilters = Boolean(searchTerm.trim() || tierFilter !== 'ALL' || statusFilter !== 'ALL' || fastingFilter !== 'ALL');
+  const hasActiveFilters = Boolean(searchTerm.trim() || tierFilter !== 'ALL' || statusFilter !== 'ALL' || goalFilter !== 'ALL');
 
   const resetAllFilters = () => {
     setSearchTerm('');
     setTierFilter('ALL');
     setStatusFilter('ALL');
-    setFastingFilter('ALL');
+    setGoalFilter('ALL');
   };
 
   return (
@@ -534,20 +536,20 @@ export default function Customers() {
                 )}
               </div>
 
-              {/* Fasting Filter Custom Curved Dropdown */}
-              <div ref={fastingDropdownRef} style={{ position: 'relative' }}>
+              {/* Goal Filter Custom Curved Dropdown */}
+              <div ref={goalDropdownRef} style={{ position: 'relative' }}>
                 <button
                   type="button"
-                  onClick={() => setIsFastingDropdownOpen(!isFastingDropdownOpen)}
+                  onClick={() => setIsGoalDropdownOpen(!isGoalDropdownOpen)}
                   style={{
                     height: '34px',
                     padding: '0 14px',
                     borderRadius: '8px',
                     border: '1px solid #D0D5DD',
-                    background: fastingFilter !== 'ALL' ? '#F4F0FD' : '#FFFFFF',
-                    color: fastingFilter !== 'ALL' ? '#673DE6' : '#344054',
+                    background: goalFilter !== 'ALL' ? '#F4F0FD' : '#FFFFFF',
+                    color: goalFilter !== 'ALL' ? '#673DE6' : '#344054',
                     fontSize: '12px',
-                    fontWeight: fastingFilter !== 'ALL' ? 700 : 600,
+                    fontWeight: goalFilter !== 'ALL' ? 700 : 600,
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -556,23 +558,23 @@ export default function Customers() {
                     transition: 'all 0.15s ease'
                   }}
                   onMouseEnter={(e) => {
-                    if (fastingFilter === 'ALL') e.currentTarget.style.background = '#F9FAFB';
+                    if (goalFilter === 'ALL') e.currentTarget.style.background = '#F9FAFB';
                   }}
                   onMouseLeave={(e) => {
-                    if (fastingFilter === 'ALL') e.currentTarget.style.background = '#FFFFFF';
+                    if (goalFilter === 'ALL') e.currentTarget.style.background = '#FFFFFF';
                   }}
                 >
-                  <Calendar size={12} color={fastingFilter !== 'ALL' ? '#673DE6' : '#667085'} />
-                  <span>{FASTING_OPTIONS.find(o => o.id === fastingFilter)?.label || 'نمط الصيام'}</span>
-                  <ChevronDown size={12} color={fastingFilter !== 'ALL' ? '#673DE6' : '#667085'} />
+                  <Target size={12} color={goalFilter !== 'ALL' ? '#673DE6' : '#667085'} />
+                  <span>{GOAL_OPTIONS.find(o => o.id === goalFilter)?.label || 'الهدف الرياضي'}</span>
+                  <ChevronDown size={12} color={goalFilter !== 'ALL' ? '#673DE6' : '#667085'} />
                 </button>
 
-                {isFastingDropdownOpen && (
+                {isGoalDropdownOpen && (
                   <div style={{
                     position: 'absolute',
                     top: 'calc(100% + 4px)',
                     right: 0,
-                    width: '185px',
+                    width: '195px',
                     background: '#FFFFFF',
                     borderRadius: '16px',
                     border: '1px solid #EAECF0',
@@ -583,15 +585,15 @@ export default function Customers() {
                     flexDirection: 'column',
                     gap: '2px'
                   }}>
-                    {FASTING_OPTIONS.map(opt => {
-                      const isSelected = fastingFilter === opt.id;
+                    {GOAL_OPTIONS.map(opt => {
+                      const isSelected = goalFilter === opt.id;
                       return (
                         <button
                           key={opt.id}
                           type="button"
                           onClick={() => {
-                            setFastingFilter(opt.id);
-                            setIsFastingDropdownOpen(false);
+                            setGoalFilter(opt.id);
+                            setIsGoalDropdownOpen(false);
                           }}
                           style={{
                             display: 'flex',
@@ -748,13 +750,14 @@ export default function Customers() {
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12.5px' }}>
                 <thead>
                   <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #EAECF0', color: '#475467', fontWeight: 600, fontSize: '12px' }}>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '85px' }}>الكود</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'right' }}>المشترك</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '130px' }}>الهاتف</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '100px' }}>الباقة</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '140px' }}>حالة الاشتراك</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '120px' }}>المدة المتبقية</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', width: '250px' }}>إجراءات المشترك</th>
+                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '75px' }}>الكود</th>
+                    <th style={{ padding: '12px 14px', textAlign: 'right', minWidth: '170px' }}>المشترك</th>
+                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '135px' }}>الهدف الرياضي</th>
+                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '135px' }}>التدريب</th>
+                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '135px' }}>التغذية</th>
+                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '115px' }}>الكارديو</th>
+                    <th style={{ padding: '12px 14px', textAlign: 'center', width: '140px' }}>الاشتراك والصلاحية</th>
+                    <th style={{ padding: '12px 14px', textAlign: 'left', width: '220px' }}>إجراءات المشترك</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -772,45 +775,25 @@ export default function Customers() {
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
                         {/* 1. Client Code */}
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
                           <span
                             onClick={() => setSelectedDrawerClient(client)}
-                            style={{
-                              cursor: 'pointer',
-                              display: 'inline-block',
-                              fontFamily: 'JetBrains Mono, monospace',
-                              fontSize: '12px',
-                              fontWeight: 700,
-                              color: '#344054',
-                              background: '#F2F4F7',
-                              border: '1px solid #EAECF0',
-                              borderRadius: '6px',
-                              padding: '3px 8px',
-                              transition: 'all 0.12s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.borderColor = '#673DE6';
-                              e.currentTarget.style.color = '#673DE6';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.borderColor = '#EAECF0';
-                              e.currentTarget.style.color = '#344054';
-                            }}
+                            style={{ cursor: 'pointer', display: 'inline-block' }}
                             title="فتح تفاصيل المشترك"
                           >
-                            #{cleanCode}
+                            <ClientCodeBadge item={client} />
                           </span>
                         </td>
 
-                        {/* 2. Full Name & Fasting Badges */}
-                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        {/* 2. Full Name & Sub-meta */}
+                        <td style={{ padding: '12px 14px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                             <strong 
                               onClick={() => setSelectedDrawerClient(client)}
                               style={{
                                 color: '#111827',
                                 fontSize: '13.5px',
-                                fontWeight: 600,
+                                fontWeight: 700,
                                 cursor: 'pointer',
                                 transition: 'color 0.12s ease'
                               }}
@@ -821,157 +804,113 @@ export default function Customers() {
                               {client.full_name || client.name || 'مشترك جديد'}
                             </strong>
 
-                            {fasting.primaryFastingBadge && (
-                              <span style={{
-                                fontSize: '10.5px',
-                                padding: '2px 7px',
-                                borderRadius: '6px',
-                                background: '#F2F4F7',
-                                border: '1px solid #EAECF0',
-                                color: '#475467',
-                                fontWeight: 600
-                              }}>
-                                {fasting.primaryFastingBadge.label}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#667085' }}>
+                                {client.phone_number || '-'}
                               </span>
-                            )}
-                            {fasting.intermittentBadge && (
+                              {fasting.intermittentBadge && (
+                                <span style={{ fontSize: '9.5px', padding: '1px 5px', borderRadius: '4px', background: '#E0F2FE', color: '#0284C7', fontWeight: 700 }}>
+                                  {fasting.intermittentBadge.shortLabel}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* 3. Fitness Goal & Medical Alert */}
+                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              padding: '2px 8px',
+                              borderRadius: '8px',
+                              background: '#F4F0FD',
+                              color: '#673DE6',
+                              border: '1px solid #EDE8FA',
+                              display: 'inline-block'
+                            }}>
+                              {client.plan_summary?.cleanGoal || 'لياقة وصحة'}
+                            </span>
+                            {client.plan_summary?.hasMedical && (
                               <span style={{
-                                fontSize: '10.5px',
-                                padding: '2px 7px',
+                                fontSize: '9.5px',
+                                fontWeight: 700,
+                                padding: '1px 6px',
                                 borderRadius: '6px',
-                                background: '#F2F4F7',
-                                border: '1px solid #EAECF0',
-                                color: '#475467',
-                                fontWeight: 600
+                                background: '#FEF3F2',
+                                color: '#B42318',
+                                border: '1px solid #FECDCA',
+                                display: 'inline-block'
                               }}>
-                                {fasting.intermittentBadge.label}
+                                متابعة طبية
                               </span>
                             )}
                           </div>
                         </td>
 
-                        {/* 3. Phone */}
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: '#475467' }}>
-                            {client.phone_number || '-'}
-                          </span>
+                        {/* 4. Training (Split & Days) */}
+                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#101828' }}>
+                              {client.plan_summary?.trainingSplit || 'علوي / سفلي'}
+                            </span>
+                            <span style={{ fontSize: '10.5px', color: '#667085', fontWeight: 600 }}>
+                              {client.plan_summary?.trainingDays || 4} أيام / أسبوع
+                            </span>
+                          </div>
                         </td>
 
-                        {/* 4. Tier Badge */}
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          <ClientPackageBadge item={client} />
+                        {/* 5. Nutrition (Calories & Protein) */}
+                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                            <strong style={{ fontSize: '12px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
+                              {Number(client.plan_summary?.nutritionCalories || 2150).toLocaleString()} سعرة
+                            </strong>
+                            <span style={{ fontSize: '10.5px', color: '#027A48', fontWeight: 700, background: '#ECFDF3', border: '1px solid #A6F4C7', padding: '1px 6px', borderRadius: '6px' }}>
+                              {client.plan_summary?.nutritionProtein || 160}g بروتين
+                            </span>
+                          </div>
                         </td>
 
-                        {/* 5. Subscription Status Badge (Zero Dots / Pure Text) */}
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          {rawStatus === 'FROZEN' ? (
-                            <span style={{
-                              background: '#F8FAFC',
-                              color: '#475467',
-                              border: '1px solid #E2E8F0',
-                              padding: '3px 10px',
-                              borderRadius: '6px',
-                              fontSize: '11.5px',
-                              fontWeight: 600,
-                              display: 'inline-block'
-                            }}>
-                              مجمد مؤقتاً
-                            </span>
-                          ) : rawStatus === 'EXPIRED' ? (
-                            <span style={{
-                              background: '#FEF3F2',
-                              color: '#B42318',
-                              border: '1px solid #FECDCA',
-                              padding: '3px 10px',
-                              borderRadius: '6px',
-                              fontSize: '11.5px',
-                              fontWeight: 600,
-                              display: 'inline-block'
-                            }}>
-                              منتهي الصلاحية
-                            </span>
-                          ) : rawStatus === 'EXPIRING_SOON' ? (
-                            <span style={{
-                              background: '#FFFAEB',
-                              color: '#B54708',
-                              border: '1px solid #FEDF89',
-                              padding: '3px 10px',
-                              borderRadius: '6px',
-                              fontSize: '11.5px',
-                              fontWeight: 600,
-                              display: 'inline-block'
-                            }}>
-                              ينتهي قريباً
-                            </span>
-                          ) : (
-                            <span style={{
-                              background: '#ECFDF3',
-                              color: '#027A48',
-                              border: '1px solid #A6F4C7',
-                              padding: '3px 10px',
-                              borderRadius: '6px',
-                              fontSize: '11.5px',
-                              fontWeight: 600,
-                              display: 'inline-block'
-                            }}>
-                              نشط
-                            </span>
-                          )}
-                        </td>
-
-                        {/* 6. Remaining Duration */}
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                        {/* 6. Cardio */}
+                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
                           <span style={{
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            color: typeof daysRemaining === 'number' 
-                              ? (daysRemaining <= 3 ? '#B54708' : '#475467') 
-                              : '#667085'
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            color: '#175CD3',
+                            background: '#EFF8FF',
+                            border: '1px solid #B2DDFF',
+                            padding: '2px 8px',
+                            borderRadius: '8px',
+                            display: 'inline-block'
                           }}>
-                            {typeof daysRemaining === 'number'
-                              ? (daysRemaining > 0 ? `باقي ${daysRemaining} يوم` : (daysRemaining === 0 ? 'ينتهي اليوم' : `متأخر ${Math.abs(daysRemaining)} يوم`))
-                              : 'ساري'}
+                            {client.plan_summary?.cardioSessions || 3} جلسات / أسبوع
                           </span>
                         </td>
 
-                        {/* 7. Action Buttons (Secondary White Button Style) */}
-                        <td style={{ padding: '12px 16px', textAlign: 'left' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            {/* Check-in Review */}
-                            <a
-                              href={`/coach/checkin-review?code=${cleanCode}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                height: '30px',
-                                padding: '0 10px',
-                                borderRadius: '8px',
-                                border: '1px solid #D0D5DD',
-                                background: '#FFFFFF',
-                                color: '#344054',
-                                fontSize: '11.5px',
-                                fontWeight: 600,
-                                textDecoration: 'none',
-                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                transition: 'all 0.15s ease'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = '#F9FAFB';
-                                e.currentTarget.style.borderColor = '#CBD5E1';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = '#FFFFFF';
-                                e.currentTarget.style.borderColor = '#D0D5DD';
-                              }}
-                              title="الانتقال لمراجعة تقييم المشترك في تبويب مستقل"
-                            >
-                              <span>التقييم</span>
-                              <ExternalLink size={11} color="#667085" />
-                            </a>
+                        {/* 7. Subscription Tier & Expiration Badge */}
+                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                            <ClientPackageBadge item={client} />
+                            <span style={{
+                              fontSize: '10.5px',
+                              fontWeight: 700,
+                              padding: '2px 7px',
+                              borderRadius: '6px',
+                              display: 'inline-block',
+                              background: rawStatus === 'FROZEN' ? '#F8FAFC' : rawStatus === 'EXPIRED' ? '#FEF3F2' : (daysRemaining <= 3 ? '#FFFAEB' : '#ECFDF3'),
+                              color: rawStatus === 'FROZEN' ? '#475467' : rawStatus === 'EXPIRED' ? '#B42318' : (daysRemaining <= 3 ? '#B54708' : '#027A48'),
+                              border: rawStatus === 'FROZEN' ? '1px solid #E2E8F0' : rawStatus === 'EXPIRED' ? '1px solid #FECDCA' : (daysRemaining <= 3 ? '1px solid #FEDF89' : '1px solid #A6F4C7')
+                            }}>
+                              {rawStatus === 'FROZEN' ? 'مجمد مؤقتاً' : (rawStatus === 'EXPIRED' ? `منتهي (متأخر ${Math.abs(daysRemaining || 0)} يوم)` : (daysRemaining === 0 ? 'ينتهي اليوم' : `باقي ${daysRemaining} يوم`))}
+                            </span>
+                          </div>
+                        </td>
 
+                        {/* 8. Action Buttons */}
+                        <td style={{ padding: '12px 14px', textAlign: 'left' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                             {/* Program Editor (Primary Branded Action) */}
                             <a
                               href={`/coach/editor/${cleanCode}`}
@@ -979,7 +918,7 @@ export default function Customers() {
                               rel="noopener noreferrer"
                               style={{
                                 height: '30px',
-                                padding: '0 11px',
+                                padding: '0 10px',
                                 borderRadius: '8px',
                                 border: '1px solid #DDD6FE',
                                 background: '#F4F0FD',
@@ -1001,10 +940,45 @@ export default function Customers() {
                                 e.currentTarget.style.background = '#F4F0FD';
                                 e.currentTarget.style.borderColor = '#DDD6FE';
                               }}
-                              title="فتح محرر الخطة في تبويب مستقل"
+                              title="فتح محرر الخطة التدريبية والغذائية بالكامل"
                             >
                               <span>الخطة</span>
                               <ExternalLink size={11} color="#673DE6" />
+                            </a>
+
+                            {/* Check-in Review */}
+                            <a
+                              href={`/coach/checkin-review?code=${cleanCode}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                height: '30px',
+                                padding: '0 9px',
+                                borderRadius: '8px',
+                                border: '1px solid #D0D5DD',
+                                background: '#FFFFFF',
+                                color: '#344054',
+                                fontSize: '11.5px',
+                                fontWeight: 600,
+                                textDecoration: 'none',
+                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#F9FAFB';
+                                e.currentTarget.style.borderColor = '#CBD5E1';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#FFFFFF';
+                                e.currentTarget.style.borderColor = '#D0D5DD';
+                              }}
+                              title="الانتقال لمراجعة التقييم الأسبوعي"
+                            >
+                              <span>التقييم</span>
+                              <ExternalLink size={10} color="#667085" />
                             </a>
 
                             {/* WhatsApp */}
@@ -1013,17 +987,15 @@ export default function Customers() {
                               onClick={() => setWhatsappModalClient(client)}
                               style={{
                                 height: '30px',
-                                padding: '0 10px',
+                                padding: '0 8px',
                                 borderRadius: '8px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
                                 color: '#027A48',
-                                fontSize: '11.5px',
-                                fontWeight: 600,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px',
+                                justifyContent: 'center',
                                 boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
                                 transition: 'all 0.15s ease'
                               }}
@@ -1037,8 +1009,7 @@ export default function Customers() {
                               }}
                               title="مركز رسائل الواتساب الذكية"
                             >
-                              <MessageCircle size={12} color="#027A48" />
-                              <span>واتساب</span>
+                              <MessageCircle size={13} color="#027A48" />
                             </button>
 
                             {/* Client Profile Drawer */}
@@ -1047,7 +1018,7 @@ export default function Customers() {
                               onClick={() => setSelectedDrawerClient(client)}
                               style={{
                                 height: '30px',
-                                padding: '0 10px',
+                                padding: '0 9px',
                                 borderRadius: '8px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',

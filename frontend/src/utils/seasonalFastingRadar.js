@@ -151,11 +151,20 @@ export function extractClientFastingProfile(clientOrSubmission = {}, explicitAns
     'none';
 
   const isCoptic = religion === 'CHRISTIAN';
-  const isRamadan = religion === 'MUSLIM' || (!religion && !isCoptic);
+  const isMuslim = religion === 'MUSLIM' || (!religion && !isCoptic);
   const isIntermittent = Boolean(intermittentFasting && intermittentFasting !== 'none');
 
+  const now = new Date();
+  const isRamadanActive = Boolean(SEASONAL_FASTING_CALENDAR.find(s => s.type === 'ISLAMIC' && now >= s.startDate && now <= s.endDate));
+  const isCopticActive = Boolean(SEASONAL_FASTING_CALENDAR.find(s => s.type === 'COPTIC' && now >= s.startDate && now <= s.endDate));
+  const explicitRamadan = answers?.fasting_mode === 'RAMADAN' || clientOrSubmission?.fasting_mode === 'RAMADAN';
+  const explicitCoptic = answers?.fasting_mode === 'COPTIC' || clientOrSubmission?.fasting_mode === 'COPTIC';
+
+  const shouldShowRamadan = isMuslim && (isRamadanActive || explicitRamadan);
+  const shouldShowCoptic = isCoptic && (isCopticActive || explicitCoptic);
+
   let primaryFastingBadge = null;
-  if (isCoptic) {
+  if (shouldShowCoptic) {
     primaryFastingBadge = {
       type: 'COPTIC',
       label: christianFastingStyle === 'STRICT_VEGAN' ? 'صيام مسيحي (نباتي صرف)' : 'صيام مسيحي (سمك مسموح)',
@@ -164,7 +173,7 @@ export function extractClientFastingProfile(clientOrSubmission = {}, explicitAns
       border: '#DDD6FE',
       color: '#6D28D9'
     };
-  } else if (isRamadan) {
+  } else if (shouldShowRamadan) {
     primaryFastingBadge = {
       type: 'RAMADAN',
       label: 'صيام رمضان',

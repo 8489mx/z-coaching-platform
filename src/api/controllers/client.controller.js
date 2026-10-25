@@ -79,6 +79,13 @@ export const getClients = async (req, res) => {
           model: IntakeSubmission,
           as: "intakeSubmissions",
           attributes: ['id', 'status', 'answers', 'createdAt']
+        },
+        {
+          model: Program,
+          as: "programs",
+          where: { status: 'ACTIVE' },
+          required: false,
+          attributes: ['id', 'status', 'version', 'program_data', 'updatedAt']
         }
       ],
       order: [['createdAt', 'DESC']]
@@ -104,12 +111,45 @@ export const getClients = async (req, res) => {
         }
       }
 
+      // Extract Coaching Plan Summary (Training, Nutrition, Cardio, Goal)
+      const activeProg = c.programs?.[0]?.program_data;
+      const intakeAns = c.intakeSubmissions?.[0]?.answers;
+
+      const trainingDays = activeProg?.training_program?.sessions?.length || activeProg?.training?.sessions?.length || intakeAns?.training_logistics?.days_per_week || 4;
+      const rawSplit = activeProg?.training_program?.split || activeProg?.training?.split || '';
+      let trainingSplit = 'علوي / سفلي';
+      if (/PPL|PUSH_PULL/i.test(rawSplit)) trainingSplit = 'دفع / سحب / أرجل';
+      else if (/FULL_BODY/i.test(rawSplit)) trainingSplit = 'كامل الجسم';
+      else if (/BRO|BODY_PART/i.test(rawSplit)) trainingSplit = 'عضلات منفصلة';
+
+      const nutritionCalories = activeProg?.nutrition_program?.daily_targets?.calories || activeProg?.nutrition?.targets?.calories || c.target_calories || 2150;
+      const nutritionProtein = activeProg?.nutrition_program?.daily_targets?.protein || activeProg?.nutrition?.targets?.protein || 160;
+
+      const cardioSessions = activeProg?.cardio_program?.weekly_schedule?.length || activeProg?.cardio?.frequency_per_week || 3;
+
+      const rawGoal = c.goal || intakeAns?.primary_goal || activeProg?.client_profile?.goal || 'FAT_LOSS';
+      let cleanGoal = 'تنشيف ونزول دهون';
+      if (/muscle|bulk|تضخيم/i.test(rawGoal)) cleanGoal = 'تضخيم وبناء عضلي';
+      else if (/recomp|ريكومب/i.test(rawGoal)) cleanGoal = 'إعادة تشكيل (ريكومب)';
+      else if (/health|لياقة|صحة/i.test(rawGoal)) cleanGoal = 'صحة عامة ولياقة';
+
+      const hasMedical = Boolean(intakeAns?.medical_conditions?.has_conditions || intakeAns?.medical_conditions?.selected?.length);
+
       return {
         ...c,
         days_remaining: daysRemaining,
         daysRemaining: daysRemaining,
         subscription_status: calculatedStatus,
-        status: calculatedStatus
+        status: calculatedStatus,
+        plan_summary: {
+          trainingDays,
+          trainingSplit,
+          nutritionCalories,
+          nutritionProtein,
+          cardioSessions,
+          cleanGoal,
+          hasMedical
+        }
       };
     });
 

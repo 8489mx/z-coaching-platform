@@ -115,6 +115,7 @@ export function getTierColors(tierOrItem) {
 export function ClientCodeBadge({ code, item, tier: _tier, size = 'md', style = {} }) {
   const rawCode = code || item?.client_code || item?.clientCode || item?.code || item?.user?.client_code || item?.id || '1';
   const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
+  const formattedCode = cleanCode.replace(/^JRN_0?/, '').replace(/^TEST_?/, '');
 
   const sizeStyles = {
     xs: { fontSize: '9.5px', padding: '1px 6px', borderRadius: '6px' },
@@ -144,7 +145,7 @@ export function ClientCodeBadge({ code, item, tier: _tier, size = 'md', style = 
         ...style
       }}
     >
-      #{cleanCode}
+      #{formattedCode}
     </span>
   );
 }
