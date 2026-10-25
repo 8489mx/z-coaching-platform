@@ -295,11 +295,11 @@ export function CoachTrainingTab({
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                flexWrap: 'wrap',
+                flexWrap: 'nowrap',
                 gap: '10px'
               }}>
                 {/* Title & Info & Visuals */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '240px', flex: '1 1 auto' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: '1 1 auto', overflow: 'hidden' }}>
                   <span style={{
                     width: '30px',
                     height: '30px',
@@ -338,7 +338,7 @@ export function CoachTrainingTab({
                         src={ex.image_stretch || `/exercises/${ex.code}/0.jpg`} 
                         alt="" 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; if (e.currentTarget.parentElement) { e.currentTarget.parentElement.style.display = 'none'; } }}
                         loading="lazy"
                       />
                       <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.9)', padding: '0 3px', borderRadius: '4px' }}>1</span>
@@ -362,7 +362,7 @@ export function CoachTrainingTab({
                         src={ex.image_contraction || `/exercises/${ex.code}/1.jpg`} 
                         alt="" 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; if (e.currentTarget.parentElement) { e.currentTarget.parentElement.style.display = 'none'; } }}
                         loading="lazy"
                       />
                       <span style={{ position: 'absolute', bottom: '1px', right: '2px', fontSize: '8px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.9)', padding: '0 3px', borderRadius: '4px' }}>2</span>
@@ -391,7 +391,7 @@ export function CoachTrainingTab({
                     </button>
                   </div>
 
-                  <div style={{ minWidth: 0 }}>
+                  <div style={{ minWidth: 0, flex: '1 1 auto', overflow: 'hidden' }}>
                     {/* Primary English Exercise Name */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                       <strong
@@ -454,7 +454,7 @@ export function CoachTrainingTab({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  flexWrap: 'wrap',
+                  flexWrap: 'nowrap', flexShrink: 0,
                   background: '#F8FAFC',
                   border: '1px solid #EAECF0',
                   borderRadius: '12px',

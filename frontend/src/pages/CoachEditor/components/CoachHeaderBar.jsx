@@ -182,68 +182,71 @@ export function CoachHeaderBar({
       {/* Actions Toolbar - Hostinger Design System */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
         
-        {/* Cluster 1: Live Previews */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#F2F4F7', border: '1px solid #EAECF0', padding: '3px', borderRadius: '10px' }}>
-          {/* Live Client App Preview */}
+        {/* Live Client App Preview */}
+        <a
+          href={`/mobile_app_preview.html?code=${encodeURIComponent(currentCode || '1')}${program?.client?.full_name ? `&name=${encodeURIComponent(program.client.full_name)}` : ''}`}
+          target="_blank"
+          rel="noreferrer"
+          title="معاينة حية لتطبيق المتدرب على الموبايل"
+          style={{
+            height: '34px',
+            padding: '0 13px',
+            borderRadius: '8px',
+            background: '#FFFFFF',
+            color: '#344054',
+            border: '1px solid #D0D5DD',
+            fontSize: '11.5px',
+            fontWeight: 600,
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
+            transition: 'all 0.15s ease'
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+        >
+          <Smartphone size={13} color="#475467" />
+          <span>تطبيق المتدرب</span>
+        </a>
+
+        {/* WhatsApp Direct Chat */}
+        {clientPhone && (
           <a
-            href={`/mobile_app_preview.html?code=${encodeURIComponent(currentCode || '1')}${program?.client?.full_name ? `&name=${encodeURIComponent(program.client.full_name)}` : ''}`}
+            href={generateWhatsAppUrl(clientPhone, `أهلاً ${program?.client?.full_name ? program.client.full_name.replace(/مشترك #\d+/g, '').trim() : ''}، بخصوص خطتك التدريبية والغذائية:`)}
             target="_blank"
             rel="noreferrer"
-            title="معاينة حية لتطبيق المتدرب على الموبايل"
+            title="مراسلة المتدرب مباشرة عبر واتساب"
             style={{
-              height: '30px',
-              padding: '0 12px',
+              height: '34px',
+              padding: '0 13px',
               borderRadius: '8px',
               background: '#FFFFFF',
-              color: '#344054',
+              color: '#027A48',
               border: '1px solid #D0D5DD',
               fontSize: '11.5px',
               fontWeight: 600,
               textDecoration: 'none',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '5px',
               boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
               transition: 'all 0.15s ease'
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#F9FAFB';
+              e.currentTarget.style.borderColor = '#A6F4C7';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#FFFFFF';
+              e.currentTarget.style.borderColor = '#D0D5DD';
+            }}
           >
-            <Smartphone size={13} color="#475467" />
-            <span>تطبيق المتدرب</span>
+            <MessageCircle size={13} color="#027A48" />
+            <span>واتساب</span>
           </a>
-
-          {/* WhatsApp Direct Chat */}
-          {clientPhone && (
-            <a
-              href={generateWhatsAppUrl(clientPhone, `أهلاً ${program?.client?.full_name ? program.client.full_name.replace(/مشترك #\d+/g, '').trim() : ''}، بخصوص خطتك التدريبية والغذائية:`)}
-              target="_blank"
-              rel="noreferrer"
-              title="مراسلة المتدرب مباشرة عبر واتساب"
-              style={{
-                height: '30px',
-                padding: '0 12px',
-                borderRadius: '8px',
-                background: '#ECFDF3',
-                color: '#027A48',
-                border: '1px solid #A6F4C7',
-                fontSize: '11.5px',
-                fontWeight: 600,
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#D1FADF')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = '#ECFDF3')}
-            >
-              <MessageCircle size={13} color="#027A48" />
-              <span>واتساب</span>
-            </a>
-          )}
-        </div>
+        )}
 
         {/* Cluster 2: Advanced Tools Dropdown */}
         <div ref={advancedMenuRef} style={{ position: 'relative' }}>

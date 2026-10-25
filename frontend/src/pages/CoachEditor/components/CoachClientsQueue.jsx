@@ -3,15 +3,32 @@ import { Users, AlertCircle, Clock, RotateCw, ShieldAlert } from 'lucide-react';
 import { TableSearch } from '@/shared/components/table-search';
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../../../utils/tierBadgeHelper';
 
-function getCleanGoalLabel(client) {
+function parseAnswers(answers) {
+  if (!answers) return null;
+  if (typeof answers === 'object') return answers;
+  if (typeof answers === 'string') {
+    try { return JSON.parse(answers); } catch { return null; }
+  }
+  return null;
+}
+
+function getCleanGoalLabel(client, program) {
   if (!client) return '';
-  const raw = client.goal_label || client.goal || client.primary_goal || client.program_goal || 
-              client.answers?.primary_goal || client.intakeSubmissions?.[0]?.answers?.primary_goal || '';
+  const answers = parseAnswers(client.answers);
+  const intakeAnswers = parseAnswers(client.intakeSubmissions?.[0]?.answers);
+  const isSelectedClient = (client.id && program?.client?.id && String(client.id) === String(program.client.id)) ||
+    (client.client_code && program?.client?.client_code && String(client.client_code) === String(program.client.client_code));
+  const raw = client.goal_label || client.goal || client.primary_goal || client.program_goal || client.fitness_goal ||
+              answers?.goals?.primary || answers?.primary_goal || answers?.goal ||
+              intakeAnswers?.goals?.primary || intakeAnswers?.primary_goal ||
+              (isSelectedClient ? (program.client.goal_label || program.client.primary_goal || program.client.goal) : '') || '';
   if (!raw) return '';
   const s = String(raw).trim();
-  if (/fat_loss|خسارة دهون|تنشيف|حرق/i.test(s)) return 'خسارة دهون وتنشيف';
+  if (/fat_loss|خسارة دهون|تنشيف|حرق|loss/i.test(s)) return 'خسارة دهون وتنشيف';
   if (/lean_bulk|bulk|تضخيم|بناء عضلي|زيادة وزن/i.test(s)) return 'بناء عضلي صافي';
   if (/recomp|إعادة تشكيل|تحسين قوام/i.test(s)) return 'إعادة تشكيل وتنسيق';
+  if (/strength|قوة/i.test(s)) return 'زيادة القوة البدنية';
+  if (/endurance|لياقة/i.test(s)) return 'رفع اللياقة والتحمل';
   return s.replace(/\s*\([^)]*\)/g, '').trim();
 }
 
@@ -227,16 +244,27 @@ export function CoachClientsQueue({
             (client.client_code && String(client.client_code) === String(program?.client?.client_code || clientCodeParam));
           const isPending = client.queue_status === 'PENDING_PLAN';
           const isNeedsUpdate = client.queue_status === 'NEEDS_UPDATE';
-          const goalText = getCleanGoalLabel(client);
+          const goalText = getCleanGoalLabel(client, program);
           const injuryText = getCleanInjury(client);
+          const rawClientName = client.full_name || client.name || '';
+          const isSimulated = String(client.client_code || client.id).startsWith('JRN_') || rawClientName.includes(' - ');
+          let clientDisplayName = rawClientName;
+          let clientSubscenario = null;
+          if (isSimulated && rawClientName.includes(' - ')) {
+            const parts = rawClientName.split(' - ');
+            clientDisplayName = parts[0].trim();
+            clientSubscenario = parts.slice(1).join(' - ').trim();
+          }
+
+          const hasRow2 = Boolean(clientSubscenario || goalText || injuryText || isPending || isNeedsUpdate);
 
           return (
             <div
               key={client.id || client.client_code}
               onClick={() => handleSelectClient(client.client_code || client.id)}
-              title={client.full_name || client.name}
+              title={clientDisplayName}
               style={{
-                padding: '8px 10px',
+                padding: hasRow2 ? '7px 10px' : '6px 10px',
                 borderRadius: '10px',
                 marginBottom: '4px',
                 background: isSelected ? '#F9F5FF' : '#FFFFFF',
@@ -245,7 +273,7 @@ export function CoachClientsQueue({
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '4px',
+                gap: hasRow2 ? '4px' : '0px',
                 transition: 'all 0.12s ease',
                 width: '100%',
                 boxSizing: 'border-box',
@@ -285,61 +313,76 @@ export function CoachClientsQueue({
                 </div>
               </div>
 
-              {/* Row 2: Important Info Only (Goal • Injury Alert | Action Status) */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', width: '100%', minHeight: '18px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, flex: 1, overflow: 'hidden' }}>
-                  {goalText && (
-                    <span style={{
-                      fontSize: '10.5px',
-                      color: isSelected ? '#7C3AED' : '#64748B',
-                      fontWeight: 600,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {goalText}
-                    </span>
-                  )}
-
-                  {injuryText && (
-                    <span style={{
-                      fontSize: '9px',
-                      fontWeight: 700,
-                      padding: '1px 5px',
-                      borderRadius: '6px',
-                      background: '#FEF2F2',
-                      border: '1px solid #FECACA',
-                      color: '#DC2626',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '2px',
-                      flexShrink: 0
-                    }}>
-                      <ShieldAlert size={9} strokeWidth={2.4} />
-                      <span style={{ maxWidth: '85px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {injuryText}
+              {/* Row 2: Important Info Only (Goal • Injury Alert | Action Status) - Flexibly lifted when no extra info exists */}
+              {hasRow2 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', width: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, flex: 1, overflow: 'hidden' }}>
+                    {clientSubscenario && (
+                      <span style={{
+                        fontSize: '9px',
+                        fontWeight: 600,
+                        padding: '1px 5px',
+                        borderRadius: '4px',
+                        background: '#F2F4F7',
+                        color: '#475467',
+                        flexShrink: 0
+                      }}>
+                        {clientSubscenario}
                       </span>
-                    </span>
+                    )}
+                    {goalText && (
+                      <span style={{
+                        fontSize: '10.5px',
+                        color: isSelected ? '#7C3AED' : '#64748B',
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {goalText}
+                      </span>
+                    )}
+
+                    {injuryText && (
+                      <span style={{
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        padding: '1px 5px',
+                        borderRadius: '6px',
+                        background: '#FEF2F2',
+                        border: '1px solid #FECACA',
+                        color: '#DC2626',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                        flexShrink: 0
+                      }}>
+                        <ShieldAlert size={9} strokeWidth={2.4} />
+                        <span style={{ maxWidth: '85px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {injuryText}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+
+                  {(isPending || isNeedsUpdate) && (
+                    <div style={{ flexShrink: 0 }}>
+                      <span style={{
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        padding: '1.5px 6.5px',
+                        borderRadius: '8px',
+                        background: isPending ? '#FFFAEB' : '#EFF8FF',
+                        border: `1px solid ${isPending ? '#FEDF89' : '#B2DDFF'}`,
+                        color: isPending ? '#B54708' : '#175CD3',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {isPending ? 'بانتظار خطة' : 'مطلوب تعديل'}
+                      </span>
+                    </div>
                   )}
                 </div>
-
-                {(isPending || isNeedsUpdate) && (
-                  <div style={{ flexShrink: 0 }}>
-                    <span style={{
-                      fontSize: '9px',
-                      fontWeight: 700,
-                      padding: '1.5px 6.5px',
-                      borderRadius: '8px',
-                      background: isPending ? '#FFFAEB' : '#EFF8FF',
-                      border: `1px solid ${isPending ? '#FEDF89' : '#B2DDFF'}`,
-                      color: isPending ? '#B54708' : '#175CD3',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {isPending ? 'بانتظار خطة' : 'مطلوب تعديل'}
-                    </span>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           );
         })}

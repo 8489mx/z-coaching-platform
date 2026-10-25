@@ -1,7 +1,7 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Clock, CheckCircle2, CreditCard, FileText, MessageCircle, Eye, Edit3, X, Layers, TrendingUp } from 'lucide-react';
+import { ExternalLink, Clock, CheckCircle2, CreditCard, FileText, MessageCircle, Eye, Edit3, X, Layers, Copy, Check } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import { TableSearch } from '@/shared/components/table-search';
@@ -11,14 +11,31 @@ import IntakeAuditDetailModal from '../components/intake/IntakeAuditDetailModal'
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
+import { copyToClipboard } from '../utils/clipboardUtils';
 import { PageHeader } from '@/shared/components/page-header';
 import { FormSection } from '@/shared/components/form-section';
+
+function formatSubmissionDate(dateStr) {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('ar-EG', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  } catch {
+    return '-';
+  }
+}
 
 export default function IntakeSubmissions() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL'); // ALL | IN_PROGRESS | PENDING | PAID | DRAFT | APPROVED
   const [searchTerm, setSearchTerm] = useState('');
+  const [copiedLink, setCopiedLink] = useState(false);
   const searchInputRef = useRef(null);
 
   // Modals state
@@ -29,6 +46,15 @@ export default function IntakeSubmissions() {
 
   const handleToggleAnswers = (sub) => {
     setSelectedAnswers(sub);
+  };
+
+  const handleCopyIntakeLink = async () => {
+    const url = `${window.location.origin}/intake/form`;
+    const ok = await copyToClipboard(url);
+    if (ok) {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2200);
+    }
   };
 
   useEffect(() => {
@@ -237,13 +263,7 @@ export default function IntakeSubmissions() {
       value: submissions.length, 
       unit: 'استمارة', 
       label: 'إجمالي المسجلين', 
-      icon: Layers,
-      visuals: {
-        bg: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
-        border: '1px solid #E9D7FE',
-        color: '#673DE6',
-        shadow: '0 1px 3px rgba(103, 61, 230, 0.08)'
-      }
+      icon: Layers
     },
     { 
       id: 'IN_PROGRESS', 
@@ -251,13 +271,7 @@ export default function IntakeSubmissions() {
       value: inProgressCount, 
       unit: 'استمارة', 
       label: 'قيد التعبئة', 
-      icon: Edit3,
-      visuals: {
-        bg: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
-        border: '1px solid #BFDBFE',
-        color: '#1D4ED8',
-        shadow: '0 1px 3px rgba(29, 78, 216, 0.08)'
-      }
+      icon: Edit3
     },
     { 
       id: 'PENDING', 
@@ -265,13 +279,7 @@ export default function IntakeSubmissions() {
       value: pendingCount, 
       unit: 'استمارة', 
       label: 'مكتملة الإجابات', 
-      icon: Clock,
-      visuals: {
-        bg: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
-        border: '1px solid #FDE68A',
-        color: '#B45309',
-        shadow: '0 1px 3px rgba(180, 83, 9, 0.08)'
-      }
+      icon: Clock
     },
     { 
       id: 'PAID', 
@@ -279,13 +287,7 @@ export default function IntakeSubmissions() {
       value: paidCount, 
       unit: 'استمارة', 
       label: 'تم التحويل', 
-      icon: CreditCard,
-      visuals: {
-        bg: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
-        border: '1px solid #BBF7D0',
-        color: '#059669',
-        shadow: '0 1px 3px rgba(5, 150, 105, 0.08)'
-      }
+      icon: CreditCard
     },
     { 
       id: 'DRAFT', 
@@ -293,13 +295,7 @@ export default function IntakeSubmissions() {
       value: draftCount, 
       unit: 'خطة', 
       label: 'جاهزة للاعتماد', 
-      icon: FileText,
-      visuals: {
-        bg: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
-        border: '1px solid #C7D2FE',
-        color: '#4338CA',
-        shadow: '0 1px 3px rgba(67, 56, 202, 0.08)'
-      }
+      icon: FileText
     },
     { 
       id: 'APPROVED', 
@@ -307,13 +303,7 @@ export default function IntakeSubmissions() {
       value: approvedCount, 
       unit: 'برنامج', 
       label: 'منشورة للمتدرب', 
-      icon: CheckCircle2,
-      visuals: {
-        bg: 'linear-gradient(135deg, #ECFDF5 0%, #D1FADF 100%)',
-        border: '1px solid #A7F3D0',
-        color: '#047857',
-        shadow: '0 1px 3px rgba(4, 120, 87, 0.08)'
-      }
+      icon: CheckCircle2
     },
   ];
 
@@ -328,12 +318,36 @@ export default function IntakeSubmissions() {
           actions={(
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <RefreshButton onClick={fetchSubmissions} loading={loading} shortcut="R" />
+              <button
+                type="button"
+                onClick={handleCopyIntakeLink}
+                style={{
+                  height: '34px',
+                  padding: '0 14px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '8px',
+                  border: '1px solid #D0D5DD',
+                  background: '#FFFFFF',
+                  color: copiedLink ? '#027A48' : '#344054',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
+                  transition: 'all 0.15s ease'
+                }}
+                title="نسخ رابط استمارة الاشتراك المباشر"
+              >
+                {copiedLink ? <Check size={14} color="#027A48" /> : <Copy size={14} color="#667085" />}
+                <span>{copiedLink ? 'تم نسخ الرابط' : 'نسخ رابط الاستمارة'}</span>
+              </button>
               <Link
                 to="/intake/form"
                 target="_blank"
                 style={{
                   height: '34px',
-                  padding: '0 16px',
+                  padding: '0 14px',
                   fontSize: '12px',
                   fontWeight: 600,
                   display: 'inline-flex',
@@ -351,7 +365,7 @@ export default function IntakeSubmissions() {
                 onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
               >
                 <ExternalLink size={14} color="#667085" />
-                <span>رابط الاستمارة</span>
+                <span>فتح الاستمارة</span>
               </Link>
             </div>
           )}
@@ -387,20 +401,19 @@ export default function IntakeSubmissions() {
                     <span style={{ fontSize: '13px', fontWeight: 600, color: isSel ? '#673DE6' : (isEmpty ? '#98A2B3' : '#475467'), whiteSpace: 'nowrap' }}>{st.title}</span>
                   </div>
                   <div style={{
-                    width: '38px',
-                    height: '38px',
-                    borderRadius: '10px',
-                    background: st.visuals.bg,
-                    border: st.visuals.border,
-                    color: st.visuals.color,
-                    boxShadow: st.visuals.shadow,
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: isSel ? '#F4F0FD' : '#F9FAFB',
+                    border: isSel ? '1px solid #EDE8FA' : '1px solid #EAECF0',
+                    color: isSel ? '#673DE6' : (isEmpty ? '#98A2B3' : '#475467'),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
                     transition: 'all 0.15s ease'
                   }}>
-                    <Icon size={18} strokeWidth={2.2} color={st.visuals.color} />
+                    <Icon size={18} strokeWidth={2.2} color={isSel ? '#673DE6' : (isEmpty ? '#98A2B3' : '#475467')} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '6px' }}>
@@ -442,7 +455,7 @@ export default function IntakeSubmissions() {
                     style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', color: '#673DE6' }}
                     title="إلغاء التصفية وعرض الكل"
                   >
-                    <X size={13} />
+                    <X size={14} />
                   </button>
                 </div>
               )}
@@ -450,16 +463,13 @@ export default function IntakeSubmissions() {
           )}
         >
           {loading ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#667085', fontSize: '13px' }}>
-              جاري تحميل الاستمارات...
+            <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748B' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600 }}>جاري استرجاع الاستمارات...</div>
             </div>
           ) : filteredSubmissions.length === 0 ? (
-            <div style={{ padding: '40px 16px', textAlign: 'center', background: '#F9FAFB', border: '1px dashed #D0D5DD', borderRadius: '12px' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#F2F4F7', color: '#475467', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px auto' }}>
-                <CheckCircle2 size={18} />
-              </div>
-              <strong style={{ fontSize: '13px', color: '#101828', display: 'block', marginBottom: '2px', fontWeight: 600 }}>لا توجد استمارات مطابقة</strong>
-              <small style={{ fontSize: '12px', color: '#667085' }}>لم يتم العثور على أي استمارة مسجلة تحت هذا التصنيف أو البحث.</small>
+            <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748B' }}>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#101828', marginBottom: '4px' }}>لا توجد استمارات مطابقة</div>
+              <small style={{ color: '#667085' }}>لم يتم العثور على أي استمارة مسجلة تحت هذا التصنيف أو البحث.</small>
             </div>
           ) : (
             <div style={{ overflowX: 'auto', border: '1px solid #EAECF0', borderRadius: '14px', background: '#FFFFFF', boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)' }}>
@@ -468,22 +478,33 @@ export default function IntakeSubmissions() {
                   <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #EAECF0', color: '#475467', fontWeight: 600 }}>
                     <th style={{ padding: '12px 16px', textAlign: 'center', width: '85px' }}>كود العميل</th>
                     <th style={{ padding: '12px 16px', textAlign: 'right' }}>اسم المتدرب</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '110px' }}>رقم الهاتف</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '85px' }}>الباقة</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '90px' }}>السعر</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '105px' }}>حالة الدفع</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '110px' }}>حالة الاستمارة</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', minWidth: '300px' }}>الإجراءات</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '110px' }}>تاريخ التقديم</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '115px' }}>رقم الهاتف</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '90px' }}>الباقة</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', width: '120px' }}>حالة الاستمارة</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', minWidth: '240px' }}>الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredSubmissions.map((sub) => {
-                    const clientName = sub.user?.full_name || sub.answers?.personal?.firstName || 'متدرب جديد';
+                    const rawName = sub.user?.full_name || sub.answers?.personal?.firstName || 'متدرب جديد';
                     const clientPhone = sub.user?.phone_number || sub.answers?.personal?.phone || '-';
                     const rawCode = sub.user?.client_code || sub.answers?.client_code || sub.client_code || '1';
                     const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
+                    const isApproved = sub.status === 'APPROVED';
                     const isMax = getClientTier(sub) === 'MAX';
                     const rawPrice = sub.user?.subscription_price || sub.subscription_price || (isMax ? 3500 : 2500);
+                    const submissionDate = sub.createdAt || sub.created_at || sub.user?.createdAt;
+
+                    // Clean name formatting for simulation / stress-test clients
+                    const isSimulatedClient = String(cleanCode).startsWith('JRN_') || rawName.includes(' - ');
+                    let displayName = rawName;
+                    let scenarioSubtext = null;
+                    if (isSimulatedClient && rawName.includes(' - ')) {
+                      const parts = rawName.split(' - ');
+                      displayName = parts[0].trim();
+                      scenarioSubtext = parts.slice(1).join(' - ').trim();
+                    }
 
                     return (
                       <tr 
@@ -499,139 +520,112 @@ export default function IntakeSubmissions() {
 
                         {/* 2. Name */}
                         <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                            <strong style={{ color: '#101828', fontSize: '13px', fontWeight: 600 }}>{clientName}</strong>
-                            {(() => {
-                              const fasting = extractClientFastingProfile(sub, sub.answers);
-                              const injuries = sub.answers?.injuries_map?.selected_areas || sub.answers?.training?.selectedInjuries || [];
-                              const validInjuries = Array.isArray(injuries) ? injuries.filter(x => x && x !== 'NONE') : [];
-                              const hasInjuries = validInjuries.length > 0;
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                              <strong style={{ color: '#101828', fontSize: '13px', fontWeight: 600 }}>{displayName}</strong>
+                              {(() => {
+                                const fasting = extractClientFastingProfile(sub, sub.answers);
+                                const injuries = sub.answers?.injuries_map?.selected_areas || sub.answers?.training?.selectedInjuries || [];
+                                const validInjuries = Array.isArray(injuries) ? injuries.filter(x => x && x !== 'NONE') : [];
+                                const hasInjuries = validInjuries.length > 0;
 
-                              const medicalConds = sub.answers?.medical_conditions?.selected || sub.answers?.medical?.conditions || [];
-                              const validConditions = Array.isArray(medicalConds) ? medicalConds.filter(x => {
-                                const code = typeof x === 'string' ? x : x?.conditionCode;
-                                return code && code !== 'NONE';
-                              }) : [];
-                              const hasMedical = validConditions.length > 0;
+                                const medicalConds = sub.answers?.medical_conditions?.selected || sub.answers?.medical?.conditions || [];
+                                const validConditions = Array.isArray(medicalConds) ? medicalConds.filter(x => {
+                                  const code = typeof x === 'string' ? x : x?.conditionCode;
+                                  return code && code !== 'NONE';
+                                }) : [];
+                                const hasMedical = validConditions.length > 0;
 
-                              const foodAllergies = sub.answers?.food_allergies?.selected || sub.answers?.nutrition?.allergies || [];
-                              const validAllergies = Array.isArray(foodAllergies) ? foodAllergies.filter(x => x && x !== 'NONE') : [];
-                              const hasAllergies = validAllergies.length > 0;
+                                const foodAllergies = sub.answers?.food_allergies?.selected || sub.answers?.nutrition?.allergies || [];
+                                const validAllergies = Array.isArray(foodAllergies) ? foodAllergies.filter(x => x && x !== 'NONE') : [];
+                                const hasAllergies = validAllergies.length > 0;
 
-                              return (
-                                <>
-                                  {fasting.primaryFastingBadge && (
-                                    <span style={{
-                                      fontSize: '10.5px',
-                                      padding: '3px 9px', borderRadius: '6px',
-                                      background: '#F2F4F7',
-                                      border: '1px solid #EAECF0',
-                                      color: '#344054',
-                                      fontWeight: 600
-                                    }}>
-                                      {fasting.primaryFastingBadge.label}
-                                    </span>
-                                  )}
-                                  {hasInjuries && (
-                                    <span style={{
-                                      fontSize: '10.5px',
-                                      padding: '3px 9px', borderRadius: '6px',
-                                      background: '#FEF3F2',
-                                      border: '1px solid #FECDCA',
-                                      color: '#B42318',
-                                      fontWeight: 600
-                                    }} title="توجد إصابات مسجلة">
-                                      إصابة
-                                    </span>
-                                  )}
-                                  {hasMedical && (
-                                    <span style={{
-                                      fontSize: '10.5px',
-                                      padding: '3px 9px', borderRadius: '6px',
-                                      background: '#FFFAEB',
-                                      border: '1px solid #FEDF89',
-                                      color: '#B54708',
-                                      fontWeight: 600
-                                    }} title="توجد حالات طبية مسجلة">
-                                      طبي
-                                    </span>
-                                  )}
-                                  {hasAllergies && (
-                                    <span style={{
-                                      fontSize: '10.5px',
-                                      padding: '3px 9px', borderRadius: '6px',
-                                      background: '#F2F4F7',
-                                      border: '1px solid #EAECF0',
-                                      color: '#475467',
-                                      fontWeight: 600
-                                    }} title="توجد حساسيات طعام مسجلة">
-                                      حساسية
-                                    </span>
-                                  )}
-                                </>
-                              );
-                            })()}
+                                return (
+                                  <>
+                                    {fasting.primaryFastingBadge && (
+                                      <span style={{
+                                        fontSize: '10.5px',
+                                        padding: '2px 8px', borderRadius: '6px',
+                                        background: '#F2F4F7',
+                                        border: '1px solid #EAECF0',
+                                        color: '#344054',
+                                        fontWeight: 600
+                                      }}>
+                                        {fasting.primaryFastingBadge.label}
+                                      </span>
+                                    )}
+                                    {hasInjuries && (
+                                      <span style={{
+                                        fontSize: '10.5px',
+                                        padding: '2px 8px', borderRadius: '6px',
+                                        background: '#FEF3F2',
+                                        border: '1px solid #FECDCA',
+                                        color: '#B42318',
+                                        fontWeight: 600
+                                      }} title="توجد إصابات مسجلة">
+                                        إصابة
+                                      </span>
+                                    )}
+                                    {hasMedical && (
+                                      <span style={{
+                                        fontSize: '10.5px',
+                                        padding: '2px 8px', borderRadius: '6px',
+                                        background: '#FFFAEB',
+                                        border: '1px solid #FEDF89',
+                                        color: '#B54708',
+                                        fontWeight: 600
+                                      }} title="توجد حالات طبية مسجلة">
+                                        طبي
+                                      </span>
+                                    )}
+                                    {hasAllergies && (
+                                      <span style={{
+                                        fontSize: '10.5px',
+                                        padding: '2px 8px', borderRadius: '6px',
+                                        background: '#F2F4F7',
+                                        border: '1px solid #EAECF0',
+                                        color: '#475467',
+                                        fontWeight: 600
+                                      }} title="توجد حساسية طعام مسجلة">
+                                        حساسية
+                                      </span>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                            {scenarioSubtext && (
+                              <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 500 }}>
+                                {scenarioSubtext}
+                              </span>
+                            )}
                           </div>
                         </td>
 
-                        {/* 3. Phone */}
+                        {/* 3. Date */}
+                        <td style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '11.5px', color: '#475467', fontWeight: 500 }}>
+                            {formatSubmissionDate(submissionDate)}
+                          </span>
+                        </td>
+
+                        {/* 4. Phone */}
                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           <span dir="ltr" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: '#475467' }}>
                             {clientPhone}
                           </span>
                         </td>
 
-                        {/* 4. Package */}
+                        {/* 5. Package */}
                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          <ClientPackageBadge item={sub} />
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }} title={`سعر الباقة: ${Number(rawPrice).toLocaleString('en-US')} ج.م`}>
+                            <ClientPackageBadge item={sub} />
+                          </div>
                         </td>
 
-                        {/* 5. Price */}
-                        <td style={{ padding: '12px 16px', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                          <span style={{ 
-                            background: '#F9FAFB', 
-                            border: '1px solid #EAECF0', 
-                            padding: '3px 10px', borderRadius: '6px', 
-                            display: 'inline-flex',
-                            alignItems: 'baseline',
-                            gap: '3px',
-                            justifyContent: 'center'
-                          }}>
-                            <span style={{ 
-                              color: '#101828', 
-                              fontSize: '11.5px', 
-                              fontWeight: 700, 
-                              fontFamily: 'JetBrains Mono, Cairo, sans-serif'
-                            }}>
-                              {Number(rawPrice).toLocaleString('en-US')}
-                            </span>
-                            <span style={{ 
-                              fontSize: '10px', 
-                              fontWeight: 600, 
-                              color: '#667085', 
-                              fontFamily: 'Cairo, sans-serif' 
-                            }}>
-                              ج.م
-                            </span>
-                          </span>
-                        </td>
-
-                        {/* 5. Payment Status */}
+                        {/* 6. Smart Unified Status */}
                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          {sub.payment_status === 'PAID' || sub.status === 'PAYMENT_CONFIRMED' || sub.status === 'APPROVED' ? (
-                            <span style={{ background: '#ECFDF3', border: '1px solid #A6F4C7', color: '#027A48', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
-                              مدفوع (مؤكد)
-                            </span>
-                          ) : (
-                            <span style={{ background: '#FFFAEB', border: '1px solid #FEDF89', color: '#B54708', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
-                              بانتظار الدفع
-                            </span>
-                          )}
-                        </td>
-
-                        {/* 6. Intake Status */}
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          {sub.status === 'APPROVED' ? (
+                          {isApproved ? (
                             <span style={{ background: '#ECFDF3', border: '1px solid #A6F4C7', color: '#027A48', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               معتمد ومنشور
                             </span>
@@ -640,9 +634,15 @@ export default function IntakeSubmissions() {
                               مسودة جاهزة
                             </span>
                           ) : sub.status === 'PENDING_COACH_REVIEW' ? (
-                            <span style={{ background: '#FFFAEB', border: '1px solid #FEDF89', color: '#B54708', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
-                              بانتظار المراجعة
-                            </span>
+                            sub.payment_status === 'PAID' ? (
+                              <span style={{ background: '#EFF8FF', border: '1px solid #B2DDFF', color: '#175CD3', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
+                                بانتظار المراجعة
+                              </span>
+                            ) : (
+                              <span style={{ background: '#FFFAEB', border: '1px solid #FEDF89', color: '#B54708', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
+                                بانتظار السداد
+                              </span>
+                            )
                           ) : (
                             <span style={{ background: '#F2F4F7', border: '1px solid #EAECF0', color: '#475467', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               قيد التعبئة
@@ -721,33 +721,6 @@ export default function IntakeSubmissions() {
                               <span>إجابات</span>
                             </button>
 
-                            {/* Timeline Profile Link */}
-                            {cleanCode && cleanCode !== '1' && (
-                              <Link
-                                to={`/coach/timeline/${cleanCode}`}
-                                style={{
-                                  height: '32px', padding: '0 13px', borderRadius: '8px',
-                                  border: '1px solid #D0D5DD',
-                                  background: '#FFFFFF',
-                                  color: '#344054',
-                                  fontSize: '11.5px',
-                                  fontWeight: 600,
-                                  textDecoration: 'none',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
-                                  transition: 'all 0.15s ease'
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
-                                onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
-                                title="سجل التطور الزمني والمقارنات"
-                              >
-                                <TrendingUp size={13} color="#667085" />
-                                <span>التطور</span>
-                              </Link>
-                            )}
-
                             {/* Direct Verify Payment trigger if not paid */}
                             {sub.status !== 'APPROVED' && sub.payment_status !== 'PAID' && (
                               <button
@@ -773,29 +746,39 @@ export default function IntakeSubmissions() {
                               </button>
                             )}
 
-                            {/* Generate / Edit Program CTA - Hostinger Neutral Secondary Style */}
+                            {/* Generate / Edit Program CTA - Primary Purple Style */}
                             <button
                               type="button"
                               onClick={() => handleGenerateDraft(sub)}
                               disabled={generatingId === sub.id}
                               style={{
-                                height: '32px', padding: '0 15px', borderRadius: '8px',
-                                border: '1px solid #D0D5DD',
-                                background: '#FFFFFF',
-                                color: '#344054',
+                                height: '32px',
+                                padding: '0 15px',
+                                borderRadius: '8px',
+                                border: isApproved ? '1px solid #673DE6' : '1px solid #D0D5DD',
+                                background: isApproved ? '#673DE6' : '#FFFFFF',
+                                color: isApproved ? '#FFFFFF' : '#344054',
                                 fontSize: '11.5px',
                                 fontWeight: 600,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px',
-                                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
+                                gap: '5px',
+                                boxShadow: isApproved ? '0 1px 3px rgba(103, 61, 230, 0.2)' : '0 1px 2px rgba(16, 24, 40, 0.05)',
                                 transition: 'all 0.15s ease'
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                              onMouseEnter={(e) => {
+                                if (isApproved) e.currentTarget.style.background = '#5025D1';
+                                else e.currentTarget.style.background = '#F9FAFB';
+                              }}
+                              onMouseLeave={(e) => {
+                                if (isApproved) e.currentTarget.style.background = '#673DE6';
+                                else e.currentTarget.style.background = '#FFFFFF';
+                              }}
+                              title={isApproved ? 'تعديل خطة المتدرب بالمحرر' : sub.status === 'DRAFT_GENERATED' ? 'فتح المسودة بالمحرر' : 'توليد مسودة الخطة آلياً'}
                             >
-                              <span>{sub.status === 'APPROVED' ? 'تعديل الخطة' : sub.status === 'DRAFT_GENERATED' ? 'فتح بالمحرر' : 'توليد الخطة'}</span>
+                              <Edit3 size={13} color={isApproved ? '#FFFFFF' : '#667085'} />
+                              <span>{isApproved ? 'تعديل الخطة' : sub.status === 'DRAFT_GENERATED' ? 'فتح بالمحرر' : 'توليد الخطة'}</span>
                             </button>
                           </div>
                         </td>
