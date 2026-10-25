@@ -162,6 +162,7 @@ export function extractClientFastingProfile(clientOrSubmission = {}, explicitAns
 
   const shouldShowRamadan = isMuslim && (isRamadanActive || explicitRamadan);
   const shouldShowCoptic = isCoptic && (isCopticActive || explicitCoptic);
+  const isRamadan = Boolean(shouldShowRamadan);
 
   let primaryFastingBadge = null;
   if (shouldShowCoptic) {
