@@ -1,0 +1,591 @@
+/* ==========================================================================
+   HOSTINGER hPANEL VISUAL SYSTEM — CORE DESIGN TOKENS & COMPONENTS
+   Exact replication of Hostinger hPanel (October 2026 Reference)
+   Tailored for Karim Zakaria Online Coaching (Arabic RTL Desktop Platform)
+   ========================================================================== */
+
+:root {
+  /* Surface & Backgrounds */
+  --h-bg-app: #F8F9FA;
+  --h-bg-canvas: #F8F9FA;
+  --h-bg-sidebar: #F4F5F7;
+  --h-bg-surface: #FFFFFF;
+  --h-bg-card: #FFFFFF;
+  --h-bg-muted: #F9FAFB;
+  --h-bg-hover: #EAECEF;
+  --h-bg-active: #FFFFFF;
+  
+  /* Borders */
+  --h-border-subtle: #EAECF0;
+  --h-border-card: #EAECF0;
+  --h-border-input: #D0D5DD;
+  --h-border-focus: #673DE6;
+  --h-border-hover: #CBD5E1;
+  --h-border-active: #EAECF0;
+
+  /* Hostinger Royal Purple Accent */
+  --h-purple-primary: #673DE6;
+  --h-purple-hover: #5025D1;
+  --h-purple-light: #F4F0FD;
+  --h-purple-border: #EDE8FA;
+  --h-purple-dark: #3E1CB0;
+
+  /* Typography Colors */
+  --h-text-primary: #111827;
+  --h-text-secondary: #344054;
+  --h-text-muted: #667085;
+  --h-text-light: #98A2B3;
+  --h-text-white: #FFFFFF;
+
+  /* Semantic Status Colors (Pills & Alerts) */
+  --h-success-bg: #ECFDF3;
+  --h-success-text: #027A48;
+  --h-success-border: #D1FADF;
+
+  --h-warning-bg: #FFFAEB;
+  --h-warning-text: #B54708;
+  --h-warning-border: #FEDF89;
+
+  --h-error-bg: #FEF3F2;
+  --h-error-text: #B42318;
+  --h-error-border: #FECDCA;
+
+  --h-info-bg: #F4F0FD;
+  --h-info-text: #673DE6;
+  --h-info-border: #EDE8FA;
+
+  --h-neutral-bg: #F2F4F7;
+  --h-neutral-text: #344054;
+  --h-neutral-border: #EAECF0;
+
+  /* Radii (Curved System Aesthetics - No Sharp Corners) */
+  --h-radius-sm: 8px;
+  --h-radius-md: 10px;
+  --h-radius-lg: 16px;
+  --h-radius-xl: 20px;
+  --h-radius-full: 9999px;
+
+  /* Shadows (Subtle, Anti-Glare) */
+  --h-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --h-shadow-card: 0 1px 3px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02);
+  --h-shadow-dropdown: 0 4px 16px rgba(16, 24, 40, 0.08);
+  --h-shadow-modal: 0 20px 40px rgba(16, 24, 40, 0.14);
+
+  /* Global System Variable Overrides */
+  --primary: #673DE6;
+  --primary2: #5025D1;
+  --primary-color: #673DE6;
+  --color-primary: #673DE6;
+  --color-primary-dark: #5025D1;
+  --color-primary-light: #F4F0FD;
+  --color-primary-border: #EDE8FA;
+  --bg: #F8F9FA;
+  --surface: #FFFFFF;
+  --card: #FFFFFF;
+  --border: #EAECF0;
+}
+
+/* ==========================================================================
+   GLOBAL TYPOGRAPHY (Strict Cairo Unified System)
+   ========================================================================== */
+html, body, #root, input, button, select, textarea {
+  font-family: 'Cairo', system-ui, -apple-system, sans-serif !important;
+  direction: rtl;
+  text-align: right;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  color: var(--h-text-primary);
+  background-color: var(--h-bg-app);
+}
+
+/* Base Body & Container Defaults */
+body {
+  background-color: var(--h-bg-app) !important;
+  color: var(--h-text-primary);
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   HOSTINGER CARDS & CONTAINERS
+   ========================================================================== */
+.hostinger-card,
+.h-card {
+  background: #FFFFFF !important;
+  border: 1px solid var(--h-border-subtle) !important;
+  border-radius: var(--h-radius-lg) !important;
+  box-shadow: var(--h-shadow-card) !important;
+  padding: 20px 24px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hostinger-card-sm,
+.h-card-sm {
+  background: #FFFFFF !important;
+  border: 1px solid var(--h-border-subtle) !important;
+  border-radius: var(--h-radius-md) !important;
+  box-shadow: var(--h-shadow-sm) !important;
+  padding: 14px 18px;
+  box-sizing: border-box;
+}
+
+.hostinger-card:hover {
+  border-color: #D0D5DD;
+}
+
+/* ==========================================================================
+   HOSTINGER BUTTONS & CONTROLS
+   ========================================================================== */
+/* 1. Primary Action Button (Hostinger Royal Purple) */
+.hostinger-btn-primary,
+.btn-primary,
+.button-primary,
+button.btn-primary,
+.btn.btn-primary {
+  background: var(--h-purple-primary) !important;
+  background-color: var(--h-purple-primary) !important;
+  border: 1px solid var(--h-purple-primary) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 16px !important;
+  border-radius: var(--h-radius-sm) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05) !important;
+  text-decoration: none !important;
+}
+
+.hostinger-btn-primary:hover:not(:disabled),
+.btn-primary:hover:not(:disabled),
+.button-primary:hover:not(:disabled),
+button.btn-primary:hover:not(:disabled) {
+  background: var(--h-purple-hover) !important;
+  background-color: var(--h-purple-hover) !important;
+  border-color: var(--h-purple-hover) !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+
+.hostinger-btn-primary:active:not(:disabled),
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* 2. Secondary Button (White Svelte Card Button) */
+.hostinger-btn-secondary,
+.btn-secondary,
+.button-secondary {
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  border: 1px solid var(--h-border-input) !important;
+  color: var(--h-text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: var(--h-radius-sm) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03) !important;
+  text-decoration: none !important;
+}
+
+.hostinger-btn-secondary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) {
+  background: var(--h-bg-muted) !important;
+  background-color: var(--h-bg-muted) !important;
+  border-color: #CBD5E1 !important;
+  color: var(--h-text-primary) !important;
+}
+
+/* 3. Small Compact Action Button (For Tables & Lists) */
+.hostinger-btn-sm,
+.btn-sm {
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 12px !important;
+  font-size: 11.5px !important;
+  border-radius: var(--h-radius-sm) !important;
+}
+
+/* 4. Ghost / Text Button */
+.hostinger-btn-ghost,
+.btn-ghost {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--h-text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: var(--h-radius-sm) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.hostinger-btn-ghost:hover {
+  background: var(--h-bg-hover) !important;
+  color: var(--h-text-primary) !important;
+}
+
+/* 5. Destructive Button */
+.hostinger-btn-danger,
+.btn-danger {
+  background: #FFFFFF !important;
+  border: 1px solid var(--h-error-border) !important;
+  color: var(--h-error-text) !important;
+  font-weight: 600 !important;
+  height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: var(--h-radius-sm) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.hostinger-btn-danger:hover {
+  background: var(--h-error-bg) !important;
+}
+
+/* ==========================================================================
+   HOSTINGER INPUTS & FORMS
+   ========================================================================== */
+.hostinger-input,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.global-search-input):not(.table-search-input):not(.bare-input):not(.inline-pill-input):not(.clean-inline-input):not([style*="border: none"]):not([style*="border:none"]):not([style*="border: 0"]):not([style*="border:0"]),
+select,
+textarea {
+  background: #FFFFFF !important;
+  border: 1px solid var(--h-border-input) !important;
+  border-radius: var(--h-radius-md) !important;
+  color: var(--h-text-primary) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 12px !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+/* Explicit TableSearch, Pill, and Bare input reset to eliminate nested double border */
+.table-search-input,
+input.table-search-input,
+input[type="text"].table-search-input,
+.bare-input,
+.inline-pill-input,
+.clean-inline-input,
+input.bare-input,
+input.inline-pill-input,
+input.clean-inline-input,
+input[style*="border: none"],
+input[style*="border:none"],
+input[style*="border: 0"],
+input[style*="border:0"],
+div[style*="border-radius: 9999px"] input,
+div[style*="borderRadius: '9999px'"] input,
+div[style*="border-radius: 8px"] input[style*="border: none"],
+div[style*="border-radius: 8px"] input[style*="border:none"],
+div[style*="border: 1px solid"] input[style*="border: none"],
+div[style*="border: 1px solid"] input[style*="border:none"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+textarea {
+  height: auto !important;
+  min-height: 80px !important;
+  padding: 8px 12px !important;
+}
+
+input:not(.table-search-input):not(.global-search-input):not(.bare-input):not(.inline-pill-input):not(.clean-inline-input):not([style*="border: none"]):not([style*="border:none"]):not([style*="border: 0"]):not([style*="border:0"]):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--h-purple-primary) !important;
+  box-shadow: 0 0 0 3px rgba(103, 61, 230, 0.14) !important;
+}
+
+/* ==========================================================================
+   HOSTINGER STATUS BADGES & PILLS (Strict Zero Dots Rule)
+   ========================================================================== */
+.hostinger-badge,
+.h-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 3px 10px !important;
+  border-radius: var(--h-radius-sm) !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  white-space: nowrap !important;
+}
+
+.hostinger-badge.success,
+.badge-success {
+  background: var(--h-success-bg) !important;
+  color: var(--h-success-text) !important;
+  border: 1px solid var(--h-success-border) !important;
+}
+
+.hostinger-badge.warning,
+.badge-warning {
+  background: var(--h-warning-bg) !important;
+  color: var(--h-warning-text) !important;
+  border: 1px solid var(--h-warning-border) !important;
+}
+
+.hostinger-badge.danger,
+.badge-danger,
+.badge-error {
+  background: var(--h-error-bg) !important;
+  color: var(--h-error-text) !important;
+  border: 1px solid var(--h-error-border) !important;
+}
+
+.hostinger-badge.purple,
+.badge-purple,
+.badge-current {
+  background: var(--h-info-bg) !important;
+  color: var(--h-info-text) !important;
+  border: 1px solid var(--h-info-border) !important;
+}
+
+.hostinger-badge.neutral,
+.badge-neutral {
+  background: var(--h-neutral-bg) !important;
+  color: var(--h-neutral-text) !important;
+  border: 1px solid var(--h-neutral-border) !important;
+}
+
+/* ==========================================================================
+   HOSTINGER TABLES (Deployments & Emails Reference)
+   ========================================================================== */
+.hostinger-table-wrap,
+.h-table-wrap {
+  background: #FFFFFF !important;
+  border: 1px solid var(--h-border-subtle) !important;
+  border-radius: var(--h-radius-lg) !important;
+  box-shadow: var(--h-shadow-card) !important;
+  overflow: hidden !important;
+  width: 100% !important;
+}
+
+.hostinger-table,
+.h-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  text-align: right !important;
+  font-size: 13px !important;
+}
+
+.hostinger-table th,
+.h-table th {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid var(--h-border-subtle) !important;
+  color: var(--h-text-muted) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 12px 16px !important;
+  white-space: nowrap !important;
+}
+
+.hostinger-table td,
+.h-table td {
+  border-bottom: 1px solid #F2F4F7 !important;
+  padding: 14px 16px !important;
+  color: var(--h-text-primary) !important;
+  vertical-align: middle !important;
+}
+
+.hostinger-table tr:hover td,
+.h-table tr:hover td {
+  background: var(--h-bg-muted) !important;
+}
+
+.hostinger-table tr:last-child td,
+.h-table tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* ==========================================================================
+   HOSTINGER TABS & PILLS
+   ========================================================================== */
+.hostinger-tab-bar,
+.h-tab-bar {
+  display: flex !important;
+  gap: 6px !important;
+  align-items: center !important;
+  padding: 4px !important;
+  background: #FFFFFF !important;
+  border: 1px solid var(--h-border-subtle) !important;
+  border-radius: var(--h-radius-md) !important;
+}
+
+.hostinger-tab-item,
+.h-tab-item {
+  padding: 6px 14px !important;
+  border-radius: var(--h-radius-sm) !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: var(--h-text-secondary) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.hostinger-tab-item:hover {
+  color: var(--h-text-primary) !important;
+  background: var(--h-bg-hover) !important;
+}
+
+.hostinger-tab-item.active,
+.h-tab-item.active {
+  color: var(--h-purple-primary) !important;
+  background: var(--h-purple-light) !important;
+  border-color: var(--h-purple-border) !important;
+  font-weight: 700 !important;
+}
+
+/* ==========================================================================
+   ELIMINATION OF OLD HEAVY BLACK STYLING (OVERRIDE RULES)
+   ========================================================================== */
+/* Eradicate heavy black legacy buttons — convert to calm neutral Hostinger secondary style */
+button[style*="background: rgb(0, 0, 0)"]:not(.btn-primary):not(.hostinger-btn-primary),
+button[style*="background:#000"]:not(.btn-primary):not(.hostinger-btn-primary),
+button[style*="background-color: #000"]:not(.btn-primary):not(.hostinger-btn-primary),
+button[style*="background-color: #0F172A"]:not(.btn-primary):not(.hostinger-btn-primary),
+button[style*="background: #0F172A"]:not(.btn-primary):not(.hostinger-btn-primary),
+button[style*="background: #18181B"]:not(.btn-primary):not(.hostinger-btn-primary) {
+  background: #FFFFFF !important;
+  border: 1px solid var(--h-border-input) !important;
+  color: var(--h-text-secondary) !important;
+  border-radius: var(--h-radius-md) !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04) !important;
+}
+
+button[style*="background: rgb(0, 0, 0)"]:not(.btn-primary):not(.hostinger-btn-primary):hover,
+button[style*="background-color: #0F172A"]:not(.btn-primary):not(.hostinger-btn-primary):hover {
+  background: var(--h-bg-muted) !important;
+  color: var(--h-text-primary) !important;
+  border-color: #CBD5E1 !important;
+}
+
+/* ==========================================================================
+   HOSTINGER GLOBAL DASHBOARD SHELL ARCHITECTURE
+   ========================================================================== */
+.app-layout {
+  display: flex !important;
+  height: 100vh !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  background: var(--h-bg-canvas, #F8F9FA) !important;
+  background-color: var(--h-bg-canvas, #F8F9FA) !important;
+  direction: rtl;
+}
+
+.app-layout .main-col {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  background: var(--h-bg-canvas, #F8F9FA) !important;
+  background-color: var(--h-bg-canvas, #F8F9FA) !important;
+}
+
+.app-layout .content-wrap {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 24px 32px 48px 32px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scrollbar-gutter: stable !important;
+  box-sizing: border-box !important;
+  background: var(--h-bg-canvas, #F8F9FA) !important;
+  background-color: var(--h-bg-canvas, #F8F9FA) !important;
+}
+
+.app-layout .content-wrap > .page-stack {
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Hostinger Navigation Hover & Active States — Tactile Sculpted 3D Aesthetics */
+.hostinger-nav-item {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.hostinger-nav-item:hover:not(.active) {
+  background-color: #FFFFFF !important;
+  border-color: #EAECF0 !important;
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.05) !important;
+  color: #111827 !important;
+  transform: translateY(-0.5px);
+}
+
+.hostinger-nav-item:hover:not(.active) .nav-icon-tile {
+  background-color: #F4F0FD !important;
+  border-color: #DDD6FE !important;
+  color: #673DE6 !important;
+}
+
+.hostinger-nav-item:hover:not(.active) .nav-icon-tile svg {
+  color: #673DE6 !important;
+}
+
+.hostinger-nav-item.active {
+  background: linear-gradient(135deg, #673DE6 0%, #5025D1 100%) !important;
+  border-color: #5025D1 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(103, 61, 230, 0.28), 0 1px 3px rgba(103, 61, 230, 0.15) !important;
+}
+
+.hostinger-nav-item.active span {
+  color: #FFFFFF !important;
+}
+
+.hostinger-nav-item.active .nav-icon-tile {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
+  color: #FFFFFF !important;
+}
+
+.hostinger-nav-item.active .nav-icon-tile svg {
+  color: #FFFFFF !important;
+}

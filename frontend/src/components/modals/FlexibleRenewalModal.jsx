@@ -258,8 +258,8 @@ export default function FlexibleRenewalModal({
           width: '100%',
           maxWidth: '520px',
           maxHeight: '92vh',
-          boxShadow: '0 20px 40px -10px rgba(15, 23, 42, 0.25)',
-          border: '1px solid #E2E8F0',
+          boxShadow: '0 20px 48px -8px rgba(16, 24, 40, 0.16)',
+          border: '1px solid #EAECF0',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -292,7 +292,7 @@ export default function FlexibleRenewalModal({
               width: '34px',
               height: '34px',
               borderRadius: '8px',
-              background: '#0F172A',
+              background: '#673DE6',
               color: '#FFFFFF',
               display: 'flex',
               alignItems: 'center',
@@ -311,7 +311,7 @@ export default function FlexibleRenewalModal({
                   fontWeight: 800,
                   padding: '2px 7px',
                   borderRadius: '5px',
-                  background: currentTier === 'MAX' ? '#0F172A' : '#F1F5F9',
+                  background: currentTier === 'MAX' ? '#673DE6' : '#F1F5F9',
                   color: currentTier === 'MAX' ? '#FFFFFF' : '#475569',
                   border: '1px solid #E2E8F0'
                 }}>
@@ -320,11 +320,11 @@ export default function FlexibleRenewalModal({
               </div>
               <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>{clientName}</span>
-                <span>•</span>
+                <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
                 <bdi style={{ fontWeight: 700 }}>#{cleanCode}</bdi>
                 {phone && (
                   <>
-                    <span>•</span>
+                    <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
                     <bdi dir="ltr">{phone}</bdi>
                   </>
                 )}
@@ -380,20 +380,20 @@ export default function FlexibleRenewalModal({
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: '10px',
-                  border: targetTier === 'ELITE' ? '2px solid #0F172A' : '1px solid #E2E8F0',
-                  background: targetTier === 'ELITE' ? '#F8FAFC' : '#FFFFFF',
+                  border: targetTier === 'ELITE' ? '2px solid #673DE6' : '1px solid #E2E8F0',
+                  background: targetTier === 'ELITE' ? '#F4F0FD' : '#FFFFFF',
                   cursor: 'pointer',
                   textAlign: 'right',
                   transition: 'all 0.12s ease',
                   boxSizing: 'border-box',
-                  boxShadow: targetTier === 'ELITE' ? '0 2px 6px rgba(15, 23, 42, 0.08)' : 'none'
+                  boxShadow: targetTier === 'ELITE' ? '0 2px 6px rgba(103, 61, 230, 0.12)' : 'none'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A' }}>
-                    باقة إيليت (ELITE)
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: targetTier === 'ELITE' ? '#673DE6' : '#0F172A' }}>
+                    باقة ELITE
                   </span>
-                  {targetTier === 'ELITE' && <CheckCircle2 size={15} color="#0F172A" />}
+                  {targetTier === 'ELITE' && <CheckCircle2 size={15} color="#673DE6" />}
                 </div>
                 <div style={{ fontSize: '10.5px', color: '#64748B', lineHeight: '1.4' }}>
                   متابعة نصف شهرية كل 14 يوماً
@@ -408,20 +408,20 @@ export default function FlexibleRenewalModal({
                   width: '100%',
                   padding: '10px 12px',
                   borderRadius: '10px',
-                  border: targetTier === 'MAX' ? '2px solid #0F172A' : '1px solid #E2E8F0',
-                  background: targetTier === 'MAX' ? '#F8FAFC' : '#FFFFFF',
+                  border: targetTier === 'MAX' ? '2px solid #673DE6' : '1px solid #E2E8F0',
+                  background: targetTier === 'MAX' ? '#F4F0FD' : '#FFFFFF',
                   cursor: 'pointer',
                   textAlign: 'right',
                   transition: 'all 0.12s ease',
                   boxSizing: 'border-box',
-                  boxShadow: targetTier === 'MAX' ? '0 2px 6px rgba(15, 23, 42, 0.08)' : 'none'
+                  boxShadow: targetTier === 'MAX' ? '0 2px 6px rgba(103, 61, 230, 0.12)' : 'none'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A' }}>
-                    باقة ماكس (MAX)
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: targetTier === 'MAX' ? '#673DE6' : '#0F172A' }}>
+                    باقة MAX
                   </span>
-                  {targetTier === 'MAX' && <CheckCircle2 size={15} color="#0F172A" />}
+                  {targetTier === 'MAX' && <CheckCircle2 size={15} color="#673DE6" />}
                 </div>
                 <div style={{ fontSize: '10.5px', color: '#64748B', lineHeight: '1.4' }}>
                   متابعة أسبوعية دقيقة كل 7 أيام
@@ -470,19 +470,20 @@ export default function FlexibleRenewalModal({
                         width: '100%',
                         padding: '8px 6px',
                         borderRadius: '8px',
-                        border: isActive ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
-                        background: isActive ? '#0F172A' : '#FFFFFF',
+                        border: isActive ? '1.5px solid #673DE6' : '1px solid #E2E8F0',
+                        background: isActive ? '#673DE6' : '#FFFFFF',
                         color: isActive ? '#FFFFFF' : '#475569',
                         cursor: 'pointer',
                         textAlign: 'center',
                         transition: 'all 0.12s ease',
-                        boxSizing: 'border-box'
+                        boxSizing: 'border-box',
+                        boxShadow: isActive ? '0 2px 6px rgba(103, 61, 230, 0.2)' : 'none'
                       }}
                     >
                       <div style={{ fontSize: '12.5px', fontWeight: 800, color: isActive ? '#FFFFFF' : '#0F172A' }}>
                         {preset.label}
                       </div>
-                      <div style={{ fontSize: '10px', color: isActive ? '#CBD5E1' : '#64748B', marginTop: '2px' }}>
+                      <div style={{ fontSize: '10px', color: isActive ? '#E9D5FF' : '#64748B', marginTop: '2px' }}>
                         {preset.sub}
                       </div>
                     </button>
@@ -664,7 +665,7 @@ export default function FlexibleRenewalModal({
                           padding: '8px 10px',
                           borderRadius: '8px',
                           border: 'none',
-                          background: isSelected ? '#0F172A' : 'transparent',
+                          background: isSelected ? '#673DE6' : 'transparent',
                           color: isSelected ? '#FFFFFF' : '#334155',
                           cursor: 'pointer',
                           fontSize: '12px',
@@ -773,7 +774,7 @@ export default function FlexibleRenewalModal({
                           padding: '8px 10px',
                           borderRadius: '8px',
                           border: 'none',
-                          background: isSelected ? '#0F172A' : 'transparent',
+                          background: isSelected ? '#673DE6' : 'transparent',
                           color: isSelected ? '#FFFFFF' : '#334155',
                           cursor: 'pointer',
                           fontSize: '12px',
@@ -822,7 +823,7 @@ export default function FlexibleRenewalModal({
             <div>
               <div style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700 }}>الباقة المعتمدة</div>
               <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
-                {targetTier === 'MAX' ? 'ماكس (MAX)' : 'إيليت (ELITE)'}
+                {targetTier === 'MAX' ? 'باقة MAX' : 'باقة ELITE'}
               </div>
             </div>
             <div>

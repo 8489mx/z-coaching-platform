@@ -102,9 +102,9 @@
 
 .dialog-shell h3::before,
 .dialog-shell .document-prototype-section-title::before {
-  background: var(--primary, #0F172A);
+  display: none !important;
   border-radius: 2px;
-  content: "";
+  content: none !important;
   flex: none;
   height: 16px;
   width: 3.5px;

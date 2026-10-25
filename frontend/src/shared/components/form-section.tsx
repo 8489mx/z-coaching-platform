@@ -23,16 +23,16 @@ export function FormSection({
     <section 
       style={{
         background: '#FFFFFF',
-        border: '1px solid #E2E8F0',
-        borderRadius: '10px',
-        padding: '18px 20px',
-        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)'
+        border: '1px solid #EAECF0',
+        borderRadius: '20px',
+        padding: '20px 24px',
+        boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02)'
       }}
       className={className}
     >
       <div 
         style={{ 
-          marginBottom: '14px', 
+          marginBottom: '16px', 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: description ? 'flex-start' : 'center',
@@ -41,14 +41,11 @@ export function FormSection({
         className={headerClassName}
       >
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="section-title-bullet" style={{ width: '3.5px', height: '16px', background: 'var(--primary, #0F172A)', borderRadius: '2px', display: 'inline-block' }} />
-            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: 'var(--primary, #0F172A)' }}>
-              {title}
-            </h3>
-          </div>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.01em' }}>
+            {title}
+          </h3>
           {description && (
-            <p style={{ margin: '3px 0 0 0', paddingRight: '11px', fontSize: '12px', color: '#64748B' }}>
+            <p style={{ margin: '4px 0 0 0', fontSize: '12.5px', color: '#64748B', fontWeight: 500 }}>
               {description}
             </p>
           )}

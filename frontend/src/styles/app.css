@@ -1,3 +1,4 @@
+@import './partials/hostinger-theme.css';
 @import './partials/base.css';
 @import './partials/layout.css';
 @import './partials/dashboard.css';
@@ -46,16 +47,16 @@
 @import './partials/system-updates.css';
 
 /* ========================================================
-   GLOBAL AUTHORITY: PRIMARY BRAND COLOR (SLATE NAVY #0F172A)
+   GLOBAL AUTHORITY: PRIMARY BRAND COLOR (SLATE NAVY #673DE6)
    ======================================================== */
 :root {
-  --primary: #0F172A;
-  --primary2: #334155;
-  --primary-color: #0F172A;
-  --color-primary: #0F172A;
-  --color-primary-dark: #334155;
-  --color-primary-light: #F1F5F9;
-  --color-primary-border: #CBD5E1;
+  --primary: #673DE6;
+  --primary2: #5025D1;
+  --primary-color: #673DE6;
+  --color-primary: #673DE6;
+  --color-primary-dark: #5025D1;
+  --color-primary-light: #F4F0FD;
+  --color-primary-border: #EDE8FA;
   --z-erp-approved-logo: url('./brand/z-erp-approved-icon.png');
 }
 
@@ -71,8 +72,8 @@ button.btn-primary,
 .purchase-prototype-create-card .btn-primary,
 .purchase-prototype-create-confirm .btn-primary,
 .settings-page-shell .settings-core-form > .btn.btn-primary {
-  background: var(--primary, #0F172A) !important;
-  border-color: var(--primary, #0F172A) !important;
+  background: var(--primary, #673DE6) !important;
+  border-color: var(--primary, #673DE6) !important;
   color: #ffffff !important;
 }
 
@@ -82,8 +83,8 @@ button.btn-primary:hover:not(:disabled),
 .btn.btn-primary:hover:not(:disabled),
 .filter-chip-row .btn-primary:hover:not(:disabled),
 .filter-chip-row .button-primary:hover:not(:disabled) {
-  background: var(--primary2, var(--color-primary-dark, #334155)) !important;
-  border-color: var(--primary2, var(--color-primary-dark, #334155)) !important;
+  background: var(--primary2, var(--color-primary-dark, #5025D1)) !important;
+  border-color: var(--primary2, var(--color-primary-dark, #5025D1)) !important;
   color: #ffffff !important;
 }
 
@@ -129,7 +130,7 @@ button.btn-primary:hover:not(:disabled),
   padding: 0 12px !important;
   font-size: 13px !important;
   line-height: 38px !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   border: 1px solid #cbd5e1 !important;
   background: #ffffff !important;
   box-sizing: border-box !important;
@@ -175,53 +176,94 @@ aside * {
   box-sizing: border-box;
 }
 
-/* Sidebar Navigation Items: High-Contrast Executive Style */
+/* Sidebar Navigation Items: Hostinger hPanel Exact Replication (Zero Purple in Sidebar) */
 aside a {
   transition: all 0.12s ease;
+  font-weight: 600 !important;
+}
+
+aside a:not(.sidebar-brand-link) {
+  color: #1F2937 !important;
+}
+
+aside a:not(.sidebar-brand-link) span {
+  font-weight: 600 !important;
+  color: #1F2937 !important;
+  font-size: 14px !important;
+}
+
+aside a:not(.sidebar-brand-link) svg,
+aside a:not(.sidebar-brand-link) .sidebar-item-icon {
+  stroke: #374151 !important;
+  color: #374151 !important;
+  fill: none !important;
+  opacity: 1 !important;
+  display: block !important;
+  visibility: visible !important;
 }
 
 aside a:not(.sidebar-brand-link).active {
-  background-color: #F1F5F9 !important;
-  border-right: none !important;
-  border: none !important;
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  color: #111827 !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 
 aside a:not(.sidebar-brand-link).active > div:first-child {
-  background-color: #0F172A !important;
-  border: 1px solid #0F172A !important;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25) !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-aside a:not(.sidebar-brand-link).active > div:first-child svg {
-  stroke: #FFFFFF !important;
-  color: #FFFFFF !important;
+aside a:not(.sidebar-brand-link).active svg,
+aside a:not(.sidebar-brand-link).active .sidebar-item-icon {
+  stroke: #111827 !important;
+  color: #111827 !important;
+  fill: none !important;
+  opacity: 1 !important;
+  display: block !important;
+  visibility: visible !important;
 }
 
-aside a:not(.sidebar-brand-link).active > span.sidebar-nav-label,
-aside a:not(.sidebar-brand-link).active > span:not(.sidebar-badge-apple) {
-  color: #0F172A !important;
-  font-weight: 800 !important;
+aside a:not(.sidebar-brand-link).active span {
+  color: #111827 !important;
+  font-weight: 700 !important;
 }
 
 /* Inactive Sidebar Nav Hover */
 aside a:not(.sidebar-brand-link):hover:not(.active) {
-  background-color: #F8FAFC !important;
-  color: #0F172A !important;
+  background-color: #EAECEF !important;
+  background: #EAECEF !important;
+  color: #111827 !important;
+  border-radius: 16px !important;
+  border-color: transparent !important;
 }
 
 aside a:not(.sidebar-brand-link):hover:not(.active) > div:first-child {
-  background-color: #F1F5F9 !important;
-  border-color: #CBD5E1 !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-aside a:not(.sidebar-brand-link):hover:not(.active) > div:first-child svg {
-  stroke: #0F172A !important;
-  color: #0F172A !important;
+aside a:not(.sidebar-brand-link):hover svg,
+aside a:not(.sidebar-brand-link):hover:not(.active) svg,
+aside a:not(.sidebar-brand-link):hover .sidebar-item-icon,
+aside a:not(.sidebar-brand-link):hover:not(.active) .sidebar-item-icon {
+  stroke: #111827 !important;
+  color: #111827 !important;
+  fill: none !important;
+  opacity: 1 !important;
+  display: block !important;
+  visibility: visible !important;
 }
 
-aside a:not(.sidebar-brand-link):hover:not(.active) > span.sidebar-nav-label,
-aside a:not(.sidebar-brand-link):hover:not(.active) > span:not(.sidebar-badge-apple) {
-  color: #0F172A !important;
+aside a:not(.sidebar-brand-link):hover:not(.active) span {
+  color: #111827 !important;
+  font-weight: 600 !important;
 }
 
 /* Brand Link Isolation */
@@ -268,7 +310,7 @@ html::-webkit-scrollbar-thumb {
 }
 .content-wrap::-webkit-scrollbar-thumb:hover,
 html::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #5025D1;
 }
 
 /* ========================================================
@@ -287,7 +329,7 @@ html::-webkit-scrollbar-thumb:hover {
   top: 50%;
   right: calc(100% + 10px);
   transform: translateY(-50%) translateX(8px);
-  background: #0F172A;
+  background: #673DE6;
   color: #FFFFFF;
   padding: 6px 12px;
   border-radius: 6px;
@@ -317,7 +359,7 @@ html::-webkit-scrollbar-thumb:hover {
   transform: translateY(-50%);
   border-width: 5px;
   border-style: solid;
-  border-color: transparent transparent transparent #0F172A;
+  border-color: transparent transparent transparent #673DE6;
 }
 
 .sidebar-item-wrap:hover .sidebar-flyout-tooltip {
@@ -360,21 +402,59 @@ button:not(.btn-link):not(.close):not([class*="rounded-none"]),
   border-radius: 8px;
 }
 
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.global-search-input):not(.table-search-input):not(.bare-input):not(.inline-pill-input):not(.clean-inline-input):not([style*="border: none"]):not([style*="border:none"]):not([style*="border: 0"]):not([style*="border:0"]),
 textarea,
 select,
 .form-control,
 .form-select {
-  border-radius: 8px !important;
+  border-radius: 10px !important;
+}
+
+/* Global suppression of nested "box-on-box" (double border) inputs */
+.table-search-input,
+input.table-search-input,
+.bare-input,
+.inline-pill-input,
+.clean-inline-input,
+input.bare-input,
+input.inline-pill-input,
+input.clean-inline-input,
+input[style*="border: none"],
+input[style*="border:none"],
+input[style*="border: 0"],
+input[style*="border:0"],
+div[style*="borderRadius: '9999px'"] input,
+div[style*="border-radius: 9999px"] input,
+div[style*="border-radius:9999px"] input,
+div[style*="borderRadius: '8px'"] input[style*="border: 'none'"],
+div[style*="border-radius: 8px"] input[style*="border: none"],
+div[style*="border-radius: 8px"] input[style*="border:none"],
+div[style*="border: 1px solid"] input[style*="border: none"],
+div[style*="border: 1px solid"] input[style*="border:none"],
+div[style*="border:1px solid"] input[style*="border: none"],
+div[style*="border:1px solid"] input[style*="border:none"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  min-height: 0 !important;
 }
 
 .modal-content,
 .dialog-card,
-.dialog-shell,
+.dialog-shell {
+  border-radius: 20px !important;
+}
+
 .dropdown-menu,
 [role="menu"],
 [role="listbox"] {
-  border-radius: 12px !important;
+  border-radius: 16px !important;
 }
 
 /* Global suppression of ugly browser number input spinners */
@@ -389,7 +469,178 @@ input[type="number"] {
 
 .card,
 .panel,
-.box-surface {
-  border-radius: 10px;
+.box-surface,
+.form-section,
+.form-section-container,
+.kpi-card,
+.metric-card,
+.table-card {
+  border-radius: 20px !important;
 }
+
+.page-header,
+header.page-header,
+div.page-header,
+.dashboard-premium-shell .page-header,
+.page-shell > .page-header,
+.page-stack > .page-header {
+  border-radius: 16px !important;
+  background: #FFFFFF !important;
+  border: 1px solid #EAECF0 !important;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02) !important;
+}
+
+.page-header button,
+.page-header a,
+.page-header .btn,
+.page-header .button,
+.page-header-actions button,
+.page-header-actions a {
+  border-radius: 8px !important;
+}
+
+/* ========================================================
+   GLOBAL CAIRO FONT MANDATE (DASHBOARD & ALL ADMIN INTERFACES)
+   ======================================================== */
+body,
+.app-layout,
+.app-layout *,
+.main-col,
+.page-stack,
+button,
+input,
+select,
+textarea,
+h1, h2, h3, h4, h5, h6,
+p, span, strong, b, a, label {
+  font-family: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* ========================================================
+   GLOBAL SEARCH INPUT (EXACT HOSTINGER PILL MATCH)
+   Exact match to [تطبيق المشترك] and Header Pill Buttons
+   ======================================================== */
+input.global-search-input,
+.app-layout input.global-search-input,
+header input.global-search-input,
+input[type="text"].global-search-input {
+  width: 100% !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-right: 14px !important;
+  padding-left: 34px !important;
+  padding-inline-start: 14px !important;
+  padding-inline-end: 34px !important;
+  border: 1px solid #D0D5DD !important;
+  border-radius: 8px !important;
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+  font-size: 12.5px !important;
+  outline: none !important;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03) !important;
+  text-align: right !important;
+  direction: rtl !important;
+  transition: all 0.15s ease !important;
+}
+
+input.global-search-input:hover,
+.app-layout input.global-search-input:hover,
+header input.global-search-input:hover {
+  background: #F9FAFB !important;
+  background-color: #F9FAFB !important;
+  border-color: #CBD5E1 !important;
+}
+
+input.global-search-input:focus,
+.app-layout input.global-search-input:focus,
+header input.global-search-input:focus {
+  border-color: #673DE6 !important;
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  box-shadow: 0 0 0 3px rgba(103, 61, 230, 0.12), 0 1px 2px rgba(16, 24, 40, 0.03) !important;
+}
+
+input.global-search-input::placeholder {
+  color: #667085 !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+}
+
+/* ========================================================
+   GLOBAL BUTTONS MANDATE (8px CURVED SYSTEM AESTHETICS - RULE 4)
+   Strictly 8px to 10px rounded corners for buttons and inputs
+   ======================================================== */
+button:not(.pill-badge):not(.status-chip):not(.badge):not(.hostinger-nav-item):not(.sidebar-brand-link),
+a.btn,
+a.button,
+a.btn-primary,
+a.btn-secondary,
+a.hostinger-btn-primary,
+a.hostinger-btn-secondary,
+.btn,
+.button,
+.btn-primary,
+.btn-secondary,
+.btn-success,
+.btn-danger,
+.btn-ghost,
+.btn-soft-primary,
+.button-primary,
+.button-secondary,
+.hostinger-btn-primary,
+.hostinger-btn-secondary,
+.hostinger-btn-sm,
+.btn-sm,
+input[type="button"],
+input[type="submit"] {
+  border-radius: 8px !important;
+}
+
+/* Secondary Button Hostinger Pure Styling (White, Light Border, Subtle Shadow) */
+button.btn-secondary,
+.btn-secondary,
+.button-secondary,
+.hostinger-btn-secondary {
+  border-radius: 8px !important;
+  border: 1px solid #D0D5DD !important;
+  background: #FFFFFF !important;
+  color: #344054 !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease !important;
+}
+
+button.btn-secondary:hover,
+.btn-secondary:hover,
+.button-secondary:hover,
+.hostinger-btn-secondary:hover {
+  background: #F9FAFB !important;
+  border-color: #CBD5E1 !important;
+  color: #111827 !important;
+}
+
+/* Primary Button Hostinger Purple (+ Create site / Buy domain Style) */
+button.btn-primary,
+.btn-primary,
+.button-primary,
+.hostinger-btn-primary {
+  border-radius: 8px !important;
+  background: #673DE6 !important;
+  border: 1px solid #673DE6 !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+}
+
+button.btn-primary:hover,
+.btn-primary:hover,
+.button-primary:hover,
+.hostinger-btn-primary:hover {
+  background: #5025D1 !important;
+  border-color: #5025D1 !important;
+  color: #FFFFFF !important;
+}
+
 

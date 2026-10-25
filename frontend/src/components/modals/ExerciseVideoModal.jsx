@@ -84,7 +84,7 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F4F0FD', border: '1px solid #DDD6FE', color: '#673DE6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Dumbbell size={16} />
             </div>
             <div>
@@ -174,7 +174,7 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
             style={{
               padding: '5px 14px',
               borderRadius: '8px',
-              background: '#0F172A',
+              background: '#673DE6',
               color: '#FFFFFF',
               border: 'none',
               fontSize: '11.5px',
@@ -183,8 +183,8 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
               boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
               transition: 'background 0.15s ease'
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#334155')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#0F172A')}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#5025D1')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#673DE6')}
           >
             إغلاق النافذة
           </button>

@@ -124,6 +124,7 @@ const SYSTEM_PAGES = [
 
 export default function GlobalSearchModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
   const navigate = useNavigate();
@@ -153,6 +154,7 @@ export default function GlobalSearchModal() {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setIsOpen(false);
+        setIsFocused(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -161,6 +163,7 @@ export default function GlobalSearchModal() {
 
   const onClose = () => {
     setIsOpen(false);
+    setIsFocused(false);
     setQuery('');
   };
 
@@ -281,92 +284,134 @@ export default function GlobalSearchModal() {
   };
 
   return (
-    <div style={{ position: 'relative' }} ref={containerRef}>
-      {/* Inline Search Trigger Bar */}
-      <div 
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          background: '#F8FAFC',
-          border: '1px solid',
-          borderColor: isOpen ? '#CBD5E1' : '#E2E8F0',
-          borderRadius: '8px',
-          padding: '0 10px',
-          height: '32px',
-          width: '270px',
-          gap: '8px',
-          cursor: 'pointer',
-          transition: 'all 0.15s ease',
-          backgroundColor: isOpen ? '#F1F5F9' : '#F8FAFC',
-          boxShadow: isOpen ? '0 0 0 2px rgba(15, 23, 42, 0.08)' : 'none'
+    <div style={{ position: 'relative', width: '240px' }} ref={containerRef}>
+      {/* 1 Single Clean Normal Input Box (Zero Double Boxes) */}
+      <input
+        ref={inputRef}
+        type="text"
+        className="global-search-input"
+        placeholder="بحث..."
+        value={query}
+        onFocus={() => {
+          setIsFocused(true);
+          setIsOpen(true);
         }}
-        onClick={() => setIsOpen(true)}
-      >
-        <Search size={14} color="#0F172A" style={{ flexShrink: 0 }} />
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder="بحث سريع عن مشترك أو صفحة..."
-          value={query}
-          onFocus={() => setIsOpen(true)}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setSelectedIndex(0);
-            setIsOpen(true);
+        onBlur={() => setIsFocused(false)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setSelectedIndex(0);
+          setIsOpen(true);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            onClose();
+            inputRef.current?.blur();
+          } else {
+            handleKeyDown(e);
+          }
+        }}
+        onMouseEnter={(e) => {
+          if (!isFocused) {
+            e.currentTarget.style.backgroundColor = '#F9FAFB';
+            e.currentTarget.style.borderColor = '#CBD5E1';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isFocused) {
+            e.currentTarget.style.backgroundColor = '#FFFFFF';
+            e.currentTarget.style.borderColor = '#D0D5DD';
+          }
+        }}
+        style={{
+          width: '100%',
+          height: '34px',
+          minHeight: '34px',
+          maxHeight: '34px',
+          paddingRight: '14px',
+          paddingLeft: '34px',
+          paddingTop: 0,
+          paddingBottom: 0,
+          border: '1px solid',
+          borderColor: isFocused ? '#673DE6' : '#D0D5DD',
+          borderRadius: '8px',
+          backgroundColor: '#FFFFFF',
+          fontSize: '12.5px',
+          fontFamily: "'Cairo', sans-serif",
+          fontWeight: 500,
+          color: '#111827',
+          textAlign: 'right',
+          direction: 'rtl',
+          outline: 'none',
+          boxSizing: 'border-box',
+          boxShadow: isFocused 
+            ? '0 0 0 3px rgba(103, 61, 230, 0.12), 0 1px 2px rgba(16, 24, 40, 0.03)' 
+            : '0 1px 2px rgba(16, 24, 40, 0.03)',
+          transition: 'all 0.15s ease'
+        }}
+      />
+
+      {/* Embedded Search Icon on Left / Clear Button */}
+      {query ? (
+        <button 
+          type="button" 
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            setQuery(''); 
+            inputRef.current?.focus(); 
           }}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              onClose();
-              inputRef.current?.blur();
-            } else {
-              handleKeyDown(e);
-            }
-          }}
+          aria-label="مسح البحث"
+          title="مسح البحث"
           style={{
-            flex: 1,
+            position: 'absolute',
+            top: '50%',
+            left: '11px',
+            transform: 'translateY(-50%)',
             border: 'none',
-            outline: 'none',
-            boxShadow: 'none',
-            fontSize: '11.5px',
-            fontFamily: 'Cairo, sans-serif',
-            fontWeight: 600,
-            color: '#0F172A',
             background: 'transparent',
-            width: '100%'
+            cursor: 'pointer',
+            padding: 0,
+            color: '#98A2B3',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'color 0.12s ease'
           }}
-        />
-        {query ? (
-          <button 
-            type="button" 
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              setQuery(''); 
-              inputRef.current?.focus(); 
-            }}
-            style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#94A3B8', display: 'flex', alignItems: 'center' }}
-          >
-            <X size={13} />
-          </button>
-        ) : (
-          <span style={{ fontSize: '9.5px', fontWeight: 800, color: '#94A3B8', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '1px 5px', borderRadius: '6px', fontFamily: 'JetBrains Mono, Cairo', userSelect: 'none' }}>
-            Ctrl K
-          </span>
-        )}
-      </div>
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#4B5563')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#98A2B3')}
+        >
+          <X size={15} />
+        </button>
+      ) : (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '12px',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#667085'
+          }}
+        >
+          <Search size={14} strokeWidth={2.0} color="#667085" />
+        </div>
+      )}
 
       {/* Dropdown Results Menu */}
       {isOpen && (
         <div 
           style={{
             position: 'absolute',
-            top: 'calc(100% + 8px)',
+            top: 'calc(100% + 6px)',
             right: 0,
             width: '520px',
             maxWidth: '92vw',
             background: '#FFFFFF',
             borderRadius: '12px',
-            border: '1px solid #CBD5E1',
-            boxShadow: '0 12px 30px -4px rgba(15, 23, 42, 0.18)',
+            border: '1px solid #EAECF0',
+            boxShadow: '0 10px 25px -4px rgba(16, 24, 40, 0.12)',
             zIndex: 10000,
             display: 'flex',
             flexDirection: 'column',
@@ -375,45 +420,72 @@ export default function GlobalSearchModal() {
           }}
         >
           {/* Filter Pills */}
-          <div style={{ display: 'flex', gap: '6px', padding: '8px 12px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', flexWrap: 'wrap' }}>
+          <div style={{
+            display: 'flex',
+            gap: '6px',
+            padding: '8px 12px',
+            background: '#FAFAFB',
+            borderBottom: '1px solid #EAECF0',
+            flexWrap: 'wrap'
+          }}>
             {[
               { id: 'ALL', label: 'الكل' },
-              { id: 'CLIENTS', label: `المشتركين (${filteredClients.length})` },
+              { id: 'CLIENTS', label: `المشتركون (${filteredClients.length})` },
               { id: 'PAGES', label: `صفحات النظام (${filteredPages.length})` },
               { id: 'EXERCISES', label: `التمارين (${filteredExercises.length})` },
-            ].map(cat => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => {
-                  setActiveCategory(cat.id);
-                  setSelectedIndex(0);
-                }}
-                style={{
-                  padding: '3px 10px',
-                  borderRadius: '8px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  background: activeCategory === cat.id ? '#0F172A' : '#FFFFFF',
-                  color: activeCategory === cat.id ? '#FFFFFF' : '#64748B',
-                  border: activeCategory === cat.id ? '1px solid #0F172A' : '1px solid #E2E8F0',
-                  boxShadow: activeCategory === cat.id ? '0 1px 3px rgba(15, 23, 42, 0.2)' : 'none',
-                  transition: 'all 0.12s ease'
-                }}
-              >
-                {cat.label}
-              </button>
-            ))}
+            ].map(cat => {
+              const isSelected = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(cat.id);
+                    setSelectedIndex(0);
+                  }}
+                  style={{
+                    padding: '3px 10px',
+                    borderRadius: '6px',
+                    fontSize: '11.5px',
+                    fontWeight: isSelected ? 700 : 500,
+                    cursor: 'pointer',
+                    background: isSelected ? '#FFFFFF' : 'transparent',
+                    color: isSelected ? '#673DE6' : '#475467',
+                    border: isSelected ? '1px solid #E9D7FE' : 'none',
+                    boxShadow: isSelected ? '0 1px 2px rgba(16, 24, 40, 0.04)' : 'none',
+                    transition: 'all 0.12s ease'
+                  }}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Results List */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '8px', maxHeight: '400px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '6px', maxHeight: '380px' }}>
             {allResults.length === 0 ? (
-              <div style={{ padding: '36px 16px', textAlign: 'center', color: '#94A3B8' }}>
-                <Search size={28} style={{ margin: '0 auto 8px auto', opacity: 0.3 }} />
-                <div style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>لم يتم العثور على أي نتائج مطابقة</div>
-                <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '3px' }}>جرب البحث برقم هاتف المشترك، كوده، أو اسمه</div>
+              <div style={{ padding: '36px 16px', textAlign: 'center' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  background: '#F2F4F7',
+                  border: '1px solid #EAECF0',
+                  color: '#667085',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 8px auto'
+                }}>
+                  <Search size={18} strokeWidth={1.8} />
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', marginBottom: '2px' }}>
+                  لا توجد نتائج مطابقة للبحث
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#667085' }}>
+                  جرّب البحث باسم المشترك، كوده (#101)، أو عنوان الصفحة
+                </div>
               </div>
             ) : (
               allResults.map((item, idx) => {
@@ -433,70 +505,84 @@ export default function GlobalSearchModal() {
                       padding: '8px 10px',
                       borderRadius: '8px',
                       cursor: 'pointer',
-                      background: isSelected ? '#F1F5F9' : '#FFFFFF',
-                      border: isSelected ? '1px solid #CBD5E1' : '1px solid #F1F5F9',
+                      background: isSelected ? '#F4F0FD' : '#FFFFFF',
+                      border: '1px solid',
+                      borderColor: isSelected ? '#E9D7FE' : 'transparent',
                       transition: 'all 0.1s ease',
-                      marginBottom: '4px',
+                      marginBottom: '2px',
                       gap: '8px'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
                       <div 
                         style={{
-                          width: '32px',
-                          height: '32px',
+                          width: '30px',
+                          height: '30px',
                           borderRadius: '6px',
-                          background: isSelected ? '#0F172A' : (isClient ? '#EFF6FF' : '#F8FAFC'),
-                          color: isSelected ? '#FFFFFF' : (isClient ? '#1D4ED8' : '#475569'),
+                          background: isSelected ? '#FFFFFF' : '#F2F4F7',
+                          color: isSelected ? '#673DE6' : '#475467',
+                          border: '1px solid',
+                          borderColor: isSelected ? '#E9D7FE' : '#EAECF0',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          flexShrink: 0,
-                          transition: 'all 0.1s ease'
+                          flexShrink: 0
                         }}
                       >
-                        <Icon size={15} />
+                        <Icon size={14} />
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {item.title}
                           </span>
                           {isClient && (
-                            <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 5px', borderRadius: '6px', background: item.isMax ? '#FFFBEB' : '#F0F9FF', color: item.isMax ? '#B45309' : '#0284C7', border: item.isMax ? '1px solid #FDE68A' : '1px solid #BAE6FD' }}>
+                            <span style={{
+                              fontSize: '9.5px',
+                              fontWeight: 700,
+                              padding: '1px 5px',
+                              borderRadius: '4px',
+                              background: item.isMax ? '#F4F0FD' : '#F2F4F7',
+                              color: item.isMax ? '#673DE6' : '#344054',
+                              border: item.isMax ? '1px solid #E9D7FE' : '1px solid #EAECF0'
+                            }}>
                               {item.isMax ? 'MAX' : 'ELITE'}
                             </span>
                           )}
                         </div>
-                        <span style={{ fontSize: '10.5px', color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <span style={{ fontSize: '11px', color: '#667085', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {item.subtitle}
                         </span>
                       </div>
                     </div>
 
-                    {/* Quick 1-Click Action Buttons for Clients */}
+                    {/* Quick Secondary White Action Buttons for Clients */}
                     {isClient ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
                         <button
                           type="button"
                           onClick={() => { onClose(); navigate(item.path); }}
                           style={{
-                            padding: '3px 8px',
-                            borderRadius: '8px',
-                            background: '#0F172A',
-                            color: '#FFFFFF',
-                            border: 'none',
-                            fontSize: '10px',
-                            fontWeight: 800,
+                            height: '26px',
+                            padding: '0 8px',
+                            borderRadius: '6px',
+                            background: '#FFFFFF',
+                            color: '#344054',
+                            border: '1px solid #D0D5DD',
+                            fontSize: '11px',
+                            fontWeight: 600,
                             cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '3px'
+                            gap: '3px',
+                            boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
                           }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
                           title="فتح وتعديل الخطة في المحرر"
                         >
-                          <FileEdit size={10} />
+                          <FileEdit size={10} color="#667085" />
                           <span>الخطة</span>
                         </button>
 
@@ -504,21 +590,25 @@ export default function GlobalSearchModal() {
                           type="button"
                           onClick={() => setRenewalClient(item.rawClient)}
                           style={{
-                            padding: '3px 7px',
-                            borderRadius: '8px',
-                            background: '#FEF3C7',
-                            color: '#B45309',
-                            border: '1px solid #FDE68A',
-                            fontSize: '10px',
-                            fontWeight: 800,
+                            height: '26px',
+                            padding: '0 8px',
+                            borderRadius: '6px',
+                            background: '#FFFFFF',
+                            color: '#B54708',
+                            border: '1px solid #FEDF89',
+                            fontSize: '11px',
+                            fontWeight: 600,
                             cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '2px'
+                            gap: '3px',
+                            boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
                           }}
-                          title="تجديد وتحصيل اشتراك المتدرب بمزاجك"
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#FFFAEB')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                          title="تجديد وتحصيل اشتراك المتدرب"
                         >
-                          <CreditCard size={9} />
+                          <CreditCard size={10} color="#B54708" />
                           <span>تجديد</span>
                         </button>
 
@@ -526,21 +616,25 @@ export default function GlobalSearchModal() {
                           type="button"
                           onClick={() => window.open(item.pdfPath, '_blank')}
                           style={{
-                            padding: '3px 7px',
-                            borderRadius: '8px',
+                            height: '26px',
+                            padding: '0 8px',
+                            borderRadius: '6px',
                             background: '#FFFFFF',
-                            color: '#0F172A',
-                            border: '1px solid #CBD5E1',
-                            fontSize: '10px',
-                            fontWeight: 700,
+                            color: '#344054',
+                            border: '1px solid #D0D5DD',
+                            fontSize: '11px',
+                            fontWeight: 600,
                             cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '2px'
+                            gap: '3px',
+                            boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
                           }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
                           title="عرض ملف PDF للبرنامج"
                         >
-                          <ExternalLink size={9} />
+                          <ExternalLink size={10} color="#667085" />
                           <span>PDF</span>
                         </button>
 
@@ -549,31 +643,35 @@ export default function GlobalSearchModal() {
                             type="button"
                             onClick={() => window.open(item.waUrl, '_blank')}
                             style={{
-                              padding: '3px 7px',
-                              borderRadius: '8px',
-                              background: '#25D366',
-                              color: '#FFFFFF',
-                              border: 'none',
-                              fontSize: '10px',
-                              fontWeight: 700,
+                              height: '26px',
+                              padding: '0 8px',
+                              borderRadius: '6px',
+                              background: '#FFFFFF',
+                              color: '#027A48',
+                              border: '1px solid #D0D5DD',
+                              fontSize: '11px',
+                              fontWeight: 600,
                               cursor: 'pointer',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '2px'
+                              gap: '3px',
+                              boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
                             }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = '#ECFDF3')}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
                             title="فتح محادثة واتساب"
                           >
-                            <MessageCircle size={10} />
+                            <MessageCircle size={10} color="#027A48" />
                             <span>واتساب</span>
                           </button>
                         )}
                       </div>
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                        <span style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 600 }}>
+                        <span style={{ fontSize: '10.5px', color: '#667085', fontWeight: 500 }}>
                           {item.category === 'PAGES' ? 'صفحة' : 'تمرين'}
                         </span>
-                        <ChevronLeft size={13} color={isSelected ? '#0F172A' : '#CBD5E1'} />
+                        <ChevronLeft size={13} color={isSelected ? '#673DE6' : '#98A2B3'} />
                       </div>
                     )}
                   </div>
@@ -583,13 +681,22 @@ export default function GlobalSearchModal() {
           </div>
 
           {/* Footer Guide */}
-          <div style={{ padding: '6px 12px', background: '#F8FAFC', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: '#94A3B8' }}>
+          <div style={{
+            padding: '8px 12px',
+            background: '#FAFAFB',
+            borderTop: '1px solid #EAECF0',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: '11px',
+            color: '#667085'
+          }}>
             <span>استخدم الأسهم <strong>↑</strong> <strong>↓</strong> للتنقل و <strong>Enter</strong> للاختيار</span>
             <span>اضغط <strong>Esc</strong> للإغلاق</span>
           </div>
-
         </div>
       )}
+
       {/* Flexible Custom Renewal Modal */}
       {renewalClient && (
         <FlexibleRenewalModal

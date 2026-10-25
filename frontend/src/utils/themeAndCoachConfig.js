@@ -236,6 +236,17 @@ export function applyThemeLive(primaryHex) {
       text-rendering: geometricPrecision !important;
     }
 
+    /* 1. Global Pill Action Buttons (Hostinger Pill Aesthetic) */
+    button:not(aside button):not(.hostinger-nav-item),
+    .btn,
+    .button,
+    .btn-primary,
+    .btn-secondary,
+    .button-primary,
+    .button-secondary {
+      border-radius: 9999px !important;
+    }
+
     /* 1. Global Primary Action Buttons (Crisp 4K Anti-Glare) */
     .btn-primary,
     .button-primary,
@@ -273,49 +284,84 @@ export function applyThemeLive(primaryHex) {
       font-weight: 800 !important;
     }
 
-    /* 3. Active & Hover Sidebar Navigation Items (Executive High Contrast) */
+    /* 3. Active & Hover Sidebar Navigation Items (Hostinger Pure Clean High Visibility) */
     aside a.active {
-      background-color: ${colors.light} !important;
-      border-right: none !important;
-      border: none !important;
+      background-color: #FFFFFF !important;
+      background: #FFFFFF !important;
+      border: 1px solid #E5E7EB !important;
+      border-radius: 16px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+      color: #111827 !important;
     }
 
     aside a.active > div:first-child {
-      background-color: ${colors.primary} !important;
-      border: 1px solid ${colors.primary} !important;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25) !important;
+      background-color: transparent !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
     }
 
-    aside a.active > div:first-child svg {
-      stroke: #FFFFFF !important;
-      color: #FFFFFF !important;
+    aside a.active svg,
+    aside a.active > div:first-child svg,
+    aside a.active .sidebar-item-icon {
+      stroke: #111827 !important;
+      color: #111827 !important;
+      fill: none !important;
+      opacity: 1 !important;
+      display: block !important;
+      visibility: visible !important;
     }
 
     aside a.active > span.sidebar-nav-label,
-    aside a.active > span:not(.sidebar-badge-apple) {
-      color: ${colors.primary} !important;
-      font-weight: 800 !important;
+    aside a.active span:not(.sidebar-badge-apple) {
+      color: #111827 !important;
+      font-weight: 700 !important;
     }
 
-    /* Hover state for inactive sidebar links: crisp, dark, 100% visible */
+    /* Hover state for sidebar links: crisp, dark, 100% visible */
     aside a:hover:not(.active) {
-      background-color: #F8FAFC !important;
-      color: #0F172A !important;
+      background-color: #EAECEF !important;
+      background: #EAECEF !important;
+      border-radius: 16px !important;
+      color: #111827 !important;
     }
 
+    aside a:hover > div:first-child,
     aside a:hover:not(.active) > div:first-child {
-      background-color: #F1F5F9 !important;
-      border-color: #CBD5E1 !important;
+      background-color: transparent !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
     }
 
-    aside a:hover:not(.active) > div:first-child svg {
-      stroke: #0F172A !important;
-      color: #0F172A !important;
+    aside a:hover svg,
+    aside a:hover:not(.active) svg,
+    aside a:hover > div:first-child svg,
+    aside a:hover:not(.active) > div:first-child svg,
+    aside a:hover .sidebar-item-icon {
+      stroke: #111827 !important;
+      color: #111827 !important;
+      fill: none !important;
+      opacity: 1 !important;
+      display: block !important;
+      visibility: visible !important;
     }
 
     aside a:hover:not(.active) > span.sidebar-nav-label,
-    aside a:hover:not(.active) > span:not(.sidebar-badge-apple) {
-      color: #0F172A !important;
+    aside a:hover:not(.active) span:not(.sidebar-badge-apple) {
+      color: #111827 !important;
+      font-weight: 600 !important;
+    }
+
+    /* Inactive normal sidebar links */
+    aside a:not(.active) svg,
+    aside a:not(.active) .sidebar-item-icon {
+      stroke: #374151 !important;
+      color: #374151 !important;
+      fill: none !important;
+      opacity: 1 !important;
+      display: block !important;
+      visibility: visible !important;
     }
 
     /* Guaranteed pure white text on red notification badges */

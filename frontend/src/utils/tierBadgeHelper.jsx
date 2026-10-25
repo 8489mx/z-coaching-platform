@@ -96,51 +96,54 @@ export function getTierColors(tierOrItem) {
   if (tier === 'MAX') {
     return {
       tier: 'MAX',
-      color: '#B45309', // Deep Rich Amber Gold
-      bg: '#F8FAFC',    // Normal clean background
-      border: '1px solid #E2E8F0', // Normal clean border
+      color: '#B45309', // Premium Deep Metallic Gold for the word
+      bg: '#FFFDF5',    // Restrained soft gold surface
+      border: '1px solid #FDE68A', // Subtle gold border
       shadow: 'none'
     };
   }
 
   return {
     tier: 'ELITE',
-    color: '#0284C7', // Electric Sapphire Blue
-    bg: '#F8FAFC',    // Normal clean background
-    border: '1px solid #E2E8F0', // Normal clean border
+    color: '#0284C7', // Premium Royal Sapphire Blue for the word
+    bg: '#F0F9FF',    // Restrained soft sapphire surface
+    border: '1px solid #BAE6FD', // Subtle blue border
     shadow: 'none'
   };
 }
 
-export function ClientCodeBadge({ code, item, tier, size = 'md', style = {} }) {
+export function ClientCodeBadge({ code, item, tier: _tier, size = 'md', style = {} }) {
   const rawCode = code || item?.client_code || item?.clientCode || item?.code || item?.user?.client_code || item?.id || '1';
   const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
-  const resolvedTier = tier || getClientTier(item || cleanCode);
-  const colors = getTierColors(resolvedTier);
 
   const sizeStyles = {
     xs: { fontSize: '9.5px', padding: '1px 6px', borderRadius: '6px' },
     sm: { fontSize: '10.5px', padding: '2px 7px', borderRadius: '6px' },
-    md: { fontSize: '11px', padding: '2px 8px', borderRadius: '7px' },
-    lg: { fontSize: '12px', padding: '3px 10px', borderRadius: '8px' }
+    md: { fontSize: '11px', padding: '2px 8px', borderRadius: '6px' },
+    lg: { fontSize: '12px', padding: '3px 10px', borderRadius: '6px' }
   };
 
   return (
-    <span style={{
-      fontFamily: 'JetBrains Mono, Cairo, sans-serif',
-      fontWeight: 800,
-      background: colors.bg,
-      border: colors.border,
-      color: colors.color,
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      userSelect: 'none',
-      verticalAlign: 'middle',
-      boxShadow: colors.shadow,
-      ...sizeStyles[size] || sizeStyles.md,
-      ...style
-    }}>
+    <span
+      dir="ltr"
+      style={{
+        fontFamily: 'JetBrains Mono, Cairo, sans-serif',
+        fontWeight: 800,
+        background: '#F2F4F7',
+        border: '1px solid #EAECF0',
+        color: '#344054',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        userSelect: 'none',
+        verticalAlign: 'middle',
+        boxShadow: 'none',
+        direction: 'ltr',
+        unicodeBidi: 'isolate',
+        ...sizeStyles[size] || sizeStyles.md,
+        ...style
+      }}
+    >
       #{cleanCode}
     </span>
   );
@@ -153,25 +156,32 @@ export function ClientPackageBadge({ item, tier, size = 'md', style = {} }) {
   const sizeStyles = {
     xs: { fontSize: '9.5px', padding: '1px 6px', borderRadius: '6px' },
     sm: { fontSize: '10px', padding: '2px 7px', borderRadius: '6px' },
-    md: { fontSize: '11px', padding: '2px 8px', borderRadius: '7px' },
-    lg: { fontSize: '12px', padding: '3px 10px', borderRadius: '8px' }
+    md: { fontSize: '11px', padding: '2px 8px', borderRadius: '6px' },
+    lg: { fontSize: '12px', padding: '3px 10px', borderRadius: '6px' }
   };
 
   return (
-    <span style={{
-      fontFamily: 'JetBrains Mono, Cairo, sans-serif',
-      fontWeight: 900,
-      background: colors.bg,
-      border: colors.border,
-      color: colors.color,
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      userSelect: 'none',
-      verticalAlign: 'middle',
-      ...sizeStyles[size] || sizeStyles.md,
-      ...style
-    }}>
+    <span
+      dir="ltr"
+      style={{
+        fontFamily: 'JetBrains Mono, Cairo, sans-serif',
+        fontWeight: 900,
+        letterSpacing: '0.4px',
+        background: colors.bg,
+        border: colors.border,
+        color: colors.color,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        userSelect: 'none',
+        verticalAlign: 'middle',
+        boxShadow: colors.shadow,
+        direction: 'ltr',
+        unicodeBidi: 'isolate',
+        ...sizeStyles[size] || sizeStyles.md,
+        ...style
+      }}
+    >
       {resolvedTier}
     </span>
   );

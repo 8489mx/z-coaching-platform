@@ -31,6 +31,14 @@ export const CARD_FORMATS = Object.freeze({
   }
 });
 
+export function formatWeeksCountAr(count) {
+  const n = Math.max(1, Math.abs(Number(count) || 1));
+  if (n === 1) return 'أسبوع واحد';
+  if (n === 2) return 'أسبوعان';
+  if (n >= 3 && n <= 10) return `${n} أسابيع`;
+  return `${n} أسبوعاً`;
+}
+
 /**
  * حساب إحصائيات وفوارق التحول بالأرقام الدقيقة
  */
@@ -146,12 +154,6 @@ function drawSilhouetteFallback(ctx, x, y, width, height, isBefore = false) {
   const legW = width * 0.1;
   ctx.fillRect(cx - legW * 1.3, cy + height * 0.09, legW, height * 0.30);
   ctx.fillRect(cx + legW * 0.3, cy + height * 0.09, legW, height * 0.30);
-
-  // Notice Text
-  ctx.fillStyle = '#94A3B8';
-  ctx.font = 'bold 20px Cairo, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('توثيق القياسات والتحول الرياضي', cx, cy + height * 0.44);
 
   ctx.restore();
 }
@@ -304,8 +306,8 @@ export async function renderTransformationCard(canvas, {
   roundRect(ctx, beforeX, photoY, photoWidth, photoHeight, photoRadius, false, true);
 
   // شارة كارت قبل (BEFORE BADGE)
-  const badgeW = 200;
-  const badgeH = 50;
+  const badgeW = 210;
+  const badgeH = 56;
   const badgeY = photoY + photoHeight - badgeH - 15;
   ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
   roundRect(ctx, beforeX + (photoWidth - badgeW) / 2, badgeY, badgeW, badgeH, 10, true, false);
@@ -314,11 +316,11 @@ export async function renderTransformationCard(canvas, {
   roundRect(ctx, beforeX + (photoWidth - badgeW) / 2, badgeY, badgeW, badgeH, 10, false, true);
 
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 18px Cairo, sans-serif';
+  ctx.font = 'bold 17px Cairo, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(`البداية: ${beforeData.weight} كجم`, beforeX + photoWidth / 2, badgeY + 28);
+  ctx.fillText(`البداية: ${beforeData.weight} كجم`, beforeX + photoWidth / 2, badgeY + 24);
   ctx.fillStyle = '#94A3B8';
-  ctx.font = 'bold 13px Cairo, sans-serif';
+  ctx.font = '600 12px Cairo, sans-serif';
   ctx.fillText(beforeData.date || 'نقطة الانطلاق', beforeX + photoWidth / 2, badgeY + 44);
 
   // -- رسم صورة (بعد / After) --
@@ -355,12 +357,12 @@ export async function renderTransformationCard(canvas, {
   ctx.fillStyle = 'rgba(196, 149, 45, 0.95)';
   roundRect(ctx, afterX + (photoWidth - badgeW) / 2, badgeY, badgeW, badgeH, 10, true, false);
   ctx.fillStyle = '#0F172A';
-  ctx.font = '900 18px Cairo, sans-serif';
+  ctx.font = '900 17px Cairo, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(`النتيجة: ${afterData.weight} كجم`, afterX + photoWidth / 2, badgeY + 28);
+  ctx.fillText(`النتيجة: ${afterData.weight} كجم`, afterX + photoWidth / 2, badgeY + 24);
   ctx.fillStyle = '#1E293B';
-  ctx.font = 'bold 13px Cairo, sans-serif';
-  ctx.fillText(`الأسبوع ${afterData.week}`, afterX + photoWidth / 2, badgeY + 44);
+  ctx.font = '600 12px Cairo, sans-serif';
+  ctx.fillText(afterData.week !== undefined ? `الأسبوع ${afterData.week}` : 'التقييم الحالي', afterX + photoWidth / 2, badgeY + 44);
 
   // 4. شريط إحصائيات التحول الرقمي بالأرقام
   const statsY = photoY + photoHeight + 35;
@@ -379,19 +381,27 @@ export async function renderTransformationCard(canvas, {
   const metricCards = [
     {
       title: 'فارق الوزن الصافي',
-      value: calculatedStats.weightDiff < 0 ? `${Math.abs(calculatedStats.weightDiff)} - كجم` : `${calculatedStats.weightDiff} + كجم`,
-      sub: calculatedStats.weightDiff < 0 ? 'نزول دهون صافي' : 'بناء عضلي',
-      highlightColor: calculatedStats.weightDiff < 0 ? '#22C55E' : '#38BDF8'
+      value: calculatedStats.weightDiff === 0 
+        ? '0.0 كجم' 
+        : (calculatedStats.weightDiff < 0 ? `-${Math.abs(calculatedStats.weightDiff)} كجم` : `+${calculatedStats.weightDiff} كجم`),
+      sub: calculatedStats.weightDiff === 0 
+        ? 'ثبات الوزن' 
+        : (calculatedStats.weightDiff < 0 ? 'نزول دهون صافي' : 'بناء عضلي'),
+      highlightColor: calculatedStats.weightDiff === 0 
+        ? '#38BDF8' 
+        : (calculatedStats.weightDiff < 0 ? '#22C55E' : '#38BDF8')
     },
     {
       title: 'تغير محيط الوسط',
-      value: calculatedStats.waistDiff < 0 ? `${Math.abs(calculatedStats.waistDiff)} - سم` : `${calculatedStats.waistDiff} سم`,
-      sub: 'انخفاض في مقاس الخصر',
+      value: calculatedStats.waistDiff === 0 
+        ? '0 سم' 
+        : (calculatedStats.waistDiff < 0 ? `-${Math.abs(calculatedStats.waistDiff)} سم` : `+${calculatedStats.waistDiff} سم`),
+      sub: calculatedStats.waistDiff === 0 ? 'ثبات المقاس' : 'انخفاض في مقاس الخصر',
       highlightColor: '#22C55E'
     },
     {
       title: 'مدة الالتزام',
-      value: `${calculatedStats.weeksCount} أسابيع`,
+      value: formatWeeksCountAr(calculatedStats.weeksCount),
       sub: 'خطة تدريب وتغذية دقيقة',
       highlightColor: '#F59E0B'
     },

@@ -2,9 +2,7 @@ import React from 'react';
 import { RotateCw } from 'lucide-react';
 
 /**
- * One refresh control, in one place: the page header, beside the page's main action. The daily
- * dashboard put it there and called it "تحديث البيانات" with one icon; the intake screen put it
- * down in the table toolbar and called it "تحديث" with another. Same job, two names, two corners.
+ * Universal refresh control - Hostinger hPanel secondary button style.
  */
 export function RefreshButton({ onClick, loading = false, shortcut = null, title = 'تحديث البيانات من الخادم' }) {
   return (
@@ -14,40 +12,36 @@ export function RefreshButton({ onClick, loading = false, shortcut = null, title
       disabled={loading}
       title={shortcut ? `${title} [${shortcut}]` : title}
       style={{
-        height: '36px',
-        padding: '0 14px',
+        height: '34px',
+        padding: '0 16px',
         fontSize: '12px',
-        fontWeight: 700,
+        fontWeight: 600,
         display: 'inline-flex',
         alignItems: 'center',
         gap: '6px',
         borderRadius: '8px',
         background: '#FFFFFF',
-        color: '#1E293B',
-        border: '1px solid #CBD5E1',
+        color: '#344054',
+        border: '1px solid #D0D5DD',
         cursor: loading ? 'not-allowed' : 'pointer',
         opacity: loading ? 0.7 : 1,
-        boxShadow: '0 1px 2px rgba(15, 23, 42, 0.05)',
+        boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
         transition: 'all 0.15s ease',
       }}
       onMouseEnter={(e) => {
         if (!loading) {
-          e.currentTarget.style.background = '#F8FAFC';
-          e.currentTarget.style.borderColor = '#94A3B8';
+          e.currentTarget.style.background = '#F9FAFB';
+          e.currentTarget.style.borderColor = '#D0D5DD';
         }
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = '#FFFFFF';
-        e.currentTarget.style.borderColor = '#CBD5E1';
+        e.currentTarget.style.borderColor = '#D0D5DD';
       }}
     >
-      <RotateCw size={14} className={loading ? 'animate-spin' : ''} />
+      <RotateCw size={14} className={loading ? 'animate-spin' : ''} color="#475467" />
       <span>تحديث البيانات</span>
-      {shortcut && (
-        <span style={{ fontSize: '9px', opacity: 0.7, fontFamily: 'JetBrains Mono, monospace' }}>
-          [{shortcut}]
-        </span>
-      )}
+      
     </button>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Crown, X, Check, Loader2 } from 'lucide-react';
 
 export default function EditPackageModal({ isOpen, onClose, packageData, onSave, saving }) {
   const [formData, setFormData] = useState({
@@ -78,204 +79,336 @@ export default function EditPackageModal({ isOpen, onClose, packageData, onSave,
 
   return (
     <div 
-      className="modal fade show d-block" 
-      tabIndex="-1" 
-      style={{ backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)', zIndex: 1065 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(15, 23, 42, 0.6)',
+        backdropFilter: 'blur(4px)',
+        zIndex: 99999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px'
+      }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '520px' }}>
-        <div 
-          className="modal-content border-0 shadow-2xl bg-white" 
-          style={{ borderRadius: '24px', overflow: 'hidden' }}
-          dir="rtl"
-        >
-          {/* Header */}
-          <div className="modal-header border-bottom p-4 bg-white d-flex justify-content-between align-items-center" style={{ borderColor: '#f1f5f9' }}>
-            <div className="d-flex align-items-center gap-3">
-              <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px', background: '#E5F0FF', color: '#0284C7', border: '1.5px solid #BAE6FD' }}>
-                <i className="ti ti-crown fs-5"></i>
-              </div>
-              <div>
-                <h5 className="modal-title fw-bold text-dark mb-0" style={{ fontSize: '1.05rem' }}>
-                  {packageData ? 'تعديل بيانات الباقة والسعر' : 'إضافة باقة اشتراك جديدة'}
-                </h5>
-                <small className="text-muted" style={{ fontSize: '0.78rem' }}>ضبط مسمى الباقة، المدة، الأسعار، والمميزات</small>
-              </div>
+      <div 
+        style={{
+          background: '#FFFFFF',
+          borderRadius: '16px',
+          maxWidth: '520px',
+          width: '100%',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: '90vh'
+        }}
+        dir="rtl"
+      >
+        {/* Header */}
+        <div style={{
+          padding: '16px 20px',
+          borderBottom: '1px solid #EAECF0',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: '#FFFFFF'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              background: '#F4F0FD',
+              color: '#673DE6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <Crown size={18} />
             </div>
-            <button 
-              type="button" 
-              onClick={onClose} 
-              className="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-              style={{ width: '34px', height: '34px', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#64748b' }}
-              title="إغلاق"
-            >
-              <i className="ti ti-x fs-6"></i>
-            </button>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#101828' }}>
+                {packageData ? 'تعديل بيانات الباقة والسعر' : 'إضافة باقة اشتراك جديدة'}
+              </h3>
+              <span style={{ fontSize: '11.5px', color: '#667085' }}>
+                ضبط مسمى الباقة، المدة، الأسعار، والمميزات
+              </span>
+            </div>
           </div>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              border: '1px solid #EAECF0',
+              background: '#F8FAFC',
+              color: '#64748B',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease'
+            }}
+            title="إغلاق"
+          >
+            <X size={16} />
+          </button>
+        </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="modal-body p-4 bg-white" style={{ maxHeight: '72vh', overflowY: 'auto' }}>
-              
-              {/* Package Name */}
-              <div className="mb-3">
-                <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.82rem' }}>
-                  اسم الباقة بالعربية <span className="text-danger">*</span>
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            
+            {/* Package Name */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                اسم الباقة بالعربية <span style={{ color: '#DC2626' }}>*</span>
+              </label>
+              <input 
+                type="text" 
+                style={{
+                  width: '100%',
+                  height: '40px',
+                  borderRadius: '8px',
+                  border: '1px solid #D0D5DD',
+                  padding: '0 12px',
+                  fontSize: '13px',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+                placeholder="مثال: باقة ELITE"
+                value={formData.name_ar}
+                onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
+                required
+              />
+            </div>
+
+            {/* Badge Text */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                الشارة الترويجية (Badge)
+              </label>
+              <input 
+                type="text" 
+                style={{
+                  width: '100%',
+                  height: '40px',
+                  borderRadius: '8px',
+                  border: '1px solid #D0D5DD',
+                  padding: '0 12px',
+                  fontSize: '13px',
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+                placeholder="مثال: عرض خاص 3 شهور + 1 مجاناً"
+                value={formData.badge_ar}
+                onChange={(e) => setFormData({ ...formData, badge_ar: e.target.value })}
+              />
+            </div>
+
+            {/* Price & Duration */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                  السعر (ج.م) <span style={{ color: '#DC2626' }}>*</span>
                 </label>
                 <input 
-                  type="text" 
-                  className="form-control"
-                  style={{ height: '40px', borderRadius: '10px', fontSize: '0.85rem' }}
-                  placeholder="مثال: باقة إيليت (Elite Package)"
-                  value={formData.name_ar}
-                  onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
+                  type="number" 
+                  style={{
+                    width: '100%',
+                    height: '40px',
+                    borderRadius: '8px',
+                    border: '1px solid #D0D5DD',
+                    padding: '0 12px',
+                    fontSize: '13px',
+                    fontFamily: 'JetBrains Mono, Cairo',
+                    fontWeight: 700,
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                  value={formData.price_egp}
+                  onChange={(e) => setFormData({ ...formData, price_egp: e.target.value })}
                   required
                 />
               </div>
-
-              {/* Badge text */}
-              <div className="mb-3">
-                <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.82rem' }}>
-                  الشارة الترويجية (Badge)
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                  المدة الأساسية (شهور)
                 </label>
                 <input 
-                  type="text" 
-                  className="form-control"
-                  style={{ height: '40px', borderRadius: '10px', fontSize: '0.85rem' }}
-                  placeholder="مثال: عرض خاص 3 شهور + 1 مجاناً"
-                  value={formData.badge_ar}
-                  onChange={(e) => setFormData({ ...formData, badge_ar: e.target.value })}
+                  type="number" 
+                  style={{
+                    width: '100%',
+                    height: '40px',
+                    borderRadius: '8px',
+                    border: '1px solid #D0D5DD',
+                    padding: '0 12px',
+                    fontSize: '13px',
+                    fontFamily: 'JetBrains Mono, Cairo',
+                    fontWeight: 700,
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                  value={formData.duration_months}
+                  onChange={(e) => setFormData({ ...formData, duration_months: e.target.value })}
+                  required
                 />
               </div>
+            </div>
 
-              {/* Price & Duration Row */}
-              <div className="row g-2 mb-3">
-                <div className="col-6">
-                  <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.82rem' }}>
-                    السعر (ج.م) <span className="text-danger">*</span>
-                  </label>
-                  <input 
-                    type="number" 
-                    className="form-control"
-                    style={{ height: '40px', borderRadius: '10px', fontSize: '0.85rem' }}
-                    value={formData.price_egp}
-                    onChange={(e) => setFormData({ ...formData, price_egp: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="col-6">
-                  <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.82rem' }}>
-                    المدة الأساسية (شهور)
-                  </label>
-                  <input 
-                    type="number" 
-                    className="form-control"
-                    style={{ height: '40px', borderRadius: '10px', fontSize: '0.85rem' }}
-                    value={formData.duration_months}
-                    onChange={(e) => setFormData({ ...formData, duration_months: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Free Months & Total */}
-              <div className="row g-2 mb-3 align-items-center">
-                <div className="col-6">
-                  <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.82rem' }}>
-                    شهور مجانية إضافية
-                  </label>
-                  <input 
-                    type="number" 
-                    className="form-control"
-                    style={{ height: '40px', borderRadius: '10px', fontSize: '0.85rem' }}
-                    value={formData.free_months}
-                    onChange={(e) => setFormData({ ...formData, free_months: e.target.value })}
-                  />
-                </div>
-                <div className="col-6">
-                  <div className="p-2 rounded-3 bg-light border text-center mt-3">
-                    <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>إجمالي مدة الاشتراك:</small>
-                    <strong className="text-primary" style={{ fontSize: '0.92rem' }}>{totalMonths} شهور ({totalMonths * 30} يوم)</strong>
-                  </div>
-                </div>
-              </div>
-
-              {/* Features list */}
-              <div className="mb-3">
-                <label className="form-label fw-bold text-dark small mb-1" style={{ fontSize: '0.82rem' }}>
-                  مميزات الباقة (اكتب كل ميزة في سطر مستقل)
+            {/* Free Months & Total */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'center' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                  شهور مجانية إضافية
                 </label>
-                <textarea 
-                  className="form-control"
-                  rows="4"
-                  style={{ borderRadius: '12px', fontSize: '0.84rem' }}
-                  placeholder="خطة تغذية ذكية مع توزين الماكروز&#10;جدول تمارين مخصص&#10;متابعة وتكيف أسبوعي"
-                  value={formData.featuresText}
-                  onChange={(e) => setFormData({ ...formData, featuresText: e.target.value })}
-                ></textarea>
+                <input 
+                  type="number" 
+                  style={{
+                    width: '100%',
+                    height: '40px',
+                    borderRadius: '8px',
+                    border: '1px solid #D0D5DD',
+                    padding: '0 12px',
+                    fontSize: '13px',
+                    fontFamily: 'JetBrains Mono, Cairo',
+                    fontWeight: 700,
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                  value={formData.free_months}
+                  onChange={(e) => setFormData({ ...formData, free_months: e.target.value })}
+                />
               </div>
-
-              {/* Flags (Featured & Active) */}
-              <div className="d-flex gap-4 pt-2 border-top" style={{ borderColor: '#f1f5f9' }}>
-                <div className="form-check form-switch">
-                  <input 
-                    className="form-check-input" 
-                    type="checkbox" 
-                    id="is_featured"
-                    checked={formData.is_featured}
-                    onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                  />
-                  <label className="form-check-label small fw-bold text-dark" htmlFor="is_featured">
-                    تمييز كباقة رئيسية (Featured)
-                  </label>
-                </div>
-
-                <div className="form-check form-switch">
-                  <input 
-                    className="form-check-input" 
-                    type="checkbox" 
-                    id="active"
-                    checked={formData.active}
-                    onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                  />
-                  <label className="form-check-label small fw-bold text-dark" htmlFor="active">
-                    باقة مفعلة ونشطة
-                  </label>
+              <div>
+                <div style={{
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  background: '#F4F0FD',
+                  border: '1px solid #DDD6FE',
+                  textAlign: 'center',
+                  marginTop: '16px'
+                }}>
+                  <span style={{ fontSize: '11px', color: '#667085', display: 'block' }}>إجمالي مدة الاشتراك:</span>
+                  <strong style={{ fontSize: '13px', color: '#673DE6', fontFamily: 'JetBrains Mono, Cairo' }}>
+                    {totalMonths} شهور ({totalMonths * 30} يوم)
+                  </strong>
                 </div>
               </div>
-
             </div>
 
-            {/* Footer */}
-            <div className="modal-footer p-3 px-4 bg-light d-flex justify-content-between border-top" style={{ borderColor: '#f1f5f9' }}>
-              <button 
-                type="button" 
-                className="btn btn-sm btn-light rounded-pill px-3 fw-semibold border"
-                style={{ height: '36px', fontSize: '0.8rem', color: '#475569' }}
-                onClick={onClose}
-              >
-                إلغاء
-              </button>
-              <button 
-                type="submit" 
-                disabled={saving}
-                className="btn btn-sm rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center gap-2 text-slate-900"
-                style={{ 
-                  height: '36px', 
-                  fontSize: '0.82rem', 
-                  background: 'linear-gradient(135deg, #0284C7 0%, #0284C7 100%)', 
-                  border: 'none', 
-                  boxShadow: '0 2px 10px rgba(38, 28, 106, 0.22)' 
+            {/* Features list */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
+                مميزات الباقة (اكتب كل ميزة في سطر مستقل)
+              </label>
+              <textarea 
+                rows={3}
+                style={{
+                  width: '100%',
+                  borderRadius: '8px',
+                  border: '1px solid #D0D5DD',
+                  padding: '8px 12px',
+                  fontSize: '12.5px',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  resize: 'vertical'
                 }}
-              >
-                {saving ? (
-                  <><span className="spinner-border spinner-border-sm"></span> جاري الحفظ...</>
-                ) : (
-                  <><i className="ti ti-check fs-6"></i> حفظ الباقة</>
-                )}
-              </button>
+                placeholder="خطة تغذية ذكية مع توزين الماكروز&#10;جدول تمارين مخصص&#10;متابعة وتكيف أسبوعي"
+                value={formData.featuresText}
+                onChange={(e) => setFormData({ ...formData, featuresText: e.target.value })}
+              />
             </div>
-          </form>
-        </div>
+
+            {/* Flags (Featured & Active) */}
+            <div style={{ display: 'flex', gap: '20px', paddingTop: '10px', borderTop: '1px solid #F2F4F7' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 600, color: '#344054', cursor: 'pointer' }}>
+                <input 
+                  type="checkbox" 
+                  checked={formData.is_featured}
+                  onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                  style={{ width: '16px', height: '16px', accentColor: '#673DE6' }}
+                />
+                <span>تمييز كباقة رئيسية (Featured)</span>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 600, color: '#344054', cursor: 'pointer' }}>
+                <input 
+                  type="checkbox" 
+                  checked={formData.active}
+                  onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                  style={{ width: '16px', height: '16px', accentColor: '#673DE6' }}
+                />
+                <span>باقة مفعلة ونشطة</span>
+              </label>
+            </div>
+
+          </div>
+
+          {/* Footer */}
+          <div style={{
+            padding: '14px 20px',
+            background: '#F9FAFB',
+            borderTop: '1px solid #EAECF0',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '10px'
+          }}>
+            <button 
+              type="button" 
+              onClick={onClose}
+              style={{
+                height: '36px',
+                padding: '0 16px',
+                borderRadius: '8px',
+                border: '1px solid #D0D5DD',
+                background: '#FFFFFF',
+                color: '#344054',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              إلغاء
+            </button>
+            <button 
+              type="submit" 
+              disabled={saving}
+              style={{ 
+                height: '36px', 
+                padding: '0 20px',
+                borderRadius: '8px',
+                background: '#673DE6',
+                color: '#FFFFFF',
+                border: 'none',
+                fontSize: '12.5px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)' 
+              }}
+            >
+              {saving ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>جاري الحفظ...</span>
+                </>
+              ) : (
+                <>
+                  <Check size={14} />
+                  <span>حفظ الباقة</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

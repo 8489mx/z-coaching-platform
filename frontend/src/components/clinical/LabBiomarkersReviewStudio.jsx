@@ -558,7 +558,7 @@ export default function LabBiomarkersReviewStudio({
             )}
 
             {/* 2. قسم التحليل الإكلينيكي وقرارات المحرك الفورية */}
-            <div style={{ marginTop: '16px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px' }}>
+            <div style={{ marginTop: '16px', background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '10px', padding: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ShieldCheck size={16} color="#0F172A" />
@@ -590,28 +590,28 @@ export default function LabBiomarkersReviewStudio({
 
               {/* قرارات ضبط التغذية الصارمة (Guardrails) */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', marginBottom: '12px' }}>
-                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
                   <span style={{ color: '#64748B', display: 'block' }}>سقف البروتين اليومي:</span>
                   <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>
                     {clinicalResult.dietary_modifications.protein_cap_g_per_kg ? `${clinicalResult.dietary_modifications.protein_cap_g_per_kg} جم/كجم` : 'مفتوح حسب الهدف'}
                   </strong>
                 </div>
 
-                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
                   <span style={{ color: '#64748B', display: 'block' }}>مستهدف الألياف اليومي:</span>
                   <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>
                     {clinicalResult.dietary_modifications.min_fiber_g} جم
                   </strong>
                 </div>
 
-                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
                   <span style={{ color: '#64748B', display: 'block' }}>حظر مكمل الكرياتين:</span>
                   <strong style={{ color: clinicalResult.dietary_modifications.withhold_creatine ? '#DC2626' : '#16A34A' }}>
                     {clinicalResult.dietary_modifications.withhold_creatine ? 'محظور لحماية الكلى' : 'مسموح به'}
                   </strong>
                 </div>
 
-                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
                   <span style={{ color: '#64748B', display: 'block' }}>مستهدف الماء اليومي:</span>
                   <strong style={{ color: '#0284C7', fontFamily: 'JetBrains Mono' }}>
                     {clinicalResult.dietary_modifications.daily_water_target_liters} لتر
