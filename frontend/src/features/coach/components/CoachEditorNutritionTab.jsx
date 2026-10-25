@@ -437,23 +437,28 @@ export default function CoachEditorNutritionTab(props) {
                   </div>
                 )}
 
-                {/* Calorie Diff / Surplus Badge */}
+                {/* Calorie Diff / Surplus Card */}
                 {totalPlannedCal > 0 && (
                   <div style={{
-                    fontSize: '11.5px',
-                    fontWeight: 800,
+                    background: Math.abs(diffCal) <= 25 ? '#F0FDF4' : diffCal > 0 ? '#FFFBEB' : '#F0F9FF',
+                    border: '1px solid ' + (Math.abs(diffCal) <= 25 ? '#BBF7D0' : diffCal > 0 ? '#FDE68A' : '#BAE6FD'),
+                    color: Math.abs(diffCal) <= 25 ? '#15803D' : diffCal > 0 ? '#B45309' : '#0369A1',
                     height: '40px',
                     padding: '0 10px',
                     borderRadius: '8px',
-                    background: Math.abs(diffCal) <= 25 ? '#DCFCE7' : diffCal > 0 ? '#FEF3C7' : '#E0F2FE',
-                    color: Math.abs(diffCal) <= 25 ? '#15803D' : diffCal > 0 ? '#B45309' : '#0369A1',
-                    border: '1px solid ' + (Math.abs(diffCal) <= 25 ? '#BBF7D0' : diffCal > 0 ? '#FDE68A' : '#BAE6FD'),
-                    display: 'inline-flex',
-                    alignItems: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
                     justifyContent: 'center',
-                    textAlign: 'center'
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    whiteSpace: 'nowrap'
                   }}>
-                    {Math.abs(diffCal) <= 25 ? 'مطابق للتارجت' : diffCal > 0 ? `فائض +${diffCal} kcal` : `متبقي ${Math.abs(diffCal)} kcal`}
+                    <span style={{ fontSize: '10px', color: Math.abs(diffCal) <= 25 ? '#166534' : diffCal > 0 ? '#92400E' : '#075985', fontWeight: 800, lineHeight: 1 }}>
+                      فرق السعرات
+                    </span>
+                    <strong style={{ fontSize: '12px', fontWeight: 800, lineHeight: 1.2, marginTop: '2px' }}>
+                      {Math.abs(diffCal) <= 25 ? 'مطابق للتارجت' : diffCal > 0 ? `فائض +${diffCal} kcal` : `متبقي ${Math.abs(diffCal)} kcal`}
+                    </strong>
                   </div>
                 )}
               </div>
@@ -464,7 +469,7 @@ export default function CoachEditorNutritionTab(props) {
                   type="button"
                   onClick={toggleAutoRipple}
                   style={{
-                    height: '34px',
+                    height: '40px',
                     padding: '0 10px',
                     borderRadius: '8px',
                     background: isAutoRippleOn ? '#EFF6FF' : '#FFFFFF',
@@ -489,7 +494,7 @@ export default function CoachEditorNutritionTab(props) {
                   type="button"
                   onClick={handleAddNewMeal}
                   style={{
-                    height: '34px',
+                    height: '40px',
                     padding: '0 14px',
                     borderRadius: '8px',
                     background: '#673DE6',
@@ -1072,7 +1077,7 @@ export default function CoachEditorNutritionTab(props) {
               {/* Modal Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#101828' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#101828' }}>
                     <Target size={18} />
                   </div>
                   <div>
