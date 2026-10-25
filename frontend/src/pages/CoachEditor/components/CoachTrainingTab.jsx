@@ -438,12 +438,6 @@ export function CoachTrainingTab({
                         {getExerciseDisplayNames(ex).nameEn}
                       </strong>
 
-                      {ex.equipment && (
-                        <span style={{ fontSize: '10px', padding: '1px 7px', borderRadius: '6px', background: '#F2F4F7', color: '#475467', border: '1px solid #EAECF0', fontWeight: 500 }}>
-                          {ex.equipment}
-                        </span>
-                      )}
-
                       {isContraindicated && (
                         <span style={{ fontSize: '9.5px', fontWeight: 600, background: '#D92D20', color: '#FFFFFF', padding: '1px 7px', borderRadius: '6px' }}>
                           محظور لمرضى الضغط

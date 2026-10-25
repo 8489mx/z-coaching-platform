@@ -280,7 +280,7 @@ export function useCoachEditorData() {
               reps: String(reps),
               rir: Number(rir),
               restSec: Number(rest),
-              equipment: ex.equipment || ex.equipment_ar || 'أداة تمرين',
+              equipment: ex.equipment || ex.equipment_ar || '',
               safetyNote: ex.safety_note || ex.safetyNote || ex.cue || ex.cues_ar || '',
               video_url: ex.video_url || (ex.video_id ? `https://www.youtube.com/watch?v=${ex.video_id}` : ''),
               image_stretch: ex.image_stretch || (ex.images && ex.images[0]) || `/exercises/${code}/0.jpg`,
