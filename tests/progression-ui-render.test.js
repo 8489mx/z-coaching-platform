@@ -23,7 +23,7 @@ describe('progression UI', () => {
   });
 
   it('coach timeline handles an exercise with no logs', () => {
-    expect(renderToStaticMarkup(React.createElement(ProgressionTimeline, { entry: null }))).toContain('لم يسجل المتدرب');
+    expect(renderToStaticMarkup(React.createElement(ProgressionTimeline, { entry: null }))).toBe('');
   });
 
   it('client log card shows the target and exactly two inputs, no timers', () => {

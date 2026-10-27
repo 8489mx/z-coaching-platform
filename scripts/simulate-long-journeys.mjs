@@ -153,7 +153,7 @@ function targetsOf(pd = {}) {
 const exerciseSet = (pd = {}) => new Set(((pd.training_program || pd.training || {}).weeks || []).flatMap((w) => (w.sessions || []).flatMap((s) => (s.exercises || []).map((e) => e.exercise_code || e.code))));
 
 await cleanup();
-const coach = await User.findOne({ where: { client_code: "JRN_COACH" } }) || await User.create({ client_code: "JRN_COACH", phone_number: "01097700000", full_name: "كوتش الرحلات", role: "ADMIN" });
+const coach = await User.findOne({ where: { client_code: "JRN_COACH" } }) || await User.create({ client_code: "JRN_COACH", phone_number: "01099887700", full_name: "كوتش الرحلات", role: "ADMIN" });
 const COACH = { id: coach.id, role: "ADMIN" };
 const results = [];
 
@@ -161,7 +161,7 @@ for (const [i, J] of JOURNEYS.entries()) {
   const log = [];
   const issues = [];
   const bad = (msg) => issues.push(msg);
-  const user = await User.create({ client_code: J.code, phone_number: `0109770000${i + 1}`, full_name: J.name, role: "CLIENT", gender: J.gender,
+  const user = await User.create({ client_code: J.code, phone_number: `010998877${String(i + 1).padStart(2, "0")}`, full_name: J.name, role: "CLIENT", gender: J.gender,
     subscription_package: J.pkg, subscription_status: "ACTIVE", subscription_start_date: new Date(), subscription_end_date: new Date(Date.now() + J.months * 30 * DAY) });
 
   const sub = await call(submitPublicIntake, { body: { client_code: J.code, phone_number: user.phone_number, full_name: J.name, answers: J.answers } });
