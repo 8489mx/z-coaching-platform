@@ -395,7 +395,7 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
 
 ## 3ag. Thirty-third round (2026-10-27) — Phase 15 Cross-Unit Acceptance Test Matrix & Scientific Equations Audit (Sections 8 & 9) — merged + pushed
 
-- `PENDING_COMMIT` **Cross-Unit Acceptance Test Matrix & Scientific Equations Audit (Sections 8 & 9)**:
+- `8486658` **Cross-Unit Acceptance Test Matrix & Scientific Equations Audit (Sections 8 & 9)**:
   - **Comprehensive 22-Scenario Integration Battery (Section 9)**: verified complete end-to-end integration contracts across all 22 scenarios specified in the Master Brief:
     1. Adult Healthy Lifecycle (Intake -> Draft -> Active Plan -> PDF Tripartite Equivalence).
     2. Missing Anthropometric Data Safety (Refuses silent zeros/fallbacks for BMI & Tanaka HR).
