@@ -4,6 +4,8 @@ import { API_BASE } from '../config/api';
 import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
+import { getItemPortionMeta } from '../utils/kitchenYieldEngine';
+import { sanitizeCoachNotesForClient } from '../utils/pdfExportEngine';
 
 const CSS_STYLES = `
   @page {
@@ -429,6 +431,8 @@ export default function ProgramPdfView() {
   const waistCm = program?.intake_summary?.waist || 88;
   const hipsCm = program?.intake_summary?.hips || 102;
   const primaryGoal = sanitizeGoalLabel(program?.client?.goal_label || program?.client?.primary_goal || user?.primary_goal || program?.intake_summary?.primary_goal || 'خسارة دهون وتنشيف عضلي متقدم');
+  const rawCoachNotes = program?.coach_notes || program?.notes || clientObj?.coach_notes || user?.coach_notes || '';
+  const coachNotes = sanitizeCoachNotesForClient(rawCoachNotes);
 
   // Energy & Macros
   const targetCalories = Math.round(
@@ -496,9 +500,16 @@ export default function ProgramPdfView() {
     }
   ];
 
+  // Active Training Week Resolution
+  const activeWeekNum = parseInt(searchParams.get('week'), 10) || program?.current_week || clientObj?.current_week || 1;
+  const activeWeekObj = Array.isArray(program?.training_program?.weeks)
+    ? (program.training_program.weeks.find(w => Number(w.week_number) === Number(activeWeekNum)) || program.training_program.weeks[0])
+    : null;
+
   // Training Sessions
   const rawSessions = program?.training?.sessions 
     || program?.training_split?.sessions 
+    || activeWeekObj?.sessions
     || program?.training_program?.weeks?.[0]?.sessions 
     || [
     {
@@ -821,11 +832,14 @@ export default function ProgramPdfView() {
                   </td>
                   <td style={{ fontSize: '7.5pt', lineHeight: '1.5' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
-                      {meal.items?.map((it, iIdx) => (
-                        <span key={iIdx} style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px', fontSize: '7pt', color: '#334155' }}>
-                          <strong style={{ color: '#0284C7' }}>{it.amount_g || it.amount} {it.unit || 'جم'}</strong> {it.name_ar || it.name}
-                        </span>
-                      ))}
+                      {meal.items?.map((it, iIdx) => {
+                        const meta = getItemPortionMeta(it);
+                        return (
+                          <span key={iIdx} style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '6px', padding: '1px 5px', fontSize: '7pt', color: '#334155' }}>
+                            <strong style={{ color: '#0284C7' }}>{meta.badge_text}</strong> {meta.name || it.name_ar || it.name}
+                          </span>
+                        );
+                      })}
                     </div>
                   </td>
                   <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7', fontSize: '7.5pt' }} className="nowrap">{meal.protein_g ?? meal.p ?? 35} جم</td>
@@ -1154,6 +1168,12 @@ export default function ProgramPdfView() {
               </div>
             </div>
 
+            {coachNotes && (
+              <div style={{ background: '#F0F9FF', border: '0.5pt solid #BAE6FD', borderRadius: '6px', padding: '4px 8px', marginBottom: '6px' }}>
+                <span style={{ fontWeight: '800', color: '#0369A1' }}>توجيهات الكوتش الخاصة: </span>
+                <span style={{ color: '#0F172A' }}>{coachNotes}</span>
+              </div>
+            )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontSize: '8pt', fontWeight: '900', color: '#0F172A' }}>
