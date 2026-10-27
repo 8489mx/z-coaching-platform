@@ -2105,7 +2105,10 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
 
   const allergyList = Array.isArray(allergies) ? allergies : (typeof allergies === 'string' ? [allergies] : []);
   const conditionList = Array.isArray(conditions) ? conditions : (typeof conditions === 'string' ? [conditions] : []);
-  const allClinicalTokens = allergyList.concat(conditionList);
+  const strictAllergyList = Array.isArray(clinicalProfile.strict_allergies) ? clinicalProfile.strict_allergies : (typeof clinicalProfile.strict_allergies === 'string' ? [clinicalProfile.strict_allergies] : []);
+  const medConditionList = Array.isArray(clinicalProfile.medical_conditions) ? clinicalProfile.medical_conditions : (typeof clinicalProfile.medical_conditions === 'string' ? [clinicalProfile.medical_conditions] : []);
+  const combinedAllergies = allergyList.concat(strictAllergyList);
+  const allClinicalTokens = combinedAllergies.concat(conditionList, medConditionList);
 
   // 1. G6PD (Favism): Ban all legumes and peanuts
   const g6pdActive = Boolean(is_g6pd) || allClinicalTokens.some(a => {
@@ -2166,9 +2169,89 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
     return false;
   }
 
+  // 7. Religious Fasting & Dietary Exclusions (Christian Fast / Vegan / Pescatarian)
+  const fastCtx = clinicalProfile.fasting_context || clinicalProfile.fastingContext || null;
+  const isChristianFast = Boolean(
+    (fastCtx && fastCtx.active && String(fastCtx.mode || '').toUpperCase() === 'CHRISTIAN_FAST') ||
+    clinicalProfile.is_coptic_fasting === true ||
+    clinicalProfile.christian_fasting_active === true ||
+    clinicalProfile.isChristianFast === true
+  );
+  const dietToken = String(
+    (fastCtx && fastCtx.diet) ||
+    clinicalProfile.fastingDiet ||
+    clinicalProfile.dietary_restriction ||
+    clinicalProfile.diet_type ||
+    ''
+  ).toUpperCase();
+  const isStrictVegan = Boolean(
+    clinicalProfile.is_vegan === true ||
+    clinicalProfile.isVegan === true ||
+    dietToken === 'STRICT_VEGAN' ||
+    dietToken === 'VEGAN' ||
+    allClinicalTokens.some(t => {
+      const s = String(t?.conditionCode || t || '').toUpperCase();
+      return s === 'VEGAN' || s === 'STRICT_VEGAN' || s === 'نباتي صرف';
+    })
+  );
+  const isPescatarianFast = isChristianFast && !isStrictVegan && dietToken !== 'STRICT_VEGAN';
+
+  if (isChristianFast || isStrictVegan || dietToken === 'PESCATARIAN' || dietToken === 'VEGAN_OR_SEAFOOD') {
+    const codeUpper = String(foodItem.code || '').toUpperCase();
+    const allergensUpper = (foodItem.allergens || []).map(x => String(x).toUpperCase());
+    const plantLookalike = /PEANUT|ALMOND|CASHEW|NUT_BUTTER|OAT_MILK|SOY|COCONUT|RICE_MILK|TAHINI|SESAME/.test(codeUpper);
+    const isMeat = /CHICKEN|BEEF|LAMB|TURKEY|LIVER|VEAL|KOFTA|CAMEL|MEAT|SAUSAGE|BURGER|PASTRAMI|BASTERMA|DUCK|RABBIT|PIGEON|KABSA_CHICKEN|KABSA_LAMB|MACHBOOS_CHICKEN|HAREES|MADROOBA|WHEY|CASEIN|COLLAGEN/.test(codeUpper);
+    const isEgg = /EGG(?!PLANT)/.test(codeUpper) || allergensUpper.includes('EGGS');
+    const isDairy = Boolean(foodItem.is_dairy) || allergensUpper.includes('DAIRY') || (/MILK|YOGURT|CHEESE|LABAN|BUTTER|GHEE|CREAM|LABNEH|KAREISH|MOLOKHIA_TAQLIYA|MADROOBA/.test(codeUpper) && !plantLookalike);
+    const isFish = /FISH|TUNA|SALMON|SHRIMP|SARDINE|MACKEREL|TILAPIA|BOURI|HAMOUR|KANAAD|NAJIL|SEAFOOD|CALAMARI|CRAB|KINGFISH/.test(codeUpper) || allergensUpper.includes('FISH') || allergensUpper.includes('SHELLFISH');
+
+    if (isMeat || isEgg || isDairy) return false;
+    if (isFish && isStrictVegan && !isPescatarianFast) return false;
+  }
+
   // 5. Explicit Allergies (Bilingual Arabic/English Semantic Matching)
-  if (allergyList.length > 0) {
-    for (const allergy of allergyList) {
+  if (combinedAllergies.length > 0) {
+    for (const allergy of combinedAllergies) {
+      const a = String(allergy).toUpperCase();
+      const itemCodeUpper = String(foodItem.code || '').toUpperCase();
+      const itemNameAr = String(foodItem.name_ar || '');
+
+      // Peanuts & Tree Nuts (combined or separate)
+      if (a.includes('PEANUT') || a.includes('TREE_NUT') || a.includes('NUTS') || a.includes('سوداني') || a.includes('مكسرات') || a.includes('لوز') || a.includes('جوز') || a.includes('كاجو') || a.includes('فستق') || a.includes('بندق')) {
+        if (
+          foodItem.allergens?.includes('PEANUTS') ||
+          foodItem.allergens?.includes('TREE_NUTS') ||
+          /PEANUT|ALMOND|WALNUT|CASHEW|PISTACHIO|HAZELNUT|NUT_BUTTER|MIXED_NUTS/.test(itemCodeUpper) ||
+          /سوداني|مكسرات|لوز|جوز|كاجو|فستق|بندق/.test(itemNameAr)
+        ) {
+          return false;
+        }
+      }
+      // Sesame & Seeds
+      if (a.includes('SESAME') || a.includes('SEEDS') || a.includes('سمسم') || a.includes('طحينة') || a.includes('بذور') || a.includes('شيا') || a.includes('كتان')) {
+        if (
+          foodItem.allergens?.includes('SESAME') ||
+          /SESAME|TAHINI|CHIA|FLAX|SEEDS/.test(itemCodeUpper) ||
+          /سمسم|طحينة|بذور|شيا|كتان/.test(itemNameAr)
+        ) {
+          return false;
+        }
+      }
+      // Soy
+      if (a.includes('SOY') || a.includes('TOFU') || a.includes('EDAMAME') || a.includes('صويا')) {
+        if (
+          foodItem.allergens?.includes('SOY') ||
+          /SOY|TOFU|EDAMAME/.test(itemCodeUpper) ||
+          /صويا|إدامامي|توفو/.test(itemNameAr)
+        ) {
+          return false;
+        }
+      }
+    }
+  }
+  if (combinedAllergies.length > 0) {
+    for (const allergy of combinedAllergies) {
+
       const a = String(allergy).toUpperCase();
       
       // Fish
@@ -2650,7 +2733,8 @@ export function formatItemPortionDisplay({
   macro_type = 'PROTEIN',
   _food_state = 'COOKED'
 }, mode = PORTION_DISPLAY_MODES.DUAL, cooking_state_mode = COOKING_STATE_MODES.BOTH) {
-  const g = Number(amount_g) || 0;
+  let g = Number(amount_g) || 0;
+  const isInputRaw = String(_food_state || '').toUpperCase() === 'RAW';
   const upperCode = String(food_code).toUpperCase();
   const upperType = String(macro_type || '').toUpperCase();
 
@@ -2658,7 +2742,8 @@ export function formatItemPortionDisplay({
   let rawCookedNote = '';
 
   if (['CHICKEN_BREAST', 'SKINLESS_CHICKEN_THIGHS', 'TURKEY', 'CHICKEN', 'دجاج', 'فراخ', 'شاورما'].some(c => upperCode.includes(c))) {
-    const rawG = Math.round(g / 0.75);
+    if (isInputRaw) g = Math.round(g * 0.75);
+    const rawG = isInputRaw ? (Number(amount_g) || 0) : Math.round(g / 0.75);
     if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
       rawCookedNote = `${g} جم مطبوخ`;
     } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
@@ -2667,7 +2752,8 @@ export function formatItemPortionDisplay({
       rawCookedNote = `${g} جم مطبوخ (${rawG} جم نيئ)`;
     }
   } else if (['LEAN_GROUND_BEEF', 'LEAN_VEAL_BEEF', 'BEEF', 'لحم', 'كفتة', 'كبدة'].some(c => upperCode.includes(c))) {
-    const rawG = Math.round(g / 0.72);
+    if (isInputRaw) g = Math.round(g * 0.72);
+    const rawG = isInputRaw ? (Number(amount_g) || 0) : Math.round(g / 0.72);
     if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
       rawCookedNote = `${g} جم مطبوخ`;
     } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
@@ -2676,7 +2762,8 @@ export function formatItemPortionDisplay({
       rawCookedNote = `${g} جم مطبوخ (${rawG} جم نيئ)`;
     }
   } else if (['WHITE_FISH_FILLET', 'SHRIMP_GRILLED', 'SALMON', 'FISH', 'سمك', 'بلطي', 'جمبري', 'بوري', 'فيليه'].some(c => upperCode.includes(c))) {
-    const rawG = Math.round(g / 0.80);
+    if (isInputRaw) g = Math.round(g * 0.80);
+    const rawG = isInputRaw ? (Number(amount_g) || 0) : Math.round(g / 0.80);
     if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
       rawCookedNote = `${g} جم مطبوخ`;
     } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
@@ -2685,7 +2772,8 @@ export function formatItemPortionDisplay({
       rawCookedNote = `${g} جم مطبوخ (${rawG} جم نيئ)`;
     }
   } else if (['BASMATI_RICE', 'WHITE_RICE', 'EGYPTIAN_RICE', 'BROWN_RICE', 'RICE', 'أرز', 'ارز', 'PASTA', 'SPAGHETTI', 'NOODLES', 'مكرونة', 'سباغيتي'].some(c => upperCode.includes(c))) {
-    const rawG = Math.round(g / 2.5);
+    if (isInputRaw) g = Math.round(g * 2.5);
+    const rawG = isInputRaw ? (Number(amount_g) || 0) : Math.round(g / 2.5);
     if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
       rawCookedNote = `${g} جم مطبوخ`;
     } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
@@ -2703,16 +2791,18 @@ export function formatItemPortionDisplay({
       rawCookedNote = `${g} جم نيئ جاف (~ ${cookedG} جم بعد الطهي)`;
     }
   } else if (['SWEET_POTATO', 'BOILED_POTATOES', 'POTATO', 'بطاطس', 'بطاطا'].some(c => upperCode.includes(c))) {
-    const rawG = Math.round(g / 0.95);
+    if (isInputRaw) g = Math.round(g * 0.95);
+    const rawG = isInputRaw ? (Number(amount_g) || 0) : Math.round(g / 0.95);
     if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
-      rawCookedNote = `${g} جم مشوي/مسلوق`;
+      rawCookedNote = cooking_state_mode === COOKING_STATE_MODES.COOKED ? `${g} جم مشوي/مسلوق` : `${g} جم مشوي/مسلوق (${rawG} جم نيئ)`;
     } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {
       rawCookedNote = `${rawG} جم نيئ`;
     } else {
-      rawCookedNote = `${g} جم مشوي/مسلوق`;
+      rawCookedNote = cooking_state_mode === COOKING_STATE_MODES.COOKED ? `${g} جم مشوي/مسلوق` : `${g} جم مشوي/مسلوق (${rawG} جم نيئ)`;
     }
   } else if (['LENTILS', 'CHICKPEAS', 'WHITE_BEANS', 'عدس', 'حمص'].some(c => upperCode.includes(c))) {
-    const rawG = Math.round(g / 2.2);
+    if (isInputRaw) g = Math.round(g * 2.2);
+    const rawG = isInputRaw ? (Number(amount_g) || 0) : Math.round(g / 2.2);
     if (cooking_state_mode === COOKING_STATE_MODES.COOKED) {
       rawCookedNote = `${g} جم مسلوق`;
     } else if (cooking_state_mode === COOKING_STATE_MODES.RAW) {

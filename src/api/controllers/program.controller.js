@@ -608,7 +608,21 @@ async function swapContextFor(req) {
   const clientForCoach = requester && ["COACH", "ADMIN"].includes(requester.role) && code
     ? await User.findOne({ where: { client_code: code } }).catch(() => null)
     : null;
-  return resolveSwapContext({ requester, clientForCoach, loadAnswers: loadLatestIntakeAnswers });
+  const baseCtx = await resolveSwapContext({ requester, clientForCoach, loadAnswers: loadLatestIntakeAnswers });
+  const targetClient = requester?.role === "CLIENT" ? requester : clientForCoach;
+  if (targetClient) {
+    const activeProg = await Program.findOne({ where: { user_id: targetClient.id }, order: [["id", "DESC"]], attributes: ["program_data"] }).catch(() => null);
+    const fastCtx = await resolveClientFastingContext(targetClient, activeProg?.program_data || {}).catch(() => null);
+    if (fastCtx?.active && fastCtx?.mode === "CHRISTIAN_FAST") {
+      return {
+        ...baseCtx,
+        isChristianFast: true,
+        fastingDiet: fastCtx.diet,
+        fasting_context: fastCtx,
+      };
+    }
+  }
+  return baseCtx;
 }
 
 /** Meal items the client cannot swap (protein powder) carry the note saying what to do instead. */

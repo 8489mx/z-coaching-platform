@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowRightLeft, Search, X } from 'lucide-react';
 import { FOOD_DATABASE_LIST } from '../../constants/coachEditorConstants';
 import { arabicSearchMatch } from '../../../../utils/searchUtils';
-import { convertPortionCookingYield, FOOD_YIELD_MAPPING } from '../../../../utils/kitchenYieldEngine';
+import { convertPortionCookingYield, FOOD_YIELD_MAPPING, resolveFoodYieldRule } from '../../../../utils/kitchenYieldEngine';
 
 export function CoachSwapFoodModal({
   swapFoodModal,
@@ -119,7 +119,19 @@ export function CoachSwapFoodModal({
 
               // Cooking Yield Conversion Info (Raw vs Cooked)
               let cookingYieldInfo = null;
-              if (targetFood.code && FOOD_YIELD_MAPPING[targetFood.code]) {
+              const yieldRule = resolveFoodYieldRule(targetFood.code || targetFood.name || '');
+              if (yieldRule && yieldRule.raw_to_cooked !== 1) {
+                const isRawBase = yieldRule.base_state === 'RAW';
+                const yieldConv = convertPortionCookingYield({
+                  food_code: targetFood.code || targetFood.name,
+                  amount_g: equivGrams,
+                  from_state: isRawBase ? 'RAW' : 'COOKED',
+                  to_state: isRawBase ? 'COOKED' : 'RAW'
+                });
+                if (yieldConv.converted_amount_g !== equivGrams) {
+                  cookingYieldInfo = isRawBase ? `يزن مطبوخاً: ~${yieldConv.converted_amount_g} جم` : `يزن نيئاً: ~${yieldConv.converted_amount_g} جم`;
+                }
+              } else if (!cookingYieldInfo && targetFood.code && FOOD_YIELD_MAPPING[targetFood.code]) {
                 const yieldConv = convertPortionCookingYield({
                   food_code: targetFood.code,
                   amount_g: equivGrams,

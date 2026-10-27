@@ -73,6 +73,19 @@ const isPotato = (code) => /POTATO/.test(String(code || ""));
 export function isSwapFoodSafe(registryCode, context = {}, targetGrams = null) {
   const code = String(registryCode || "").toUpperCase();
   if (context.dislikedFoodCodes?.has(code)) return false;
+  const isChristianFast = Boolean(
+    context.isChristianFast ||
+    (context.fasting_context?.active && String(context.fasting_context?.mode || "").toUpperCase() === "CHRISTIAN_FAST")
+  );
+  if (isChristianFast) {
+    const fastingDiet = String(context.fastingDiet || context.fasting_context?.diet || "PESCATARIAN").toUpperCase();
+    if (/CHICKEN|BEEF|SIRLOIN|VEAL|TURKEY|LAMB|CAMEL|LIVER|EGG|CHEESE|COTTAGE|YOGURT|MILK|LABNEH|HALLOUMI|LABAN|WHEY|CASEIN|BUTTER|GHEE/.test(code) && !/PEANUT|ALMOND|COCONUT|SOY|TAHINI/.test(code)) {
+      return false;
+    }
+    if (fastingDiet === "STRICT_VEGAN" && /FISH|TUNA|SALMON|SHRIMP|TILAPIA|BOURI|HAMOUR|KANAAD|SEAFOOD/.test(code)) {
+      return false;
+    }
+  }
   if (code === "PEANUT_BUTTER") {
     return !(context.isNutsExcluded || context.isFavism || context.isLegumesExcluded);
   }
