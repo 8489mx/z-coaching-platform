@@ -783,11 +783,25 @@ export function buildAdaptedPlan(inputs) {
     adaptedCalories = finalCalorieFloor;
   }
 
+  let macroAlignmentConflict = false;
+  let macroAlignmentConflictReason = null;
+  let macroEnergySumKcal = adaptedProtein * 4 + adaptedCarbs * 4 + adaptedFat * 9;
   if (!diabeticMacrosBounded && guardrails.hypoglycemia_guard_active !== true) {
     const finalAligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs, adaptedFat);
     adaptedProtein = finalAligned.protein;
     adaptedCarbs = finalAligned.carbs;
     adaptedFat = finalAligned.fat;
+    macroEnergySumKcal = finalAligned.macroSum;
+    if (finalAligned.alignment_conflict) {
+      macroAlignmentConflict = true;
+      macroAlignmentConflictReason = finalAligned.conflict_reason;
+      requiresCoachApproval = true;
+      reasons.push({
+        code: "MACRO_BUDGET_ALIGNMENT_CONFLICT",
+        message_ar: `تعارض في ميزانية الماكروز: مجموع طاقة البروتين والدهون (${finalAligned.macroSum} سعرة) يتجاوز السعرات المستهدفة (${adaptedCalories} سعرة). يتطلب مراجعة وموافقة المدرب لإعادة موازنة الماكروز.`,
+        message_en: `Macro budget alignment conflict: protein and fat energy (${finalAligned.macroSum} kcal) exceeds target calories (${adaptedCalories} kcal). Coach approval required.`,
+      });
+    }
   }
 
   return Object.freeze({
@@ -804,6 +818,9 @@ export function buildAdaptedPlan(inputs) {
       carbohydrate_g: adaptedCarbs,
       fat_g: adaptedFat,
       fiber_g: Math.max(baseFiber, adaptationBiomarkersResult?.dietary_modifications?.min_fiber_g || 0),
+      alignment_conflict: macroAlignmentConflict,
+      conflict_reason: macroAlignmentConflictReason,
+      macro_energy_sum_kcal: macroEnergySumKcal,
       refeed_config: refeedConfig,
       biomarker_analysis: adaptationBiomarkersResult || currentMasterProgram.biomarker_analysis || null,
       clinical_safety_shield: (adaptationBiomarkersResult?.has_biomarker_flags ? adaptationBiomarkersResult : currentMasterProgram.clinical_safety_shield) || null,
