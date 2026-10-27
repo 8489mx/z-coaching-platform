@@ -94,15 +94,10 @@ export default function Customers() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle URL query parameters (code, fasting, search)
+  // Handle URL query parameters (code, search)
   useEffect(() => {
     const codeParam = searchParams.get('code') || searchParams.get('id') || searchParams.get('client_code');
-    const fastingParam = searchParams.get('fasting');
     const searchParam = searchParams.get('search') || searchParams.get('q');
-
-    if (fastingParam && ['INTERMITTENT', 'RAMADAN', 'COPTIC', 'ALL'].includes(fastingParam.toUpperCase())) {
-      setFastingFilter(fastingParam.toUpperCase());
-    }
 
     if (searchParam) {
       setSearchTerm(searchParam);
