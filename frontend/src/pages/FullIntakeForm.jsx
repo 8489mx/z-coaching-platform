@@ -455,12 +455,12 @@ export default function FullIntakeForm() {
   if (submittedSuccess) {
     return (
       <div dir="rtl" style={{ minHeight: '100vh', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'Cairo, Tajawal, sans-serif' }}>
-        <div style={{ maxWidth: '560px', width: '100%', borderRadius: '24px', border: '1px solid #E2E8F0', background: '#FFFFFF', padding: '32px 24px', boxShadow: '0 8px 30px rgba(15, 23, 42, 0.06)', textAlign: 'center' }}>
+        <div style={{ maxWidth: '560px', width: '100%', borderRadius: '16px', border: '1px solid #E2E8F0', background: '#FFFFFF', padding: '32px 24px', boxShadow: '0 8px 30px rgba(15, 23, 42, 0.06)', textAlign: 'center' }}>
           <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', border: '1px solid #A7F3D0' }}>
             <CheckCircle2 size={36} />
           </div>
 
-          <span style={{ display: 'inline-block', background: '#F1F5F9', color: '#0F172A', border: '1px solid #CBD5E1', padding: '3px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 800, marginBottom: '12px' }}>
+          <span style={{ display: 'inline-block', background: '#F1F5F9', color: '#0F172A', border: '1px solid #CBD5E1', padding: '3px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 800, marginBottom: '12px' }}>
             كود المشترك: #{String(sessionStorage.getItem('z_client_code') || localStorage.getItem('kz_client_code') || '1').replace(/^#+/, '')}
           </span>
 
@@ -495,7 +495,7 @@ export default function FullIntakeForm() {
               background: '#16A34A', 
               color: '#FFFFFF', 
               height: '46px', 
-              borderRadius: '9999px', 
+              borderRadius: '8px', 
               fontWeight: 800, 
               fontSize: '13.5px', 
               textDecoration: 'none',
@@ -561,7 +561,7 @@ export default function FullIntakeForm() {
         </div>
 
         {/* 4-Step Stepper Header */}
-        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '14px 16px', marginBottom: '18px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)' }}>
+        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '14px 16px', marginBottom: '18px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '12px' }}>
             {STEPS.map((s) => {
               const isActive = currentStep === s.id;
@@ -578,7 +578,7 @@ export default function FullIntakeForm() {
                     gap: '4px',
                     textAlign: 'center',
                     padding: '6px 4px',
-                    borderRadius: '9999px',
+                    borderRadius: '8px',
                     background: isActive ? '#F1F5F9' : 'transparent',
                     border: isActive ? '1px solid #CBD5E1' : '1px solid transparent',
                     transition: 'all 0.15s ease'
@@ -624,7 +624,7 @@ export default function FullIntakeForm() {
         </div>
 
         {/* Main Card Container */}
-        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '24px', padding: '24px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)', marginBottom: '18px' }}>
+        <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)', marginBottom: '18px' }}>
 
           {/* =========================================================================
               SCREEN 1: القياسات الفسيولوجية ومعدل النشاط (Biometrics & Target)
@@ -643,7 +643,7 @@ export default function FullIntakeForm() {
               </div>
 
               {/* Mandatory health-data processing consent (PDPL) */}
-              <div style={{ background: consentGiven ? '#F0FDF4' : '#FFFBEB', border: `1px solid ${consentGiven ? '#BBF7D0' : '#FDE68A'}`, borderRadius: '20px', padding: '14px' }}>
+              <div style={{ background: consentGiven ? '#F0FDF4' : '#FFFBEB', border: `1px solid ${consentGiven ? '#BBF7D0' : '#FDE68A'}`, borderRadius: '12px', padding: '14px' }}>
                 <div
                   role="checkbox"
                   aria-checked={consentGiven}
@@ -652,7 +652,7 @@ export default function FullIntakeForm() {
                   onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleHealthDataConsent(); } }}
                   style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}
                 >
-                  <span style={{ flexShrink: 0, width: '22px', height: '22px', borderRadius: '9999px', border: `2px solid ${consentGiven ? '#16A34A' : '#94A3B8'}`, background: consentGiven ? '#16A34A' : '#FFFFFF', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px' }}>
+                  <span style={{ flexShrink: 0, width: '22px', height: '22px', borderRadius: '8px', border: `2px solid ${consentGiven ? '#16A34A' : '#94A3B8'}`, background: consentGiven ? '#16A34A' : '#FFFFFF', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px' }}>
                     {consentGiven && <Check size={14} color="#FFFFFF" />}
                   </span>
                   <span style={{ fontSize: '12.5px', color: '#0F172A', lineHeight: 1.8, fontWeight: 600 }}>
@@ -681,7 +681,7 @@ export default function FullIntakeForm() {
                     onClick={() => setFormData(p => ({ ...p, gender: 'male' }))}
                     style={{
                       height: '42px',
-                      borderRadius: '9999px',
+                      borderRadius: '8px',
                       fontWeight: 800,
                       fontSize: '13px',
                       cursor: 'pointer',
@@ -699,7 +699,7 @@ export default function FullIntakeForm() {
                     onClick={() => setFormData(p => ({ ...p, gender: 'female' }))}
                     style={{
                       height: '42px',
-                      borderRadius: '9999px',
+                      borderRadius: '8px',
                       fontWeight: 800,
                       fontSize: '13px',
                       cursor: 'pointer',
@@ -730,7 +730,7 @@ export default function FullIntakeForm() {
                     style={{
                       width: '100%',
                       height: '40px',
-                      borderRadius: '9999px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       padding: '0 10px',
                       fontSize: '13px',
@@ -755,7 +755,7 @@ export default function FullIntakeForm() {
                     style={{
                       width: '100%',
                       height: '40px',
-                      borderRadius: '9999px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       padding: '0 10px',
                       fontSize: '13px',
@@ -780,7 +780,7 @@ export default function FullIntakeForm() {
                     style={{
                       width: '100%',
                       height: '40px',
-                      borderRadius: '9999px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       padding: '0 10px',
                       fontSize: '13px',
@@ -814,7 +814,7 @@ export default function FullIntakeForm() {
                           type="text"
                           value={guardian.name || ''}
                           onChange={(e) => setGuardian({ name: e.target.value })}
-                          style={{ width: '100%', height: '38px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', fontWeight: 700, boxSizing: 'border-box' }}
+                          style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', fontWeight: 700, boxSizing: 'border-box' }}
                         />
                       </div>
                       <div>
@@ -826,7 +826,7 @@ export default function FullIntakeForm() {
                           inputMode="numeric"
                           value={guardian.phone || ''}
                           onChange={(e) => setGuardian({ phone: cleanArabicNumStr(e.target.value) })}
-                          style={{ width: '100%', height: '38px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', fontWeight: 700, fontFamily: 'JetBrains Mono, Cairo', boxSizing: 'border-box' }}
+                          style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', fontWeight: 700, fontFamily: 'JetBrains Mono, Cairo', boxSizing: 'border-box' }}
                         />
                       </div>
                     </div>
@@ -885,7 +885,7 @@ export default function FullIntakeForm() {
                       style={{
                         width: '100%',
                         height: '38px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         padding: '0 10px',
@@ -910,7 +910,7 @@ export default function FullIntakeForm() {
                       style={{
                         width: '100%',
                         height: '38px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         padding: '0 10px',
@@ -939,7 +939,7 @@ export default function FullIntakeForm() {
                       style={{
                         width: '100%',
                         height: '38px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         padding: '0 10px',
@@ -976,7 +976,7 @@ export default function FullIntakeForm() {
                         onClick={() => setFormData(p => ({ ...p, primary_goal: goal.id }))}
                         style={{
                           padding: '12px 14px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
                           background: isSelected ? '#F1F5F9' : '#FFFFFF',
                           cursor: 'pointer',
@@ -1020,7 +1020,7 @@ export default function FullIntakeForm() {
                         onClick={() => setFormData(p => ({ ...p, neat_level: act.id }))}
                         style={{
                           padding: '12px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
                           background: isSelected ? '#F1F5F9' : '#FFFFFF',
                           cursor: 'pointer',
@@ -1067,7 +1067,7 @@ export default function FullIntakeForm() {
                         onClick={() => setFormData(p => ({ ...p, average_daily_steps: opt.id }))}
                         style={{
                           padding: '8px 14px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
                           background: isSelected ? '#F1F5F9' : '#FFFFFF',
                           cursor: 'pointer',
@@ -1103,7 +1103,7 @@ export default function FullIntakeForm() {
                         onClick={() => setFormData(p => ({ ...p, occupation_type: occ.id }))}
                         style={{
                           padding: '12px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
                           background: isSelected ? '#F1F5F9' : '#FFFFFF',
                           cursor: 'pointer',
@@ -1183,7 +1183,7 @@ export default function FullIntakeForm() {
                         }}
                         style={{
                           padding: '7px 14px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           fontSize: '11.5px',
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -1241,7 +1241,7 @@ export default function FullIntakeForm() {
                             onClick={() => toggleCondition(c.key)}
                         style={{
                           padding: '7px 14px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           fontSize: '11.5px',
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -1260,7 +1260,7 @@ export default function FullIntakeForm() {
 
                 {/* Sub-bariatric Questions */}
                 {medSelected.includes('bariatric_surgery') && (
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '12px 14px', marginBottom: '12px' }}>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>
                     <strong style={{ display: 'block', fontSize: '12px', color: '#0369A1', marginBottom: '8px', fontWeight: 800 }}>
                       تخصيص سعة الوجبات لمتكممي المعدة:
                     </strong>
@@ -1272,7 +1272,7 @@ export default function FullIntakeForm() {
                         <CurvedSelect 
                           value={bariatric.meal_capacity_grams || '150_200'}
                           onChange={(e) => updateNested('medical_conditions', 'bariatric', { ...bariatric, meal_capacity_grams: e.target.value })}
-                          style={{ width: '100%', height: '36px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px' }}
+                          style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px' }}
                         >
                           <option value="under_150">أقل من 150 جم (وجبات مكثفة صغيرة)</option>
                           <option value="150_200">150 إلى 200 جم (المعدل القياسي)</option>
@@ -1287,12 +1287,12 @@ export default function FullIntakeForm() {
                           <button 
                             type="button" 
                             onClick={() => updateNested('medical_conditions', 'bariatric', { ...bariatric, dumping_syndrome: true })}
-                            style={{ height: '36px', borderRadius: '9999px', border: '1px solid #CBD5E1', background: bariatric.dumping_syndrome ? '#DC2626' : '#FFFFFF', color: bariatric.dumping_syndrome ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
+                            style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: bariatric.dumping_syndrome ? '#DC2626' : '#FFFFFF', color: bariatric.dumping_syndrome ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
                           >نعم</button>
                           <button 
                             type="button" 
                             onClick={() => updateNested('medical_conditions', 'bariatric', { ...bariatric, dumping_syndrome: false })}
-                            style={{ height: '36px', borderRadius: '9999px', border: '1px solid #CBD5E1', background: !bariatric.dumping_syndrome ? '#16A34A' : '#FFFFFF', color: !bariatric.dumping_syndrome ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
+                            style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: !bariatric.dumping_syndrome ? '#16A34A' : '#FFFFFF', color: !bariatric.dumping_syndrome ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
                           >لا</button>
                         </div>
                       </div>
@@ -1328,7 +1328,7 @@ export default function FullIntakeForm() {
                             onClick={() => setHeart({ doctor_clearance: option.value })}
                             style={{
                               padding: '7px 16px',
-                              borderRadius: '9999px',
+                              borderRadius: '8px',
                               fontSize: '11.5px',
                               fontWeight: 700,
                               cursor: 'pointer',
@@ -1366,7 +1366,7 @@ export default function FullIntakeForm() {
                               onClick={() => toggleEvent(event.key)}
                               style={{
                                 padding: '7px 14px',
-                                borderRadius: '9999px',
+                                borderRadius: '8px',
                                 fontSize: '11.5px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
@@ -1417,7 +1417,7 @@ export default function FullIntakeForm() {
                           onClick={() => toggleFemaleCase(c.key)}
                           style={{
                             padding: '7px 14px',
-                            borderRadius: '9999px',
+                            borderRadius: '8px',
                             fontSize: '11.5px',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1477,7 +1477,7 @@ export default function FullIntakeForm() {
                             }}
                             style={{
                               padding: '7px 14px',
-                              borderRadius: '9999px',
+                              borderRadius: '8px',
                               fontSize: '11.5px',
                               fontWeight: 700,
                               cursor: 'pointer',
@@ -1495,7 +1495,7 @@ export default function FullIntakeForm() {
                     </div>
 
                     {/* Sub-injury logic */}
-                    <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: '9999px', padding: '12px 14px', marginBottom: '12px' }}>
+                    <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>
                       <strong style={{ display: 'block', fontSize: '12px', color: '#BE123C', marginBottom: '8px', fontWeight: 800 }}>
                         تحديد طبيعة الإصابة لضبط محرك البدائل الحركية الآمنة:
                       </strong>
@@ -1505,7 +1505,7 @@ export default function FullIntakeForm() {
                           <CurvedSelect 
                             value={injuriesMap.injury_nature || 'chronic'}
                             onChange={(e) => updateNested('injuries_map', 'injury_nature', e.target.value)}
-                            style={{ width: '100%', height: '36px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px' }}
+                            style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px' }}
                           >
                             <option value="chronic">إجهاد تراكمي وتدريجي (Chronic)</option>
                             <option value="acute">حادث أو صدمة مفاجئة (Acute)</option>
@@ -1517,12 +1517,12 @@ export default function FullIntakeForm() {
                             <button 
                               type="button" 
                               onClick={() => updateNested('injuries_map', 'pain_relieved_by_rest', true)}
-                              style={{ height: '36px', borderRadius: '9999px', border: '1px solid #CBD5E1', background: (injuriesMap.pain_relieved_by_rest ?? true) ? '#16A34A' : '#FFFFFF', color: (injuriesMap.pain_relieved_by_rest ?? true) ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
+                              style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: (injuriesMap.pain_relieved_by_rest ?? true) ? '#16A34A' : '#FFFFFF', color: (injuriesMap.pain_relieved_by_rest ?? true) ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
                             >نعم يهدأ</button>
                             <button 
                               type="button" 
                               onClick={() => updateNested('injuries_map', 'pain_relieved_by_rest', false)}
-                              style={{ height: '36px', borderRadius: '9999px', border: '1px solid #CBD5E1', background: !(injuriesMap.pain_relieved_by_rest ?? true) ? '#DC2626' : '#FFFFFF', color: !(injuriesMap.pain_relieved_by_rest ?? true) ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
+                              style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: !(injuriesMap.pain_relieved_by_rest ?? true) ? '#DC2626' : '#FFFFFF', color: !(injuriesMap.pain_relieved_by_rest ?? true) ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
                             >لا يستمر</button>
                           </div>
                         </div>
@@ -1571,7 +1571,7 @@ export default function FullIntakeForm() {
                           }}
                           style={{
                             padding: '7px 14px',
-                            borderRadius: '9999px',
+                            borderRadius: '8px',
                             fontSize: '11.5px',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1592,7 +1592,7 @@ export default function FullIntakeForm() {
                     placeholder="ملاحظات تفصيلية إضافية عن أسماء الأدوية أو الجرعات للكوتش (اختياري)..."
                     value={formData.current_meds_supplements || ''}
                     onChange={(e) => setFormData(p => ({ ...p, current_meds_supplements: e.target.value }))}
-                    style={{ width: '100%', height: '36px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
@@ -1609,7 +1609,7 @@ export default function FullIntakeForm() {
                   إذا قمت بإجراء تحاليل دم حديثة (خلال آخر 6 أشهر) أو تقرير InBody، يمكنك إرفاق الصور أو ملف PDF هنا ليفحصها الكوتش ويضبط خطتك بدقة إكلينيكية.
                 </p>
 
-                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '9999px', padding: '8px 12px', marginBottom: '10px', fontSize: '11.5px', color: '#1E3A8A', fontWeight: 700 }}>
+                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '8px 12px', marginBottom: '10px', fontSize: '11.5px', color: '#1E3A8A', fontWeight: 700 }}>
                   التقارير والتحاليل قابلة للتخطي الآن، ويمكنك رفعها لاحقاً.
                 </div>
 
@@ -1619,7 +1619,7 @@ export default function FullIntakeForm() {
                     alignItems: 'center',
                     gap: '6px',
                     padding: '8px 16px',
-                    borderRadius: '9999px',
+                    borderRadius: '6px',
                     background: '#0F172A',
                     color: '#FFFFFF',
                     fontSize: '11.5px',
@@ -1698,7 +1698,7 @@ export default function FullIntakeForm() {
                         }}
                         style={{
                           padding: '7px 14px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           fontSize: '11.5px',
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -1725,7 +1725,7 @@ export default function FullIntakeForm() {
                   <CurvedSelect 
                     value={mealStructure.meals_count || '3_meals_snack'}
                     onChange={(e) => updateNested('meal_structure', 'meals_count', e.target.value)}
-                    style={{ width: '100%', height: '40px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
+                    style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
                   >
                     <option value="3_meals">3 وجبات</option>
                     <option value="3_meals_snack">3 وجبات + سناك</option>
@@ -1740,7 +1740,7 @@ export default function FullIntakeForm() {
                   <CurvedSelect 
                     value={mealStructure.intermittent_fasting || 'none'}
                     onChange={(e) => updateNested('meal_structure', 'intermittent_fasting', e.target.value)}
-                    style={{ width: '100%', height: '40px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
+                    style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px' }}
                   >
                     <option value="none">بدون صيام متقطع</option>
                     <option value="16_8">صيام 16/8</option>
@@ -1758,7 +1758,7 @@ export default function FullIntakeForm() {
                   <CurvedSelect 
                     value={formData.food_budget || 'MEDIUM'}
                     onChange={(e) => setFormData(p => ({ ...p, food_budget: e.target.value }))}
-                    style={{ width: '100%', height: '40px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
+                    style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
                   >
                     <option value="LOW">اقتصادية (بيض، تونة، دجاج، قريش)</option>
                     <option value="MEDIUM">متوسطة (دواجن، لحوم، أسماك)</option>
@@ -1773,7 +1773,7 @@ export default function FullIntakeForm() {
                   <CurvedSelect 
                     value={formData.food_prep_ability || 'FULL_KITCHEN'}
                     onChange={(e) => setFormData(p => ({ ...p, food_prep_ability: e.target.value }))}
-                    style={{ width: '100%', height: '40px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
+                    style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
                   >
                     <option value="FULL_KITCHEN">مطبخ متكامل (أطبخ بنفسي)</option>
                     <option value="REHEAT_ONLY">تسخين فقط (وجبات جاهزة)</option>
@@ -1783,7 +1783,7 @@ export default function FullIntakeForm() {
               </div>
 
               {/* Seasonal & Religious Dietary Fasting Preference */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '14px', marginTop: '4px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px', marginTop: '4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
                     تفضيلات الصيام الموسمي والديني (لتكييف الوجبات تلقائياً):
@@ -1798,7 +1798,7 @@ export default function FullIntakeForm() {
                     <CurvedSelect
                       value={formData.religion || 'MUSLIM'}
                       onChange={(e) => setFormData(p => ({ ...p, religion: e.target.value }))}
-                      style={{ width: '100%', height: '40px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
+                      style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
                     >
                       <option value="MUSLIM">صيام رمضان (توقيت ليلي)</option>
                       <option value="CHRISTIAN">صيام مسيحي</option>
@@ -1811,7 +1811,7 @@ export default function FullIntakeForm() {
                       <CurvedSelect
                         value={formData.christianFastingStyle || 'PESCATARIAN_ALLOWED'}
                         onChange={(e) => setFormData(p => ({ ...p, christianFastingStyle: e.target.value }))}
-                        style={{ width: '100%', height: '40px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
+                        style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12.5px', background: '#FFFFFF' }}
                       >
                         <option value="PESCATARIAN_ALLOWED">نباتي مع سمك (المفضل)</option>
                         <option value="STRICT_VEGAN">نباتي صرف (بدون سمك)</option>
@@ -1840,7 +1840,7 @@ export default function FullIntakeForm() {
                         onClick={() => setFormData(p => ({ ...p, beverage_sugar_intake: sug.id }))}
                         style={{
                           padding: '11px 13px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
                           background: isSelected ? '#F1F5F9' : '#FFFFFF',
                           cursor: 'pointer',
@@ -1886,7 +1886,7 @@ export default function FullIntakeForm() {
                             onClick={() => toggleArrayItem('disliked_foods', food)}
                             style={{
                               padding: '5px 11px',
-                              borderRadius: '24px',
+                              borderRadius: '16px',
                               fontSize: '11px',
                               fontWeight: 700,
                               cursor: 'pointer',
@@ -1916,7 +1916,7 @@ export default function FullIntakeForm() {
                             onClick={() => toggleArrayItem('disliked_foods', food)}
                             style={{
                               padding: '5px 11px',
-                              borderRadius: '24px',
+                              borderRadius: '16px',
                               fontSize: '11px',
                               fontWeight: 700,
                               cursor: 'pointer',
@@ -1946,7 +1946,7 @@ export default function FullIntakeForm() {
                             onClick={() => toggleArrayItem('disliked_foods', food)}
                             style={{
                               padding: '5px 11px',
-                              borderRadius: '24px',
+                              borderRadius: '16px',
                               fontSize: '11px',
                               fontWeight: 700,
                               cursor: 'pointer',
@@ -1976,7 +1976,7 @@ export default function FullIntakeForm() {
                             onClick={() => toggleArrayItem('disliked_foods', food)}
                             style={{
                               padding: '5px 11px',
-                              borderRadius: '24px',
+                              borderRadius: '16px',
                               fontSize: '11px',
                               fontWeight: 700,
                               cursor: 'pointer',
@@ -1996,7 +1996,7 @@ export default function FullIntakeForm() {
               </div>
 
               {/* 5. Sleep Schedule & Shift Work Pattern */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
                   <h6 style={{ fontWeight: 900, color: '#0F172A', fontSize: '13.5px', margin: '0 0 3px 0' }}>
                     طبيعة النوم ونظام العمل (شفتات / ليلي)
@@ -2027,7 +2027,7 @@ export default function FullIntakeForm() {
                           }))}
                           style={{
                             padding: '10px 12px',
-                            borderRadius: '9999px',
+                            borderRadius: '8px',
                             border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
                             background: isSelected ? '#FFFFFF' : '#F8FAFC',
                             cursor: 'pointer',
@@ -2059,7 +2059,7 @@ export default function FullIntakeForm() {
                         ...p,
                         sleep_schedule: { ...(p.sleep_schedule || {}), average_hours: e.target.value }
                       }))}
-                      style={{ width: '100%', height: '36px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF', outline: 'none' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF', outline: 'none' }}
                     >
                       <option value="less_than_6">أقل من 6 ساعات (نوم قليل)</option>
                       <option value="6_7">من 6 إلى 7 ساعات</option>
@@ -2079,13 +2079,13 @@ export default function FullIntakeForm() {
                         ...p,
                         sleep_schedule: { ...(p.sleep_schedule || {}), bedtime_hour: e.target.value }
                       }))}
-                      style={{ width: '100%', height: '36px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF', outline: 'none' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF', outline: 'none' }}
                     />
                   </div>
                 </div>
 
                 {(formData.sleep_schedule?.pattern === 'rotating_shifts' || formData.sleep_schedule?.pattern === 'night_shift') && (
-                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '9999px', padding: '8px 12px', fontSize: '11px', color: '#92400E', lineHeight: '1.4' }}>
+                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '8px', padding: '8px 12px', fontSize: '11px', color: '#92400E', lineHeight: '1.4' }}>
                     <strong>توجيه بروتوكولي للشفتات:</strong> سيتم تفعيل مرونة دمج الوجبات في نافذة استيقاظك، مع قاعدة الكابتن الصارمة بقطع الكافيين قبل النوم بـ 6 ساعات أياً كان موعد نومك.
                   </div>
                 )}
@@ -2129,7 +2129,7 @@ export default function FullIntakeForm() {
                         onClick={() => setFormData(p => ({ ...p, training_environment: env.id }))}
                         style={{
                           padding: '12px 14px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
                           background: isSelected ? '#F1F5F9' : '#FFFFFF',
                           cursor: 'pointer',
@@ -2165,7 +2165,7 @@ export default function FullIntakeForm() {
                         onClick={() => updateNested('training_logistics', 'days_per_week', days)}
                         style={{
                           height: '38px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           border: (trainingLogistics.days_per_week || 4) === days ? '2px solid #0F172A' : '1px solid #CBD5E1',
                           background: (trainingLogistics.days_per_week || 4) === days ? '#0F172A' : '#FFFFFF',
                           color: (trainingLogistics.days_per_week || 4) === days ? '#FFFFFF' : '#475569',
@@ -2196,7 +2196,7 @@ export default function FullIntakeForm() {
                         training_logistics: { ...(prev.training_logistics || {}), training_age: age, ...(level ? { experience_level: level } : {}) },
                       }));
                     }}
-                    style={{ width: '100%', height: '38px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
+                    style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
                   >
                     <option value="" disabled>اختار</option>
                     <option value="never">أول مرة أتمرن حديد (صفر خبرة)</option>
@@ -2215,7 +2215,7 @@ export default function FullIntakeForm() {
                   <CurvedSelect 
                     value={formData.recent_training || 'ACTIVE'}
                     onChange={(e) => setFormData(p => ({ ...p, recent_training: e.target.value }))}
-                    style={{ width: '100%', height: '38px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
+                    style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', background: '#FFFFFF' }}
                   >
                     <option value="ACTIVE">أتمرن حالياً بانتظام</option>
                     <option value="INCONSISTENT">متقطع في آخر 6 شهور</option>
@@ -2250,7 +2250,7 @@ export default function FullIntakeForm() {
                         }}
                         style={{
                           padding: '6px 13px',
-                          borderRadius: '24px',
+                          borderRadius: '16px',
                           fontSize: '11.5px',
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -2297,7 +2297,7 @@ export default function FullIntakeForm() {
                         }}
                         style={{
                           padding: '7px 14px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           fontSize: '11.5px',
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -2327,7 +2327,7 @@ export default function FullIntakeForm() {
                   تُرفع الصور بأمان تام وتُشفر على الخزينة السحابية لتقييم توزيع الدهون ونقاط الضعف العضلية (3 زوايا: أمامية، جانبية، خلفية).
                 </p>
 
-                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '9999px', padding: '10px', marginBottom: '14px' }}>
+                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '10px', marginBottom: '14px' }}>
                   <strong style={{ display: 'block', fontSize: '11.5px', color: '#1E3A8A', fontWeight: 700 }}>
                     الصور والتقارير قابلة للتخطي الآن، ويمكنك رفعها لاحقاً من داخل التطبيق أو إرسالها للكوتش.
                   </strong>
@@ -2347,7 +2347,7 @@ export default function FullIntakeForm() {
                           padding: uploadedUrl ? '8px' : '14px 8px',
                           background: '#FFFFFF',
                           border: uploadedUrl ? '1.5px solid #16A34A' : '1.5px dashed #CBD5E1',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           textAlign: 'center',
                           display: 'flex',
                           flexDirection: 'column',
@@ -2358,7 +2358,7 @@ export default function FullIntakeForm() {
                       >
                         {uploadedUrl ? (
                           <>
-                            <div style={{ width: '100%', height: '90px', borderRadius: '9999px', overflow: 'hidden', background: '#0F172A' }}>
+                            <div style={{ width: '100%', height: '90px', borderRadius: '6px', overflow: 'hidden', background: '#0F172A' }}>
                               <img 
                                 src={uploadedUrl} 
                                 alt={angle.title} 
@@ -2369,7 +2369,7 @@ export default function FullIntakeForm() {
                               {angle.title}
                             </strong>
                             <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
-                              <label style={{ flex: 1, padding: '4px 0', background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '9999px', fontSize: '10.5px', fontWeight: 700, color: '#334155', cursor: 'pointer', textAlign: 'center' }}>
+                              <label style={{ flex: 1, padding: '4px 0', background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '6px', fontSize: '10.5px', fontWeight: 700, color: '#334155', cursor: 'pointer', textAlign: 'center' }}>
                                 تغيير
                                 <input 
                                   type="file" 
@@ -2381,7 +2381,7 @@ export default function FullIntakeForm() {
                               <button 
                                 type="button" 
                                 onClick={() => handleRemoveMedia(angle.field)}
-                                style={{ padding: '4px 8px', background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '9999px', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                style={{ padding: '4px 8px', background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '6px', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                               >
                                 <Trash2 size={13} />
                               </button>
@@ -2391,7 +2391,7 @@ export default function FullIntakeForm() {
                           <label style={{ cursor: 'pointer', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                             <Camera size={22} color="#94A3B8" />
                             <strong style={{ fontSize: '11.5px', color: '#0F172A' }}>{angle.title}</strong>
-                            <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 700, padding: '2px 8px', background: '#ECFDF5', borderRadius: '9999px' }}>
+                            <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 700, padding: '2px 8px', background: '#ECFDF5', borderRadius: '6px' }}>
                               اختيار صورة
                             </span>
                             <input 
@@ -2428,7 +2428,7 @@ export default function FullIntakeForm() {
                         <button 
                           type="button" 
                           onClick={() => handleRemoveMedia('inbody_report_url')}
-                          style={{ padding: '4px 8px', background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '9999px', color: '#DC2626', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
+                          style={{ padding: '4px 8px', background: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '6px', color: '#DC2626', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
                         >
                           حذف
                         </button>
@@ -2439,7 +2439,7 @@ export default function FullIntakeForm() {
                         alignItems: 'center',
                         gap: '6px',
                         padding: '6px 14px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         background: '#0F172A',
                         color: '#FFFFFF',
                         fontSize: '11.5px',
@@ -2467,7 +2467,7 @@ export default function FullIntakeForm() {
                 disabled={submitting}
                 style={{
                   height: '46px',
-                  borderRadius: '9999px',
+                  borderRadius: '8px',
                   background: '#16A34A',
                   color: '#FFFFFF',
                   border: 'none',
@@ -2504,7 +2504,7 @@ export default function FullIntakeForm() {
               style={{
                 height: '38px',
                 padding: '0 18px',
-                borderRadius: '9999px',
+                borderRadius: '6px',
                 border: '1px solid #CBD5E1',
                 background: '#FFFFFF',
                 color: currentStep === 1 ? '#94A3B8' : '#0F172A',
@@ -2527,7 +2527,7 @@ export default function FullIntakeForm() {
                 style={{
                   height: '38px',
                   padding: '0 22px',
-                  borderRadius: '9999px',
+                  borderRadius: '6px',
                   border: 'none',
                   background: '#0F172A',
                   color: '#FFFFFF',

@@ -611,7 +611,7 @@ export default function ProgramPdfView() {
           margin: '0 auto 20px auto', 
           background: '#FFFFFF',
           border: '1px solid #EAECF0',
-          borderRadius: '20px',
+          borderRadius: '12px',
           padding: '12px 20px',
           boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)',
           display: 'flex',
@@ -642,7 +642,7 @@ export default function ProgramPdfView() {
             background: '#673DE6', 
             color: '#FFFFFF',
             border: 'none', 
-            borderRadius: '9999px',
+            borderRadius: '8px',
             padding: '10px 22px', 
             fontSize: '0.86rem', 
             fontWeight: 800, 
@@ -837,7 +837,7 @@ export default function ProgramPdfView() {
                       {meal.items?.map((it, iIdx) => {
                         const meta = getItemPortionMeta(it);
                         return (
-                          <span key={iIdx} style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px', fontSize: '7pt', color: '#334155' }}>
+                          <span key={iIdx} style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '6px', padding: '1px 5px', fontSize: '7pt', color: '#334155' }}>
                             <strong style={{ color: '#0284C7' }}>{meta.badge_text}</strong> {meta.name || it.name_ar || it.name}
                           </span>
                         );
@@ -899,7 +899,7 @@ export default function ProgramPdfView() {
                   (نظام Push / Pull / Legs — زيادة التوتر الميكانيكي والبناء العضلي)
                 </span>
               </div>
-              <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '2px 8px', borderRadius: '9999px', fontSize: '7pt', fontWeight: '800' }}>
+              <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '2px 8px', borderRadius: '6px', fontSize: '7pt', fontWeight: '800' }}>
                 {rawSessions.length} حصص أسبوعية
               </span>
             </div>
@@ -907,11 +907,11 @@ export default function ProgramPdfView() {
             {/* Render 2 Full-Width Sessions per Page with Centered Columns */}
             {chunk.map((session, sIdx) => (
               <div key={sIdx} style={{ marginBottom: '10px' }}>
-                <div style={{ fontSize: '8.5pt', fontWeight: '800', color: '#0F172A', marginBottom: '4px', background: '#F1F5F9', padding: '4px 8px', borderRadius: '9999px', borderRight: '2.5pt solid #0284C7' }}>
+                <div style={{ fontSize: '8.5pt', fontWeight: '800', color: '#0F172A', marginBottom: '4px', background: '#F1F5F9', padding: '4px 8px', borderRadius: '6px', borderRight: '2.5pt solid #0284C7' }}>
                   {session.session_name || `الحصة التدريبية ${cIdx * 2 + sIdx + 1}`}
                 </div>
                 {session.is_rest_day ? (
-                  <div style={{ padding: '14px 18px', background: '#F0FDF4', border: '0.5pt solid #BBF7D0', borderRadius: '9999px', textAlign: 'center', margin: '4px 0 8px 0' }}>
+                  <div style={{ padding: '14px 18px', background: '#F0FDF4', border: '0.5pt solid #BBF7D0', borderRadius: '8px', textAlign: 'center', margin: '4px 0 8px 0' }}>
                     <div style={{ fontWeight: '800', color: '#166534', fontSize: '9pt', marginBottom: '4px' }}>
                       يوم راحة واستشفاء عضلي نشط
                     </div>
@@ -946,7 +946,7 @@ export default function ProgramPdfView() {
                               {exNames.nameAr}
                             </span>
                             {altExercise && (
-                              <div style={{ fontSize: '6.2pt', color: '#0369A1', marginTop: '2px', background: '#F0F9FF', border: '0.5pt solid #BAE6FD', borderRadius: '9999px', padding: '1px 5px', display: 'inline-block' }}>
+                              <div style={{ fontSize: '6.2pt', color: '#0369A1', marginTop: '2px', background: '#F0F9FF', border: '0.5pt solid #BAE6FD', borderRadius: '4px', padding: '1px 5px', display: 'inline-block' }}>
                                 <span style={{ fontWeight: '800' }}>بديل زحمة الجيم: </span>
                                 <span>{altExercise}</span>
                               </div>
@@ -981,7 +981,7 @@ export default function ProgramPdfView() {
                     padding: '6px 10px',
                     background: '#F8FAFC',
                     border: '0.5pt solid #E2E8F0',
-                    borderRadius: '9999px',
+                    borderRadius: '8px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '4px',
@@ -989,7 +989,7 @@ export default function ProgramPdfView() {
                   }}>
                     {Array.isArray(session.pre_workout_mobility) && session.pre_workout_mobility.length > 0 && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: '800', color: '#0284C7', background: '#F0F9FF', border: '0.5pt solid #BAE6FD', padding: '1px 6px', borderRadius: '9999px' }}>
+                        <span style={{ fontWeight: '800', color: '#0284C7', background: '#F0F9FF', border: '0.5pt solid #BAE6FD', padding: '1px 6px', borderRadius: '4px' }}>
                           الإحماء الحركي الديناميكي:
                         </span>
                         {session.pre_workout_mobility.map((m, mIdx) => (
@@ -1001,7 +1001,7 @@ export default function ProgramPdfView() {
                     )}
                     {Array.isArray(session.post_workout_stretches) && session.post_workout_stretches.length > 0 && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: '800', color: '#0F766E', background: '#F0FDFA', border: '0.5pt solid #CCFBF1', padding: '1px 6px', borderRadius: '9999px' }}>
+                        <span style={{ fontWeight: '800', color: '#0F766E', background: '#F0FDFA', border: '0.5pt solid #CCFBF1', padding: '1px 6px', borderRadius: '4px' }}>
                           التهدئة والإطالة الاستشفائية:
                         </span>
                         {session.post_workout_stretches.map((s, sIdx) => (
@@ -1101,10 +1101,10 @@ export default function ProgramPdfView() {
                 <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>100 جم صدور دجاج مشوية</td>
                 <td style={{ fontSize: '7pt', lineHeight: '1.6' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>125 جم سمك فيليه مشوي</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>110 جم لحم بقري صافي (5% دهون)</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>130 جم جمبري مشوي</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>130 جم تونة مصفاة بالماء</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>125 جم سمك فيليه مشوي</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>110 جم لحم بقري صافي (5% دهون)</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>130 جم جمبري مشوي</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>130 جم تونة مصفاة بالماء</span>
                   </div>
                 </td>
               </tr>
@@ -1112,10 +1112,10 @@ export default function ProgramPdfView() {
                 <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>100 جم أرز بسمتي مطبوخ</td>
                 <td style={{ fontSize: '7pt', lineHeight: '1.6' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>110 جم بطاطس مسلوقة/مشوية</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>100 جم بطاطا حلوة مشوية</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>35 جم شوفان كامل الحبة خام</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>2 شريحة خبز توست بني حبوب كاملة</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>110 جم بطاطس مسلوقة/مشوية</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>100 جم بطاطا حلوة مشوية</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>35 جم شوفان كامل الحبة خام</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>2 شريحة خبز توست بني حبوب كاملة</span>
                   </div>
                 </td>
               </tr>
@@ -1123,9 +1123,9 @@ export default function ProgramPdfView() {
                 <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>100 جم جبن قريش طبيعي</td>
                 <td style={{ fontSize: '7pt', lineHeight: '1.6' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>120 جم زبادي يوناني 0% دسم</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>4 بياض بيض كبير</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>1 مكيال واي بروتين أيزوليت (25 جم)</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>120 جم زبادي يوناني 0% دسم</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>4 بياض بيض كبير</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>1 مكيال واي بروتين أيزوليت (25 جم)</span>
                   </div>
                 </td>
               </tr>
@@ -1133,9 +1133,9 @@ export default function ProgramPdfView() {
                 <td style={{ fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>10 جم زيت زيتون بكر</td>
                 <td style={{ fontSize: '7pt', lineHeight: '1.6' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>15 جم زبدة فول سوداني طبيعية 100%</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>40 جم أفوكادو طازج</span>
-                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '9999px', padding: '1px 5px' }}>15 جم مكسرات نيئة (لوز أو جوز)</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>15 جم زبدة فول سوداني طبيعية 100%</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>40 جم أفوكادو طازج</span>
+                    <span style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '4px', padding: '1px 5px' }}>15 جم مكسرات نيئة (لوز أو جوز)</span>
                   </div>
                 </td>
               </tr>
@@ -1222,7 +1222,7 @@ export default function ProgramPdfView() {
             </div>
 
             {coachNotes && (
-              <div style={{ background: '#F0F9FF', border: '0.5pt solid #BAE6FD', borderRadius: '9999px', padding: '4px 8px', marginBottom: '6px' }}>
+              <div style={{ background: '#F0F9FF', border: '0.5pt solid #BAE6FD', borderRadius: '6px', padding: '4px 8px', marginBottom: '6px' }}>
                 <span style={{ fontWeight: '800', color: '#0369A1' }}>توجيهات الكوتش الخاصة: </span>
                 <span style={{ color: '#0F172A' }}>{coachNotes}</span>
               </div>
@@ -1237,7 +1237,7 @@ export default function ProgramPdfView() {
                 </div>
               </div>
               <div style={{ textAlign: 'left' }}>
-                <div style={{ display: 'inline-block', background: '#E0F2FE', border: '1px solid #BAE6FD', color: '#0284C7', padding: '3px 8px', borderRadius: '9999px', fontSize: '7pt', fontWeight: '800' }}>
+                <div style={{ display: 'inline-block', background: '#E0F2FE', border: '1px solid #BAE6FD', color: '#0284C7', padding: '3px 8px', borderRadius: '6px', fontSize: '7pt', fontWeight: '800' }}>
                   معتمد وموثق رقمياً (Digitally Approved)
                 </div>
               </div>

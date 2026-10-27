@@ -223,7 +223,7 @@ export default function MesocycleDebriefPdfView() {
         width: '210mm',
         maxWidth: '100%',
         background: '#1E293B',
-        borderRadius: '20px',
+        borderRadius: '12px',
         padding: '12px 18px',
         marginBottom: '16px',
         display: 'flex',
@@ -239,7 +239,7 @@ export default function MesocycleDebriefPdfView() {
             style={{
               background: '#334155',
               border: 'none',
-              borderRadius: '9999px',
+              borderRadius: '8px',
               padding: '6px 12px',
               color: '#FFFFFF',
               fontSize: '11px',
@@ -266,7 +266,7 @@ export default function MesocycleDebriefPdfView() {
             style={{
               background: '#25D366',
               border: 'none',
-              borderRadius: '9999px',
+              borderRadius: '8px',
               padding: '6px 14px',
               color: '#FFFFFF',
               fontSize: '11px',
@@ -287,7 +287,7 @@ export default function MesocycleDebriefPdfView() {
             style={{
               background: '#673DE6',
               border: 'none',
-              borderRadius: '9999px',
+              borderRadius: '8px',
               padding: '6px 16px',
               color: '#FFFFFF',
               fontSize: '11px',
@@ -312,7 +312,7 @@ export default function MesocycleDebriefPdfView() {
         {/* Running Header */}
         <div className="running-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ background: '#FFFFFF', color: '#101828', borderBottom: '1px solid #EAECF0', boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)', padding: '2px 6px', borderRadius: '9999px', fontSize: '7.5pt' }}>Z COACHING</span>
+            <span style={{ background: '#FFFFFF', color: '#101828', borderBottom: '1px solid #EAECF0', boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05)', padding: '2px 6px', borderRadius: '4px', fontSize: '7.5pt' }}>Z COACHING</span>
             <span>منظومة التدريب والتغذية السريرية المعتمدة</span>
           </div>
           <div>تقرير ختام الميزوسايكل التدريبي (Mesocycle #{report.mesocycle_number})</div>
@@ -344,7 +344,7 @@ export default function MesocycleDebriefPdfView() {
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', background: '#0F172A', color: '#FFFFFF', padding: '8px 16px', borderRadius: '9999px' }}>
+            <div style={{ textAlign: 'center', background: '#0F172A', color: '#FFFFFF', padding: '8px 16px', borderRadius: '8px' }}>
               <div style={{ fontSize: '7.5pt', fontWeight: 700, letterSpacing: '0.5px' }}>الميزوسايكل</div>
               <div style={{ fontSize: '16pt', fontWeight: 900, fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                 W01 - W0{report.total_weeks}
@@ -473,19 +473,19 @@ export default function MesocycleDebriefPdfView() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center' }}>
-              <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: '9999px', border: '1px solid #E2E8F0' }}>
+              <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
                 <span style={{ fontSize: '7.5pt', color: '#64748B', display: 'block' }}>جودة النوم</span>
                 <strong style={{ fontSize: '11pt', color: '#0F172A' }}>{report.biofeedback.avg_sleep_score} / 5</strong>
               </div>
-              <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: '9999px', border: '1px solid #E2E8F0' }}>
+              <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
                 <span style={{ fontSize: '7.5pt', color: '#64748B', display: 'block' }}>مستوى الطاقة</span>
                 <strong style={{ fontSize: '11pt', color: '#0F172A' }}>{report.biofeedback.avg_energy_score} / 5</strong>
               </div>
-              <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: '9999px', border: '1px solid #E2E8F0' }}>
+              <div style={{ background: '#FFFFFF', padding: '6px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
                 <span style={{ fontSize: '7.5pt', color: '#64748B', display: 'block' }}>الإجهاد العصبي</span>
                 <strong style={{ fontSize: '11pt', color: '#0F172A' }}>{report.biofeedback.avg_stress_score} / 5</strong>
               </div>
-              <div style={{ background: report.biofeedback.fatigue_level === 'HIGH' ? '#FEF2F2' : '#F0FDF4', padding: '6px', borderRadius: '9999px', border: `1px solid ${report.biofeedback.fatigue_level === 'HIGH' ? '#FECACA' : '#BBF7D0'}` }}>
+              <div style={{ background: report.biofeedback.fatigue_level === 'HIGH' ? '#FEF2F2' : '#F0FDF4', padding: '6px', borderRadius: '6px', border: `1px solid ${report.biofeedback.fatigue_level === 'HIGH' ? '#FECACA' : '#BBF7D0'}` }}>
                 <span style={{ fontSize: '7.5pt', color: '#64748B', display: 'block' }}>مستوى الإجهاد التراكمي</span>
                 <strong style={{ fontSize: '10pt', color: report.biofeedback.fatigue_level === 'HIGH' ? '#DC2626' : '#16A34A' }}>
                   {report.biofeedback.fatigue_level === 'HIGH' ? 'إجهاد مرتفع' : report.biofeedback.fatigue_level === 'MODERATE' ? 'إجهاد معتدل' : 'استشفاء مثالي'}
@@ -512,7 +512,7 @@ export default function MesocycleDebriefPdfView() {
         {/* Running Header */}
         <div className="running-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ background: '#0F172A', color: '#FFFFFF', padding: '2px 6px', borderRadius: '9999px', fontSize: '7.5pt' }}>Z COACHING</span>
+            <span style={{ background: '#0F172A', color: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', fontSize: '7.5pt' }}>Z COACHING</span>
             <span>منظومة التدريب والتغذية السريرية المعتمدة</span>
           </div>
           <div>توجيهات الميزوسايكل القادم والاعتماد السريري</div>
@@ -581,7 +581,7 @@ export default function MesocycleDebriefPdfView() {
                   gap: '6px',
                   background: '#F8FAFC',
                   padding: '6px 10px',
-                  borderRadius: '9999px',
+                  borderRadius: '6px',
                   border: '1px solid #E2E8F0'
                 }}>
                   <span style={{ color: '#0284C7', fontWeight: 900 }}>[0{idx + 1}]</span>
@@ -602,7 +602,7 @@ export default function MesocycleDebriefPdfView() {
             <div style={{
               background: '#F8FAFC',
               border: '1px solid #E2E8F0',
-              borderRadius: '9999px',
+              borderRadius: '8px',
               padding: '10px 14px',
               display: 'flex',
               flexDirection: 'column',
@@ -623,7 +623,7 @@ export default function MesocycleDebriefPdfView() {
             <div style={{
               background: '#0F172A',
               color: '#FFFFFF',
-              borderRadius: '9999px',
+              borderRadius: '8px',
               padding: '10px 14px',
               textAlign: 'center',
               display: 'flex',
@@ -640,7 +640,7 @@ export default function MesocycleDebriefPdfView() {
               <div style={{
                 marginTop: '6px',
                 border: '1px solid #38BDF8',
-                borderRadius: '9999px',
+                borderRadius: '4px',
                 padding: '2px 8px',
                 fontSize: '7.5pt',
                 color: '#38BDF8',

@@ -257,7 +257,7 @@ export default function WeeklyCheckinForm() {
           style={{ 
             background: '#FFFFFF', 
             border: '1px solid #E2E8F0', 
-            borderRadius: '20px', 
+            borderRadius: '12px', 
             padding: '16px 20px',
             boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
             display: 'flex',
@@ -269,7 +269,7 @@ export default function WeeklyCheckinForm() {
             <button 
               type="button" 
               onClick={() => navigate(-1)} 
-              style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '9999px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569' }}
+              style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569' }}
             >
               <ChevronRight size={18} />
             </button>
@@ -279,13 +279,13 @@ export default function WeeklyCheckinForm() {
             </div>
           </div>
 
-          <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#16A34A', background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '3px 10px', borderRadius: '9999px' }}>
+          <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#16A34A', background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '3px 10px', borderRadius: '6px' }}>
             متابعة سريعة (60 ثانية)
           </div>
         </div>
 
         {error && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#B91C1C', padding: '12px 16px', borderRadius: '9999px', fontSize: '12.5px', fontWeight: 700, textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#B91C1C', padding: '12px 16px', borderRadius: '8px', fontSize: '12.5px', fontWeight: 700, textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertCircle size={18} color="#DC2626" style={{ flexShrink: 0 }} />
             <span>{error}</span>
           </div>
@@ -296,8 +296,8 @@ export default function WeeklyCheckinForm() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             
             {/* Client Identification Card */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '14px' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isEditingCode ? '8px' : '0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <User size={16} color="#0284C7" />
@@ -340,7 +340,7 @@ export default function WeeklyCheckinForm() {
                       style={{
                         width: '100%',
                         height: '38px',
-                        borderRadius: '9999px',
+                        borderRadius: '6px',
                         border: '1px solid #CBD5E1',
                         padding: '0 12px',
                         fontSize: '13px',
@@ -356,7 +356,7 @@ export default function WeeklyCheckinForm() {
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
                     <span style={{ fontSize: '11.5px', color: '#64748B' }}>الكود المسجل للتقييم الأسبوعي:</span>
-                    <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo', background: '#FFFFFF', padding: '3px 10px', borderRadius: '9999px', border: '1px solid #CBD5E1' }}>
+                    <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo', background: '#FFFFFF', padding: '3px 10px', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
                       #{clientIdentifier.replace(/^#+/, '')}
                     </span>
                   </div>
@@ -365,7 +365,7 @@ export default function WeeklyCheckinForm() {
             </div>
 
             {/* Core 60-Second Checkin Card */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #F1F5F9', paddingBottom: '10px' }}>
                 <Scale size={18} color="#0284C7" />
@@ -387,7 +387,7 @@ export default function WeeklyCheckinForm() {
                     style={{
                       width: '100%',
                       height: '42px',
-                      borderRadius: '9999px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       padding: '0 14px',
                       fontSize: '15px',
@@ -422,7 +422,7 @@ export default function WeeklyCheckinForm() {
                     style={{
                       width: '100%',
                       height: '42px',
-                      borderRadius: '9999px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       padding: '0 14px',
                       fontSize: '15px',
@@ -440,7 +440,7 @@ export default function WeeklyCheckinForm() {
               </div>
 
               {/* Diet Adherence */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                   <span style={{ color: '#0F172A' }}>نسبة الالتزام بالدايت والماكروز</span>
                   <strong style={{ color: '#16A34A', fontFamily: 'JetBrains Mono' }}>{formData.nutrition_adherence_percent}%</strong>
@@ -461,7 +461,7 @@ export default function WeeklyCheckinForm() {
               </div>
 
               {/* Sleep Quality */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                   <span style={{ color: '#0F172A' }}>جودة وعمق النوم</span>
                   <strong style={{ color: '#0284C7', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.sleepQuality} / 10</strong>
@@ -481,7 +481,7 @@ export default function WeeklyCheckinForm() {
               </div>
 
               {/* Energy Level */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                   <span style={{ color: '#0F172A' }}>مستوى الطاقة في التمرين واليوم</span>
                   <strong style={{ color: '#D97706', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.energyLevel} / 10</strong>
@@ -501,7 +501,7 @@ export default function WeeklyCheckinForm() {
               </div>
 
               {/* Joint pain (1-10): feeds the injury flag and the early-deload recommendation */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>هل عندك ألم في أي مفصل هذا الأسبوع؟</span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {[{ v: false, label: 'لا' }, { v: true, label: 'نعم' }].map((opt) => (
@@ -509,7 +509,7 @@ export default function WeeklyCheckinForm() {
                       key={String(opt.v)}
                       type="button"
                       onClick={() => setFormData({ ...formData, has_joint_pain: opt.v, ...(opt.v ? {} : { pain_area: '' }) })}
-                      style={{ flex: 1, padding: '8px', borderRadius: '9999px', border: formData.has_joint_pain === opt.v ? '2px solid #0284C7' : '1px solid #CBD5E1', background: formData.has_joint_pain === opt.v ? '#F0F9FF' : '#FFFFFF', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+                      style={{ flex: 1, padding: '8px', borderRadius: '8px', border: formData.has_joint_pain === opt.v ? '2px solid #0284C7' : '1px solid #CBD5E1', background: formData.has_joint_pain === opt.v ? '#F0F9FF' : '#FFFFFF', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
                     >
                       {opt.label}
                     </button>
@@ -523,7 +523,7 @@ export default function WeeklyCheckinForm() {
                           key={a.id}
                           type="button"
                           onClick={() => setFormData({ ...formData, pain_area: a.id })}
-                          style={{ padding: '6px 12px', borderRadius: '9999px', border: formData.pain_area === a.id ? '2px solid #DC2626' : '1px solid #CBD5E1', background: formData.pain_area === a.id ? '#FEF2F2' : '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                          style={{ padding: '6px 12px', borderRadius: '8px', border: formData.pain_area === a.id ? '2px solid #DC2626' : '1px solid #CBD5E1', background: formData.pain_area === a.id ? '#FEF2F2' : '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                         >
                           {a.label}
                         </button>
@@ -550,7 +550,7 @@ export default function WeeklyCheckinForm() {
               </div>
 
               {/* P0 Clinical Safety: Exertional Chest Pain & Syncope Screening */}
-              <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: '9999px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ShieldAlert size={16} color="#E11D48" />
                   <span style={{ fontSize: '12px', fontWeight: 700, color: '#9F1239' }}>فحص الأمان القلبي والسريري (أثناء أو بعد المجهود)</span>
@@ -564,7 +564,7 @@ export default function WeeklyCheckinForm() {
                         key={String(opt.v)}
                         type="button"
                         onClick={() => setFormData({ ...formData, exertional_chest_pain: opt.v })}
-                        style={{ flex: 1, padding: '6px', borderRadius: '9999px', border: formData.exertional_chest_pain === opt.v ? '2px solid #E11D48' : '1px solid #CBD5E1', background: formData.exertional_chest_pain === opt.v ? '#FFE4E6' : '#FFFFFF', fontWeight: 700, fontSize: '11.5px', cursor: 'pointer' }}
+                        style={{ flex: 1, padding: '6px', borderRadius: '8px', border: formData.exertional_chest_pain === opt.v ? '2px solid #E11D48' : '1px solid #CBD5E1', background: formData.exertional_chest_pain === opt.v ? '#FFE4E6' : '#FFFFFF', fontWeight: 700, fontSize: '11.5px', cursor: 'pointer' }}
                       >
                         {opt.label}
                       </button>
@@ -580,7 +580,7 @@ export default function WeeklyCheckinForm() {
                         key={String(opt.v)}
                         type="button"
                         onClick={() => setFormData({ ...formData, syncope: opt.v })}
-                        style={{ flex: 1, padding: '6px', borderRadius: '9999px', border: formData.syncope === opt.v ? '2px solid #E11D48' : '1px solid #CBD5E1', background: formData.syncope === opt.v ? '#FFE4E6' : '#FFFFFF', fontWeight: 700, fontSize: '11.5px', cursor: 'pointer' }}
+                        style={{ flex: 1, padding: '6px', borderRadius: '8px', border: formData.syncope === opt.v ? '2px solid #E11D48' : '1px solid #CBD5E1', background: formData.syncope === opt.v ? '#FFE4E6' : '#FFFFFF', fontWeight: 700, fontSize: '11.5px', cursor: 'pointer' }}
                       >
                         {opt.label}
                       </button>
@@ -589,7 +589,7 @@ export default function WeeklyCheckinForm() {
                 </div>
 
                 {(formData.exertional_chest_pain || formData.syncope) && (
-                  <div style={{ background: '#FFFFFF', border: '1.5px solid #E11D48', borderRadius: '9999px', padding: '10px', fontSize: '11px', color: '#9F1239', lineHeight: 1.5, fontWeight: 700 }}>
+                  <div style={{ background: '#FFFFFF', border: '1.5px solid #E11D48', borderRadius: '8px', padding: '10px', fontSize: '11px', color: '#9F1239', lineHeight: 1.5, fontWeight: 700 }}>
                     تحذير أمان سريري عاجل: توقف فوراً عن ممارسة أي تمرين أو مجهود بدني، واستشر الطبيب المختص أو اتصل بالإسعاف (123 / 997 / 911) عند وجود ألم ممتد للذراع أو الفك أو ضيق تنفس حاد. سيتم تعليق التمارين تلقائياً لحمايتك.
                   </div>
                 )}
@@ -598,13 +598,13 @@ export default function WeeklyCheckinForm() {
             </div>
 
             {/* Photo Upload Section (Explicitly Optional) */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Camera size={18} color="#D97706" />
                   <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>صور التطور الأسبوعي (اختيارية)</strong>
                 </div>
-                <span style={{ fontSize: '10.5px', color: '#475569', background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '9999px', fontWeight: 700 }}>
+                <span style={{ fontSize: '10.5px', color: '#475569', background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
                   اختياري - متاح الإرسال بدون صور أو بزاوية واحدة
                 </span>
               </div>
@@ -626,7 +626,7 @@ export default function WeeklyCheckinForm() {
                       key={item.id}
                       style={{
                         border: photoData ? '1px solid #10B981' : '2px dashed #CBD5E1',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         background: photoData ? '#F0FDF4' : '#F8FAFC',
                         padding: '10px',
                         display: 'flex',
@@ -652,7 +652,7 @@ export default function WeeklyCheckinForm() {
                               width: '100%',
                               height: '90px',
                               objectFit: 'cover',
-                              borderRadius: '9999px',
+                              borderRadius: '6px',
                               border: '1px solid #E2E8F0'
                             }}
                           />
@@ -666,7 +666,7 @@ export default function WeeklyCheckinForm() {
                               style={{
                                 background: '#FEE2E2',
                                 border: 'none',
-                                borderRadius: '9999px',
+                                borderRadius: '6px',
                                 padding: '3px',
                                 color: '#EF4444',
                                 cursor: 'pointer',
@@ -715,7 +715,7 @@ export default function WeeklyCheckinForm() {
             </div>
 
             {/* Additional Details Section (Collapsible) */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '16px 20px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px 20px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)' }}>
               <button
                 type="button"
                 onClick={() => setShowExtraDetails(!showExtraDetails)}
@@ -738,7 +738,7 @@ export default function WeeklyCheckinForm() {
                     <span style={{ fontSize: '11px', color: '#64748B' }}>أوزان الأيام السبعة، الهضم، نمط الأسبوع، واستعدادات الأسبوع القادم</span>
                   </div>
                 </div>
-                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '9999px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569' }}>
                   {showExtraDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </div>
               </button>
@@ -768,7 +768,7 @@ export default function WeeklyCheckinForm() {
                         next[i] = cleanArabicNumStr(e.target.value);
                         setFormData({ ...formData, daily_weights: next });
                       }}
-                      style={{ width: '100%', height: '36px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 2px', fontSize: '12px', fontWeight: 700, textAlign: 'center', fontFamily: 'JetBrains Mono, Cairo', color: '#0F172A', outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 2px', fontSize: '12px', fontWeight: 700, textAlign: 'center', fontFamily: 'JetBrains Mono, Cairo', color: '#0F172A', outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
                     />
                   ))}
                 </div>
@@ -785,12 +785,12 @@ export default function WeeklyCheckinForm() {
                   value={formData.average_daily_calories}
                   onChange={(e) => setFormData({ ...formData, average_daily_calories: cleanArabicNumStr(e.target.value) })}
                   placeholder="مثال: 2100"
-                  style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 14px', fontSize: '14px', fontWeight: 700, textAlign: 'center', fontFamily: 'JetBrains Mono, Cairo', color: '#0F172A', outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
+                  style={{ width: '100%', height: '42px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 14px', fontSize: '14px', fontWeight: 700, textAlign: 'center', fontFamily: 'JetBrains Mono, Cairo', color: '#0F172A', outline: 'none', background: '#FFFFFF', boxSizing: 'border-box' }}
                 />
               </div>
 
               {/* Hunger */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                   <span style={{ color: '#0F172A' }}>مستوى الشبع والجوع</span>
                   <strong style={{ color: '#DC2626', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.hungerLevel} / 10</strong>
@@ -823,7 +823,7 @@ export default function WeeklyCheckinForm() {
                       style={{
                         flex: 1,
                         height: '36px',
-                        borderRadius: '9999px',
+                        borderRadius: '6px',
                         fontWeight: 800,
                         fontSize: '13px',
                         fontFamily: 'JetBrains Mono',
@@ -851,7 +851,7 @@ export default function WeeklyCheckinForm() {
                   style={{
                     width: '100%',
                     height: '90px',
-                    borderRadius: '9999px',
+                    borderRadius: '8px',
                     border: '1px solid #CBD5E1',
                     padding: '10px 12px',
                     fontSize: '12px',
@@ -882,7 +882,7 @@ export default function WeeklyCheckinForm() {
                       onClick={() => setFormData({ ...formData, lifestyle_variance: item.id })}
                       style={{
                         padding: '10px 12px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         fontSize: '11.5px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -915,7 +915,7 @@ export default function WeeklyCheckinForm() {
                       onClick={() => setFormData({ ...formData, bowel_regularity: item.id })}
                       style={{
                         padding: '10px 8px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         fontSize: '11px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -932,7 +932,7 @@ export default function WeeklyCheckinForm() {
               </div>
 
               {/* Retrospective: Sleep Stress Composite */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                   <span style={{ color: '#0F172A' }}>مؤشر الاستشفاء والضغط التراكمي (1 = إجهاد شديد، 5 = استشفاء ممتاز)</span>
                   <strong style={{ color: '#6366F1', fontFamily: 'JetBrains Mono' }}>{formData.sleep_stress_composite} / 5</strong>
@@ -952,7 +952,7 @@ export default function WeeklyCheckinForm() {
                       style={{
                         flex: 1,
                         padding: '8px 4px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         fontSize: '10px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -987,7 +987,7 @@ export default function WeeklyCheckinForm() {
                       onClick={() => setFormData({ ...formData, menstrual_phase: item.id })}
                       style={{
                         padding: '10px 10px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         fontSize: '11px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -1004,7 +1004,7 @@ export default function WeeklyCheckinForm() {
               </div>
 
               {/* Prospective: Forward-Looking Week Preview */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #E2E8F0', paddingBottom: '8px' }}>
                   <Calendar size={16} color="#0284C7" />
                   <strong style={{ fontSize: '13px', color: '#0F172A' }}>استشراف واستعدادات الأسبوع القادم</strong>
@@ -1021,7 +1021,7 @@ export default function WeeklyCheckinForm() {
                       onClick={() => setFormData({ ...formData, next_week_travel: true })}
                       style={{
                         padding: '9px 12px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         fontSize: '11.5px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -1038,7 +1038,7 @@ export default function WeeklyCheckinForm() {
                       onClick={() => setFormData({ ...formData, next_week_travel: false })}
                       style={{
                         padding: '9px 12px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         fontSize: '11.5px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -1064,7 +1064,7 @@ export default function WeeklyCheckinForm() {
                       onClick={() => setFormData({ ...formData, next_week_gym_available: true })}
                       style={{
                         padding: '9px 12px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         fontSize: '11.5px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -1081,7 +1081,7 @@ export default function WeeklyCheckinForm() {
                       onClick={() => setFormData({ ...formData, next_week_gym_available: false })}
                       style={{
                         padding: '9px 12px',
-                        borderRadius: '9999px',
+                        borderRadius: '8px',
                         fontSize: '11.5px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -1110,7 +1110,7 @@ export default function WeeklyCheckinForm() {
                         style={{
                           flex: 1,
                           height: '34px',
-                          borderRadius: '9999px',
+                          borderRadius: '8px',
                           fontWeight: 800,
                           fontSize: '12px',
                           fontFamily: 'JetBrains Mono',
@@ -1140,7 +1140,7 @@ export default function WeeklyCheckinForm() {
                     style={{
                       width: '100%',
                       height: '38px',
-                      borderRadius: '9999px',
+                      borderRadius: '8px',
                       border: '1px solid #CBD5E1',
                       padding: '0 12px',
                       fontSize: '12px',
@@ -1156,7 +1156,7 @@ export default function WeeklyCheckinForm() {
 
               {/* Seasonal Fasting Transition Confirmation */}
               {upcomingFasting && (
-                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '9999px', padding: '12px 14px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                     <Clock size={16} color="#B45309" />
                     <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>
@@ -1172,7 +1172,7 @@ export default function WeeklyCheckinForm() {
                       onClick={() => setFormData({ ...formData, fasting_transition: 'ACTIVE' })}
                       style={{
                         padding: '8px 10px',
-                        borderRadius: '9999px',
+                        borderRadius: '6px',
                         fontSize: '11.5px',
                         fontWeight: 800,
                         cursor: 'pointer',
@@ -1188,7 +1188,7 @@ export default function WeeklyCheckinForm() {
                       onClick={() => setFormData({ ...formData, fasting_transition: 'MAINTAIN_BASELINE' })}
                       style={{
                         padding: '8px 10px',
-                        borderRadius: '9999px',
+                        borderRadius: '6px',
                         fontSize: '11.5px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -1236,7 +1236,7 @@ export default function WeeklyCheckinForm() {
           </div>
         ) : (
           /* STEP 4: Success */
-          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '32px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', boxShadow: '0 4px 20px rgba(15, 23, 42, 0.05)' }}>
+          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '32px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', boxShadow: '0 4px 20px rgba(15, 23, 42, 0.05)' }}>
             <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#ECFDF5', border: '1px solid #A7F3D0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
               <CheckCircle2 size={32} />
             </div>
@@ -1249,7 +1249,7 @@ export default function WeeklyCheckinForm() {
             </div>
 
             {/* Quick Metrics Summary Box */}
-            <div style={{ width: '100%', maxWidth: '400px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '12px 16px', textAlign: 'right', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ width: '100%', maxWidth: '400px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 16px', textAlign: 'right', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#64748B' }}>الوزن المسجل:</span>
                 <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono, Cairo' }}>{formData.weight_kg} كجم</strong>
@@ -1284,7 +1284,7 @@ export default function WeeklyCheckinForm() {
                   background: '#16A34A',
                   color: '#FFFFFF',
                   height: '42px',
-                  borderRadius: '9999px',
+                  borderRadius: '8px',
                   fontWeight: 800,
                   fontSize: '13px',
                   textDecoration: 'none',
@@ -1300,7 +1300,7 @@ export default function WeeklyCheckinForm() {
                 onClick={() => navigate('/client/today')} 
                 style={{
                   height: '40px',
-                  borderRadius: '9999px',
+                  borderRadius: '8px',
                   background: '#0F172A',
                   color: '#FFFFFF',
                   fontSize: '12.5px',
@@ -1320,7 +1320,7 @@ export default function WeeklyCheckinForm() {
                 onClick={() => navigate('/coach/checkin-review')} 
                 style={{
                   height: '34px',
-                  borderRadius: '9999px',
+                  borderRadius: '6px',
                   background: '#FFFFFF',
                   color: '#64748B',
                   fontSize: '11px',

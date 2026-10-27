@@ -21,13 +21,9 @@ function MobilityImageFrame({ src, label, icon: Icon = Activity }) {
   }, [src]);
 
   return (
-    <div style={{ 
+    <div className="exercise-image-frame" style={{ 
       position: 'relative', 
-      borderRadius: '10px', 
-      overflow: 'hidden', 
-      background: '#F1F5F9', 
-      border: '1px solid #EAECF0', 
-      height: '135px', 
+      borderRadius: '12px', overflow: 'hidden', background: '#F1F5F9', border: '1px solid #EAECF0', height: '140px', width: '100%', 
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
@@ -67,9 +63,7 @@ function MobilityImageFrame({ src, label, icon: Icon = Activity }) {
             zIndex: 1, 
             width: '100%', 
             height: '100%', 
-            objectFit: 'contain', 
-            borderRadius: '9px', 
-            padding: '2px',
+            objectFit: 'cover', borderRadius: '12px', padding: 0,
             opacity: isLoading ? 0 : 1,
             transition: 'opacity 0.2s ease'
           }}
