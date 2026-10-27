@@ -54,6 +54,8 @@ export default function Customers() {
 
   // Modals & Actions State
   const [whatsappModalClient, setWhatsappModalClient] = useState(null);
+  const [whatsappModalTemplate, setWhatsappModalTemplate] = useState(null);
+  const [whatsappModalCustomText, setWhatsappModalCustomText] = useState(null);
   const [renewalModalClient, setRenewalModalClient] = useState(null);
   const [freezingClientId, setFreezingClientId] = useState(null);
 
@@ -1082,7 +1084,18 @@ export default function Customers() {
                             {/* WhatsApp */}
                             <button
                               type="button"
-                              onClick={() => setWhatsappModalClient(client)}
+                              onClick={() => {
+                                setWhatsappModalClient(client);
+                                setWhatsappModalCustomText(null);
+                                const isClientOverdue = Boolean(client.isOverdue || client.is_overdue || client.overdue);
+                                if (isClientOverdue) {
+                                  setWhatsappModalTemplate('rescue_overdue');
+                                } else if (client.subscription_status === 'EXPIRING_SOON' || (client.days_remaining !== undefined && client.days_remaining <= 7)) {
+                                  setWhatsappModalTemplate('renewal');
+                                } else {
+                                  setWhatsappModalTemplate(null);
+                                }
+                              }}
                               style={{
                                 height: '28px',
                                 width: '28px',
@@ -1272,8 +1285,14 @@ export default function Customers() {
         {whatsappModalClient && (
           <WhatsAppModal
             isOpen={Boolean(whatsappModalClient)}
-            onClose={() => setWhatsappModalClient(null)}
+            onClose={() => {
+              setWhatsappModalClient(null);
+              setWhatsappModalTemplate(null);
+              setWhatsappModalCustomText(null);
+            }}
             client={whatsappModalClient}
+            initialTemplate={whatsappModalTemplate}
+            initialCustomText={whatsappModalCustomText}
           />
         )}
 
@@ -1299,7 +1318,11 @@ export default function Customers() {
           client={selectedDrawerClient}
           onToggleFreeze={handleToggleFreeze}
           freezingClientId={freezingClientId}
-          onOpenWhatsApp={(client) => setWhatsappModalClient(client)}
+          onOpenWhatsApp={(client, template, customText) => {
+            setWhatsappModalClient(client);
+            setWhatsappModalTemplate(template || null);
+            setWhatsappModalCustomText(customText || null);
+          }}
           onOpenRenewal={(client) => setRenewalModalClient(client)}
         />
 
