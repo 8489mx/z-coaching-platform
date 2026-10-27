@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2216/2216 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2225/2225 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -349,6 +349,16 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **UI Integration & PDF Export**: enhanced `frontend/src/pages/CoachEditor/components/CoachCardioHabitsTab.jsx` with a real-time leg-day cardio conflict warning banner, and upgraded `frontend/src/pages/ProgramPdfView.jsx` and `frontend/src/utils/pdfExportEngine.js` to display Tanaka Zone 2 BPM ranges, NEAT step targets, and mobility/warmup/cooldown exercise lists beneath training sessions.
   - Guarded by `test/cardio-mobility-and-interference-guard.test.js` (7 comprehensive domain tests).
 - Verification: **2206/2206 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`2.69s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
+
+## 3ad. Thirtieth round (2026-10-27) — Phase 12 Reports, Permissions, Staff Governance & Audit Trail (Unit I, tasks I-01..I-06) — merged + pushed
+
+- `743c808` **Reports, Permissions, Staff Governance & Audit Trail (Unit I, tasks I-01..I-06)**:
+  - **Unified Metrics & Coach Capacity Dictionary**: created `frontend/src/utils/unifiedMetricsDictionary.js` (re-exported by `src/execution-engines/unified-metrics-dictionary.js` and registered in `LIVE_PAIRS`), providing authoritative mathematical formulas for MRR, retention rate, churn rate, multi-currency revenue segregation (EGP vs SAR), and coach client capacity and utilization tracking with Zero Emojis.
+  - **Staff Role & Resource Ownership Governance Engine**: created `frontend/src/utils/staffRoleGovernanceEngine.js` (re-exported by `src/execution-engines/staff-role-governance-engine.js` and registered in `LIVE_PAIRS`), establishing an auditable RBAC/ABAC matrix for ADMIN, COACH, ASSISTANT_COACH, and CLIENT/TRAINEE roles. Strictly enforces multi-tenant boundary checks (rejects cross-tenant access with 403) and blocks trainees from executing staff actions.
+  - **Sensitive Actions Audit & Zero-Leak Sanitizer Engine**: created `frontend/src/utils/sensitiveAuditEngine.js` (re-exported by `src/execution-engines/sensitive-audit-engine.js` and registered in `LIVE_PAIRS`), providing automated redaction of sensitive credentials, tokens, and confidential notes, along with clean executive Arabic descriptions and strict Zero Emoji enforcement.
+  - **Controller Security & Audit Logging Integration**: upgraded `src/api/controllers/intake.controller.js` with multi-tenant resource ownership checks on intake view routes and `PROGRAM_PUBLISHED` audit event logging; updated `src/api/controllers/checkin.controller.js` to record `MEASUREMENT_CORRECTION` and `CLINICAL_LOCKOUT_UNLOCKED` audit events; upgraded `src/api/server.js` to log `SUBSCRIPTION_FREEZE_TOGGLE` audit events.
+  - Guarded by `test/reports-permissions-and-staff-governance-guard.test.js` (6 comprehensive domain tests).
+- Verification: **2225/2225 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`3.48s`), stress 306 clients 0 crashes/0 violations, 10/10 simulated clients 100%.
 
 ## 3ac. Twenty-ninth round (2026-10-27) — Phase 11 Subscription Freeze Governance, State Decoupling & Multi-Currency Ledger (Unit H, tasks H-01..H-12) — merged + pushed
 

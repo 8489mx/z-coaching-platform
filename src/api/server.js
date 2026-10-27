@@ -358,6 +358,21 @@ app.post('/api/v1/coach/toggle-freeze', requireAuth, requireAdmin, async (req, r
       }
 
       await user.update({ subscription_status: 'FROZEN', notes: freezeResult.updated_notes });
+
+      recordAuditEvent({
+        event: 'SUBSCRIPTION_FREEZE_TOGGLE',
+        req,
+        status: 'SUCCESS',
+        userId: req.user?.id || req.user?.email || 'COACH',
+        userRole: req.user?.role || 'COACH',
+        details: {
+          client_id: user.id,
+          action: 'FREEZE_START',
+          remaining_freeze_days: freezeResult.remaining_days,
+          reason: req.body.reason || 'طلب المشترك'
+        }
+      });
+
       return res.json({
         success: true,
         subscription_status: 'FROZEN',
@@ -384,6 +399,21 @@ app.post('/api/v1/coach/toggle-freeze', requireAuth, requireAdmin, async (req, r
       }
 
       await user.update(updatePayload);
+
+      recordAuditEvent({
+        event: 'SUBSCRIPTION_FREEZE_TOGGLE',
+        req,
+        status: 'SUCCESS',
+        userId: req.user?.id || req.user?.email || 'COACH',
+        userRole: req.user?.role || 'COACH',
+        details: {
+          client_id: user.id,
+          action: 'FREEZE_RESUME',
+          freeze_days_added: resumeResult.freeze_days_added,
+          reason: req.body.reason || 'استئناف الاشتراك'
+        }
+      });
+
       return res.json({
         success: true,
         subscription_status: 'ACTIVE',

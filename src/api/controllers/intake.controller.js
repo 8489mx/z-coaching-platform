@@ -13,6 +13,8 @@ import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
 import { hasHealthDataConsent } from "../../../frontend/src/config/healthDataConsent.js";
 import { recordFailedAttempt } from "../middlewares/rateLimiter.js";
 import { assessServiceScope, outsideScopeResponse } from "../services/serviceScope.js";
+import { recordAuditEvent } from "../services/auditLog.service.js";
+import { evaluateResourceOwnership } from "../../execution-engines/staff-role-governance-engine.js";
 
 const HEALTH_DATA_CONSENT_REQUIRED = Object.freeze({
   error: "يجب الموافقة على معالجة البيانات الصحية قبل حفظ أو إرسال الاستمارة",
@@ -454,6 +456,9 @@ export const submitPublicIntake = async (req, res) => {
 // 3. Coach fetches all incoming intake applications with progress tracking
 export const getAllIntakeSubmissions = async (req, res) => {
   try {
+    if (req.user && req.user.role !== "ADMIN" && req.user.role !== "COACH") {
+      return res.status(403).json({ error: "الاطلاع على كافة الاستمارات مقصور على الكوتش والإدارة" });
+    }
     const submissions = await IntakeSubmission.findAll({
       include: [
         {
@@ -695,6 +700,20 @@ export const approveAndPublishIntake = async (req, res) => {
       await submission.user.save();
     }
 
+    recordAuditEvent({
+      event: "PROGRAM_PUBLISHED",
+      req,
+      status: "SUCCESS",
+      userId: req.user?.id || "COACH",
+      userRole: req.user?.role || "COACH",
+      details: {
+        submission_id,
+        program_id: program.id,
+        target_user_id: submission.user_id,
+        coach_notes: coach_notes || null
+      }
+    });
+
     return res.status(200).json({
       message: "تم اعتماد ونشر الخطة لحساب المتدرب بنجاح وتفعيلها في الويب وتطبيق الموبايل",
       submission,
@@ -715,6 +734,18 @@ export const getIntakeSubmission = async (req, res) => {
       include: [{ model: User, as: "user" }]
     });
     if (!submission) return res.status(404).json({ error: "Submission not found" });
+
+    if (req.user) {
+      const ownership = evaluateResourceOwnership({
+        requestingUser: req.user,
+        targetClientId: submission.user_id,
+        action: "READ_OWN_PROGRAM"
+      });
+      if (!ownership.is_authorized) {
+        return res.status(ownership.status_code || 403).json({ error: ownership.message_ar });
+      }
+    }
+
     return res.status(200).json({ submission: formatSubmissionWithDecryptedAnswers(submission) });
   } catch (err) {
     return res.status(500).json({ error: err.message });

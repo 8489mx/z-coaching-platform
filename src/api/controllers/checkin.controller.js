@@ -12,6 +12,7 @@ import { resolveTrainingCycleStatus } from "../services/trainingCycleService.js"
 import { mealCountNoteForCheckin } from "../../checkin-engine/meal-count-note.js";
 import { evaluateClientCheckinSchedule } from "../services/checkinScheduleService.js";
 import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
+import { recordAuditEvent } from "../services/auditLog.service.js";
 export { getActiveClinicalLockout };
 
 /**
@@ -667,6 +668,23 @@ export async function updateCheckinMeasurements(req, res) {
       }
     }
 
+    recordAuditEvent({
+      event: "MEASUREMENT_CORRECTION",
+      req,
+      status: "SUCCESS",
+      userId: req.user?.id || 'COACH',
+      userRole: req.user?.role || 'COACH',
+      details: {
+        checkin_id: checkin.id,
+        target_user_id: checkin.user_id,
+        previous_weight_kg: oldWeight,
+        corrected_weight_kg: effectiveWeight,
+        previous_waist_cm: oldWaist,
+        corrected_waist_cm: checkin.waist_circumference_cm,
+        reason: auditEntry.reason
+      }
+    });
+
     return res.status(200).json({
       success: true,
       message: "تم حفظ وتوثيق قياسات المتابعة وتزامنها مع ملف المتدرب بنجاح",
@@ -1018,6 +1036,20 @@ export async function unlockClinicalSafety(req, res) {
         await c.save();
       }
     }
+
+    recordAuditEvent({
+      event: "CLINICAL_LOCKOUT_UNLOCKED",
+      req,
+      status: "SUCCESS",
+      userId: requester.id,
+      userRole: requester.role,
+      details: {
+        checkin_id: checkin.id,
+        target_user_id: checkin.user_id,
+        unlocked_by_name: requester.name || requester.username,
+        clearance_notes: cleanClearanceNotes
+      }
+    });
 
     return res.status(200).json({
       success: true,

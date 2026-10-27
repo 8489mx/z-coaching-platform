@@ -32,7 +32,10 @@ const LIVE_PAIRS = {
   'plan-quality-preflight-shield': 'planQualityPreflightShield',
   'postural-prehab-engine': 'posturalPrehabEngine',
   'subscription-freeze-engine': 'subscriptionFreezeEngine',
-  'subscription-state-engine': 'subscriptionStateEngine'
+  'subscription-state-engine': 'subscriptionStateEngine',
+  'sensitive-audit-engine': 'sensitiveAuditEngine',
+  'staff-role-governance-engine': 'staffRoleGovernanceEngine',
+  'unified-metrics-dictionary': 'unifiedMetricsDictionary'
 };
 
 // Known, deliberate differences. Remove an entry once resolved.
