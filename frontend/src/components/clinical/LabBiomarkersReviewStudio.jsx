@@ -171,12 +171,12 @@ export default function LabBiomarkersReviewStudio({
   };
 
   return (
-    <div style={{ background: '#FFFFFF', borderRadius: '12px', display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '90vh', overflow: 'hidden' }} dir="rtl">
+    <div style={{ background: '#FFFFFF', borderRadius: '20px', display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '90vh', overflow: 'hidden' }} dir="rtl">
       
       {/* 1. ترويسة الاستوديو */}
       <div style={{ padding: '12px 18px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#0F172A', color: '#C4952D', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '9999px', background: '#0F172A', color: '#C4952D', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <HeartPulse size={18} />
           </div>
           <div>
@@ -194,7 +194,7 @@ export default function LabBiomarkersReviewStudio({
           {/* محدد حالة العينة */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>سحب العينة:</span>
-            <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '2px' }}>
+            <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '9999px', padding: '2px' }}>
               <button
                 type="button"
                 onClick={() => setSampleFastingState('FASTING')}
@@ -203,7 +203,7 @@ export default function LabBiomarkersReviewStudio({
                   background: sampleFastingState === 'FASTING' ? '#0F172A' : 'transparent',
                   color: sampleFastingState === 'FASTING' ? '#FFFFFF' : '#64748B',
                   padding: '4px 9px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   fontSize: '11px',
                   fontWeight: 800,
                   cursor: 'pointer',
@@ -225,7 +225,7 @@ export default function LabBiomarkersReviewStudio({
                   background: sampleFastingState === 'NON_FASTING' ? '#B45309' : 'transparent',
                   color: sampleFastingState === 'NON_FASTING' ? '#FFFFFF' : '#64748B',
                   padding: '4px 9px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   fontSize: '11px',
                   fontWeight: 800,
                   cursor: 'pointer',
@@ -244,7 +244,7 @@ export default function LabBiomarkersReviewStudio({
           {/* محدد التزام المكملات أو الغذاء أولاً */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>نمط الخطة:</span>
-            <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '2px' }}>
+            <div style={{ display: 'inline-flex', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '9999px', padding: '2px' }}>
               <button
                 type="button"
                 onClick={() => setSupplementAdherence('NONE')}
@@ -253,7 +253,7 @@ export default function LabBiomarkersReviewStudio({
                   background: supplementAdherence === 'NONE' ? '#16A34A' : 'transparent',
                   color: supplementAdherence === 'NONE' ? '#FFFFFF' : '#475569',
                   padding: '4px 9px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   fontSize: '11px',
                   fontWeight: 800,
                   cursor: 'pointer',
@@ -275,7 +275,7 @@ export default function LabBiomarkersReviewStudio({
                   background: supplementAdherence === 'FULL' ? '#0F172A' : 'transparent',
                   color: supplementAdherence === 'FULL' ? '#C4952D' : '#64748B',
                   padding: '4px 9px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   fontSize: '11px',
                   fontWeight: 800,
                   cursor: 'pointer',
@@ -295,7 +295,7 @@ export default function LabBiomarkersReviewStudio({
             <button
               type="button"
               onClick={onClose}
-              style={{ width: '28px', height: '28px', border: '1px solid #CBD5E1', background: '#FFFFFF', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
+              style={{ width: '28px', height: '28px', border: '1px solid #CBD5E1', background: '#FFFFFF', borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
             >
               <X size={14} />
             </button>
@@ -318,7 +318,7 @@ export default function LabBiomarkersReviewStudio({
               <button
                 type="button"
                 onClick={() => setZoomLevel(prev => Math.min(prev + 0.25, 2.5))}
-                style={{ background: '#334155', border: 'none', color: '#FFFFFF', padding: '3px 6px', borderRadius: '6px', cursor: 'pointer' }}
+                style={{ background: '#334155', border: 'none', color: '#FFFFFF', padding: '3px 6px', borderRadius: '9999px', cursor: 'pointer' }}
                 title="تكبير"
               >
                 <ZoomIn size={12} />
@@ -326,7 +326,7 @@ export default function LabBiomarkersReviewStudio({
               <button
                 type="button"
                 onClick={() => setZoomLevel(prev => Math.max(prev - 0.25, 0.75))}
-                style={{ background: '#334155', border: 'none', color: '#FFFFFF', padding: '3px 6px', borderRadius: '6px', cursor: 'pointer' }}
+                style={{ background: '#334155', border: 'none', color: '#FFFFFF', padding: '3px 6px', borderRadius: '9999px', cursor: 'pointer' }}
                 title="تصغير"
               >
                 <ZoomOut size={12} />
@@ -334,12 +334,12 @@ export default function LabBiomarkersReviewStudio({
               <button
                 type="button"
                 onClick={() => setRotation(prev => (prev + 90) % 360)}
-                style={{ background: '#334155', border: 'none', color: '#FFFFFF', padding: '3px 6px', borderRadius: '6px', cursor: 'pointer' }}
+                style={{ background: '#334155', border: 'none', color: '#FFFFFF', padding: '3px 6px', borderRadius: '9999px', cursor: 'pointer' }}
                 title="تدوير 90 درجة"
               >
                 <RotateCw size={12} />
               </button>
-              <label style={{ background: '#0284C7', color: '#FFFFFF', padding: '4px 9px', borderRadius: '8px', cursor: 'pointer', fontSize: '10.5px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <label style={{ background: '#0284C7', color: '#FFFFFF', padding: '4px 9px', borderRadius: '9999px', cursor: 'pointer', fontSize: '10.5px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
                 <Upload size={11} />
                 <span>رفع تقرير</span>
                 <input type="file" accept="image/*,application/pdf" style={{ display: 'none' }} onChange={handleFileUpload} />
@@ -354,7 +354,7 @@ export default function LabBiomarkersReviewStudio({
                 <img 
                   src={reportsList[selectedReportIdx]} 
                   alt="ورقة التحاليل الطبية" 
-                  style={{ maxHeight: '480px', maxWidth: '100%', borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.5)', background: '#FFFFFF' }}
+                  style={{ maxHeight: '480px', maxWidth: '100%', borderRadius: '9999px', boxShadow: '0 4px 15px rgba(0,0,0,0.5)', background: '#FFFFFF' }}
                 />
               </div>
             ) : (
@@ -375,7 +375,7 @@ export default function LabBiomarkersReviewStudio({
                   onClick={() => setSelectedReportIdx(idx)}
                   style={{
                     border: selectedReportIdx === idx ? '2px solid #C4952D' : '1px solid #475569',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     padding: '2px',
                     background: '#0F172A',
                     cursor: 'pointer'
@@ -399,7 +399,7 @@ export default function LabBiomarkersReviewStudio({
               onClick={() => setActivePanelTab('ALL')}
               style={{
                 padding: '4px 10px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 border: activePanelTab === 'ALL' ? '1px solid #0F172A' : '1px solid #CBD5E1',
                 background: activePanelTab === 'ALL' ? '#0F172A' : '#FFFFFF',
                 color: activePanelTab === 'ALL' ? '#FFFFFF' : '#475569',
@@ -419,7 +419,7 @@ export default function LabBiomarkersReviewStudio({
                 onClick={() => setActivePanelTab(p.id)}
                 style={{
                   padding: '4px 10px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   border: activePanelTab === p.id ? '1px solid #0F172A' : '1px solid #CBD5E1',
                   background: activePanelTab === p.id ? '#0F172A' : '#FFFFFF',
                   color: activePanelTab === p.id ? '#FFFFFF' : '#475569',
@@ -485,7 +485,7 @@ export default function LabBiomarkersReviewStudio({
                     style={{ 
                       background: '#F8FAFC', 
                       border: `1.5px solid ${statusColor}`, 
-                      borderRadius: '8px', 
+                      borderRadius: '9999px', 
                       padding: '8px 10px',
                       display: 'flex',
                       flexDirection: 'column',
@@ -518,7 +518,7 @@ export default function LabBiomarkersReviewStudio({
                         style={{
                           width: '100%',
                           padding: '5px 8px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: '1px solid #CBD5E1',
                           background: '#FFFFFF',
                           color: '#0F172A',
@@ -539,7 +539,7 @@ export default function LabBiomarkersReviewStudio({
 
             {/* حساب HOMA-IR التلقائي أو تنبيه العينة غير الصائمة */}
             {sampleFastingState === 'NON_FASTING' && (labValues.fasting_glucose || labValues.fasting_insulin) && (
-              <div style={{ marginTop: '12px', background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '8px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ marginTop: '12px', background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '9999px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Info size={15} color="#B45309" />
                 <span style={{ fontSize: '11px', color: '#92400E', fontWeight: 700 }}>
                   تنبيه سريري: تم تعطيل احتساب HOMA-IR نظراً لسحب العينة في وضع غير صائم (فاطر) لمنع القراءات الإيجابية الكاذبة، ويتم الاعتماد على السكر التراكمي (HbA1c) الموثوق كمعيار أيضي رئيسي.
@@ -547,7 +547,7 @@ export default function LabBiomarkersReviewStudio({
               </div>
             )}
             {homaIR && sampleFastingState === 'FASTING' && (
-              <div style={{ marginTop: '12px', background: homaIR >= 2.5 ? '#FEF2F2' : '#F0FDF4', border: `1px solid ${homaIR >= 2.5 ? '#FCA5A5' : '#86EFAC'}`, borderRadius: '8px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginTop: '12px', background: homaIR >= 2.5 ? '#FEF2F2' : '#F0FDF4', border: `1px solid ${homaIR >= 2.5 ? '#FCA5A5' : '#86EFAC'}`, borderRadius: '9999px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>
                   معامل مقاومة الأنسولين المحسوب آلياً (HOMA-IR): <strong style={{ color: homaIR >= 2.5 ? '#DC2626' : '#16A34A', fontFamily: 'JetBrains Mono' }}>{homaIR}</strong>
                 </span>
@@ -566,7 +566,7 @@ export default function LabBiomarkersReviewStudio({
                     خطة العمل الإكلينيكية والقرارات الفسيولوجية المعتمدة:
                   </strong>
                 </div>
-                <span style={{ fontSize: '10.5px', background: supplementAdherence === 'NONE' ? '#DCFCE7' : '#F1F5F9', color: supplementAdherence === 'NONE' ? '#166534' : '#0F172A', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
+                <span style={{ fontSize: '10.5px', background: supplementAdherence === 'NONE' ? '#DCFCE7' : '#F1F5F9', color: supplementAdherence === 'NONE' ? '#166534' : '#0F172A', padding: '2px 8px', borderRadius: '9999px', fontWeight: 800 }}>
                   {supplementAdherence === 'NONE' ? 'بروتوكول الغذاء أولاً' : 'بروتوكول التدعيم المتقدم'}
                 </span>
               </div>
@@ -575,14 +575,14 @@ export default function LabBiomarkersReviewStudio({
               {clinicalResult.flags.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
                   {clinicalResult.flags.map((flag, idx) => (
-                    <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRight: '4px solid #EF4444', borderRadius: '6px', padding: '6px 10px', fontSize: '11px' }}>
+                    <div key={idx} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRight: '4px solid #EF4444', borderRadius: '9999px', padding: '6px 10px', fontSize: '11px' }}>
                       <strong style={{ color: '#DC2626', display: 'block', marginBottom: '2px' }}>{flag.title_ar}</strong>
                       <span style={{ color: '#475569' }}>{flag.details_ar}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', padding: '8px 12px', borderRadius: '6px', fontSize: '11.5px', fontWeight: 700, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', padding: '8px 12px', borderRadius: '9999px', fontSize: '11.5px', fontWeight: 700, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <CheckCircle2 size={14} />
                   <span>كافة المؤشرات المدخلة تقع ضمن النطاقات الفسيولوجية الطبيعية والآمنة.</span>
                 </div>
@@ -590,28 +590,28 @@ export default function LabBiomarkersReviewStudio({
 
               {/* قرارات ضبط التغذية الصارمة (Guardrails) */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', marginBottom: '12px' }}>
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '9999px', fontSize: '11px' }}>
                   <span style={{ color: '#64748B', display: 'block' }}>سقف البروتين اليومي:</span>
                   <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>
                     {clinicalResult.dietary_modifications.protein_cap_g_per_kg ? `${clinicalResult.dietary_modifications.protein_cap_g_per_kg} جم/كجم` : 'مفتوح حسب الهدف'}
                   </strong>
                 </div>
 
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '9999px', fontSize: '11px' }}>
                   <span style={{ color: '#64748B', display: 'block' }}>مستهدف الألياف اليومي:</span>
                   <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>
                     {clinicalResult.dietary_modifications.min_fiber_g} جم
                   </strong>
                 </div>
 
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '9999px', fontSize: '11px' }}>
                   <span style={{ color: '#64748B', display: 'block' }}>حظر مكمل الكرياتين:</span>
                   <strong style={{ color: clinicalResult.dietary_modifications.withhold_creatine ? '#DC2626' : '#16A34A' }}>
                     {clinicalResult.dietary_modifications.withhold_creatine ? 'محظور لحماية الكلى' : 'مسموح به'}
                   </strong>
                 </div>
 
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '6px', fontSize: '11px' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', padding: '8px 10px', borderRadius: '9999px', fontSize: '11px' }}>
                   <span style={{ color: '#64748B', display: 'block' }}>مستهدف الماء اليومي:</span>
                   <strong style={{ color: '#0284C7', fontFamily: 'JetBrains Mono' }}>
                     {clinicalResult.dietary_modifications.daily_water_target_liters} لتر
@@ -621,7 +621,7 @@ export default function LabBiomarkersReviewStudio({
 
               {/* خطة الغذاء الطبيعي البديلة للمكملات (FOOD-FIRST INTERVENTIONS) */}
               {clinicalResult.whole_food_interventions.length > 0 && (
-                <div style={{ background: '#FFFFFF', border: '1.5px solid #86EFAC', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
+                <div style={{ background: '#FFFFFF', border: '1.5px solid #86EFAC', borderRadius: '9999px', padding: '10px 12px', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
                     <Utensils size={14} color="#16A34A" />
                     <strong style={{ fontSize: '11.5px', color: '#166534' }}>
@@ -630,7 +630,7 @@ export default function LabBiomarkersReviewStudio({
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {clinicalResult.whole_food_interventions.map((food, idx) => (
-                      <div key={idx} style={{ background: '#F0FDF4', padding: '6px 8px', borderRadius: '8px', fontSize: '11px' }}>
+                      <div key={idx} style={{ background: '#F0FDF4', padding: '6px 8px', borderRadius: '9999px', fontSize: '11px' }}>
                         <strong style={{ color: '#0F172A', display: 'block' }}>• {food.food_title_ar}</strong>
                         <p style={{ margin: '2px 0 0 0', color: '#475569', fontSize: '10.5px' }}>{food.rationale_ar}</p>
                       </div>
@@ -641,7 +641,7 @@ export default function LabBiomarkersReviewStudio({
 
               {/* المكملات المقترحة (في حال نمط التدعيم المتقدم) */}
               {supplementAdherence === 'FULL' && clinicalResult.supplement_recommendations.length > 0 && (
-                <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '9999px', padding: '10px 12px', marginBottom: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Pill size={14} color="#0F172A" />
@@ -649,7 +649,7 @@ export default function LabBiomarkersReviewStudio({
                         المكملات الغذائية الإضافية (تدعيم سريري موجه):
                       </strong>
                     </div>
-                    <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#0F172A', padding: '1px 6px', borderRadius: '6px', fontWeight: 800 }}>
+                    <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#0F172A', padding: '1px 6px', borderRadius: '9999px', fontWeight: 800 }}>
                       تدعيم سريري موجه
                     </span>
                   </div>
@@ -668,7 +668,7 @@ export default function LabBiomarkersReviewStudio({
 
               {/* التوصيات والإحالات الطبية المتخصصة (Medical Referrals) */}
               {clinicalResult.medical_referrals.length > 0 && (
-                <div style={{ background: '#FEF2F2', border: '1px solid #F87171', borderRadius: '8px', padding: '10px 12px' }}>
+                <div style={{ background: '#FEF2F2', border: '1px solid #F87171', borderRadius: '9999px', padding: '10px 12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                     <AlertTriangle size={14} color="#DC2626" />
                     <strong style={{ fontSize: '11.5px', color: '#DC2626' }}>
@@ -697,7 +697,7 @@ export default function LabBiomarkersReviewStudio({
               onClick={handleWhatsAppShare}
               style={{
                 padding: '8px 14px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: '1px solid #86EFAC',
                 background: '#F0FDF4',
                 color: '#16A34A',
@@ -720,7 +720,7 @@ export default function LabBiomarkersReviewStudio({
                   onClick={onClose}
                   style={{
                     padding: '8px 16px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: '1px solid #CBD5E1',
                     background: '#FFFFFF',
                     color: '#475569',
@@ -738,7 +738,7 @@ export default function LabBiomarkersReviewStudio({
                 onClick={handleSaveDecisions}
                 style={{
                   padding: '8px 20px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: 'none',
                   background: '#0F172A',
                   color: '#FFFFFF',

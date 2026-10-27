@@ -61,7 +61,7 @@ export function CoachHeaderBar({
       style={{ 
         background: '#FFFFFF', 
         border: '1px solid #EAECF0', 
-        borderRadius: '14px', 
+        borderRadius: '24px', 
         padding: '14px 20px', 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -94,7 +94,7 @@ export function CoachHeaderBar({
                 <span style={{
                   fontSize: '11px',
                   padding: '2px 10px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   background: '#F8FAFC',
                   border: '1px solid #EAECF0',
                   color: isMax ? '#B45309' : '#0284C7',
@@ -122,20 +122,20 @@ export function CoachHeaderBar({
           {(clientMedicalConditions.length > 0 || (program?.client?.injuries && program.client.injuries.length > 0) || (program?.client?.allergies && program.client.allergies.length > 0)) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
               {clientMedicalConditions.length > 0 && (
-                <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '8px', background: '#F2F4F7', border: '1px solid #EAECF0', color: '#475467', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '9999px', background: '#F2F4F7', border: '1px solid #EAECF0', color: '#475467', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                   <span>الحالة الصحية: {clientMedicalConditions.join('، ')}</span>
                 </span>
               )}
 
               {program?.client?.injuries && program?.client?.injuries.length > 0 && (
-                <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '8px', background: '#FEF3F2', border: '1px solid #FECDCA', color: '#B42318', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '9999px', background: '#FEF3F2', border: '1px solid #FECDCA', color: '#B42318', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                   <ShieldAlert size={11} />
                   <span>إصابة: {program?.client?.injuries.join('، ')}</span>
                 </span>
               )}
 
               {program?.client?.allergies && program?.client?.allergies.length > 0 && (
-                <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '8px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '9999px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0284C7', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                   <AlertCircle size={11} />
                   <span>حساسية: {program?.client?.allergies.join('، ')}</span>
                 </span>
@@ -149,7 +149,7 @@ export function CoachHeaderBar({
                       <span style={{ 
                         fontSize: '10.5px', 
                         padding: '2px 8px', 
-                        borderRadius: '8px', 
+                        borderRadius: '9999px', 
                         background: fasting.primaryFastingBadge.bg, 
                         border: `1px solid ${fasting.primaryFastingBadge.border}`, 
                         color: fasting.primaryFastingBadge.color, 
@@ -162,7 +162,7 @@ export function CoachHeaderBar({
                       <span style={{ 
                         fontSize: '10.5px', 
                         padding: '2px 8px', 
-                        borderRadius: '8px', 
+                        borderRadius: '9999px', 
                         background: fasting.intermittentBadge.bg, 
                         border: `1px solid ${fasting.intermittentBadge.border}`, 
                         color: fasting.intermittentBadge.color, 
@@ -191,7 +191,7 @@ export function CoachHeaderBar({
           style={{
             height: '34px',
             padding: '0 13px',
-            borderRadius: '8px',
+            borderRadius: '9999px',
             background: '#FFFFFF',
             color: '#344054',
             border: '1px solid #D0D5DD',
@@ -221,7 +221,7 @@ export function CoachHeaderBar({
             style={{
               height: '34px',
               padding: '0 13px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#FFFFFF',
               color: '#027A48',
               border: '1px solid #D0D5DD',
@@ -256,7 +256,7 @@ export function CoachHeaderBar({
             style={{
               height: '34px',
               padding: '0 14px',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               background: isAdvancedMenuOpen ? '#F9FAFB' : '#FFFFFF',
               color: '#344054',
               border: '1px solid #D0D5DD',
@@ -283,7 +283,7 @@ export function CoachHeaderBar({
               left: 0,
               background: '#FFFFFF',
               border: '1px solid #EAECF0',
-              borderRadius: '16px',
+              borderRadius: '24px',
               boxShadow: '0 10px 25px -5px rgba(16, 24, 40, 0.1), 0 8px 10px -6px rgba(16, 24, 40, 0.05)',
               padding: '6px',
               minWidth: '220px',
@@ -301,7 +301,7 @@ export function CoachHeaderBar({
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: '10px',
+                  borderRadius: '9999px',
                   background: 'transparent',
                   border: 'none',
                   color: '#101828',
@@ -316,7 +316,7 @@ export function CoachHeaderBar({
                 onMouseEnter={(e) => e.currentTarget.style.background = '#F9FAFB'}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
-                <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#F0F9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284C7' }}>
+                <div style={{ width: '26px', height: '26px', borderRadius: '9999px', background: '#F0F9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284C7' }}>
                   <HeartPulse size={13} />
                 </div>
                 <span>فحص التحاليل والمؤشرات</span>
@@ -332,7 +332,7 @@ export function CoachHeaderBar({
                   style={{
                     width: '100%',
                     padding: '9px 12px',
-                    borderRadius: '10px',
+                    borderRadius: '9999px',
                     background: 'transparent',
                     border: 'none',
                     color: '#101828',
@@ -347,7 +347,7 @@ export function CoachHeaderBar({
                   onMouseEnter={(e) => e.currentTarget.style.background = '#F9FAFB'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
-                  <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#ECFDF3', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#027A48' }}>
+                  <div style={{ width: '26px', height: '26px', borderRadius: '9999px', background: '#ECFDF3', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#027A48' }}>
                     <ShieldCheck size={13} />
                   </div>
                   <span>درع جودة الخطة</span>
@@ -364,7 +364,7 @@ export function CoachHeaderBar({
                   style={{
                     width: '100%',
                     padding: '9px 12px',
-                    borderRadius: '10px',
+                    borderRadius: '9999px',
                     background: 'transparent',
                     border: 'none',
                     color: '#101828',
@@ -379,7 +379,7 @@ export function CoachHeaderBar({
                   onMouseEnter={(e) => e.currentTarget.style.background = '#F9FAFB'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
-                  <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: '#FFFAEB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B54708' }}>
+                  <div style={{ width: '26px', height: '26px', borderRadius: '9999px', background: '#FFFAEB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B54708' }}>
                     <AlertTriangle size={13} />
                   </div>
                   <span>محرك المرونة والطوارئ</span>
@@ -398,7 +398,7 @@ export function CoachHeaderBar({
             style={{
               height: '34px',
               padding: '0 16px',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               background: '#FFFFFF',
               color: '#344054',
               border: '1px solid #D0D5DD',
@@ -429,7 +429,7 @@ export function CoachHeaderBar({
             style={{
               height: '34px',
               padding: '0 16px',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               background: '#FFFFFF',
               color: '#344054',
               border: '1px solid #D0D5DD',
@@ -457,7 +457,7 @@ export function CoachHeaderBar({
             style={{
               height: '34px',
               padding: '0 18px',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               background: '#673DE6',
               color: '#FFFFFF',
               border: 'none',

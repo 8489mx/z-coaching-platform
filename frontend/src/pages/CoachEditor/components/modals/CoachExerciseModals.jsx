@@ -109,7 +109,7 @@ export function CoachSwapExerciseModal({
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-      <div style={{ maxWidth: '640px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '88vh', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>
+      <div style={{ maxWidth: '640px', width: '100%', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '88vh', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
@@ -128,7 +128,7 @@ export function CoachSwapExerciseModal({
         </div>
 
         {/* Filter Navigation Tabs */}
-        <div style={{ display: 'flex', gap: '6px', background: '#F8FAFC', padding: '4px', borderRadius: '10px', border: '1px solid #E2E8F0', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '6px', background: '#F8FAFC', padding: '4px', borderRadius: '9999px', border: '1px solid #E2E8F0', flexWrap: 'wrap' }}>
           {[
             { id: 'ALL', label: 'كافة البدائل' },
             { id: 'TWIN', label: `التوأم المباشر (${twinExercises.length})` },
@@ -144,7 +144,7 @@ export function CoachSwapExerciseModal({
                 flex: 1,
                 minWidth: '85px',
                 padding: '5px 8px',
-                borderRadius: '7px',
+                borderRadius: '9999px',
                 border: 'none',
                 background: activeTab === tab.id ? '#673DE6' : 'transparent',
                 color: activeTab === tab.id ? '#FFFFFF' : '#475569',
@@ -168,7 +168,7 @@ export function CoachSwapExerciseModal({
             placeholder="ابحث بالاسم العربي، الإنجليزي، أو الكود..."
             value={swapExSearch}
             onChange={(e) => setSwapExSearch(e.target.value)}
-            style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 12px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 32px 0 12px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
           />
           <Search size={13} style={{ position: 'absolute', right: '11px', top: '11px', color: '#94A3B8' }} />
         </div>
@@ -179,7 +179,7 @@ export function CoachSwapExerciseModal({
           {/* Section 1: Direct Twin Swaps */}
           {(activeTab === 'ALL' || activeTab === 'TWIN') && twinExercises.length > 0 && !swapExSearch && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '5px 10px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '5px 10px', borderRadius: '9999px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 800, color: '#0284C7', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                   <ArrowRightLeft size={13} />
                   <span>البدائل التوأم المباشرة (الربط التبادلي الذكي)</span>
@@ -193,7 +193,7 @@ export function CoachSwapExerciseModal({
                   style={{
                     background: '#FFFFFF',
                     border: '1px solid #BAE6FD',
-                    borderRadius: '10px',
+                    borderRadius: '9999px',
                     padding: '8px 12px',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -207,7 +207,7 @@ export function CoachSwapExerciseModal({
                       <strong style={{ fontSize: '12px', color: '#0F172A', direction: 'ltr', display: 'inline-block' }}>
                         {getExerciseDisplayNames(twinEx).nameEn}
                       </strong>
-                      <span style={{ fontSize: '9.5px', background: '#E0F2FE', color: '#0284C7', padding: '1px 6px', borderRadius: '6px', fontWeight: 700 }}>
+                      <span style={{ fontSize: '9.5px', background: '#E0F2FE', color: '#0284C7', padding: '1px 6px', borderRadius: '9999px', fontWeight: 700 }}>
                         بديل توأم مباشر
                       </span>
                     </div>
@@ -226,7 +226,7 @@ export function CoachSwapExerciseModal({
                     style={{
                       height: '28px',
                       padding: '0 12px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       background: '#0284C7',
                       color: '#FFFFFF',
                       border: 'none',
@@ -246,7 +246,7 @@ export function CoachSwapExerciseModal({
           {/* Section 2: Torque-Matched Biomechanical Swaps */}
           {(activeTab === 'ALL' || activeTab === 'TORQUE') && torqueSwaps.length > 0 && !swapExSearch && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FAF5FF', border: '1px solid #E9D5FF', padding: '5px 10px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FAF5FF', border: '1px solid #E9D5FF', padding: '5px 10px', borderRadius: '9999px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 800, color: '#7E22CE', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                   <Zap size={13} />
                   <span>بدائل عزم الدوران والميكانيكا الحيوية ({getProfileBadgeLabel(torqueData.resistance_profile)})</span>
@@ -260,7 +260,7 @@ export function CoachSwapExerciseModal({
                   style={{
                     background: '#FFFFFF',
                     border: '1px solid #E9D5FF',
-                    borderRadius: '10px',
+                    borderRadius: '9999px',
                     padding: '8px 12px',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -273,7 +273,7 @@ export function CoachSwapExerciseModal({
                       <strong style={{ fontSize: '12px', color: '#0F172A', direction: 'ltr', display: 'inline-block' }}>
                         {tSwap.name}
                       </strong>
-                      <span style={{ fontSize: '9.5px', background: '#F3E8FF', color: '#7E22CE', padding: '1px 6px', borderRadius: '6px', fontWeight: 700 }}>
+                      <span style={{ fontSize: '9.5px', background: '#F3E8FF', color: '#7E22CE', padding: '1px 6px', borderRadius: '9999px', fontWeight: 700 }}>
                         {getProfileBadgeLabel(tSwap.profile)}
                       </span>
                     </div>
@@ -288,7 +288,7 @@ export function CoachSwapExerciseModal({
                     style={{
                       height: '28px',
                       padding: '0 12px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       background: '#7E22CE',
                       color: '#FFFFFF',
                       border: 'none',
@@ -308,7 +308,7 @@ export function CoachSwapExerciseModal({
           {/* Section 3: Gym Rush Swaps */}
           {(activeTab === 'ALL' || activeTab === 'GYM_RUSH') && gymRushData.found && !swapExSearch && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFFBEB', border: '1px solid #FDE68A', padding: '5px 10px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FFFBEB', border: '1px solid #FDE68A', padding: '5px 10px', borderRadius: '9999px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                   <Dumbbell size={13} />
                   <span>بديل زحمة الجيم (عند انشغال الجهاز المخصص)</span>
@@ -320,7 +320,7 @@ export function CoachSwapExerciseModal({
                 style={{
                   background: '#FFFFFF',
                   border: '1px solid #FDE68A',
-                  borderRadius: '10px',
+                  borderRadius: '9999px',
                   padding: '8px 12px',
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -348,7 +348,7 @@ export function CoachSwapExerciseModal({
                   style={{
                     height: '28px',
                     padding: '0 12px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     background: '#B45309',
                     color: '#FFFFFF',
                     border: 'none',
@@ -369,7 +369,7 @@ export function CoachSwapExerciseModal({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {jointPainMatches.map((jpm, jIdx) => (
                 <div key={jIdx} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FEF2F2', border: '1px solid #FECACA', padding: '5px 10px', borderRadius: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FEF2F2', border: '1px solid #FECACA', padding: '5px 10px', borderRadius: '9999px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 800, color: '#B91C1C', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                       <ShieldCheck size={13} />
                       <span>جدار حماية المفاصل ({jpm.joint}): بدائل آمنة لعزل الإجهاد القصي</span>
@@ -383,7 +383,7 @@ export function CoachSwapExerciseModal({
                       style={{
                         background: '#FFFFFF',
                         border: '1px solid #FECACA',
-                        borderRadius: '10px',
+                        borderRadius: '9999px',
                         padding: '8px 12px',
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -406,7 +406,7 @@ export function CoachSwapExerciseModal({
                         style={{
                           height: '28px',
                           padding: '0 12px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           background: '#B91C1C',
                           color: '#FFFFFF',
                           border: 'none',
@@ -440,7 +440,7 @@ export function CoachSwapExerciseModal({
                   style={{
                     background: '#F8FAFC',
                     border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
+                    borderRadius: '9999px',
                     padding: '8px 12px',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -467,7 +467,7 @@ export function CoachSwapExerciseModal({
                     style={{
                       height: '28px',
                       padding: '0 12px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       background: '#673DE6',
                       color: '#FFFFFF',
                       border: 'none',
@@ -533,7 +533,7 @@ export function CoachAddExerciseModal({
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-      <div style={{ maxWidth: '620px', width: '100%', background: '#FFFFFF', borderRadius: '10px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '88vh', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }}>
+      <div style={{ maxWidth: '620px', width: '100%', background: '#FFFFFF', borderRadius: '9999px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '88vh', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
@@ -550,7 +550,7 @@ export function CoachAddExerciseModal({
         </div>
 
         {/* Muscle Category Chips */}
-        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', background: '#F8FAFC', padding: '5px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', background: '#F8FAFC', padding: '5px', borderRadius: '9999px', border: '1px solid #E2E8F0' }}>
           {ADD_EX_MUSCLE_CATEGORIES.map(cat => (
             <button
               key={cat.id}
@@ -558,7 +558,7 @@ export function CoachAddExerciseModal({
               onClick={() => setAddExMuscleFilter(cat.id)}
               style={{
                 padding: '4px 10px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 fontSize: '11px',
                 fontWeight: 700,
                 border: 'none',
@@ -583,7 +583,7 @@ export function CoachAddExerciseModal({
               placeholder="ابحث باسم التمرين (عربي / إنجليزي)..."
               value={exModalSearch}
               onChange={(e) => setExModalSearch(e.target.value)}
-              style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 28px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 32px 0 28px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
             />
             {exModalSearch && (
               <button
@@ -600,7 +600,7 @@ export function CoachAddExerciseModal({
             <CurvedSelect
               value={addExEquipmentFilter}
               onChange={(e) => setAddExEquipmentFilter(e.target.value)}
-              style={{ height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', cursor: 'pointer' }}
+              style={{ height: '32px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', cursor: 'pointer' }}
             >
               {ADD_EX_EQUIPMENT_OPTIONS.map(opt => (
                 <option key={opt.id} value={opt.id}>{opt.label}</option>
@@ -632,7 +632,7 @@ export function CoachAddExerciseModal({
         {/* Exercises List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '340px', overflowY: 'auto' }}>
           {filteredExercises.length === 0 ? (
-            <div style={{ padding: '24px', textAlign: 'center', background: '#F8FAFC', borderRadius: '6px', border: '1px dashed #CBD5E1', color: '#64748B', fontSize: '11.5px' }}>
+            <div style={{ padding: '24px', textAlign: 'center', background: '#F8FAFC', borderRadius: '9999px', border: '1px dashed #CBD5E1', color: '#64748B', fontSize: '11.5px' }}>
               لا توجد تمارين مطابقة لمعايير البحث والتصفية المحددة.
             </div>
           ) : (
@@ -647,7 +647,7 @@ export function CoachAddExerciseModal({
                     style={{
                       background: '#F8FAFC',
                       border: '1px solid #E2E8F0',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       padding: '8px 12px',
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -676,14 +676,14 @@ export function CoachAddExerciseModal({
                         </span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ background: '#E2E8F0', color: '#334155', padding: '1px 6px', borderRadius: '6px', fontSize: '9.5px', fontWeight: 600 }}>
+                        <span style={{ background: '#E2E8F0', color: '#334155', padding: '1px 6px', borderRadius: '9999px', fontSize: '9.5px', fontWeight: 600 }}>
                           {getShortMuscleName(ex.muscle_ar || ex.target_muscle, ex.muscle_group)}
                         </span>
-                        <span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 6px', borderRadius: '6px', fontSize: '9.5px' }}>
+                        <span style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', color: '#64748B', padding: '1px 6px', borderRadius: '9999px', fontSize: '9.5px' }}>
                           {getShortEquipmentName(ex.equipment_ar, ex.equipment)}
                         </span>
                         {altCount > 0 && (
-                          <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '1px 6px', borderRadius: '6px', fontSize: '9.5px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                          <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '1px 6px', borderRadius: '9999px', fontSize: '9.5px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
                             <ArrowRightLeft size={10} />
                             <span>{altCount} بدائل توأم</span>
                           </span>
@@ -697,7 +697,7 @@ export function CoachAddExerciseModal({
                         background: '#673DE6',
                         color: '#FFFFFF',
                         border: 'none',
-                        borderRadius: '7px',
+                        borderRadius: '9999px',
                         fontSize: '11px',
                         fontWeight: 700,
                         cursor: 'pointer',

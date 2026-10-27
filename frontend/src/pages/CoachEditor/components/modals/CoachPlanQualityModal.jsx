@@ -71,7 +71,7 @@ export default function CoachPlanQualityModal({
         dir="rtl"
         style={{
           background: '#FFFFFF',
-          borderRadius: '16px',
+          borderRadius: '24px',
           width: '100%',
           maxWidth: '680px',
           maxHeight: '90vh',
@@ -99,7 +99,7 @@ export default function CoachPlanQualityModal({
               color: '#FFFFFF',
               width: '32px',
               height: '32px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -122,7 +122,7 @@ export default function CoachPlanQualityModal({
             style={{
               border: 'none',
               background: '#F1F5F9',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               width: '28px',
               height: '28px',
               display: 'flex',
@@ -143,7 +143,7 @@ export default function CoachPlanQualityModal({
           <div style={{
             background: bannerBg,
             border: `1px solid ${bannerBorder}`,
-            borderRadius: '12px',
+            borderRadius: '20px',
             padding: '16px',
             display: 'flex',
             alignItems: 'center',
@@ -157,7 +157,7 @@ export default function CoachPlanQualityModal({
                 gap: '5px',
                 background: '#FFFFFF',
                 padding: '3px 10px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 fontSize: '11px',
                 fontWeight: 800,
                 color: bannerColor,
@@ -200,7 +200,7 @@ export default function CoachPlanQualityModal({
                   style={{
                     background: '#FFFFFF',
                     border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
+                    borderRadius: '9999px',
                     padding: '10px 12px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -218,7 +218,7 @@ export default function CoachPlanQualityModal({
                       color: chColor,
                       background: chBg,
                       padding: '1px 6px',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       fontFamily: 'JetBrains Mono, Cairo, sans-serif'
                     }}>
                       {chk.score} / {chk.max_score}
@@ -243,7 +243,7 @@ export default function CoachPlanQualityModal({
             <div style={{
               background: '#FEF2F2',
               border: '1px solid #FECACA',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               padding: '12px 14px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#DC2626', fontWeight: 800, fontSize: '12px' }}>
@@ -266,7 +266,7 @@ export default function CoachPlanQualityModal({
             <div style={{
               background: '#FFFBEB',
               border: '1px solid #FDE68A',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               padding: '12px 14px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#D97706', fontWeight: 800, fontSize: '12px' }}>
@@ -289,7 +289,7 @@ export default function CoachPlanQualityModal({
             <div style={{
               background: '#F8FAFC',
               border: '1px solid #E2E8F0',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               padding: '12px 14px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#059669', fontWeight: 800, fontSize: '12px' }}>
@@ -325,7 +325,7 @@ export default function CoachPlanQualityModal({
             onClick={onClose}
             style={{
               padding: '8px 16px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #CBD5E1',
               background: '#FFFFFF',
               color: '#475569',
@@ -349,7 +349,7 @@ export default function CoachPlanQualityModal({
               disabled={publishing}
               style={{
                 padding: '8px 18px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: 'none',
                 background: '#673DE6',
                 color: '#FFFFFF',

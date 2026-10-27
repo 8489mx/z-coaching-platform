@@ -27,7 +27,7 @@ export function CoachCycleStatusLine({ trainingCycle }) {
       style={{
         background: '#FFFFFF',
         border: '1px solid #EAECF0',
-        borderRadius: '14px',
+        borderRadius: '24px',
         padding: '10px 16px',
         display: 'flex',
         alignItems: 'center',
@@ -42,7 +42,7 @@ export function CoachCycleStatusLine({ trainingCycle }) {
         <div style={{
           width: '28px',
           height: '28px',
-          borderRadius: '8px',
+          borderRadius: '9999px',
           background: isActive ? '#F0F9FF' : '#FFFAEB',
           color: isActive ? '#0284C7' : '#B54708',
           border: `1px solid ${isActive ? '#BAE6FD' : '#FEDF89'}`,
@@ -58,7 +58,7 @@ export function CoachCycleStatusLine({ trainingCycle }) {
           fontSize: '11px',
           fontWeight: 700,
           padding: '2px 10px',
-          borderRadius: '8px',
+          borderRadius: '9999px',
           background: '#F4F0FD',
           color: '#673DE6',
           border: '1px solid #EDE8FA'
@@ -70,7 +70,7 @@ export function CoachCycleStatusLine({ trainingCycle }) {
           fontSize: '11px',
           fontWeight: 600,
           padding: '2px 10px',
-          borderRadius: '8px',
+          borderRadius: '9999px',
           background: '#F2F4F7',
           color: '#344054',
           border: '1px solid #EAECF0'
@@ -83,7 +83,7 @@ export function CoachCycleStatusLine({ trainingCycle }) {
             fontSize: '11px',
             fontWeight: 600,
             padding: '2px 10px',
-            borderRadius: '8px',
+            borderRadius: '9999px',
             background: '#F2F4F7',
             color: '#475467',
             border: '1px solid #EAECF0'
@@ -98,7 +98,7 @@ export function CoachCycleStatusLine({ trainingCycle }) {
           fontSize: '11px',
           fontWeight: 700,
           padding: '3px 12px',
-          borderRadius: '8px',
+          borderRadius: '9999px',
           background: isActive ? '#ECFDF3' : '#FFFAEB',
           color: isActive ? '#027A48' : '#B54708',
           border: `1px solid ${isActive ? '#A6F4C7' : '#FEDF89'}`

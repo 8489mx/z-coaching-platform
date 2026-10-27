@@ -424,7 +424,7 @@ export default function NotificationsDropdown() {
           <div 
             style={{ 
               background: '#FFFFFF',
-              borderRadius: '16px',
+              borderRadius: '20px',
               border: '1px solid #EAECF0',
               boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)',
               overflow: 'hidden',
@@ -438,7 +438,7 @@ export default function NotificationsDropdown() {
                   style={{ 
                     width: '46px', 
                     height: '46px', 
-                    borderRadius: '14px', 
+                    borderRadius: '9999px', 
                     background: '#F4F0FD', 
                     color: '#673DE6', 
                     display: 'flex', 
@@ -491,7 +491,7 @@ export default function NotificationsDropdown() {
                       style={{ 
                         width: '40px', 
                         height: '40px', 
-                        borderRadius: '12px',
+                        borderRadius: '9999px',
                         background: visuals.bg, 
                         color: '#FFFFFF',
                         display: 'flex',

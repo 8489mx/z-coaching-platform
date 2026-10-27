@@ -1305,7 +1305,7 @@ export default function MacroCalculator() {
                 <div style={{
                   background: 'linear-gradient(135deg, #F4F0FD 0%, #EDE8FA 100%)',
                   border: '1.5px solid #D6BBFB',
-                  borderRadius: '14px',
+                  borderRadius: '24px',
                   padding: '16px 20px',
                   boxShadow: '0 2px 4px rgba(103, 61, 230, 0.06)'
                 }}>

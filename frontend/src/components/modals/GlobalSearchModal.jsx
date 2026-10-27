@@ -445,7 +445,7 @@ export default function GlobalSearchModal() {
                   }}
                   style={{
                     padding: '3px 10px',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     fontSize: '11.5px',
                     fontWeight: isSelected ? 700 : 500,
                     cursor: 'pointer',
@@ -503,7 +503,7 @@ export default function GlobalSearchModal() {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: '8px 10px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       cursor: 'pointer',
                       background: isSelected ? '#F4F0FD' : '#FFFFFF',
                       border: '1px solid',
@@ -518,7 +518,7 @@ export default function GlobalSearchModal() {
                         style={{
                           width: '30px',
                           height: '30px',
-                          borderRadius: '6px',
+                          borderRadius: '9999px',
                           background: isSelected ? '#FFFFFF' : '#F2F4F7',
                           color: isSelected ? '#673DE6' : '#475467',
                           border: '1px solid',
@@ -542,7 +542,7 @@ export default function GlobalSearchModal() {
                               fontSize: '9.5px',
                               fontWeight: 700,
                               padding: '1px 5px',
-                              borderRadius: '4px',
+                              borderRadius: '9999px',
                               background: item.isMax ? '#F4F0FD' : '#F2F4F7',
                               color: item.isMax ? '#673DE6' : '#344054',
                               border: item.isMax ? '1px solid #E9D7FE' : '1px solid #EAECF0'
@@ -566,7 +566,7 @@ export default function GlobalSearchModal() {
                           style={{
                             height: '26px',
                             padding: '0 8px',
-                            borderRadius: '6px',
+                            borderRadius: '9999px',
                             background: '#FFFFFF',
                             color: '#344054',
                             border: '1px solid #D0D5DD',
@@ -592,7 +592,7 @@ export default function GlobalSearchModal() {
                           style={{
                             height: '26px',
                             padding: '0 8px',
-                            borderRadius: '6px',
+                            borderRadius: '9999px',
                             background: '#FFFFFF',
                             color: '#B54708',
                             border: '1px solid #FEDF89',
@@ -618,7 +618,7 @@ export default function GlobalSearchModal() {
                           style={{
                             height: '26px',
                             padding: '0 8px',
-                            borderRadius: '6px',
+                            borderRadius: '9999px',
                             background: '#FFFFFF',
                             color: '#344054',
                             border: '1px solid #D0D5DD',
@@ -645,7 +645,7 @@ export default function GlobalSearchModal() {
                             style={{
                               height: '26px',
                               padding: '0 8px',
-                              borderRadius: '6px',
+                              borderRadius: '9999px',
                               background: '#FFFFFF',
                               color: '#027A48',
                               border: '1px solid #D0D5DD',

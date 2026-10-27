@@ -62,7 +62,7 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
           width: '100%',
           maxWidth: '800px',
           background: '#FFFFFF',
-          borderRadius: '14px',
+          borderRadius: '24px',
           border: '1px solid #E2E8F0',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
           overflow: 'hidden',
@@ -84,7 +84,7 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F4F0FD', border: '1px solid #DDD6FE', color: '#673DE6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '9999px', background: '#F4F0FD', border: '1px solid #DDD6FE', color: '#673DE6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Dumbbell size={16} />
             </div>
             <div>
@@ -103,7 +103,7 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
             style={{
               width: '30px',
               height: '30px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #E2E8F0',
               background: '#F8FAFC',
               color: '#64748B',
@@ -159,10 +159,10 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', fontWeight: 700, padding: '2px 8px', borderRadius: '8px', fontSize: '10.5px' }}>
+            <span style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#0F172A', fontWeight: 700, padding: '2px 8px', borderRadius: '9999px', fontSize: '10.5px' }}>
               عضلة: {exercise.muscle_group || 'عام'}
             </span>
-            <span style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#475569', fontWeight: 700, padding: '2px 8px', borderRadius: '8px', fontSize: '10.5px' }}>
+            <span style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#475569', fontWeight: 700, padding: '2px 8px', borderRadius: '9999px', fontSize: '10.5px' }}>
               أداة: {exercise.equipment || 'عام'}
             </span>
             <span style={{ color: '#94A3B8' }}>اضغط ESC للإغلاق</span>
@@ -173,7 +173,7 @@ export default function ExerciseVideoModal({ exercise, onClose }) {
             onClick={onClose}
             style={{
               padding: '5px 14px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#673DE6',
               color: '#FFFFFF',
               border: 'none',

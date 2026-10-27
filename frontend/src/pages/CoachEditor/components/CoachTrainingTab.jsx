@@ -91,7 +91,7 @@ export function CoachTrainingTab({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }} dir="rtl">
       
       {/* Days Selector & Clean Header */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '14px', padding: '14px 18px', boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)' }}>
+      <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '24px', padding: '14px 18px', boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           
           {/* Days Tabs - Hostinger Design System */}
@@ -106,7 +106,7 @@ export function CoachTrainingTab({
                   style={{
                     height: '36px',
                     padding: '0 16px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: isCurrent ? '1px solid #673DE6' : '1px solid #D0D5DD',
                     background: isCurrent ? '#673DE6' : '#FFFFFF',
                     color: isCurrent ? '#FFFFFF' : '#344054',
@@ -140,7 +140,7 @@ export function CoachTrainingTab({
                 style={{
                   height: '36px',
                   padding: '0 14px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px dashed #D0D5DD',
                   background: '#FFFFFF',
                   color: '#475467',
@@ -170,7 +170,7 @@ export function CoachTrainingTab({
                   style={{
                     height: '36px',
                     padding: '0 14px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: '1px solid #D0D5DD',
                     background: '#FFFFFF',
                     color: '#344054',
@@ -198,7 +198,7 @@ export function CoachTrainingTab({
                       right: 0,
                       background: '#FFFFFF',
                       border: '1px solid #EAECF0',
-                      borderRadius: '12px',
+                      borderRadius: '20px',
                       padding: '8px',
                       boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
                       zIndex: 50,
@@ -224,7 +224,7 @@ export function CoachTrainingTab({
                           flexDirection: 'column',
                           alignItems: 'flex-start',
                           padding: '8px 10px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: 'none',
                           background: 'transparent',
                           cursor: 'pointer',
@@ -251,7 +251,7 @@ export function CoachTrainingTab({
                 style={{
                   height: '36px',
                   padding: '0 14px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #FECDCA',
                   background: '#FEF3F2',
                   color: '#D92D20',
@@ -287,7 +287,7 @@ export function CoachTrainingTab({
         <div style={{
           background: '#FFFFFF',
           border: '1px solid #EAECF0',
-          borderRadius: '16px',
+          borderRadius: '24px',
           padding: '10px 16px',
           display: 'flex',
           flexDirection: 'column',
@@ -300,7 +300,7 @@ export function CoachTrainingTab({
                 fontSize: '11px',
                 fontWeight: 700,
                 padding: '2px 9px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 background: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '#FEF3F2' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '#ECFDF3' : '#EFF8FF',
                 color: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '#B42318' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '#027A48' : '#175CD3',
                 border: activeSessionDemand.demand_level === 'HIGH_GLYCOLYTIC' ? '1px solid #FECDCA' : activeSessionDemand.demand_level === 'LOW_GLYCOLYTIC' ? '1px solid #A6F4C7' : '1px solid #B2DDFF'
@@ -313,7 +313,7 @@ export function CoachTrainingTab({
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '11px', color: '#475467', background: '#F9FAFB', padding: '2px 9px', borderRadius: '6px', border: '1px solid #EAECF0' }}>
+              <span style={{ fontSize: '11px', color: '#475467', background: '#F9FAFB', padding: '2px 9px', borderRadius: '9999px', border: '1px solid #EAECF0' }}>
                 حصة كارب التمرين: <strong style={{ color: '#101828' }}>{Math.round((activeSessionDemand.peri_workout_carb_ratio || 0.55) * 100)}%</strong>
               </span>
 
@@ -323,7 +323,7 @@ export function CoachTrainingTab({
                 return (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {flaggedMuscles.length > 0 && (
-                      <span style={{ fontSize: '10.5px', fontWeight: 600, color: '#B42318', background: '#FEF3F2', border: '1px solid #FECDCA', padding: '1px 8px', borderRadius: '6px' }}>
+                      <span style={{ fontSize: '10.5px', fontWeight: 600, color: '#B42318', background: '#FEF3F2', border: '1px solid #FECDCA', padding: '1px 8px', borderRadius: '9999px' }}>
                         {flaggedMuscles.length} تنبيه حجم أسبوعي
                       </span>
                     )}
@@ -335,7 +335,7 @@ export function CoachTrainingTab({
                           background: showAllVolumeLandmarks ? '#F4F0FD' : '#FFFFFF',
                           border: showAllVolumeLandmarks ? '1px solid #673DE6' : '1px solid #D0D5DD',
                           color: showAllVolumeLandmarks ? '#673DE6' : '#344054',
-                          borderRadius: '6px',
+                          borderRadius: '9999px',
                           padding: '2px 10px',
                           fontSize: '11px',
                           fontWeight: 600,
@@ -366,7 +366,7 @@ export function CoachTrainingTab({
                       style={{
                         fontSize: '10.5px',
                         padding: '2px 8px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         background: isExceedsMrv ? '#FEF3F2' : isBelowMev ? '#FFFAEB' : '#F2F4F7',
                         color: isExceedsMrv ? '#B42318' : isBelowMev ? '#B54708' : '#344054',
                         border: isExceedsMrv ? '1px solid #FECDCA' : isBelowMev ? '1px solid #FEDF89' : '1px solid #EAECF0',
@@ -401,7 +401,7 @@ export function CoachTrainingTab({
               style={{
                 background: isContraindicated ? '#FEF3F2' : '#FFFFFF',
                 border: isContraindicated ? '1.5px solid #FECDCA' : '1px solid #EAECF0',
-                borderRadius: '16px',
+                borderRadius: '24px',
                 padding: '12px 16px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -423,7 +423,7 @@ export function CoachTrainingTab({
                   <span style={{
                     width: '30px',
                     height: '30px',
-                    borderRadius: '9px',
+                    borderRadius: '9999px',
                     background: isContraindicated ? '#FEE4E2' : '#F4F0FD',
                     color: isContraindicated ? '#D92D20' : '#673DE6',
                     border: isContraindicated ? '1px solid #FECDCA' : '1px solid #EDE8FA',
@@ -443,7 +443,7 @@ export function CoachTrainingTab({
                       style={{ 
                         width: '54px', 
                         height: '54px', 
-                        borderRadius: '10px', 
+                        borderRadius: '9999px', 
                         overflow: 'hidden', 
                         background: '#F2F4F7', 
                         border: '1px solid #EAECF0', 
@@ -461,13 +461,13 @@ export function CoachTrainingTab({
                         onError={(e) => { e.currentTarget.style.display = 'none'; if (e.currentTarget.parentElement) { e.currentTarget.parentElement.style.display = 'none'; } }}
                         loading="lazy"
                       />
-                      <span style={{ position: 'absolute', bottom: '2px', right: '2px', fontSize: '8.5px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.92)', padding: '0 3.5px', borderRadius: '4px' }}>1</span>
+                      <span style={{ position: 'absolute', bottom: '2px', right: '2px', fontSize: '8.5px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.92)', padding: '0 3.5px', borderRadius: '9999px' }}>1</span>
                     </div>
                     <div 
                       style={{ 
                         width: '54px', 
                         height: '54px', 
-                        borderRadius: '10px', 
+                        borderRadius: '9999px', 
                         overflow: 'hidden', 
                         background: '#F2F4F7', 
                         border: '1px solid #EAECF0', 
@@ -485,7 +485,7 @@ export function CoachTrainingTab({
                         onError={(e) => { e.currentTarget.style.display = 'none'; if (e.currentTarget.parentElement) { e.currentTarget.parentElement.style.display = 'none'; } }}
                         loading="lazy"
                       />
-                      <span style={{ position: 'absolute', bottom: '2px', right: '2px', fontSize: '8.5px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.92)', padding: '0 3.5px', borderRadius: '4px' }}>2</span>
+                      <span style={{ position: 'absolute', bottom: '2px', right: '2px', fontSize: '8.5px', fontWeight: 700, color: '#475467', background: 'rgba(255,255,255,0.92)', padding: '0 3.5px', borderRadius: '9999px' }}>2</span>
                     </div>
                     
                     {/* Video Trigger Button */}
@@ -496,7 +496,7 @@ export function CoachTrainingTab({
                       style={{
                         width: '30px',
                         height: '30px',
-                        borderRadius: '9px',
+                        borderRadius: '9999px',
                         background: '#EFF8FF',
                         border: '1px solid #B2DDFF',
                         color: '#175CD3',
@@ -538,7 +538,7 @@ export function CoachTrainingTab({
                       </strong>
 
                       {isContraindicated && (
-                        <span style={{ fontSize: '9.5px', fontWeight: 600, background: '#D92D20', color: '#FFFFFF', padding: '1px 7px', borderRadius: '6px' }}>
+                        <span style={{ fontSize: '9.5px', fontWeight: 600, background: '#D92D20', color: '#FFFFFF', padding: '1px 7px', borderRadius: '9999px' }}>
                           محظور لمرضى الضغط
                         </span>
                       )}
@@ -568,11 +568,11 @@ export function CoachTrainingTab({
                   flexWrap: 'nowrap', flexShrink: 0,
                   background: '#F8FAFC',
                   border: '1px solid #EAECF0',
-                  borderRadius: '12px',
+                  borderRadius: '20px',
                   padding: '4px 6px'
                 }}>
                   {/* Sets Stepper */}
-                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D0D5DD', borderRadius: '8px', background: '#FFFFFF', padding: '0 6px', height: '30px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D0D5DD', borderRadius: '9999px', background: '#FFFFFF', padding: '0 6px', height: '30px' }}>
                     <span style={{ fontSize: '10.5px', color: '#475467', marginLeft: '4px', fontWeight: 600 }}>جولات:</span>
                     <button type="button" onClick={() => handleUpdateExerciseParam(activeSessionIdx, eIdx, 'sets', Math.max(1, (ex.sets || 3) - 1))} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 700, padding: '0 3px', fontSize: '13px', color: '#344054' }}>-</button>
                     <strong style={{ fontSize: '12px', minWidth: '16px', textAlign: 'center', margin: '0 1px', color: '#101828' }}>{ex.sets}</strong>
@@ -580,7 +580,7 @@ export function CoachTrainingTab({
                   </div>
 
                   {/* Reps */}
-                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D0D5DD', borderRadius: '8px', background: '#FFFFFF', padding: '0 8px', height: '30px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D0D5DD', borderRadius: '9999px', background: '#FFFFFF', padding: '0 8px', height: '30px' }}>
                     <span style={{ fontSize: '10.5px', color: '#475467', marginLeft: '4px', fontWeight: 600 }}>تكرار:</span>
                     <input
                       type="text"
@@ -596,7 +596,7 @@ export function CoachTrainingTab({
                     display: 'flex',
                     alignItems: 'center',
                     border: isLowRir ? '1.5px solid #FDA29B' : '1px solid #D0D5DD',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     background: isLowRir ? '#FEF3F2' : '#FFFFFF',
                     padding: '0 6px',
                     height: '30px'
@@ -627,7 +627,7 @@ export function CoachTrainingTab({
                   </div>
 
                   {/* Rest Stepper Control */}
-                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D0D5DD', borderRadius: '8px', background: '#FFFFFF', padding: '0 6px', height: '30px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D0D5DD', borderRadius: '9999px', background: '#FFFFFF', padding: '0 6px', height: '30px' }}>
                     <span style={{ fontSize: '10.5px', color: '#475467', marginLeft: '4px', fontWeight: 600 }}>راحة:</span>
                     <button 
                       type="button" 
@@ -653,7 +653,7 @@ export function CoachTrainingTab({
 
                   {/* Move Up / Move Down Order Controls */}
                   {handleMoveExercise && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#FFFFFF', padding: '1px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#FFFFFF', padding: '1px', borderRadius: '9999px', border: '1px solid #E2E8F0' }}>
                       <button
                         type="button"
                         onClick={() => handleMoveExercise(activeSessionIdx, eIdx, 'UP')}
@@ -662,7 +662,7 @@ export function CoachTrainingTab({
                         style={{
                           height: '26px',
                           width: '26px',
-                          borderRadius: '6px',
+                          borderRadius: '9999px',
                           border: 'none',
                           background: eIdx === 0 ? 'transparent' : '#FFFFFF',
                           color: eIdx === 0 ? '#D0D5DD' : '#344054',
@@ -682,7 +682,7 @@ export function CoachTrainingTab({
                         style={{
                           height: '26px',
                           width: '26px',
-                          borderRadius: '6px',
+                          borderRadius: '9999px',
                           border: 'none',
                           background: eIdx === (activeSession?.exercises?.length || 0) - 1 ? 'transparent' : '#FFFFFF',
                           color: eIdx === (activeSession?.exercises?.length || 0) - 1 ? '#D0D5DD' : '#344054',
@@ -705,7 +705,7 @@ export function CoachTrainingTab({
                       style={{
                         height: '30px',
                         padding: '0 8px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         background: '#FFFFFF',
                         border: '1px solid #D0D5DD',
                         color: '#344054',
@@ -736,7 +736,7 @@ export function CoachTrainingTab({
                         style={{
                           height: '30px',
                           padding: '0 8px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           background: '#FFFFFF',
                           border: '1px solid #D0D5DD',
                           color: '#344054',
@@ -765,7 +765,7 @@ export function CoachTrainingTab({
                             right: 0,
                             background: '#FFFFFF',
                             border: '1px solid #EAECF0',
-                            borderRadius: '10px',
+                            borderRadius: '9999px',
                             padding: '6px',
                             boxShadow: '0 8px 16px rgba(0, 0, 0, 0.08)',
                             zIndex: 40,
@@ -792,7 +792,7 @@ export function CoachTrainingTab({
                                   display: 'block',
                                   width: '100%',
                                   padding: '5px 8px',
-                                  borderRadius: '6px',
+                                  borderRadius: '9999px',
                                   border: 'none',
                                   background: 'transparent',
                                   color: '#101828',
@@ -821,7 +821,7 @@ export function CoachTrainingTab({
                     style={{
                       height: '30px',
                       padding: '0 10px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       background: '#FFFFFF',
                       border: '1px solid #D0D5DD',
                       color: '#344054',
@@ -849,7 +849,7 @@ export function CoachTrainingTab({
                     style={{
                       height: '30px',
                       width: '30px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       background: '#FFFFFF',
                       border: '1px solid #D0D5DD',
                       color: '#B42318',
@@ -882,7 +882,7 @@ export function CoachTrainingTab({
                 gap: '8px',
                 background: '#F9FAFB',
                 border: '1px solid #EAECF0',
-                borderRadius: '10px',
+                borderRadius: '9999px',
                 padding: '6px 12px',
                 transition: 'border-color 0.15s ease'
               }}>
@@ -941,7 +941,7 @@ export function CoachTrainingTab({
           style={{
             height: '38px',
             padding: '0 20px',
-            borderRadius: '8px',
+            borderRadius: '9999px',
             border: '1px solid #673DE6',
             background: '#F4F0FD',
             color: '#673DE6',
@@ -963,7 +963,7 @@ export function CoachTrainingTab({
       </div>
 
       {/* Post-Workout Stretches Bar - at the very bottom */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '16px', padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04)' }}>
+      <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '24px', padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', boxShadow: '0 1px 2px rgba(16, 24, 40, 0.04)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#101828', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
             <HeartPulse size={15} color="#673DE6" />
@@ -975,7 +975,7 @@ export function CoachTrainingTab({
           ) : (
             <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
               {activeSession.post_workout_stretches.map((m, mIdx) => (
-                <span key={mIdx} style={{ background: '#F9FAFB', border: '1px solid #EAECF0', padding: '3px 10px', borderRadius: '6px', fontSize: '11.5px', color: '#101828', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 500 }}>
+                <span key={mIdx} style={{ background: '#F9FAFB', border: '1px solid #EAECF0', padding: '3px 10px', borderRadius: '9999px', fontSize: '11.5px', color: '#101828', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 500 }}>
                   <span>{m.name || m.name_ar}</span>
                   <button type="button" onClick={() => handleRemoveMobilityFromSession(activeSessionIdx, mIdx, 'STRETCH')} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, color: '#B42318' }}>
                     <X size={12} />
@@ -995,7 +995,7 @@ export function CoachTrainingTab({
             background: '#FFFFFF',
             border: '1px solid #D0D5DD',
             color: '#344054',
-            borderRadius: '8px',
+            borderRadius: '9999px',
             fontSize: '11.5px',
             fontWeight: 600,
             cursor: 'pointer',

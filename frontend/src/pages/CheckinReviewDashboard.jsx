@@ -540,7 +540,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
             <div key={idx} style={{
               background: '#F8FAFC',
               border: '1px solid #EAECF0',
-              borderRadius: '16px',
+              borderRadius: '24px',
               padding: '12px 14px'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
@@ -1100,7 +1100,7 @@ export default function CheckinReviewDashboard() {
           <div style={{ 
             background: '#FFFFFF', 
             border: '1px solid #EAECF0', 
-            borderRadius: '16px', 
+            borderRadius: '24px', 
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
@@ -1296,7 +1296,7 @@ export default function CheckinReviewDashboard() {
               <div style={{
                 background: '#FFFFFF',
                 border: '1px solid #EAECF0',
-                borderRadius: '16px',
+                borderRadius: '24px',
                 padding: '60px 20px',
                 textAlign: 'center',
                 display: 'flex',
@@ -1708,7 +1708,7 @@ export default function CheckinReviewDashboard() {
                   {/* Structured Biofeedback 3-Card Grid */}
                   <div dir="rtl" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '10px' }}>
                     {/* بطاقة 1: الاستشفاء والأداء البدني */}
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '16px', padding: '10px 12px' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '24px', padding: '10px 12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid #EAECF0' }}>
                         <Dumbbell size={14} color="#0F172A" />
                         <strong style={{ fontSize: '11.5px', color: '#101828' }}>الاستشفاء والأداء البدني</strong>
@@ -1738,7 +1738,7 @@ export default function CheckinReviewDashboard() {
                     </div>
 
                     {/* بطاقة 2: العادات اليومية والتغذية */}
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '16px', padding: '10px 12px' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '24px', padding: '10px 12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid #EAECF0' }}>
                         <Utensils size={14} color="#0F172A" />
                         <strong style={{ fontSize: '11.5px', color: '#101828' }}>العادات اليومية والتغذية</strong>
@@ -1768,7 +1768,7 @@ export default function CheckinReviewDashboard() {
                     </div>
 
                     {/* بطاقة 3: الحالة الفسيولوجية والهضم */}
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '16px', padding: '10px 12px' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '24px', padding: '10px 12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid #EAECF0' }}>
                         <HeartPulse size={14} color="#0F172A" />
                         <strong style={{ fontSize: '11.5px', color: '#101828' }}>الحالة الفسيولوجية والهضم</strong>
@@ -1820,7 +1820,7 @@ export default function CheckinReviewDashboard() {
                         marginTop: '10px',
                         background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
                         border: '1.5px solid #F59E0B',
-                        borderRadius: '16px',
+                        borderRadius: '24px',
                         padding: '12px 14px',
                         display: 'flex',
                         alignItems: 'flex-start',
@@ -2049,7 +2049,7 @@ export default function CheckinReviewDashboard() {
                       <div style={{
                         width: '44px',
                         height: '44px',
-                        borderRadius: '16px',
+                        borderRadius: '24px',
                         background: '#DCFCE7',
                         display: 'flex',
                         alignItems: 'center',
@@ -2146,7 +2146,7 @@ export default function CheckinReviewDashboard() {
                 <div style={{ 
                   background: '#F8FAFC', 
                   border: '1px solid #EAECF0', 
-                  borderRadius: '16px', 
+                  borderRadius: '24px', 
                   padding: '12px 14px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -2189,7 +2189,7 @@ export default function CheckinReviewDashboard() {
                 <div style={{ 
                   background: '#F8FAFC', 
                   border: '1px solid #EAECF0', 
-                  borderRadius: '16px', 
+                  borderRadius: '24px', 
                   padding: '12px 14px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -2276,7 +2276,7 @@ export default function CheckinReviewDashboard() {
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
                 {/* 5.1 AI Recommendation Card */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', padding: '12px 14px', borderRadius: '16px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', padding: '12px 14px', borderRadius: '24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <BrainCircuit size={16} color="#0F172A" />
@@ -2428,7 +2428,7 @@ export default function CheckinReviewDashboard() {
                       </div>
 
                       {firewallResult?.firewall_active && (
-                        <div style={{ background: '#FFFFFF', border: '1px solid #BBF7D0', borderRadius: '16px', padding: '10px 12px' }}>
+                        <div style={{ background: '#FFFFFF', border: '1px solid #BBF7D0', borderRadius: '24px', padding: '10px 12px' }}>
                           <div style={{ fontSize: '11.5px', color: '#166534', marginBottom: '6px', lineHeight: 1.5 }}>
                             <strong>المفصل المتأثر:</strong> {jointLabelMap[normalizedJoint] || normalizedJoint} (مستوى الألم: {painScore}/10).
                             <span style={{ display: 'block', color: '#B91C1C', marginTop: '2px' }}>

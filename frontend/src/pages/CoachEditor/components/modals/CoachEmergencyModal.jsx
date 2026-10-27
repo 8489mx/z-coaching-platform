@@ -156,7 +156,7 @@ export function CoachEmergencyModal({
           maxWidth: '560px',
           width: '100%',
           background: '#FFFFFF',
-          borderRadius: '16px',
+          borderRadius: '24px',
           border: '1px solid #E2E8F0',
           padding: '16px',
           display: 'flex',
@@ -184,7 +184,7 @@ export function CoachEmergencyModal({
 
         {/* Current Status Badge */}
         {program.training?.emergency_adaptation?.active && (
-          <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '8px 12px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '8px 12px', borderRadius: '9999px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '11px', color: '#92400E', fontWeight: 700 }}>
               الوضع النشط حالياً: {program.training.emergency_adaptation.label_ar}
             </span>
@@ -200,7 +200,7 @@ export function CoachEmergencyModal({
                 }));
                 showToast('تم إلغاء وضع الطوارئ والعودة للخطة القياسية');
               }}
-              style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', color: '#0F172A', cursor: 'pointer', fontWeight: 700 }}
+              style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '3px 8px', borderRadius: '9999px', fontSize: '10px', color: '#0F172A', cursor: 'pointer', fontWeight: 700 }}
             >
               استعادة الخطة القياسية
             </button>
@@ -219,7 +219,7 @@ export function CoachEmergencyModal({
                 style={{
                   background: isSelected ? sc.bg : '#F8FAFC',
                   border: isSelected ? `1.5px solid ${sc.border}` : '1px solid #E2E8F0',
-                  borderRadius: '12px',
+                  borderRadius: '20px',
                   padding: '12px',
                   cursor: 'pointer',
                   display: 'flex',
@@ -230,7 +230,7 @@ export function CoachEmergencyModal({
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#FFFFFF', border: `1px solid ${sc.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: sc.color, flexShrink: 0, marginTop: '2px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '9999px', background: '#FFFFFF', border: `1px solid ${sc.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: sc.color, flexShrink: 0, marginTop: '2px' }}>
                     <Icon size={16} />
                   </div>
                   <div>
@@ -248,7 +248,7 @@ export function CoachEmergencyModal({
                   style={{
                     height: '30px',
                     padding: '0 12px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     background: sc.color,
                     color: '#FFFFFF',
                     border: 'none',
@@ -272,7 +272,7 @@ export function CoachEmergencyModal({
             onClick={onClose}
             style={{
               padding: '6px 14px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#F1F5F9',
               color: '#475569',
               border: 'none',

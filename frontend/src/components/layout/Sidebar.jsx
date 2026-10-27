@@ -255,7 +255,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
                     fontSize: '11px',
                     fontWeight: 600,
                     padding: '1.5px 7px',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     lineHeight: 1.4,
                     flexShrink: 0
                   }}
@@ -278,7 +278,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
               background: '#111827',
               color: '#FFFFFF',
               padding: '6px 12px',
-              borderRadius: '8px',
+              borderRadius: '20px',
               fontSize: '12px',
               fontWeight: 600,
               whiteSpace: 'nowrap',
@@ -292,7 +292,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
           >
             <span>{item.label}</span>
             {item.badgeKey && liveBadges[item.badgeKey] > 0 && (
-              <span style={{ background: '#111827', color: '#FFFFFF', fontSize: '10px', padding: '1px 5px', borderRadius: '4px' }}>
+              <span style={{ background: '#111827', color: '#FFFFFF', fontSize: '10px', padding: '1px 5px', borderRadius: '9999px' }}>
                 {liveBadges[item.badgeKey]}
               </span>
             )}
@@ -451,7 +451,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '12px 10px 5px 10px',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     border: 'none',
                     background: 'transparent',
                     color: '#475467',
@@ -530,7 +530,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #E5E7EB',
               background: '#FFFFFF',
               color: '#475467',

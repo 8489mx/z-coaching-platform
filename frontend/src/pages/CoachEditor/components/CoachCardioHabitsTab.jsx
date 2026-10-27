@@ -135,7 +135,7 @@ export function CoachCardioHabitsTab({
       <div style={{
         background: '#FFFFFF',
         border: '1px solid #EAECF0',
-        borderRadius: '14px',
+        borderRadius: '24px',
         padding: '14px 16px',
         boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
       }}>
@@ -144,7 +144,7 @@ export function CoachCardioHabitsTab({
             <div style={{
               width: '32px',
               height: '32px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#F4F0FD',
               display: 'flex',
               alignItems: 'center',
@@ -165,7 +165,7 @@ export function CoachCardioHabitsTab({
             style={{
               height: '34px',
               padding: '0 14px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#FFFFFF',
               color: '#344054',
               border: '1px solid #D0D5DD',
@@ -197,7 +197,7 @@ export function CoachCardioHabitsTab({
         <div style={{
           background: '#F8FAFC',
           border: '1px solid #E2E8F0',
-          borderRadius: '12px',
+          borderRadius: '20px',
           padding: '12px 14px',
           display: 'flex',
           flexDirection: 'column',
@@ -210,7 +210,7 @@ export function CoachCardioHabitsTab({
                 background: '#FFFFFF',
                 border: '1px solid #CBD5E1',
                 padding: '4px 12px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 fontSize: '13px',
                 fontWeight: 800,
                 color: '#101828',
@@ -241,7 +241,7 @@ export function CoachCardioHabitsTab({
                 direction: 'ltr',
                 background: '#FFFFFF',
                 border: '1px solid #D0D5DD',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 height: '34px',
                 padding: '0 4px',
                 boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
@@ -253,7 +253,7 @@ export function CoachCardioHabitsTab({
                     width: '26px',
                     height: '26px',
                     border: 'none',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     background: '#F1F5F9',
                     color: '#344054',
                     cursor: 'pointer',
@@ -277,7 +277,7 @@ export function CoachCardioHabitsTab({
                     width: '26px',
                     height: '26px',
                     border: 'none',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     background: '#F1F5F9',
                     color: '#344054',
                     cursor: 'pointer',
@@ -303,7 +303,7 @@ export function CoachCardioHabitsTab({
                 direction: 'ltr',
                 background: '#FFFFFF',
                 border: '1px solid #D0D5DD',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 height: '34px',
                 padding: '0 4px',
                 boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
@@ -315,7 +315,7 @@ export function CoachCardioHabitsTab({
                     width: '26px',
                     height: '26px',
                     border: 'none',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     background: '#F1F5F9',
                     color: '#344054',
                     cursor: 'pointer',
@@ -339,7 +339,7 @@ export function CoachCardioHabitsTab({
                     width: '26px',
                     height: '26px',
                     border: 'none',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     background: '#F1F5F9',
                     color: '#344054',
                     cursor: 'pointer',
@@ -365,7 +365,7 @@ export function CoachCardioHabitsTab({
                 style={{
                   width: '100%',
                   height: '34px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: hiitBlocked ? '1.5px solid #EF4444' : '1px solid #D0D5DD',
                   background: hiitBlocked ? '#FEF2F2' : '#FFFFFF',
                   color: hiitBlocked ? '#DC2626' : '#101828',
@@ -397,7 +397,7 @@ export function CoachCardioHabitsTab({
             <div style={{
               background: '#FFFFFF',
               border: '1px solid #CBD5E1',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               padding: '10px 12px',
               display: 'flex',
               flexDirection: 'column',
@@ -429,7 +429,7 @@ export function CoachCardioHabitsTab({
                   background: '#EFF6FF',
                   border: '1px solid #BFDBFE',
                   padding: '3px 10px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   display: 'inline-flex',
                   alignItems: 'center',
                   width: 'fit-content'
@@ -443,7 +443,7 @@ export function CoachCardioHabitsTab({
             <div style={{
               background: interferenceAudit.has_interference_risk ? '#FEF2F2' : '#F0FDF4',
               border: interferenceAudit.has_interference_risk ? '1px solid #FECACA' : '1px solid #BBF7D0',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               padding: '10px 12px',
               display: 'flex',
               flexDirection: 'column',
@@ -479,7 +479,7 @@ export function CoachCardioHabitsTab({
             <div style={{
               marginTop: '10px',
               padding: '10px 14px',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               background: '#FFFBEB',
               border: '1px solid #FDE68A',
               display: 'flex',
@@ -500,7 +500,7 @@ export function CoachCardioHabitsTab({
       <div style={{
         background: '#FFFFFF',
         border: '1px solid #EAECF0',
-        borderRadius: '14px',
+        borderRadius: '24px',
         padding: '14px 16px',
         boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
       }}>
@@ -510,7 +510,7 @@ export function CoachCardioHabitsTab({
             <div style={{
               width: '32px',
               height: '32px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#EFF6FF',
               display: 'flex',
               alignItems: 'center',
@@ -529,7 +529,7 @@ export function CoachCardioHabitsTab({
             fontSize: '11px',
             fontWeight: 800,
             padding: '3px 10px',
-            borderRadius: '6px',
+            borderRadius: '9999px',
             background: currentSupplements.length > 0 ? '#DCFCE7' : '#F1F5F9',
             color: currentSupplements.length > 0 ? '#166534' : '#475569',
             border: currentSupplements.length > 0 ? '1px solid #BBF7D0' : '1px solid #E2E8F0'
@@ -547,7 +547,7 @@ export function CoachCardioHabitsTab({
               style={{
                 width: '100%',
                 height: '36px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: '1px solid #D0D5DD',
                 padding: '0 12px',
                 fontSize: '12px',
@@ -572,7 +572,7 @@ export function CoachCardioHabitsTab({
             style={{
               height: '36px',
               padding: '0 16px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#673DE6',
               color: '#FFFFFF',
               border: 'none',
@@ -604,7 +604,7 @@ export function CoachCardioHabitsTab({
             fontSize: '12px',
             background: '#F8FAFC',
             border: '1px dashed #CBD5E1',
-            borderRadius: '10px',
+            borderRadius: '9999px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -622,7 +622,7 @@ export function CoachCardioHabitsTab({
               gap: '8px',
               padding: '8px 12px',
               background: '#F1F5F9',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               fontSize: '11px',
               fontWeight: 800,
               color: '#475467'
@@ -650,7 +650,7 @@ export function CoachCardioHabitsTab({
                     padding: '8px 12px',
                     background: '#F8FAFC',
                     border: '1px solid #EAECF0',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     transition: 'all 0.12s ease'
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#CBD5E1'; }}
@@ -669,7 +669,7 @@ export function CoachCardioHabitsTab({
                       style={{
                         width: '100%',
                         height: '30px',
-                        borderRadius: '6px',
+                        borderRadius: '9999px',
                         border: '1px solid #CBD5E1',
                         padding: '0 8px',
                         fontSize: '11.5px',
@@ -690,7 +690,7 @@ export function CoachCardioHabitsTab({
                       style={{
                         width: '100%',
                         height: '30px',
-                        borderRadius: '6px',
+                        borderRadius: '9999px',
                         border: '1px solid #CBD5E1',
                         padding: '0 8px',
                         fontSize: '11.5px',
@@ -709,7 +709,7 @@ export function CoachCardioHabitsTab({
                       style={{
                         width: '28px',
                         height: '28px',
-                        borderRadius: '6px',
+                        borderRadius: '9999px',
                         border: '1px solid #FECACA',
                         background: '#FEF2F2',
                         color: '#DC2626',
@@ -738,7 +738,7 @@ export function CoachCardioHabitsTab({
       <div style={{
         background: '#FFFFFF',
         border: '1px solid #EAECF0',
-        borderRadius: '14px',
+        borderRadius: '24px',
         padding: '14px 16px',
         boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
       }}>
@@ -747,7 +747,7 @@ export function CoachCardioHabitsTab({
             <div style={{
               width: '32px',
               height: '32px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#FEF3C7',
               display: 'flex',
               alignItems: 'center',
@@ -769,7 +769,7 @@ export function CoachCardioHabitsTab({
           <div style={{
             background: '#F8FAFC',
             border: '1px solid #E2E8F0',
-            borderRadius: '10px',
+            borderRadius: '9999px',
             padding: '12px 14px',
             display: 'flex',
             flexDirection: 'column',
@@ -780,7 +780,7 @@ export function CoachCardioHabitsTab({
                 <Footprints size={14} color="#673DE6" />
                 الخطوات اليومية المستهدفة
               </span>
-              <span style={{ fontSize: '10px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', background: '#F4F0FD', color: '#673DE6', border: '1px solid #EDE8FA' }}>
+              <span style={{ fontSize: '10px', fontWeight: 800, padding: '1px 6px', borderRadius: '9999px', background: '#F4F0FD', color: '#673DE6', border: '1px solid #EDE8FA' }}>
                 NEAT
               </span>
             </div>
@@ -791,7 +791,7 @@ export function CoachCardioHabitsTab({
               gap: '6px',
               background: '#FFFFFF',
               border: '1px solid #D0D5DD',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               padding: '0 10px',
               height: '38px',
               boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
@@ -823,7 +823,7 @@ export function CoachCardioHabitsTab({
           <div style={{
             background: '#F8FAFC',
             border: '1px solid #E2E8F0',
-            borderRadius: '10px',
+            borderRadius: '9999px',
             padding: '12px 14px',
             display: 'flex',
             flexDirection: 'column',
@@ -834,7 +834,7 @@ export function CoachCardioHabitsTab({
                 <Droplets size={14} color="#0284C7" />
                 شرب الماء اليومي
               </span>
-              <span style={{ fontSize: '10px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', background: '#E0F2FE', color: '#0369A1', border: '1px solid #BAE6FD' }}>
+              <span style={{ fontSize: '10px', fontWeight: 800, padding: '1px 6px', borderRadius: '9999px', background: '#E0F2FE', color: '#0369A1', border: '1px solid #BAE6FD' }}>
                 ترطيب
               </span>
             </div>
@@ -845,7 +845,7 @@ export function CoachCardioHabitsTab({
               gap: '6px',
               background: '#FFFFFF',
               border: '1px solid #D0D5DD',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               padding: '0 10px',
               height: '38px',
               boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
@@ -877,7 +877,7 @@ export function CoachCardioHabitsTab({
           <div style={{
             background: '#F8FAFC',
             border: '1px solid #E2E8F0',
-            borderRadius: '10px',
+            borderRadius: '9999px',
             padding: '12px 14px',
             display: 'flex',
             flexDirection: 'column',
@@ -888,7 +888,7 @@ export function CoachCardioHabitsTab({
                 <Moon size={14} color="#4F46E5" />
                 ساعات النوم المستهدفة
               </span>
-              <span style={{ fontSize: '10px', fontWeight: 800, padding: '1px 6px', borderRadius: '4px', background: '#EEF2FF', color: '#4338CA', border: '1px solid #C7D2FE' }}>
+              <span style={{ fontSize: '10px', fontWeight: 800, padding: '1px 6px', borderRadius: '9999px', background: '#EEF2FF', color: '#4338CA', border: '1px solid #C7D2FE' }}>
                 استشفاء
               </span>
             </div>
@@ -899,7 +899,7 @@ export function CoachCardioHabitsTab({
               gap: '6px',
               background: '#FFFFFF',
               border: '1px solid #D0D5DD',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               padding: '0 10px',
               height: '38px',
               boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
@@ -933,7 +933,7 @@ export function CoachCardioHabitsTab({
       <div style={{
         background: '#FFFFFF',
         border: '1px solid #EAECF0',
-        borderRadius: '14px',
+        borderRadius: '24px',
         padding: '14px 16px',
         boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
       }}>
@@ -942,7 +942,7 @@ export function CoachCardioHabitsTab({
             <div style={{
               width: '32px',
               height: '32px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#F0FDF4',
               display: 'flex',
               alignItems: 'center',
@@ -965,7 +965,7 @@ export function CoachCardioHabitsTab({
           onChange={(e) => setCoachNotes(e.target.value)}
           style={{
             width: '100%',
-            borderRadius: '10px',
+            borderRadius: '9999px',
             border: '1px solid #D0D5DD',
             background: '#F8FAFC',
             padding: '12px 14px',

@@ -108,7 +108,7 @@ export function CorrectMeasurementsModal({
           width: '100%',
           maxWidth: '520px',
           background: '#FFFFFF',
-          borderRadius: '16px',
+          borderRadius: '24px',
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
           overflow: 'hidden',
           display: 'flex',
@@ -156,7 +156,7 @@ export function CorrectMeasurementsModal({
             style={{
               width: '32px',
               height: '32px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: 'none',
               background: '#F1F5F9',
               color: '#64748B',
@@ -176,7 +176,7 @@ export function CorrectMeasurementsModal({
             <div
               style={{
                 padding: '10px 14px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 background: '#FEF2F2',
                 border: '1px solid #FEE2E2',
                 color: '#B91C1C',
@@ -227,7 +227,7 @@ export function CorrectMeasurementsModal({
               style={{
                 width: '100%',
                 height: '40px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: '1px solid #CBD5E1',
                 padding: '0 12px',
                 fontSize: '13px',
@@ -255,7 +255,7 @@ export function CorrectMeasurementsModal({
                 style={{
                   width: '100%',
                   height: '40px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #CBD5E1',
                   padding: '0 12px',
                   fontSize: '13px',
@@ -281,7 +281,7 @@ export function CorrectMeasurementsModal({
                 style={{
                   width: '100%',
                   height: '40px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #CBD5E1',
                   padding: '0 12px',
                   fontSize: '13px',
@@ -306,7 +306,7 @@ export function CorrectMeasurementsModal({
               style={{
                 width: '100%',
                 height: '40px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: '1px solid #CBD5E1',
                 padding: '0 12px',
                 fontSize: '12px',
@@ -342,7 +342,7 @@ export function CorrectMeasurementsModal({
               style={{
                 height: '38px',
                 padding: '0 16px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: '1px solid #E2E8F0',
                 background: '#FFFFFF',
                 color: '#475569',
@@ -359,7 +359,7 @@ export function CorrectMeasurementsModal({
               style={{
                 height: '38px',
                 padding: '0 20px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: 'none',
                 background: '#673DE6',
                 color: '#FFFFFF',

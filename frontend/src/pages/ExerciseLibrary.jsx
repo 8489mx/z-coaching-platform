@@ -1147,7 +1147,7 @@ export default function ExerciseLibrary() {
                     <div style={{
                       background: '#F8FAFC',
                       padding: '6px',
-                      borderRadius: '14px',
+                      borderRadius: '24px',
                       border: '1px solid #EAECF0',
                       marginBottom: '8px',
                       display: 'flex',

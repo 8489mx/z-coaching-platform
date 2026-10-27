@@ -99,7 +99,7 @@ export default function EditQuestionModal({
       <div 
         style={{
           background: '#FFFFFF',
-          borderRadius: '16px',
+          borderRadius: '24px',
           maxWidth: '560px',
           width: '100%',
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
@@ -123,7 +123,7 @@ export default function EditQuestionModal({
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#F4F0FD',
               color: '#673DE6',
               display: 'flex',
@@ -148,7 +148,7 @@ export default function EditQuestionModal({
             style={{
               width: '32px',
               height: '32px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #EAECF0',
               background: '#F8FAFC',
               color: '#64748B',
@@ -178,7 +178,7 @@ export default function EditQuestionModal({
                 style={{
                   width: '100%',
                   height: '40px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #D0D5DD',
                   padding: '0 12px',
                   fontSize: '13px',
@@ -244,7 +244,7 @@ export default function EditQuestionModal({
                 style={{
                   width: '100%',
                   height: '40px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #D0D5DD',
                   padding: '0 12px',
                   fontSize: '12.5px',
@@ -279,7 +279,7 @@ export default function EditQuestionModal({
                         alignItems: 'center',
                         background: '#FFFFFF',
                         padding: '6px 12px',
-                        borderRadius: '6px',
+                        borderRadius: '9999px',
                         border: '1px solid #EAECF0'
                       }}
                     >
@@ -313,7 +313,7 @@ export default function EditQuestionModal({
                     style={{
                       flex: 1,
                       height: '36px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: '1px solid #CBD5E1',
                       padding: '0 10px',
                       fontSize: '12px',
@@ -336,7 +336,7 @@ export default function EditQuestionModal({
                     style={{
                       height: '36px',
                       padding: '0 14px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       background: '#F4F0FD',
                       color: '#673DE6',
                       border: '1px solid #DDD6FE',
@@ -368,7 +368,7 @@ export default function EditQuestionModal({
                     style={{
                       flex: 1,
                       height: '34px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       fontSize: '12px',
                       fontWeight: 700,
                       border: formData.required ? '1px solid #DC2626' : '1px solid #D0D5DD',
@@ -385,7 +385,7 @@ export default function EditQuestionModal({
                     style={{
                       flex: 1,
                       height: '34px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       fontSize: '12px',
                       fontWeight: 700,
                       border: !formData.required ? '1px solid #673DE6' : '1px solid #D0D5DD',
@@ -410,7 +410,7 @@ export default function EditQuestionModal({
                     style={{
                       flex: 1,
                       height: '34px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       fontSize: '12px',
                       fontWeight: 700,
                       border: formData.active ? '1px solid #16A34A' : '1px solid #D0D5DD',
@@ -427,7 +427,7 @@ export default function EditQuestionModal({
                     style={{
                       flex: 1,
                       height: '34px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       fontSize: '12px',
                       fontWeight: 700,
                       border: !formData.active ? '1px solid #64748B' : '1px solid #D0D5DD',
@@ -459,7 +459,7 @@ export default function EditQuestionModal({
               style={{
                 height: '36px',
                 padding: '0 16px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: '1px solid #D0D5DD',
                 background: '#FFFFFF',
                 color: '#344054',
@@ -476,7 +476,7 @@ export default function EditQuestionModal({
               style={{ 
                 height: '36px', 
                 padding: '0 20px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 background: '#673DE6',
                 color: '#FFFFFF',
                 border: 'none',

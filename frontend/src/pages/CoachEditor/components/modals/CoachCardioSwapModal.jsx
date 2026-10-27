@@ -13,7 +13,7 @@ export function CoachCardioSwapModal({
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-      <div style={{ maxWidth: '460px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)' }}>
+      <div style={{ maxWidth: '460px', width: '100%', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
           <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>اختيار نمط الكارديو</h4>
           <button type="button" onClick={() => setCardioSwapModal(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748B' }}>
@@ -28,7 +28,7 @@ export function CoachCardioSwapModal({
               <div
                 key={opt.id}
                 onClick={() => verdict.allowed && handleSelectCardioModality(opt)}
-                style={{ background: verdict.allowed ? '#F8FAFC' : '#FEF2F2', border: verdict.allowed ? '1px solid #E2E8F0' : '1px solid #FECACA', borderRadius: '8px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: verdict.allowed ? 'pointer' : 'not-allowed', opacity: verdict.allowed ? 1 : 0.8 }}
+                style={{ background: verdict.allowed ? '#F8FAFC' : '#FEF2F2', border: verdict.allowed ? '1px solid #E2E8F0' : '1px solid #FECACA', borderRadius: '9999px', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: verdict.allowed ? 'pointer' : 'not-allowed', opacity: verdict.allowed ? 1 : 0.8 }}
               >
                 <div>
                   <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{opt.name}</strong>
@@ -40,7 +40,7 @@ export function CoachCardioSwapModal({
                     <span style={{ fontSize: '10px', color: '#B45309', display: 'block', marginTop: '2px' }}>{verdict.warning_ar}</span>
                   )}
                 </div>
-                <button type="button" disabled={!verdict.allowed} style={{ padding: '3px 8px', background: verdict.allowed ? '#673DE6' : '#CBD5E1', color: '#FFFFFF', border: 'none', borderRadius: '7px', fontSize: '10.5px', fontWeight: 700 }}>{verdict.allowed ? 'اختيار' : 'غير مناسب'}</button>
+                <button type="button" disabled={!verdict.allowed} style={{ padding: '3px 8px', background: verdict.allowed ? '#673DE6' : '#CBD5E1', color: '#FFFFFF', border: 'none', borderRadius: '9999px', fontSize: '10.5px', fontWeight: 700 }}>{verdict.allowed ? 'اختيار' : 'غير مناسب'}</button>
               </div>
             );
           })}

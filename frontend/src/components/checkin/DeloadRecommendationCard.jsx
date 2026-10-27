@@ -35,7 +35,7 @@ export default function DeloadRecommendationCard({ checkinId, analysisOutput }) 
   const reasonTitle = recommendation.reason === 'JOINT_PAIN' ? 'ألم مفصلي مرتفع' : 'تراجع الأداء مع إرهاق';
 
   return (
-    <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: '12px', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }} dir="rtl">
+    <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: '20px', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }} dir="rtl">
       <strong style={{ fontSize: '13px', color: '#92400E' }}>توصية ديلود مبكر: {reasonTitle}</strong>
       <ul style={{ margin: 0, paddingInlineStart: '18px', fontSize: '12px', color: '#78350F', lineHeight: 1.7 }}>
         {(recommendation.reasons_ar || []).map((r) => <li key={r}>{r}</li>)}

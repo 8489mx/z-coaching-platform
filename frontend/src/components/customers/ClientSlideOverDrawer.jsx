@@ -223,7 +223,7 @@ export default function ClientSlideOverDrawer({
                 minWidth: '42px',
                 height: '34px',
                 padding: '0 10px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 background: '#F4F0FD',
                 color: '#673DE6',
                 border: '1px solid #EDE8FA',
@@ -257,15 +257,15 @@ export default function ClientSlideOverDrawer({
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
                 <ClientPackageBadge item={client} />
                 {isFrozen ? (
-                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '9999px', background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A' }}>
                     مجمد مؤقتاً
                   </span>
                 ) : isExpired ? (
-                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '9999px', background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
                     منتهي الصلاحية
                   </span>
                 ) : (
-                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '9999px', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
                     نشط {daysRemaining !== undefined ? `· ${daysRemaining} يوم متبقي` : ''}
                   </span>
                 )}
@@ -279,7 +279,7 @@ export default function ClientSlideOverDrawer({
             style={{
               width: '32px',
               height: '32px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #D0D5DD',
               background: '#FFFFFF',
               color: '#475467',
@@ -478,7 +478,7 @@ export default function ClientSlideOverDrawer({
             style={{
               background: '#FFFFFF',
               border: '1px solid #EAECF0',
-              borderRadius: '12px',
+              borderRadius: '20px',
               padding: '14px 16px',
               display: 'flex',
               flexDirection: 'column',
@@ -490,7 +490,7 @@ export default function ClientSlideOverDrawer({
               <div style={{
                 width: '24px',
                 height: '24px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 background: '#F4F0FD',
                 display: 'flex',
                 alignItems: 'center',
@@ -509,7 +509,7 @@ export default function ClientSlideOverDrawer({
               alignItems: 'center',
               padding: '8px 10px',
               background: '#F8FAFC',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #F1F5F9'
             }}>
               <span style={{ fontSize: '11.5px', color: '#475467', fontWeight: 700 }}>رقم الهاتف:</span>
@@ -524,7 +524,7 @@ export default function ClientSlideOverDrawer({
                     style={{
                       border: '1px solid #CBD5E1',
                       background: '#FFFFFF',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       padding: '3px 6px',
                       cursor: 'pointer',
                       display: 'flex',
@@ -551,7 +551,7 @@ export default function ClientSlideOverDrawer({
               alignItems: 'center',
               padding: '8px 10px',
               background: '#F8FAFC',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #F1F5F9'
             }}>
               <span style={{ fontSize: '11.5px', color: '#475467', fontWeight: 700 }}>فترة الاشتراك:</span>
@@ -571,7 +571,7 @@ export default function ClientSlideOverDrawer({
               alignItems: 'center',
               padding: '8px 10px',
               background: '#F8FAFC',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #F1F5F9'
             }}>
               <span style={{ fontSize: '11.5px', color: '#475467', fontWeight: 700 }}>خطة التغذية والحالة:</span>
@@ -580,7 +580,7 @@ export default function ClientSlideOverDrawer({
                   <span style={{
                     fontSize: '11px',
                     padding: '2px 8px',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     background: fasting.primaryFastingBadge.bg,
                     border: `1px solid ${fasting.primaryFastingBadge.border}`,
                     color: fasting.primaryFastingBadge.color,
@@ -593,7 +593,7 @@ export default function ClientSlideOverDrawer({
                   <span style={{
                     fontSize: '11px',
                     padding: '2px 8px',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     background: fasting.intermittentBadge.bg,
                     border: `1px solid ${fasting.intermittentBadge.border}`,
                     color: fasting.intermittentBadge.color,
@@ -606,7 +606,7 @@ export default function ClientSlideOverDrawer({
                   fontSize: '11px',
                   fontWeight: 800,
                   padding: '2px 8px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   background: isFrozen ? '#FEF3C7' : isExpired ? '#FEF2F2' : '#F0FDF4',
                   color: isFrozen ? '#B45309' : isExpired ? '#DC2626' : '#166534',
                   border: isFrozen ? '1px solid #FDE68A' : isExpired ? '1px solid #FECACA' : '1px solid #BBF7D0'
@@ -623,7 +623,7 @@ export default function ClientSlideOverDrawer({
               style={{
                 background: '#FFFFFF',
                 border: '1px solid #EAECF0',
-                borderRadius: '12px',
+                borderRadius: '20px',
                 padding: '14px 16px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -637,7 +637,7 @@ export default function ClientSlideOverDrawer({
                   <div style={{
                     width: '26px',
                     height: '26px',
-                    borderRadius: '7px',
+                    borderRadius: '9999px',
                     background: '#F4F0FD',
                     display: 'flex',
                     alignItems: 'center',
@@ -661,7 +661,7 @@ export default function ClientSlideOverDrawer({
                     fontSize: '11px',
                     fontWeight: 800,
                     padding: '3px 8px',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     background: retentionHealth.category === 'HIGH_PROPENSITY' ? '#ECFDF3' : (retentionHealth.category === 'AT_RISK' ? '#FEF3F2' : '#FFFAEB'),
                     color: retentionHealth.category === 'HIGH_PROPENSITY' ? '#027A48' : (retentionHealth.category === 'AT_RISK' ? '#B42318' : '#B54708'),
                     border: `1px solid ${retentionHealth.category === 'HIGH_PROPENSITY' ? '#A6F4C5' : (retentionHealth.category === 'AT_RISK' ? '#FECDCA' : '#FEDF89')}`
@@ -673,7 +673,7 @@ export default function ClientSlideOverDrawer({
                     fontSize: '13px',
                     fontWeight: 900,
                     padding: '2px 8px',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     background: '#F8FAFC',
                     color: '#101828',
                     border: '1px solid #E2E8F0'
@@ -685,25 +685,25 @@ export default function ClientSlideOverDrawer({
 
               {/* Score Breakdown (4 Metric Mini-Cards) */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '9999px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                   <span style={{ fontSize: '10px', color: '#64748B', display: 'block', fontWeight: 600 }}>الالتزام</span>
                   <strong style={{ fontSize: '12px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
                     {retentionHealth.score_breakdown.adherence}/35
                   </strong>
                 </div>
-                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '9999px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                   <span style={{ fontSize: '10px', color: '#64748B', display: 'block', fontWeight: 600 }}>التقدم</span>
                   <strong style={{ fontSize: '12px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
                     {retentionHealth.score_breakdown.progress}/30
                   </strong>
                 </div>
-                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '9999px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                   <span style={{ fontSize: '10px', color: '#64748B', display: 'block', fontWeight: 600 }}>الانتظام</span>
                   <strong style={{ fontSize: '12px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
                     {retentionHealth.score_breakdown.consistency}/20
                   </strong>
                 </div>
-                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '9999px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                   <span style={{ fontSize: '10px', color: '#64748B', display: 'block', fontWeight: 600 }}>الاستحقاق</span>
                   <strong style={{ fontSize: '12px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
                     {retentionHealth.score_breakdown.urgency}/15
@@ -716,7 +716,7 @@ export default function ClientSlideOverDrawer({
                 <div style={{
                   background: '#FEF3F2',
                   border: '1px solid #FECDCA',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   padding: '8px 10px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -738,7 +738,7 @@ export default function ClientSlideOverDrawer({
               <div style={{
                 background: '#F8FAFC',
                 border: '1px solid #E2E8F0',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 padding: '9px 11px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -760,7 +760,7 @@ export default function ClientSlideOverDrawer({
                   style={{
                     flex: 1,
                     height: '34px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     background: '#F0FDF4',
                     color: '#166534',
                     border: '1px solid #BBF7D0',
@@ -786,7 +786,7 @@ export default function ClientSlideOverDrawer({
                   style={{
                     height: '34px',
                     padding: '0 12px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     background: '#F0F9FF',
                     color: '#0369A1',
                     border: '1px solid #BAE6FD',
@@ -814,7 +814,7 @@ export default function ClientSlideOverDrawer({
           <div style={{
             background: '#FFFFFF',
             border: '1px solid #EAECF0',
-            borderRadius: '12px',
+            borderRadius: '20px',
             padding: '14px 16px',
             display: 'flex',
             flexDirection: 'column',
@@ -826,7 +826,7 @@ export default function ClientSlideOverDrawer({
                 <div style={{
                   width: '24px',
                   height: '24px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   background: '#F4F0FD',
                   display: 'flex',
                   alignItems: 'center',
@@ -861,7 +861,7 @@ export default function ClientSlideOverDrawer({
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
               {/* Training Box */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '10px' }}>
                 <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>البرنامج التدريبي:</span>
                 <strong style={{ fontSize: '12px', color: '#101828', display: 'block', marginTop: '2px' }}>
                   {client.plan_summary?.trainingSplit || 'علوي / سفلي'}
@@ -872,7 +872,7 @@ export default function ClientSlideOverDrawer({
               </div>
 
               {/* Nutrition Box */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '10px' }}>
                 <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>السعرات والماكروز:</span>
                 <strong style={{ fontSize: '12px', color: '#101828', display: 'block', marginTop: '2px', fontFamily: 'JetBrains Mono, monospace' }}>
                   {Number(client.plan_summary?.nutritionCalories || 2150).toLocaleString()} سعرة
@@ -883,7 +883,7 @@ export default function ClientSlideOverDrawer({
               </div>
 
               {/* Cardio Box */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '10px' }}>
                 <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>الكارديو المخصص:</span>
                 <strong style={{ fontSize: '12px', color: client.plan_summary?.cardioSessions > 0 ? '#175CD3' : '#64748B', display: 'block', marginTop: '2px' }}>
                   {client.plan_summary?.cardioSessions > 0 ? `${client.plan_summary.cardioSessions} جلسات / أسبوع` : '0 جلسات (مُعلق)'}
@@ -894,7 +894,7 @@ export default function ClientSlideOverDrawer({
               </div>
 
               {/* Goal Box */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '10px' }}>
                 <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, display: 'block' }}>الهدف المعتمد:</span>
                 <strong style={{ fontSize: '12px', color: '#673DE6', display: 'block', marginTop: '2px' }}>
                   {client.plan_summary?.cleanGoal || 'تحسين اللياقة والكتلة'}
@@ -913,7 +913,7 @@ export default function ClientSlideOverDrawer({
             style={{
               background: '#FFFFFF',
               border: '1px solid #EAECF0',
-              borderRadius: '12px',
+              borderRadius: '20px',
               padding: '14px 16px',
               display: 'flex',
               flexDirection: 'column',
@@ -926,7 +926,7 @@ export default function ClientSlideOverDrawer({
                 <div style={{
                   width: '24px',
                   height: '24px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   background: '#EFF6FF',
                   display: 'flex',
                   alignItems: 'center',
@@ -942,7 +942,7 @@ export default function ClientSlideOverDrawer({
                 fontSize: '11px',
                 fontWeight: 800,
                 padding: '2px 8px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 background: totalCheckins > 0 ? '#F0FDF4' : '#F1F5F9',
                 color: totalCheckins > 0 ? '#166534' : '#475467',
                 border: totalCheckins > 0 ? '1px solid #BBF7D0' : '1px solid #E2E8F0'
@@ -956,7 +956,7 @@ export default function ClientSlideOverDrawer({
                 جاري جلب بيانات المتابعة...
               </div>
             ) : totalCheckins === 0 && !initialWeight ? (
-              <div style={{ padding: '16px', textAlign: 'center', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
+              <div style={{ padding: '16px', textAlign: 'center', background: '#F8FAFC', borderRadius: '9999px', border: '1px dashed #CBD5E1' }}>
                 <span style={{ fontSize: '12px', color: '#475467', display: 'block', fontWeight: 700 }}>
                   لم يتم تسجيل أي تقييم أسبوعي للمشترك حتى الآن.
                 </span>
@@ -969,7 +969,7 @@ export default function ClientSlideOverDrawer({
                 {/* Weight Comparison Cards */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {/* Initial Weight */}
-                  <div style={{ background: '#F8FAFC', padding: '10px 8px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                  <div style={{ background: '#F8FAFC', padding: '10px 8px', borderRadius: '9999px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '2px' }}>وزن البداية</span>
                     <strong style={{ fontSize: '14.5px', color: '#101828', fontFamily: 'JetBrains Mono, sans-serif', fontWeight: 800 }}>
                       {initialWeight !== null ? `${initialWeight} كجم` : '-'}
@@ -977,7 +977,7 @@ export default function ClientSlideOverDrawer({
                   </div>
 
                   {/* Current Weight */}
-                  <div style={{ background: '#F8FAFC', padding: '10px 8px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                  <div style={{ background: '#F8FAFC', padding: '10px 8px', borderRadius: '9999px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '2px' }}>أحدث وزن</span>
                     <strong style={{ fontSize: '14.5px', color: '#101828', fontFamily: 'JetBrains Mono, sans-serif', fontWeight: 800 }}>
                       {currentWeight !== null ? `${currentWeight} كجم` : '-'}
@@ -988,7 +988,7 @@ export default function ClientSlideOverDrawer({
                   <div style={{ 
                     background: weightDiff && parseFloat(weightDiff) < 0 ? '#F0FDF4' : weightDiff && parseFloat(weightDiff) > 0 ? '#FFFBEB' : '#F8FAFC', 
                     padding: '10px 8px', 
-                    borderRadius: '8px', 
+                    borderRadius: '9999px', 
                     border: `1px solid ${weightDiff && parseFloat(weightDiff) < 0 ? '#BBF7D0' : weightDiff && parseFloat(weightDiff) > 0 ? '#FDE68A' : '#E2E8F0'}`, 
                     textAlign: 'center' 
                   }}>
@@ -1010,19 +1010,19 @@ export default function ClientSlideOverDrawer({
 
                 {/* Latest Check-in Snapshot */}
                 {latestSubmission && (
-                  <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '9999px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#101828' }}>
                         آخر تقييم: {latestSubmission.createdAt ? new Date(latestSubmission.createdAt).toLocaleDateString('en-CA') : 'أسبوعي'}
                       </span>
                       {(latestSubmission.nutrition_adherence_percent !== undefined || latestSubmission.compliance_score !== undefined) && (
-                        <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #DBEAFE' }}>
+                        <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '9999px', background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #DBEAFE' }}>
                           الالتزام: {latestSubmission.nutrition_adherence_percent ?? latestSubmission.compliance_score}%
                         </span>
                       )}
                     </div>
                     {(latestSubmission.coach_notes || latestSubmission.notes || latestSubmission.client_notes) && (
-                      <p style={{ margin: 0, fontSize: '11.5px', color: '#334155', lineHeight: 1.6, background: '#FFFFFF', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                      <p style={{ margin: 0, fontSize: '11.5px', color: '#334155', lineHeight: 1.6, background: '#FFFFFF', padding: '8px 10px', borderRadius: '9999px', border: '1px solid #E2E8F0' }}>
                         "{latestSubmission.coach_notes || latestSubmission.notes || latestSubmission.client_notes}"
                       </p>
                     )}
@@ -1043,7 +1043,7 @@ export default function ClientSlideOverDrawer({
                           style={{
                             width: '74px',
                             height: '92px',
-                            borderRadius: '8px',
+                            borderRadius: '9999px',
                             overflow: 'hidden',
                             border: '1px solid #CBD5E1',
                             cursor: 'pointer',

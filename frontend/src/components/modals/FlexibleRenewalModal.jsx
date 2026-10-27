@@ -254,7 +254,7 @@ export default function FlexibleRenewalModal({
         dir="rtl"
         style={{
           background: '#FFFFFF',
-          borderRadius: '16px',
+          borderRadius: '24px',
           width: '100%',
           maxWidth: '520px',
           maxHeight: '92vh',
@@ -291,7 +291,7 @@ export default function FlexibleRenewalModal({
             <div style={{
               width: '34px',
               height: '34px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#673DE6',
               color: '#FFFFFF',
               display: 'flex',
@@ -310,7 +310,7 @@ export default function FlexibleRenewalModal({
                   fontSize: '10px',
                   fontWeight: 800,
                   padding: '2px 7px',
-                  borderRadius: '5px',
+                  borderRadius: '9999px',
                   background: currentTier === 'MAX' ? '#673DE6' : '#F1F5F9',
                   color: currentTier === 'MAX' ? '#FFFFFF' : '#475569',
                   border: '1px solid #E2E8F0'
@@ -342,7 +342,7 @@ export default function FlexibleRenewalModal({
               cursor: 'pointer',
               width: '28px',
               height: '28px',
-              borderRadius: '6px',
+              borderRadius: '9999px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -469,7 +469,7 @@ export default function FlexibleRenewalModal({
                       style={{
                         width: '100%',
                         padding: '8px 6px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         border: isActive ? '1.5px solid #673DE6' : '1px solid #E2E8F0',
                         background: isActive ? '#673DE6' : '#FFFFFF',
                         color: isActive ? '#FFFFFF' : '#475569',
@@ -491,7 +491,7 @@ export default function FlexibleRenewalModal({
                 })}
               </div>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#F8FAFC', padding: '8px 12px', borderRadius: '8px', border: '1px solid #E2E8F0', width: '100%', boxSizing: 'border-box' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#F8FAFC', padding: '8px 12px', borderRadius: '9999px', border: '1px solid #E2E8F0', width: '100%', boxSizing: 'border-box' }}>
                 <span style={{ fontSize: '12px', color: '#475569', fontWeight: 700 }}>عدد الأيام المخصصة:</span>
                 <input
                   type="number"
@@ -501,7 +501,7 @@ export default function FlexibleRenewalModal({
                   style={{
                     width: '80px',
                     padding: '5px 8px',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     border: '1px solid #CBD5E1',
                     fontSize: '13px',
                     fontWeight: 800,
@@ -518,7 +518,7 @@ export default function FlexibleRenewalModal({
 
           {/* Start Date Options (Carry-over remaining days) */}
           {currentDays > 0 && (
-            <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0', width: '100%', boxSizing: 'border-box' }}>
+            <div style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '9999px', border: '1px solid #E2E8F0', width: '100%', boxSizing: 'border-box' }}>
               <div style={{ fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
                 المشترك لديه <strong>{currentDays} يوماً</strong> متبقية في اشتراكه الحالي:
               </div>
@@ -556,7 +556,7 @@ export default function FlexibleRenewalModal({
                 display: 'flex',
                 alignItems: 'stretch',
                 height: '40px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: isCurrencyOpen ? '1.5px solid #0F172A' : '1px solid #CBD5E1',
                 background: '#FFFFFF',
                 boxSizing: 'border-box',
@@ -637,7 +637,7 @@ export default function FlexibleRenewalModal({
                   left: 0,
                   width: '175px',
                   background: '#FFFFFF',
-                  borderRadius: '12px',
+                  borderRadius: '20px',
                   border: '1px solid #E2E8F0',
                   boxShadow: '0 12px 28px -4px rgba(15, 23, 42, 0.18), 0 4px 8px -2px rgba(15, 23, 42, 0.06)',
                   padding: '5px',
@@ -663,7 +663,7 @@ export default function FlexibleRenewalModal({
                           justifyContent: 'space-between',
                           width: '100%',
                           padding: '8px 10px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: 'none',
                           background: isSelected ? '#673DE6' : 'transparent',
                           color: isSelected ? '#FFFFFF' : '#334155',
@@ -712,7 +712,7 @@ export default function FlexibleRenewalModal({
                   width: '100%',
                   height: '40px',
                   padding: '0 12px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: isPaymentMethodOpen ? '1.5px solid #0F172A' : '1px solid #CBD5E1',
                   background: '#FFFFFF',
                   display: 'flex',
@@ -746,7 +746,7 @@ export default function FlexibleRenewalModal({
                   width: '100%',
                   minWidth: '190px',
                   background: '#FFFFFF',
-                  borderRadius: '12px',
+                  borderRadius: '20px',
                   border: '1px solid #E2E8F0',
                   boxShadow: '0 12px 28px -4px rgba(15, 23, 42, 0.18), 0 4px 8px -2px rgba(15, 23, 42, 0.06)',
                   padding: '5px',
@@ -772,7 +772,7 @@ export default function FlexibleRenewalModal({
                           justifyContent: 'space-between',
                           width: '100%',
                           padding: '8px 10px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: 'none',
                           background: isSelected ? '#673DE6' : 'transparent',
                           color: isSelected ? '#FFFFFF' : '#334155',
@@ -857,7 +857,7 @@ export default function FlexibleRenewalModal({
             </div>
             <div style={{
               background: '#F8FAFC',
-              borderRadius: '6px',
+              borderRadius: '9999px',
               padding: '8px 10px',
               fontSize: '11.5px',
               color: '#334155',
@@ -888,7 +888,7 @@ export default function FlexibleRenewalModal({
             style={{
               flex: 1,
               height: '38px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: 'none',
               background: '#059669',
               color: '#FFFFFF',
@@ -913,7 +913,7 @@ export default function FlexibleRenewalModal({
             style={{
               height: '38px',
               padding: '0 14px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #CBD5E1',
               background: '#FFFFFF',
               color: '#0F172A',
@@ -932,7 +932,7 @@ export default function FlexibleRenewalModal({
             style={{
               height: '38px',
               padding: '0 12px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: 'none',
               background: 'transparent',
               color: '#64748B',

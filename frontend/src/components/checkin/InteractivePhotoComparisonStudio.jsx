@@ -309,7 +309,7 @@ export default function InteractivePhotoComparisonStudio({
           {/* مبدل زاوية التصوير */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B' }}>الزاوية:</span>
-            <div style={{ display: 'inline-flex', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '2px' }}>
+            <div style={{ display: 'inline-flex', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '2px' }}>
               {[
                 { id: 'FRONT', label: 'أمامي' },
                 { id: 'SIDE', label: 'جانبي' },
@@ -324,7 +324,7 @@ export default function InteractivePhotoComparisonStudio({
                     background: angle === a.id ? '#673DE6' : 'transparent',
                     color: angle === a.id ? '#FFFFFF' : '#64748B',
                     padding: '4px 10px',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     fontSize: '11px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -349,7 +349,7 @@ export default function InteractivePhotoComparisonStudio({
             gap: '6px',
             background: '#F8FAFC',
             padding: '3px 8px',
-            borderRadius: '8px',
+            borderRadius: '9999px',
             border: '1px solid #E2E8F0'
           }}>
             <span style={{ color: '#64748B', fontWeight: 700, fontSize: '11px' }}>من:</span>
@@ -361,7 +361,7 @@ export default function InteractivePhotoComparisonStudio({
                   fontSize: '11px',
                   fontWeight: 700,
                   padding: '3px 8px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   border: '1px solid #CBD5E1',
                   background: '#FFFFFF',
                   color: '#0F172A',
@@ -389,7 +389,7 @@ export default function InteractivePhotoComparisonStudio({
                   fontSize: '11px',
                   fontWeight: 700,
                   padding: '3px 8px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   border: '1px solid #CBD5E1',
                   background: '#FFFFFF',
                   color: '#0F172A',
@@ -413,7 +413,7 @@ export default function InteractivePhotoComparisonStudio({
             onClick={() => setShowMarketingModal(true)}
             style={{
               padding: '6px 12px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: 'none',
               background: '#673DE6',
               color: '#FFFFFF',
@@ -438,7 +438,7 @@ export default function InteractivePhotoComparisonStudio({
             title="تكبير شاشة المقارنة"
             style={{
               padding: '6px 8px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #CBD5E1',
               background: '#FFFFFF',
               color: '#0F172A',
@@ -460,7 +460,7 @@ export default function InteractivePhotoComparisonStudio({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', width: '100%', maxWidth: '720px' }}>
           
           {/* كارت قبل (BEFORE) */}
-          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px', marginBottom: '8px' }}>
               <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#64748B' }}>
                 الأسبوع {beforeEntry.week} (البداية)
@@ -469,7 +469,7 @@ export default function InteractivePhotoComparisonStudio({
             </div>
 
             {/* الصورة أو المجسم */}
-            <div style={{ height: '240px', width: '100%', position: 'relative', overflow: 'hidden', borderRadius: '6px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ height: '240px', width: '100%', position: 'relative', overflow: 'hidden', borderRadius: '9999px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {beforePhoto ? (
                 <img 
                   src={beforePhoto} 
@@ -495,7 +495,7 @@ export default function InteractivePhotoComparisonStudio({
                   background: 'rgba(15, 23, 42, 0.8)',
                   color: '#FFFFFF',
                   padding: '4px 8px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   fontSize: '10px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -517,14 +517,14 @@ export default function InteractivePhotoComparisonStudio({
             </div>
 
             {/* أرقام القياسات */}
-            <div style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '6px 8px', display: 'flex', justifyContent: 'space-around', fontSize: '11px', marginTop: '8px' }}>
+            <div style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '6px 8px', display: 'flex', justifyContent: 'space-around', fontSize: '11px', marginTop: '8px' }}>
               <span>الوزن: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{beforeEntry.weight} كجم</strong></span>
               {beforeEntry.waist && <span>الخصر: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{beforeEntry.waist} سم</strong></span>}
             </div>
           </div>
 
           {/* كارت بعد (AFTER) */}
-          <div style={{ background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+          <div style={{ background: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '9999px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px', marginBottom: '8px' }}>
               <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0F172A' }}>
                 الأسبوع {afterEntry.week} (التقييم الحالي)
@@ -533,7 +533,7 @@ export default function InteractivePhotoComparisonStudio({
             </div>
 
             {/* الصورة أو المجسم */}
-            <div style={{ height: '240px', width: '100%', position: 'relative', overflow: 'hidden', borderRadius: '6px', background: '#F0F9FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ height: '240px', width: '100%', position: 'relative', overflow: 'hidden', borderRadius: '9999px', background: '#F0F9FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {afterPhoto ? (
                 <img 
                   src={afterPhoto} 
@@ -559,7 +559,7 @@ export default function InteractivePhotoComparisonStudio({
                   background: 'rgba(15, 23, 42, 0.8)',
                   color: '#FFFFFF',
                   padding: '4px 8px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   fontSize: '10px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -581,7 +581,7 @@ export default function InteractivePhotoComparisonStudio({
             </div>
 
             {/* أرقام القياسات */}
-            <div style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '6px 8px', display: 'flex', justifyContent: 'space-around', fontSize: '11px', marginTop: '8px' }}>
+            <div style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '6px 8px', display: 'flex', justifyContent: 'space-around', fontSize: '11px', marginTop: '8px' }}>
               <span>الوزن: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{afterEntry.weight} كجم</strong></span>
               {afterEntry.waist && <span>الخصر: <strong style={{ color: '#0F172A', fontFamily: 'JetBrains Mono' }}>{afterEntry.waist} سم</strong></span>}
             </div>
@@ -639,7 +639,7 @@ export default function InteractivePhotoComparisonStudio({
             onClick={(e) => e.stopPropagation()}
             style={{
               background: '#FFFFFF',
-              borderRadius: '12px',
+              borderRadius: '20px',
               width: '940px',
               maxWidth: '96vw',
               maxHeight: '94vh',
@@ -664,7 +664,7 @@ export default function InteractivePhotoComparisonStudio({
                 style={{
                   border: '1px solid #E2E8F0',
                   background: '#FFFFFF',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   width: '30px',
                   height: '30px',
                   display: 'flex',
@@ -688,13 +688,13 @@ export default function InteractivePhotoComparisonStudio({
                   style={{ 
                     maxWidth: '100%', 
                     maxHeight: '480px', 
-                    borderRadius: '8px', 
+                    borderRadius: '9999px', 
                     boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
                     border: '1px solid rgba(103, 61, 230, 0.3)'
                   }} 
                 />
                 {isGeneratingCard && (
-                  <div style={{ position: 'absolute', background: 'rgba(15,23,42,0.7)', color: '#FFFFFF', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 700 }}>
+                  <div style={{ position: 'absolute', background: 'rgba(15,23,42,0.7)', color: '#FFFFFF', padding: '8px 16px', borderRadius: '9999px', fontSize: '12px', fontWeight: 700 }}>
                     جاري إعداد الكارت عالي الدقة...
                   </div>
                 )}
@@ -717,7 +717,7 @@ export default function InteractivePhotoComparisonStudio({
                         style={{
                           textAlign: 'right',
                           padding: '7px 10px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: selectedFormat === f.id ? '1.5px solid #673DE6' : '1px solid #E2E8F0',
                           background: selectedFormat === f.id ? '#FAF7FD' : '#FFFFFF',
                           cursor: 'pointer',
@@ -750,7 +750,7 @@ export default function InteractivePhotoComparisonStudio({
                     style={{
                       width: '100%',
                       padding: '7px 10px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: '1px solid #CBD5E1',
                       fontSize: '11.5px',
                       color: '#0F172A',
@@ -760,7 +760,7 @@ export default function InteractivePhotoComparisonStudio({
                 </div>
 
                 {/* 3. خيارات الخصوصية */}
-                <div style={{ background: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ background: '#F8FAFC', padding: '10px', borderRadius: '9999px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>إعدادات الخصوصية وحماية الهوية:</span>
 
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', cursor: 'pointer' }}>
@@ -782,7 +782,7 @@ export default function InteractivePhotoComparisonStudio({
                     style={{
                       width: '100%',
                       padding: '10px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: 'none',
                       background: '#673DE6',
                       color: '#FFFFFF',
@@ -807,7 +807,7 @@ export default function InteractivePhotoComparisonStudio({
                     style={{
                       width: '100%',
                       padding: '8px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: '1px solid #86EFAC',
                       background: '#F0FDF4',
                       color: '#16A34A',
@@ -846,7 +846,7 @@ export default function InteractivePhotoComparisonStudio({
                 onClick={() => setShowMarketingModal(false)}
                 style={{
                   padding: '5px 14px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #CBD5E1',
                   background: '#FFFFFF',
                   color: '#0F172A',
@@ -885,7 +885,7 @@ export default function InteractivePhotoComparisonStudio({
             onClick={(e) => e.stopPropagation()}
             style={{
               background: '#FFFFFF',
-              borderRadius: '12px',
+              borderRadius: '20px',
               width: '920px',
               maxWidth: '96vw',
               maxHeight: '92vh',
@@ -906,7 +906,7 @@ export default function InteractivePhotoComparisonStudio({
               <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
-                style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '8px', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
+                style={{ border: '1px solid #E2E8F0', background: '#FFFFFF', borderRadius: '9999px', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
               >
                 <X size={15} />
               </button>
@@ -920,7 +920,7 @@ export default function InteractivePhotoComparisonStudio({
                   <span style={{ fontSize: '13px', fontWeight: 800, color: '#64748B', display: 'block', marginBottom: '8px' }}>
                     الأسبوع {beforeEntry.week} (البداية) • {beforeEntry.weight} كجم
                   </span>
-                  <div style={{ height: '320px', overflow: 'hidden', borderRadius: '6px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ height: '320px', overflow: 'hidden', borderRadius: '9999px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {beforePhoto ? (
                       <img src={beforePhoto} alt="قبل" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
@@ -934,7 +934,7 @@ export default function InteractivePhotoComparisonStudio({
                   <span style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', display: 'block', marginBottom: '8px' }}>
                     الأسبوع {afterEntry.week} (التقييم الحالي) • {afterEntry.weight} كجم
                   </span>
-                  <div style={{ height: '320px', overflow: 'hidden', borderRadius: '6px', background: '#F0F9FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ height: '320px', overflow: 'hidden', borderRadius: '9999px', background: '#F0F9FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {afterPhoto ? (
                       <img src={afterPhoto} alt="بعد" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
@@ -953,7 +953,7 @@ export default function InteractivePhotoComparisonStudio({
               <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
-                style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#673DE6', color: '#FFFFFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)' }}
+                style={{ padding: '6px 16px', borderRadius: '9999px', border: 'none', background: '#673DE6', color: '#FFFFFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)' }}
               >
                 إغلاق الاستوديو
               </button>

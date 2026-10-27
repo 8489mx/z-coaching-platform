@@ -20,7 +20,7 @@ export function CoachFastingToggle({ fastingContext, onChange, saving = false })
       style={{
         background: '#FFFFFF',
         border: '1px solid #EAECF0',
-        borderRadius: '12px',
+        borderRadius: '20px',
         padding: '10px 16px',
         marginBottom: '10px',
         boxShadow: '0 1px 3px rgba(16, 24, 40, 0.03)',
@@ -38,7 +38,7 @@ export function CoachFastingToggle({ fastingContext, onChange, saving = false })
           fontSize: '10.5px',
           fontWeight: 700,
           padding: '2px 8px',
-          borderRadius: '6px',
+          borderRadius: '9999px',
           background: fastingContext?.active ? '#F4F0FD' : '#F2F4F7',
           color: fastingContext?.active ? '#673DE6' : '#475467',
           border: fastingContext?.active ? '1px solid #EDE8FA' : '1px solid #EAECF0'
@@ -58,7 +58,7 @@ export function CoachFastingToggle({ fastingContext, onChange, saving = false })
           gap: '2px', 
           background: '#F1F5F9',
           border: '1px solid #EAECF0',
-          borderRadius: '8px',
+          borderRadius: '9999px',
           padding: '2px',
           alignItems: 'center'
         }}
@@ -76,7 +76,7 @@ export function CoachFastingToggle({ fastingContext, onChange, saving = false })
               style={{
                 height: '28px',
                 padding: '0 10px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 border: selected ? '1px solid #673DE6' : '1px solid transparent',
                 background: selected ? '#FFFFFF' : 'transparent',
                 color: selected ? '#673DE6' : '#475467',

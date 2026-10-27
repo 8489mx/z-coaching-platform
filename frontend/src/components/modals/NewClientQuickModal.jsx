@@ -417,7 +417,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
               </div>
 
               {/* 4. Bonus Gift Section */}
-              <div style={{ background: '#F9FAFB', border: '1px solid #EAECF0', borderRadius: '12px', padding: '14px 16px' }}>
+              <div style={{ background: '#F9FAFB', border: '1px solid #EAECF0', borderRadius: '20px', padding: '14px 16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                   <span style={{ fontSize: '12px', fontWeight: 800, color: '#101828' }}>
                     هدايا ومكافآت إضافية للكود (اختياري)
@@ -592,7 +592,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
             </div>
 
             {/* Account Details Card */}
-            <div style={{ background: '#F9FAFB', border: '1px solid #EAECF0', borderRadius: '12px', padding: '16px' }}>
+            <div style={{ background: '#F9FAFB', border: '1px solid #EAECF0', borderRadius: '20px', padding: '16px' }}>
               <span style={{ fontSize: '11.5px', color: '#64748B', display: 'block', marginBottom: '6px', fontWeight: 700 }}>
                 كود المشترك المعتمد:
               </span>

@@ -271,7 +271,7 @@ export default function ClientLogin({ onLoginSuccess }) {
             style={{ 
               width: '56px', 
               height: '56px', 
-              borderRadius: '16px', 
+              borderRadius: '24px', 
               background: '#1C1C1E', 
               color: '#FFFFFF', 
               display: 'flex', 
@@ -317,7 +317,7 @@ export default function ClientLogin({ onLoginSuccess }) {
                 style={{
                   width: '100%',
                   height: '46px',
-                  borderRadius: '12px',
+                  borderRadius: '20px',
                   border: '1px solid #E5E5EA',
                   background: '#F9F9FB',
                   padding: '0 40px 0 14px',
@@ -355,7 +355,7 @@ export default function ClientLogin({ onLoginSuccess }) {
                 style={{
                   width: '100%',
                   height: '46px',
-                  borderRadius: '12px',
+                  borderRadius: '20px',
                   border: '1px solid #E5E5EA',
                   background: '#F9F9FB',
                   padding: '0 40px',
@@ -380,7 +380,7 @@ export default function ClientLogin({ onLoginSuccess }) {
             <div 
               style={{
                 background: '#FFF1F0', border: '1px solid #FFCCC7',
-                borderRadius: '12px',
+                borderRadius: '20px',
                 padding: '10px 12px',
                 display: 'flex',
                 alignItems: 'center',
@@ -479,7 +479,7 @@ export default function ClientLogin({ onLoginSuccess }) {
                 autoComplete="username"
                 dir="ltr"
                 required
-                style={{ width: '100%', height: '44px', borderRadius: '12px', border: '1px solid #E5E5EA', background: '#F9F9FB', padding: '0 14px', fontSize: '14px', color: '#1C1C1E', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', height: '44px', borderRadius: '20px', border: '1px solid #E5E5EA', background: '#F9F9FB', padding: '0 14px', fontSize: '14px', color: '#1C1C1E', outline: 'none', boxSizing: 'border-box' }}
               />
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                 <span style={{ position: 'absolute', right: '14px', color: '#8E8E93', pointerEvents: 'none', display: 'flex' }}>
@@ -493,11 +493,11 @@ export default function ClientLogin({ onLoginSuccess }) {
                   autoComplete="current-password"
                   dir="ltr"
                   required
-                  style={{ width: '100%', height: '44px', borderRadius: '12px', border: '1px solid #E5E5EA', background: '#F9F9FB', padding: '0 40px 0 14px', fontSize: '14px', color: '#1C1C1E', outline: 'none', boxSizing: 'border-box' }}
+                  style={{ width: '100%', height: '44px', borderRadius: '20px', border: '1px solid #E5E5EA', background: '#F9F9FB', padding: '0 40px 0 14px', fontSize: '14px', color: '#1C1C1E', outline: 'none', boxSizing: 'border-box' }}
                 />
               </div>
               {coachError && (
-                <div style={{ background: '#FFF1F0', border: '1px solid #FFCCC7', borderRadius: '12px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#FF3B30', fontWeight: 700 }}>
+                <div style={{ background: '#FFF1F0', border: '1px solid #FFCCC7', borderRadius: '20px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#FF3B30', fontWeight: 700 }}>
                   <AlertCircle size={16} style={{ flexShrink: 0 }} />
                   <span>{coachError}</span>
                 </div>

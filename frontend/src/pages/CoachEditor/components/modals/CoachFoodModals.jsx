@@ -30,7 +30,7 @@ export function CoachSwapFoodModal({
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-      <div style={{ maxWidth: '560px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '88vh', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>
+      <div style={{ maxWidth: '560px', width: '100%', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '88vh', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
@@ -57,7 +57,7 @@ export function CoachSwapFoodModal({
             placeholder="ابحث عن صنف بديل باسمه العربي أو الإنجليزي..."
             value={swapFoodSearch}
             onChange={(e) => setSwapFoodSearch(e.target.value)}
-            style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 32px 0 12px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 32px 0 12px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
           />
           <Search size={13} style={{ position: 'absolute', right: '11px', top: '11px', color: '#94A3B8' }} />
         </div>
@@ -149,7 +149,7 @@ export function CoachSwapFoodModal({
                   style={{
                     background: '#F8FAFC',
                     border: '1px solid #E2E8F0',
-                    borderRadius: '10px',
+                    borderRadius: '9999px',
                     padding: '10px 12px',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -161,7 +161,7 @@ export function CoachSwapFoodModal({
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <strong style={{ fontSize: '12px', color: '#0F172A' }}>{targetFood.name}</strong>
                       {cookingYieldInfo && (
-                        <span style={{ fontSize: '9.5px', background: '#F1F5F9', color: '#475569', padding: '1px 6px', borderRadius: '6px', border: '1px solid #CBD5E1', fontWeight: 600 }}>
+                        <span style={{ fontSize: '9.5px', background: '#F1F5F9', color: '#475569', padding: '1px 6px', borderRadius: '9999px', border: '1px solid #CBD5E1', fontWeight: 600 }}>
                           {cookingYieldInfo}
                         </span>
                       )}
@@ -180,7 +180,7 @@ export function CoachSwapFoodModal({
                     style={{
                       height: '28px',
                       padding: '0 12px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       background: '#673DE6',
                       color: '#FFFFFF',
                       border: 'none',
@@ -212,7 +212,7 @@ export function CoachAddFoodModal({
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '16px' }} dir="rtl">
-      <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '85vh', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)' }}>
+      <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '85vh', boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
           <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#0F172A' }}>إضافة صنف غذائي</h4>
           <button type="button" onClick={() => setAddFoodModal({ open: false, mealId: null })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748B' }}><X size={15} /></button>
@@ -223,7 +223,7 @@ export function CoachAddFoodModal({
           placeholder="ابحث باسم الصنف الغذائي..."
           value={foodModalSearch}
           onChange={(e) => setFoodModalSearch(e.target.value)}
-          style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 14px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
+          style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 14px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
         />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '320px', overflowY: 'auto' }}>
@@ -246,7 +246,7 @@ export function CoachAddFoodModal({
                 <div
                   key={fd.code}
                   onClick={() => handleAddFoodToMeal(addFoodModal.mealId, fd)}
-                  style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                  style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                 >
                   <div>
                     <strong style={{ fontSize: '11.5px', color: '#0F172A', display: 'block' }}>{fd.name}</strong>
@@ -254,7 +254,7 @@ export function CoachAddFoodModal({
                       حصة معتمدة: <strong style={{ color: '#0F172A' }}>{fd.amount} {fd.unit}</strong> ({portionCal} kcal) • P: {portionP}g • C: {portionC}g • F: {portionF}g
                     </span>
                   </div>
-                  <button type="button" style={{ padding: '2px 7px', background: '#673DE6', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: 700 }}>+ إضافة</button>
+                  <button type="button" style={{ padding: '2px 7px', background: '#673DE6', color: '#FFFFFF', border: 'none', borderRadius: '9999px', fontSize: '10px', fontWeight: 700 }}>+ إضافة</button>
                 </div>
               );
             })}

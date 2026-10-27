@@ -121,7 +121,7 @@ export default function ClientOnlineRenewal() {
           width: '100%',
           maxWidth: '560px',
           background: '#FFFFFF',
-          borderRadius: '16px',
+          borderRadius: '24px',
           color: '#0F172A',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
           overflow: 'hidden',
@@ -139,7 +139,7 @@ export default function ClientOnlineRenewal() {
           <div style={{
             width: '52px',
             height: '52px',
-            borderRadius: '14px',
+            borderRadius: '24px',
             background: 'linear-gradient(135deg, #D97706 0%, #F59E0B 100%)',
             display: 'flex',
             alignItems: 'center',
@@ -204,7 +204,7 @@ export default function ClientOnlineRenewal() {
           <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
             
             {/* 1. Client Identity */}
-            <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '16px' }}>
+            <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '20px', border: '1px solid #E2E8F0', marginBottom: '16px' }}>
               <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <User size={14} color="#0F172A" />
                 <span>بيانات المشترك:</span>
@@ -225,7 +225,7 @@ export default function ClientOnlineRenewal() {
                       width: '100%',
                       height: '36px',
                       padding: '0 10px',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       border: '1px solid #CBD5E1',
                       fontSize: '13px',
                       fontWeight: 800,
@@ -250,7 +250,7 @@ export default function ClientOnlineRenewal() {
                       width: '100%',
                       height: '36px',
                       padding: '0 10px',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       border: '1px solid #CBD5E1',
                       fontSize: '12px',
                       fontWeight: 700,
@@ -363,7 +363,7 @@ export default function ClientOnlineRenewal() {
                     style={{
                       flex: 1,
                       padding: '8px 4px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: paymentMethod === m.id ? '2px solid #0F172A' : '1px solid #E2E8F0',
                       background: paymentMethod === m.id ? '#0F172A' : '#FFFFFF',
                       color: paymentMethod === m.id ? '#FFFFFF' : '#475569',
@@ -391,7 +391,7 @@ export default function ClientOnlineRenewal() {
                       onClick={() => copyToClipboard('01001060503', 'instapay')}
                       style={{
                         padding: '6px 12px',
-                        borderRadius: '6px',
+                        borderRadius: '9999px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         color: '#0F172A',
@@ -421,7 +421,7 @@ export default function ClientOnlineRenewal() {
                       onClick={() => copyToClipboard('01001060503', 'vcash')}
                       style={{
                         padding: '6px 12px',
-                        borderRadius: '6px',
+                        borderRadius: '9999px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         color: '#0F172A',
@@ -451,7 +451,7 @@ export default function ClientOnlineRenewal() {
                       onClick={() => copyToClipboard('EG12000000000001001060503', 'bank')}
                       style={{
                         padding: '6px 12px',
-                        borderRadius: '6px',
+                        borderRadius: '9999px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         color: '#0F172A',
@@ -485,7 +485,7 @@ export default function ClientOnlineRenewal() {
                   width: '100%',
                   height: '38px',
                   padding: '0 10px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   border: '1px solid #CBD5E1',
                   fontSize: '12px',
                   outline: 'none',

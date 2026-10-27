@@ -1200,7 +1200,7 @@ export default function Customers() {
                       onClick={() => setPageSize(sz)}
                       style={{
                         padding: '2px 7px',
-                        borderRadius: '6px',
+                        borderRadius: '9999px',
                         border: '1px solid',
                         borderColor: pageSize === sz ? '#673DE6' : '#EAECF0',
                         background: pageSize === sz ? '#F4F0FD' : '#FFFFFF',
@@ -1256,7 +1256,7 @@ export default function Customers() {
                   style={{
                     height: '30px',
                     padding: '0 12px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: '1px solid #D0D5DD',
                     background: currentPage === totalPages ? '#F9FAFB' : '#FFFFFF',
                     color: currentPage === totalPages ? '#98A2B3' : '#344054',

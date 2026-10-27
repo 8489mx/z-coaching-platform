@@ -157,7 +157,7 @@ export function MilestoneProgressCardModal({
       <div
         style={{
           background: '#FFFFFF',
-          borderRadius: '16px',
+          borderRadius: '24px',
           width: '100%',
           maxWidth: '780px',
           maxHeight: '92vh',
@@ -210,7 +210,7 @@ export function MilestoneProgressCardModal({
           <div
             style={{
               background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #064E3B 100%)',
-              borderRadius: '16px',
+              borderRadius: '24px',
               padding: '24px',
               color: '#FFFFFF',
               boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)',
@@ -230,13 +230,13 @@ export function MilestoneProgressCardModal({
                   شهادة التميز والإنجاز الفسيولوجي المتقدم
                 </h3>
               </div>
-              <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#CBD5E1' }}>
+              <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '9999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#CBD5E1' }}>
                 {weeksCount} أسابيع مكتملة
               </span>
             </div>
 
             {/* Trainee Identity */}
-            <div style={{ background: 'rgba(30, 41, 59, 0.6)', borderRadius: '12px', padding: '12px 16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ background: 'rgba(30, 41, 59, 0.6)', borderRadius: '20px', padding: '12px 16px', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div style={{ fontSize: '16px', fontWeight: 800, color: '#F8FAFC' }}>
                 {clientName} <span style={{ fontSize: '12px', color: '#94A3B8' }}>{clientCode}</span>
               </div>
@@ -248,7 +248,7 @@ export function MilestoneProgressCardModal({
             {/* KPI Badges */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
               
-              <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '12px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '20px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <span style={{ fontSize: '10.5px', color: '#94A3B8', display: 'block' }}>إجمالي نزول الوزن</span>
                 <strong style={{ fontSize: '20px', color: '#10B981', fontFamily: 'JetBrains Mono', display: 'block', marginTop: '2px' }}>
                   -{weightDropKg} كجم
@@ -256,7 +256,7 @@ export function MilestoneProgressCardModal({
                 <span style={{ fontSize: '9.5px', color: '#6EE7B7' }}>كتلة دهنية صافية</span>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '12px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '20px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <span style={{ fontSize: '10.5px', color: '#94A3B8', display: 'block' }}>انخفاض محيط الخصر</span>
                 <strong style={{ fontSize: '20px', color: '#38BDF8', fontFamily: 'JetBrains Mono', display: 'block', marginTop: '2px' }}>
                   -{waistDropCm} سم
@@ -264,7 +264,7 @@ export function MilestoneProgressCardModal({
                 <span style={{ fontSize: '9.5px', color: '#BAE6FD' }}>انكماش الدهون الحشوية</span>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '12px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '20px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <span style={{ fontSize: '10.5px', color: '#94A3B8', display: 'block' }}>الالتزام التراكمي</span>
                 <strong style={{ fontSize: '20px', color: '#F59E0B', fontFamily: 'JetBrains Mono', display: 'block', marginTop: '2px' }}>
                   {avgAdherence}%
@@ -272,7 +272,7 @@ export function MilestoneProgressCardModal({
                 <span style={{ fontSize: '9.5px', color: '#FDE68A' }}>انضباط غذائي وتدريبي</span>
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '12px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '20px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <span style={{ fontSize: '10.5px', color: '#94A3B8', display: 'block' }}>الجاهزية والتعافي</span>
                 <strong style={{ fontSize: '20px', color: '#A855F7', fontFamily: 'JetBrains Mono', display: 'block', marginTop: '2px' }}>
                   {avgReadiness} / 5
@@ -317,7 +317,7 @@ export function MilestoneProgressCardModal({
             onClick={onClose}
             style={{
               padding: '8px 16px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #CBD5E1',
               background: '#FFFFFF',
               color: '#475569',
@@ -335,7 +335,7 @@ export function MilestoneProgressCardModal({
               onClick={handleCopyWhatsApp}
               style={{
                 padding: '8px 16px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: '1px solid #BBF7D0',
                 background: '#F0FDF4',
                 color: '#16A34A',
@@ -356,7 +356,7 @@ export function MilestoneProgressCardModal({
               onClick={handleDownloadSvg}
               style={{
                 padding: '8px 18px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: 'none',
                 background: '#673DE6',
                 boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)',

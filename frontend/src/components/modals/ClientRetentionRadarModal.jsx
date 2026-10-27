@@ -68,7 +68,7 @@ export default function ClientRetentionRadarModal({
         dir="rtl"
         style={{
           background: '#FFFFFF',
-          borderRadius: '16px',
+          borderRadius: '24px',
           width: '100%',
           maxWidth: '560px',
           maxHeight: '90vh',
@@ -96,7 +96,7 @@ export default function ClientRetentionRadarModal({
               color: '#FFFFFF', 
               width: '32px', 
               height: '32px', 
-              borderRadius: '8px', 
+              borderRadius: '9999px', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center' 
@@ -118,7 +118,7 @@ export default function ClientRetentionRadarModal({
             style={{
               border: 'none',
               background: '#F1F5F9',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               width: '28px',
               height: '28px',
               display: 'flex',
@@ -139,7 +139,7 @@ export default function ClientRetentionRadarModal({
           <div style={{
             background: badgeBg,
             border: `1px solid ${badgeBorder}`,
-            borderRadius: '12px',
+            borderRadius: '20px',
             padding: '16px',
             display: 'flex',
             alignItems: 'center',
@@ -153,7 +153,7 @@ export default function ClientRetentionRadarModal({
                 gap: '4px',
                 background: '#FFFFFF',
                 padding: '2px 8px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 fontSize: '10.5px',
                 fontWeight: 800,
                 color: badgeColor,
@@ -282,7 +282,7 @@ export default function ClientRetentionRadarModal({
           <div style={{
             background: '#FFFFFF',
             border: '1px solid #E2E8F0',
-            borderRadius: '12px',
+            borderRadius: '20px',
             padding: '14px'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -295,7 +295,7 @@ export default function ClientRetentionRadarModal({
                 style={{
                   background: copied ? '#ECFDF5' : '#FFFFFF',
                   border: copied ? '1px solid #A7F3D0' : '1px solid #CBD5E1',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   padding: '3px 8px',
                   fontSize: '10px',
                   fontWeight: 700,
@@ -314,7 +314,7 @@ export default function ClientRetentionRadarModal({
             <div style={{
               background: '#FFFFFF',
               border: '1px solid #E2E8F0',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               padding: '10px',
               fontSize: '11px',
               color: '#334155',
@@ -332,7 +332,7 @@ export default function ClientRetentionRadarModal({
                   background: '#25D366',
                   color: '#FFFFFF',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   padding: '8px 16px',
                   fontSize: '11.5px',
                   fontWeight: 800,

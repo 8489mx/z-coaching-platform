@@ -263,9 +263,9 @@ export default function IntakeAuditDetailModal({
   };
 
   const Section = ({ title, children }) => (
-    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
+    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '12px', marginBottom: '12px' }}>
       <h3 style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <span style={{ width: '4px', height: '14px', background: '#0284C7', borderRadius: '4px', display: 'inline-block' }} />
+        <span style={{ width: '4px', height: '14px', background: '#0284C7', borderRadius: '9999px', display: 'inline-block' }} />
         {title}
       </h3>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -295,7 +295,7 @@ export default function IntakeAuditDetailModal({
       <div 
         style={{
           background: '#F8FAFC',
-          borderRadius: '16px',
+          borderRadius: '24px',
           width: '840px',
           maxWidth: '96vw',
           maxHeight: '94vh',
@@ -311,7 +311,7 @@ export default function IntakeAuditDetailModal({
             <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
               مراجعة الاستمارة: {clientName}
             </h4>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', fontWeight: 800, background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '8px' }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', fontWeight: 800, background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '9999px' }}>
               #{clientCode}
             </span>
           </div>
@@ -322,7 +322,7 @@ export default function IntakeAuditDetailModal({
                 onClick={handleOpenWhatsApp}
                 style={{
                   padding: '4px 10px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #E2E8F0', background: 'transparent',
                   color: '#16A34A',
                   fontSize: '11.5px',
@@ -343,7 +343,7 @@ export default function IntakeAuditDetailModal({
               style={{
                 width: '28px',
                 height: '28px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 border: '1px solid #E2E8F0',
                 background: '#F8FAFC',
                 color: '#64748B',
@@ -366,7 +366,7 @@ export default function IntakeAuditDetailModal({
             gridColumn: '1 / -1',
             background: '#FFFFFF',
             border: '1px solid #E2E8F0',
-            borderRadius: '12px',
+            borderRadius: '20px',
             padding: '14px 16px',
             display: 'flex',
             flexDirection: 'column',
@@ -378,7 +378,7 @@ export default function IntakeAuditDetailModal({
                 <div style={{
                   width: '28px',
                   height: '28px',
-                  borderRadius: '7px',
+                  borderRadius: '9999px',
                   background: '#F4F0FD',
                   color: '#673DE6',
                   display: 'flex',
@@ -402,7 +402,7 @@ export default function IntakeAuditDetailModal({
                   fontSize: '11px',
                   fontWeight: 800,
                   padding: '3px 10px',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   background: preflight.has_injuries || preflight.has_medical_conditions ? '#FFFBEB' : '#ECFDF3',
                   color: preflight.has_injuries || preflight.has_medical_conditions ? '#B54708' : '#027A48',
                   border: `1px solid ${preflight.has_injuries || preflight.has_medical_conditions ? '#FEDF89' : '#A6F4C5'}`
@@ -417,7 +417,7 @@ export default function IntakeAuditDetailModal({
                     style={{
                       height: '32px',
                       padding: '0 14px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: 'none',
                       background: '#673DE6',
                       color: '#FFFFFF',
@@ -439,25 +439,25 @@ export default function IntakeAuditDetailModal({
 
             {/* Metrics Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '9999px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                 <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 600 }}>السعرات المستهدفة</span>
                 <strong style={{ fontSize: '13px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
                   {preflight.targets.calories.toLocaleString()} kcal
                 </strong>
               </div>
-              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '9999px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                 <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 600 }}>البروتين المقترح</span>
                 <strong style={{ fontSize: '13px', color: '#027A48', fontFamily: 'JetBrains Mono, monospace' }}>
                   {preflight.targets.protein_g}g
                 </strong>
               </div>
-              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '9999px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                 <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 600 }}>الكاربوهيدرات</span>
                 <strong style={{ fontSize: '13px', color: '#B54708', fontFamily: 'JetBrains Mono, monospace' }}>
                   {preflight.targets.carbs_g}g
                 </strong>
               </div>
-              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '9999px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
                 <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 600 }}>الدهون الصحية</span>
                 <strong style={{ fontSize: '13px', color: '#673DE6', fontFamily: 'JetBrains Mono, monospace' }}>
                   {preflight.targets.fats_g}g
@@ -470,7 +470,7 @@ export default function IntakeAuditDetailModal({
               <div style={{
                 background: '#FEF3F2',
                 border: '1px solid #FECDCA',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 padding: '9px 12px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -495,7 +495,7 @@ export default function IntakeAuditDetailModal({
               <div style={{
                 background: '#EFF8FF',
                 border: '1px solid #B2DDFF',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 padding: '8px 12px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -592,15 +592,15 @@ export default function IntakeAuditDetailModal({
                   { key: 'back', title: 'الخلف', src: answers.media_uploads?.back_url },
                   { key: 'inbody', title: 'InBody', src: answers.media_uploads?.inbody_report_url }
                 ].map(item => (
-                  <div key={item.key} style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '6px', textAlign: 'center', height: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <div key={item.key} style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '6px', textAlign: 'center', height: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                     <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>{item.title}</span>
                     {item.src ? (
                       <div 
-                        style={{ position: 'relative', width: '100%', flex: 1, borderRadius: '6px', overflow: 'hidden', cursor: 'pointer' }}
+                        style={{ position: 'relative', width: '100%', flex: 1, borderRadius: '9999px', overflow: 'hidden', cursor: 'pointer' }}
                         onClick={() => setPreviewImage({ title: `صورة ${item.title}`, src: item.src })}
                       >
                         <img src={item.src} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.8)', color: '#FFFFFF', padding: '4px', borderRadius: '6px', display: 'flex' }}>
+                        <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.8)', color: '#FFFFFF', padding: '4px', borderRadius: '9999px', display: 'flex' }}>
                           <ZoomIn size={10} />
                         </div>
                       </div>
@@ -615,7 +615,7 @@ export default function IntakeAuditDetailModal({
 
             <Section title="7) الموافقة القانونية (PDPL)">
               {answers.health_data_consent?.accepted ? (
-                <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: '8px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: '9999px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <strong style={{ fontSize: '11.5px', color: '#065F46' }}>وافق على الشروط</strong>
                   <span style={{ fontSize: '10.5px', color: '#047857' }}>
                     تاريخ الموافقة: {answers.health_data_consent.accepted_at}<br/>
@@ -636,7 +636,7 @@ export default function IntakeAuditDetailModal({
             onClick={onClose}
             style={{
               padding: '6px 14px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #CBD5E1',
               background: '#FFFFFF',
               color: '#475569',
@@ -660,7 +660,7 @@ export default function IntakeAuditDetailModal({
                     }}
                     style={{
                       padding: '8px 16px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: '1px solid #93C5FD',
                       background: '#EFF6FF',
                       color: '#1D4ED8',
@@ -685,7 +685,7 @@ export default function IntakeAuditDetailModal({
                     disabled={generatingId === submission.id}
                     style={{
                       padding: '8px 18px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: 'none',
                       background: '#673DE6',
                       color: '#FFFFFF',

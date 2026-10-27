@@ -11,7 +11,7 @@ export default function PublicPricingJoin() {
     <div style={{ minHeight: '100vh', background: 'linear-gradient(175deg, #0F172A 0%, #1E293B 100%)', color: '#FFFFFF', direction: 'rtl', fontFamily: 'Alexandria, Cairo, sans-serif', padding: '60px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ maxWidth: '540px', width: '100%', background: '#FFFFFF', color: '#0F172A', borderRadius: '24px', padding: '40px 28px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
         
-        <div style={{ width: '68px', height: '68px', borderRadius: '16px', background: 'linear-gradient(135deg, #D97706 0%, #F59E0B 100%)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto', fontWeight: 900, fontSize: '1.4rem' }}>
+        <div style={{ width: '68px', height: '68px', borderRadius: '24px', background: 'linear-gradient(135deg, #D97706 0%, #F59E0B 100%)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto', fontWeight: 900, fontSize: '1.4rem' }}>
           KZ
         </div>
 
@@ -45,7 +45,7 @@ export default function PublicPricingJoin() {
                   background: '#16A34A',
                   color: '#FFFFFF',
                   padding: '13px 20px',
-                  borderRadius: '12px',
+                  borderRadius: '20px',
                   textDecoration: 'none',
                   fontWeight: 800,
                   fontSize: '0.92rem',
@@ -70,7 +70,7 @@ export default function PublicPricingJoin() {
               background: '#FEF3C7',
               color: '#92400E',
               padding: '11px 20px',
-              borderRadius: '12px',
+              borderRadius: '20px',
               border: '1px solid #FDE68A',
               cursor: 'pointer',
               fontWeight: 800,
@@ -91,7 +91,7 @@ export default function PublicPricingJoin() {
               background: '#F1F5F9',
               color: '#334155',
               padding: '11px 20px',
-              borderRadius: '12px',
+              borderRadius: '20px',
               border: 'none',
               cursor: 'pointer',
               fontWeight: 700,

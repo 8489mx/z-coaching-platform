@@ -286,7 +286,7 @@ export default function ClientTimelineProfile() {
           <div style={{
             background: '#FFFFFF',
             border: '1px solid #EAECF0',
-            borderRadius: '16px',
+            borderRadius: '24px',
             padding: '16px 20px',
             boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)',
             display: 'flex',
@@ -305,7 +305,7 @@ export default function ClientTimelineProfile() {
                   style={{
                     background: '#F8FAFC',
                     border: '1px solid #D0D5DD',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     width: '34px',
                     height: '34px',
                     display: 'flex',
@@ -337,28 +337,28 @@ export default function ClientTimelineProfile() {
                         background: fasting.primaryFastingBadge.bg,
                         border: `1px solid ${fasting.primaryFastingBadge.border}`,
                         padding: '2px 8px',
-                        borderRadius: '6px'
+                        borderRadius: '9999px'
                       }}>
                         {fasting.primaryFastingBadge.label}
                       </span>
                     )}
 
                     {isFrozen ? (
-                      <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A' }}>
+                      <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '9999px', background: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A' }}>
                         مجمد مؤقتاً
                       </span>
                     ) : isExpired ? (
-                      <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
+                      <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '9999px', background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
                         منتهي الصلاحية
                       </span>
                     ) : (
-                      <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
+                      <span style={{ fontSize: '10.5px', fontWeight: 800, padding: '2px 8px', borderRadius: '9999px', background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' }}>
                         نشط {daysRemaining !== undefined ? `· ${daysRemaining} يوم متبقي` : ''}
                       </span>
                     )}
 
                     {client?.injuries && client.injuries.length > 0 && (
-                      <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '6px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '10.5px', padding: '2px 8px', borderRadius: '9999px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         <ShieldAlert size={12} />
                         <span>إصابة: {client.injuries.join('، ')}</span>
                       </span>
@@ -389,7 +389,7 @@ export default function ClientTimelineProfile() {
                     style={{
                       height: '28px',
                       padding: '0 10px',
-                      borderRadius: '7px',
+                      borderRadius: '9999px',
                       border: '1px solid #D0D5DD',
                       background: prevClient ? '#FFFFFF' : '#F1F5F9',
                       color: prevClient ? '#101828' : '#94A3B8',
@@ -421,7 +421,7 @@ export default function ClientTimelineProfile() {
                     style={{
                       height: '28px',
                       padding: '0 10px',
-                      borderRadius: '7px',
+                      borderRadius: '9999px',
                       border: '1px solid #D0D5DD',
                       background: nextClient ? '#FFFFFF' : '#F1F5F9',
                       color: nextClient ? '#101828' : '#94A3B8',
@@ -464,7 +464,7 @@ export default function ClientTimelineProfile() {
                   border: copiedSummary ? '1px solid #A6F4C7' : '1px solid #D0D5DD',
                   color: copiedSummary ? '#027A48' : '#344054',
                   padding: '0 14px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   fontSize: '12px',
                   fontWeight: 800,
                   cursor: 'pointer',
@@ -491,7 +491,7 @@ export default function ClientTimelineProfile() {
                   color: '#FFFFFF',
                   border: 'none',
                   padding: '0 16px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   fontSize: '12px',
                   fontWeight: 800,
                   textDecoration: 'none',
@@ -517,7 +517,7 @@ export default function ClientTimelineProfile() {
                   border: '1px solid #D0D5DD',
                   color: '#344054',
                   padding: '0 14px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   fontSize: '12px',
                   fontWeight: 800,
                   textDecoration: 'none',
@@ -544,7 +544,7 @@ export default function ClientTimelineProfile() {
                   border: '1px solid #D0D5DD',
                   color: '#344054',
                   padding: '0 14px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   fontSize: '12px',
                   fontWeight: 800,
                   cursor: 'pointer',
@@ -574,7 +574,7 @@ export default function ClientTimelineProfile() {
                     border: '1px solid #BBF7D0',
                     color: '#166534',
                     padding: '0 14px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     fontSize: '12px',
                     fontWeight: 800,
                     textDecoration: 'none',
@@ -592,7 +592,7 @@ export default function ClientTimelineProfile() {
           </div>
 
           {phaseMessage && (
-            <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', padding: '10px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 800, textAlign: 'center' }}>
+            <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', padding: '10px 16px', borderRadius: '9999px', fontSize: '12px', fontWeight: 800, textAlign: 'center' }}>
               {phaseMessage}
             </div>
           )}
@@ -604,7 +604,7 @@ export default function ClientTimelineProfile() {
             <div style={{
               background: '#FFFFFF',
               border: '1px solid #EAECF0',
-              borderRadius: '12px',
+              borderRadius: '20px',
               padding: '16px 18px',
               display: 'flex',
               flexDirection: 'column',
@@ -616,7 +616,7 @@ export default function ClientTimelineProfile() {
                 <div style={{
                   width: '26px',
                   height: '26px',
-                  borderRadius: '7px',
+                  borderRadius: '9999px',
                   background: '#EFF6FF',
                   display: 'flex',
                   alignItems: 'center',
@@ -630,7 +630,7 @@ export default function ClientTimelineProfile() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 {/* Phone */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '9px 12px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '9px 12px' }}>
                   <span style={{ fontSize: '11px', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '2px' }}>رقم الهاتف:</span>
                   <strong dir="ltr" style={{ fontSize: '12.5px', color: '#101828', fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, display: 'block', textAlign: 'right' }}>
                     {client?.phone_number || '--'}
@@ -638,7 +638,7 @@ export default function ClientTimelineProfile() {
                 </div>
 
                 {/* Subscription Days */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '9px 12px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '9px 12px' }}>
                   <span style={{ fontSize: '11px', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '2px' }}>فترة الاشتراك:</span>
                   <strong style={{ fontSize: '12.5px', color: '#101828', fontWeight: 800 }}>
                     {daysRemaining !== undefined ? `${daysRemaining} يوم متبقي` : 'ساري'}
@@ -646,7 +646,7 @@ export default function ClientTimelineProfile() {
                 </div>
 
                 {/* Current Weight */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '9px 12px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '9px 12px' }}>
                   <span style={{ fontSize: '11px', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '2px' }}>الوزن الحالي المسجل:</span>
                   <strong style={{ fontSize: '13px', color: '#101828', fontFamily: 'JetBrains Mono, monospace', fontWeight: 800 }}>
                     {currentWeightDisplay ? `${currentWeightDisplay} كجم` : '--'}
@@ -654,7 +654,7 @@ export default function ClientTimelineProfile() {
                 </div>
 
                 {/* Checkin Weeks */}
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '9px 12px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '9px 12px' }}>
                   <span style={{ fontSize: '11px', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '2px' }}>إجمالي التقييمات:</span>
                   <strong style={{ fontSize: '12.5px', color: '#16A34A', fontWeight: 800 }}>
                     {checkins.length} أسابيع متابعة
@@ -667,7 +667,7 @@ export default function ClientTimelineProfile() {
             <div style={{
               background: '#FFFFFF',
               border: '1px solid #EAECF0',
-              borderRadius: '12px',
+              borderRadius: '20px',
               padding: '16px 18px',
               display: 'flex',
               flexDirection: 'column',
@@ -679,7 +679,7 @@ export default function ClientTimelineProfile() {
                   <div style={{
                     width: '26px',
                     height: '26px',
-                    borderRadius: '7px',
+                    borderRadius: '9999px',
                     background: '#FAF5FF',
                     display: 'flex',
                     alignItems: 'center',
@@ -697,7 +697,7 @@ export default function ClientTimelineProfile() {
                     style={{
                       background: '#FFFFFF',
                       border: '1px solid #D0D5DD',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       padding: '4px 10px',
                       fontSize: '11.5px',
                       fontWeight: 800,
@@ -730,7 +730,7 @@ export default function ClientTimelineProfile() {
                           onClick={() => handlePhaseChange(phase.id)}
                           style={{
                             padding: '9px 10px',
-                            borderRadius: '8px',
+                            borderRadius: '9999px',
                             border: isSelected ? `1.5px solid ${phase.color}` : '1px solid #E2E8F0',
                             background: isSelected ? phase.bg : '#F8FAFC',
                             cursor: 'pointer',
@@ -785,7 +785,7 @@ export default function ClientTimelineProfile() {
                         <div style={{
                           width: '36px',
                           height: '36px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           background: '#FFFFFF',
                           display: 'flex',
                           alignItems: 'center',
@@ -799,7 +799,7 @@ export default function ClientTimelineProfile() {
 
                       {/* Physiological Guidelines Micro-Grid (Fills space seamlessly) */}
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
+                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '8px 10px' }}>
                           <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '2px' }}>
                             بروتوكول التغذية المعتمد:
                           </span>
@@ -808,7 +808,7 @@ export default function ClientTimelineProfile() {
                           </span>
                         </div>
 
-                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '8px 10px' }}>
+                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9999px', padding: '8px 10px' }}>
                           <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 700, marginBottom: '2px' }}>
                             توجيه الحمل التدريبي:
                           </span>
@@ -829,7 +829,7 @@ export default function ClientTimelineProfile() {
           <div style={{
             background: '#FFFFFF',
             border: '1px solid #EAECF0',
-            borderRadius: '12px',
+            borderRadius: '20px',
             padding: '18px 20px',
             boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
           }}>
@@ -838,7 +838,7 @@ export default function ClientTimelineProfile() {
                 <div style={{
                   width: '26px',
                   height: '26px',
-                  borderRadius: '7px',
+                  borderRadius: '9999px',
                   background: '#F5F3FF',
                   display: 'flex',
                   alignItems: 'center',
@@ -860,7 +860,7 @@ export default function ClientTimelineProfile() {
                 background: photos.length > 0 ? '#F0FDF4' : '#F1F5F9',
                 border: photos.length > 0 ? '1px solid #BBF7D0' : '1px solid #E2E8F0',
                 padding: '3px 10px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 fontWeight: 800
               }}>
                 {photos.length} صور مرفوعة
@@ -920,16 +920,16 @@ export default function ClientTimelineProfile() {
                           <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700 }}>البداية (Baseline)</span>
                           {oldestPhoto ? (
                             <div 
-                              style={{ width: '100%', height: '140px', borderRadius: '8px', overflow: 'hidden', background: '#101828', position: 'relative', cursor: 'pointer' }}
+                              style={{ width: '100%', height: '140px', borderRadius: '9999px', overflow: 'hidden', background: '#101828', position: 'relative', cursor: 'pointer' }}
                               onClick={() => setPreviewPhoto({ title: `${title} - البداية`, url: oldestPhoto.photo_url || oldestPhoto.url })}
                             >
                               <img src={oldestPhoto.photo_url || oldestPhoto.url} alt="البداية" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '2px 4px', borderRadius: '6px', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                              <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '2px 4px', borderRadius: '9999px', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '2px' }}>
                                 <ZoomIn size={10} />
                               </div>
                             </div>
                           ) : (
-                            <div style={{ width: '100%', height: '140px', borderRadius: '8px', border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: '11px', background: '#FFFFFF' }}>
+                            <div style={{ width: '100%', height: '140px', borderRadius: '9999px', border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: '11px', background: '#FFFFFF' }}>
                               غير متوفرة
                             </div>
                           )}
@@ -940,16 +940,16 @@ export default function ClientTimelineProfile() {
                           <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 800 }}>الأحدث (Current)</span>
                           {latestPhoto ? (
                             <div 
-                              style={{ width: '100%', height: '140px', borderRadius: '8px', overflow: 'hidden', background: '#101828', position: 'relative', cursor: 'pointer', border: '1.5px solid #16A34A' }}
+                              style={{ width: '100%', height: '140px', borderRadius: '9999px', overflow: 'hidden', background: '#101828', position: 'relative', cursor: 'pointer', border: '1.5px solid #16A34A' }}
                               onClick={() => setPreviewPhoto({ title: `${title} - الأحدث`, url: latestPhoto.photo_url || latestPhoto.url })}
                             >
                               <img src={latestPhoto.photo_url || latestPhoto.url} alt="الأحدث" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '2px 4px', borderRadius: '6px', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                              <div style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.75)', color: '#FFFFFF', padding: '2px 4px', borderRadius: '9999px', fontSize: '9px', display: 'flex', alignItems: 'center', gap: '2px' }}>
                                 <ZoomIn size={10} />
                               </div>
                             </div>
                           ) : (
-                            <div style={{ width: '100%', height: '140px', borderRadius: '8px', border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: '11px', background: '#FFFFFF' }}>
+                            <div style={{ width: '100%', height: '140px', borderRadius: '9999px', border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: '11px', background: '#FFFFFF' }}>
                               غير متوفرة
                             </div>
                           )}
@@ -966,7 +966,7 @@ export default function ClientTimelineProfile() {
           <div style={{
             background: '#FFFFFF',
             border: '1px solid #EAECF0',
-            borderRadius: '12px',
+            borderRadius: '20px',
             padding: '18px 20px',
             boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
           }}>
@@ -975,7 +975,7 @@ export default function ClientTimelineProfile() {
                 <div style={{
                   width: '26px',
                   height: '26px',
-                  borderRadius: '7px',
+                  borderRadius: '9999px',
                   background: '#ECFDF5',
                   display: 'flex',
                   alignItems: 'center',
@@ -991,7 +991,7 @@ export default function ClientTimelineProfile() {
                   <span style={{ fontSize: '11px', color: '#64748B' }}>تتبع الوزن ومحيط الخصر ومؤشرات الاستشفاء أسبوعاً بأسبوع</span>
                 </div>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#475467', background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '3px 10px', borderRadius: '6px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#475467', background: '#F1F5F9', border: '1px solid #E2E8F0', padding: '3px 10px', borderRadius: '9999px' }}>
                 {checkins.length} تقييم مسجل
               </span>
             </div>
@@ -1055,7 +1055,7 @@ export default function ClientTimelineProfile() {
                             color: '#673DE6',
                             border: '1px solid #EDE8FA',
                             padding: '2px 9px',
-                            borderRadius: '6px'
+                            borderRadius: '9999px'
                           }}>
                             الأسبوع {item.week_number || (checkins.length - index)}
                           </span>
@@ -1072,7 +1072,7 @@ export default function ClientTimelineProfile() {
                             background: '#F8FAFC',
                             border: '1px solid #D0D5DD',
                             padding: '3px 10px',
-                            borderRadius: '6px',
+                            borderRadius: '9999px',
                             color: '#101828',
                             fontFamily: 'JetBrains Mono, monospace'
                           }}>
@@ -1083,7 +1083,7 @@ export default function ClientTimelineProfile() {
                               fontSize: '11px',
                               fontWeight: 800,
                               padding: '3px 8px',
-                              borderRadius: '6px',
+                              borderRadius: '9999px',
                               background: Number(weightDiff) < 0 ? '#ECFDF5' : (Number(weightDiff) > 0 ? '#FEF2F2' : '#F1F5F9'),
                               color: Number(weightDiff) < 0 ? '#16A34A' : (Number(weightDiff) > 0 ? '#DC2626' : '#64748B'),
                               border: Number(weightDiff) < 0 ? '1px solid #BBF7D0' : (Number(weightDiff) > 0 ? '1px solid #FECACA' : '1px solid #E2E8F0'),
@@ -1097,25 +1097,25 @@ export default function ClientTimelineProfile() {
 
                       {/* Biofeedback Metrics Grid */}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', fontSize: '11.5px' }}>
-                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '7px' }}>
+                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '9999px' }}>
                           <span style={{ color: '#64748B', fontWeight: 700 }}>الخصر: </span>
                           <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
                             {item.waist_circumference_cm ? `${item.waist_circumference_cm} سم` : '--'}
                           </strong>
                         </div>
-                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '7px' }}>
+                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '9999px' }}>
                           <span style={{ color: '#64748B', fontWeight: 700 }}>التزام الدايت: </span>
                           <strong style={{ color: '#16A34A', fontFamily: 'JetBrains Mono, monospace' }}>
                             {item.nutrition_adherence_percent || 100}%
                           </strong>
                         </div>
-                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '7px' }}>
+                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '9999px' }}>
                           <span style={{ color: '#64748B', fontWeight: 700 }}>جلسات التمرين: </span>
                           <strong style={{ color: '#101828' }}>
                             {item.workouts_completed || 0} أيام
                           </strong>
                         </div>
-                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '7px' }}>
+                        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '6px 10px', borderRadius: '9999px' }}>
                           <span style={{ color: '#64748B', fontWeight: 700 }}>الطاقة / النوم: </span>
                           <strong style={{ color: '#0284C7', fontFamily: 'JetBrains Mono, monospace' }}>
                             {item.biofeedback?.energyLevel || 7}/10 • {item.biofeedback?.sleepQuality || 7}/10
@@ -1128,7 +1128,7 @@ export default function ClientTimelineProfile() {
                         <div style={{
                           background: '#EFF6FF',
                           border: '1px solid #BFDBFE',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           padding: '8px 12px',
                           fontSize: '11.5px',
                           color: '#1E40AF',
@@ -1172,7 +1172,7 @@ export default function ClientTimelineProfile() {
             <div 
               style={{
                 background: '#FFFFFF',
-                borderRadius: '12px',
+                borderRadius: '20px',
                 maxWidth: '600px',
                 width: '100%',
                 maxHeight: '90vh',
@@ -1197,7 +1197,7 @@ export default function ClientTimelineProfile() {
                 <img 
                   src={previewPhoto.url} 
                   alt={previewPhoto.title} 
-                  style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain', borderRadius: '8px' }} 
+                  style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain', borderRadius: '9999px' }} 
                 />
               </div>
             </div>
