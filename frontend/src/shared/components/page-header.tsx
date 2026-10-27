@@ -51,7 +51,7 @@ export function PageHeader({
                     justifyContent: 'center',
                     width: '32px',
                     height: '32px',
-                    borderRadius: '9999px',
+                    borderRadius: '12px',
                     border: '1px solid #D0D5DD',
                     background: '#FFFFFF',
                     cursor: 'pointer',

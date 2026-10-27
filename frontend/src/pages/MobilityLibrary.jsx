@@ -412,7 +412,7 @@ export default function MobilityLibrary() {
               style={{
                 height: '34px',
                 padding: '0 14px',
-                borderRadius: '9999px',
+                borderRadius: '10px',
                 background: '#673DE6', color: '#FFFFFF',
                 border: 'none',
                 fontSize: '12px',
@@ -434,7 +434,7 @@ export default function MobilityLibrary() {
         <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '20px', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
             {/* Primary Category Tabs */}
-            <div style={{ display: 'inline-flex', gap: '3px', background: '#F2F4F7', padding: '3px', borderRadius: '9999px', border: '1px solid #EAECF0', flexWrap: 'wrap' }}>
+            <div style={{ display: 'inline-flex', gap: '3px', background: '#F2F4F7', padding: '3px', borderRadius: '10px', border: '1px solid #EAECF0', flexWrap: 'wrap' }}>
               {tabs.map((t) => {
                 const Icon = t.icon;
                 const isSel = activeTab === t.id;
@@ -445,7 +445,7 @@ export default function MobilityLibrary() {
                     onClick={() => setActiveTab(t.id)}
                     style={{
                       padding: '6px 14px',
-                      borderRadius: '9999px',
+                      borderRadius: '10px',
                       fontSize: '12px',
                       fontWeight: 600,
                       border: 'none',
@@ -466,7 +466,7 @@ export default function MobilityLibrary() {
                       fontSize: '10px',
                       fontWeight: 800,
                       padding: '1px 6px',
-                      borderRadius: '9999px',
+                      borderRadius: '10px',
                       background: isSel ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
                       color: isSel ? '#FFFFFF' : '#475569'
                     }}>
@@ -489,7 +489,7 @@ export default function MobilityLibrary() {
                 style={{
                   height: '34px',
                   padding: '0 14px',
-                  borderRadius: '9999px',
+                  borderRadius: '10px',
                   background: '#FFFFFF',
                   border: '1px solid #CBD5E1',
                   color: '#475569',
@@ -543,7 +543,7 @@ export default function MobilityLibrary() {
                     onClick={() => setSelectedArea(a.id)}
                     style={{
                       padding: '5px 12px',
-                      borderRadius: '9999px',
+                      borderRadius: '10px',
                       fontSize: '11px',
                       fontWeight: selectedArea === a.id ? 800 : 600,
                       border: selectedArea === a.id ? '1px solid #0F172A' : '1px solid #CBD5E1',
@@ -622,7 +622,7 @@ export default function MobilityLibrary() {
                         style={{
                           width: '24px',
                           height: '24px',
-                          borderRadius: '9999px',
+                          borderRadius: '10px',
                           border: '1px solid #CBD5E1',
                           background: '#FFFFFF',
                           color: '#64748B',
@@ -666,7 +666,7 @@ export default function MobilityLibrary() {
                           border: '1px solid #CBD5E1',
                           color: '#0F172A',
                           padding: '1.5px 6px',
-                          borderRadius: '9999px',
+                          borderRadius: '10px',
                           fontSize: '10px',
                           fontWeight: 700,
                           display: 'inline-flex',
@@ -683,7 +683,7 @@ export default function MobilityLibrary() {
                           border: '1px solid #EAECF0',
                           color: '#475569',
                           padding: '1.5px 6px',
-                          borderRadius: '9999px',
+                          borderRadius: '10px',
                           fontSize: '10px',
                           fontWeight: 600,
                           display: 'inline-flex',
@@ -736,7 +736,7 @@ export default function MobilityLibrary() {
                           style={{
                             flex: 1,
                             height: '28px',
-                            borderRadius: '9999px',
+                            borderRadius: '10px',
                             border: '1px solid #D0D5DD',
                             background: '#FFFFFF',
                             color: '#0F172A',
@@ -764,7 +764,7 @@ export default function MobilityLibrary() {
                           style={{
                             width: '28px',
                             height: '28px',
-                            borderRadius: '9999px',
+                            borderRadius: '10px',
                             border: copiedId === `video_${drill.id}` ? '1px solid #86EFAC' : '1px solid #D0D5DD',
                             background: copiedId === `video_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
                             color: copiedId === `video_${drill.id}` ? '#16A34A' : '#64748B',
@@ -797,8 +797,7 @@ export default function MobilityLibrary() {
                           type="button"
                           onClick={() => handleCopyDirect(drill.cue_ar, `CUES_${drill.id}`, 'تم نسخ التوجيه الحركي')}
                           style={{
-                            padding: '2.5px 8px',
-                            borderRadius: '9999px',
+                            padding: '2.5px 8px', borderRadius: '8px',
                             border: copiedKey === `CUES_${drill.id}` ? '1px solid #86EFAC' : '1px solid #CBD5E1',
                             background: copiedKey === `CUES_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
                             color: copiedKey === `CUES_${drill.id}` ? '#16A34A' : '#334155',
@@ -834,8 +833,7 @@ export default function MobilityLibrary() {
                           type="button"
                           onClick={() => handleCopyDirect(drill.scientific_benefit_ar, `MISTAKES_${drill.id}`, 'تم نسخ الأثر الوقائي')}
                           style={{
-                            padding: '2.5px 8px',
-                            borderRadius: '9999px',
+                            padding: '2.5px 8px', borderRadius: '8px',
                             border: copiedKey === `MISTAKES_${drill.id}` ? '1px solid #86EFAC' : '1px solid #FDE68A',
                             background: copiedKey === `MISTAKES_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
                             color: copiedKey === `MISTAKES_${drill.id}` ? '#16A34A' : '#92400E',
@@ -871,8 +869,7 @@ export default function MobilityLibrary() {
                           type="button"
                           onClick={() => handleCopyDirect(drill.target_area_ar, `TARGET_${drill.id}`, 'تم نسخ منطقة التركيز')}
                           style={{
-                            padding: '2.5px 8px',
-                            borderRadius: '9999px',
+                            padding: '2.5px 8px', borderRadius: '8px',
                             border: copiedKey === `TARGET_${drill.id}` ? '1px solid #86EFAC' : '1px solid #BAE6FD',
                             background: copiedKey === `TARGET_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
                             color: copiedKey === `TARGET_${drill.id}` ? '#16A34A' : '#0284C7',
@@ -1035,7 +1032,7 @@ export default function MobilityLibrary() {
                 background: '#F8FAFC'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '9999px', background: '#673DE6', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#673DE6', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Edit3 size={14} />
                   </div>
                   <div>
@@ -1065,7 +1062,7 @@ export default function MobilityLibrary() {
               }}>
                 <Lock size={12} color="#1E40AF" />
                 <span>
-                  المعرف البرمجي للمحرك: <strong style={{ fontFamily: 'monospace', fontWeight: 800, background: '#DBEAFE', padding: '2px 6px', borderRadius: '9999px' }}>{editingDrill.id}</strong> (محمي وثابت لضمان تطابق الخطط للمشتركين)
+                  المعرف البرمجي للمحرك: <strong style={{ fontFamily: 'monospace', fontWeight: 800, background: '#DBEAFE', padding: '2px 6px', borderRadius: '10px' }}>{editingDrill.id}</strong> (محمي وثابت لضمان تطابق الخطط للمشتركين)
                 </span>
               </div>
 
@@ -1083,7 +1080,7 @@ export default function MobilityLibrary() {
                       required
                       value={editFormData.name_ar}
                       onChange={(e) => setEditFormData({ ...editFormData, name_ar: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                   <div>
@@ -1094,7 +1091,7 @@ export default function MobilityLibrary() {
                       type="text"
                       value={editFormData.name_en}
                       onChange={(e) => setEditFormData({ ...editFormData, name_en: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
@@ -1108,7 +1105,7 @@ export default function MobilityLibrary() {
                     <CurvedSelect
                       value={editFormData.category}
                       onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' }}
                     >
                       <option value="CARDIO_MODALITY">أنظمة الكارديو</option>
                       <option value="DYNAMIC_WARMUP">إحماء ومرونة ديناميكية</option>
@@ -1124,7 +1121,7 @@ export default function MobilityLibrary() {
                       type="text"
                       value={editFormData.equipment}
                       onChange={(e) => setEditFormData({ ...editFormData, equipment: e.target.value })}
-                      style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '34px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
@@ -1138,7 +1135,7 @@ export default function MobilityLibrary() {
                     type="text"
                     value={editFormData.target_area_ar}
                     onChange={(e) => setEditFormData({ ...editFormData, target_area_ar: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -1151,7 +1148,7 @@ export default function MobilityLibrary() {
                     rows={2}
                     value={editFormData.cue_ar}
                     onChange={(e) => setEditFormData({ ...editFormData, cue_ar: e.target.value })}
-                    style={{ width: '100%', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', fontFamily: 'Cairo, sans-serif' }}
+                    style={{ width: '100%', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '8px 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box', fontFamily: 'Cairo, sans-serif' }}
                   />
                 </div>
 
@@ -1165,12 +1162,12 @@ export default function MobilityLibrary() {
                     placeholder="https://..."
                     value={editFormData.video_url}
                     onChange={(e) => setEditFormData({ ...editFormData, video_url: e.target.value })}
-                    style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: '34px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '12px', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
 
                 {/* Dual Image Thumbnails Settings & Preview */}
-                <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '9999px', border: '1px solid #EAECF0' }}>
+                <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '10px', border: '1px solid #EAECF0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <div>
                       <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A' }}>
@@ -1192,7 +1189,7 @@ export default function MobilityLibrary() {
                       }}
                       style={{
                         padding: '4px 10px',
-                        borderRadius: '9999px',
+                        borderRadius: '10px',
                         border: '1px solid #CBD5E1',
                         background: '#FFFFFF',
                         fontSize: '11px',
@@ -1220,12 +1217,12 @@ export default function MobilityLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '9999px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '10px' }}>
                           1. وضع البداية (0.jpg)
                         </span>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#673DE6', color: '#FFFFFF', borderRadius: '9999px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#673DE6', color: '#FFFFFF', borderRadius: '10px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         <Upload size={12} />
                         <span>اختيار صورة من جهازك</span>
                         <input
@@ -1241,7 +1238,7 @@ export default function MobilityLibrary() {
                         placeholder="أو ضع مسار / رابط صورة البداية"
                         value={editFormData.image_stretch}
                         onChange={(e) => setEditFormData({ ...editFormData, image_stretch: e.target.value })}
-                        style={{ width: '100%', height: '28px', borderRadius: '9999px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '28px', borderRadius: '10px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1253,12 +1250,12 @@ export default function MobilityLibrary() {
                         ) : (
                           <span style={{ fontSize: '10px', color: '#94A3B8' }}>لا توجد صورة</span>
                         )}
-                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '9999px' }}>
+                        <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(15, 23, 42, 0.85)', color: '#FFF', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '10px' }}>
                           2. وضع الأداء (1.jpg)
                         </span>
                       </div>
 
-                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#673DE6', color: '#FFFFFF', borderRadius: '9999px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', background: '#673DE6', color: '#FFFFFF', borderRadius: '10px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
                         <Upload size={12} />
                         <span>اختيار صورة من جهازك</span>
                         <input
@@ -1274,7 +1271,7 @@ export default function MobilityLibrary() {
                         placeholder="أو ضع مسار / رابط صورة الأداء"
                         value={editFormData.image_contraction}
                         onChange={(e) => setEditFormData({ ...editFormData, image_contraction: e.target.value })}
-                        style={{ width: '100%', height: '28px', borderRadius: '9999px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '28px', borderRadius: '10px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
                   </div>
@@ -1285,14 +1282,14 @@ export default function MobilityLibrary() {
                   <button
                     type="button"
                     onClick={() => setEditingDrill(null)}
-                    style={{ padding: '8px 18px', borderRadius: '9999px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '8px 18px', borderRadius: '10px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     إلغاء
                   </button>
                   <button
                     type="submit"
                     disabled={savingEditDrill}
-                    style={{ padding: '8px 22px', borderRadius: '9999px', background: '#673DE6', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '8px 22px', borderRadius: '10px', background: '#673DE6', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     {savingEditDrill ? 'جاري الحفظ...' : 'حفظ التعديلات'}
                   </button>
@@ -1313,12 +1310,12 @@ export default function MobilityLibrary() {
               <form onSubmit={handleSaveNewDrill} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>الاسم بالعربي *</label>
-                  <input type="text" required placeholder="مثال: قفز الحبل السريع" value={newDrillData.name_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, name_ar: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }} />
+                  <input type="text" required placeholder="مثال: قفز الحبل السريع" value={newDrillData.name_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, name_ar: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>القسم</label>
-                    <CurvedSelect value={newDrillData.category} onChange={(e) => setNewDrillData(prev => ({ ...prev, category: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}>
+                    <CurvedSelect value={newDrillData.category} onChange={(e) => setNewDrillData(prev => ({ ...prev, category: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', fontWeight: 700, color: '#0F172A', outline: 'none', background: '#FFFFFF' }}>
                       <option value="CARDIO_MODALITY">أنظمة الكارديو</option>
                       <option value="DYNAMIC_WARMUP">إحماء ومرونة ديناميكية</option>
                       <option value="STATIC_STRETCH">إطالة استشفائية ثابتة</option>
@@ -1327,16 +1324,16 @@ export default function MobilityLibrary() {
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>المنطقة المستهدفة</label>
-                    <input type="text" placeholder="مثال: القلب وحرق الدهون" value={newDrillData.target_area_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, target_area_ar: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }} />
+                    <input type="text" placeholder="مثال: القلب وحرق الدهون" value={newDrillData.target_area_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, target_area_ar: e.target.value }))} style={{ width: '100%', height: '34px', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '0 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>توجيه الأداء</label>
-                  <textarea rows={2} placeholder="اكتب التوجيه الحركي باختصار..." value={newDrillData.cue_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, cue_ar: e.target.value }))} style={{ width: '100%', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '6px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', fontFamily: 'Cairo, sans-serif' }} />
+                  <textarea rows={2} placeholder="اكتب التوجيه الحركي باختصار..." value={newDrillData.cue_ar} onChange={(e) => setNewDrillData(prev => ({ ...prev, cue_ar: e.target.value }))} style={{ width: '100%', borderRadius: '10px', border: '1px solid #CBD5E1', padding: '6px 10px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box', fontFamily: 'Cairo, sans-serif' }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
-                  <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ padding: '6px 14px', borderRadius: '9999px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}>إلغاء</button>
-                  <button type="submit" disabled={savingNewDrill} style={{ padding: '6px 18px', borderRadius: '9999px', background: '#673DE6', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}>{savingNewDrill ? 'جاري الحفظ...' : 'حفظ'}</button>
+                  <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ padding: '6px 14px', borderRadius: '10px', background: '#F1F5F9', border: '1px solid #CBD5E1', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}>إلغاء</button>
+                  <button type="submit" disabled={savingNewDrill} style={{ padding: '6px 18px', borderRadius: '10px', background: '#673DE6', border: 'none', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}>{savingNewDrill ? 'جاري الحفظ...' : 'حفظ'}</button>
                 </div>
               </form>
             </div>
@@ -1353,7 +1350,7 @@ export default function MobilityLibrary() {
 
         {/* Notification Toast */}
         {notification && (
-          <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: '#673DE6', color: '#FFFFFF', padding: '8px 16px', borderRadius: '9999px', fontSize: '11.5px', fontWeight: 700, zIndex: 99999 }}>
+          <div style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: '#673DE6', color: '#FFFFFF', padding: '8px 16px', borderRadius: '10px', fontSize: '11.5px', fontWeight: 700, zIndex: 99999 }}>
             {notification}
           </div>
         )}

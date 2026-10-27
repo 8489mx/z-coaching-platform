@@ -972,9 +972,9 @@ export default function ExerciseLibrary() {
                           type="button"
                           onClick={() => openEditExerciseModal(ex)}
                           style={{
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '6px',
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '10px',
                             border: '1px solid #CBD5E1',
                             background: '#FFFFFF',
                             color: '#64748B',
@@ -1017,9 +1017,9 @@ export default function ExerciseLibrary() {
                             background: '#F1F5F9',
                             border: '1px solid #CBD5E1',
                             color: '#0F172A',
-                            padding: '1.5px 6px',
-                            borderRadius: '6px',
-                            fontSize: '10px',
+                            padding: '2px 8px',
+                            borderRadius: '8px',
+                            fontSize: '11px',
                             fontWeight: 700,
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -1034,10 +1034,10 @@ export default function ExerciseLibrary() {
                             background: '#F8FAFC',
                             border: '1px solid #EAECF0',
                             color: '#475569',
-                            padding: '1.5px 6px',
-                            borderRadius: '6px',
-                            fontSize: '10px',
-                            fontWeight: 600,
+                            padding: '2px 8px',
+                            borderRadius: '8px',
+                            fontSize: '11px',
+                            fontWeight: 700,
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '3px',
@@ -1128,8 +1128,8 @@ export default function ExerciseLibrary() {
                           onClick={() => setActiveVideo(ex)}
                           style={{
                             flex: 1,
-                            height: '28px',
-                            borderRadius: '8px',
+                            height: '32px',
+                            borderRadius: '10px',
                             border: '1px solid #D0D5DD',
                             background: '#FFFFFF',
                             color: '#0F172A',
@@ -1156,8 +1156,8 @@ export default function ExerciseLibrary() {
                           onClick={() => handleShareVideoLink(ex)}
                           style={{
                             width: '28px',
-                            height: '28px',
-                            borderRadius: '8px',
+                            height: '32px',
+                            borderRadius: '10px',
                             border: isVideoCopied ? '1px solid #86EFAC' : '1px solid #D0D5DD',
                             background: isVideoCopied ? '#F0FDF4' : '#FFFFFF',
                             color: isVideoCopied ? '#16A34A' : '#64748B',
@@ -1430,7 +1430,8 @@ export default function ExerciseLibrary() {
                 background: '#F8FAFC'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#673DE6', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '28px', height: '32px',
+                            borderRadius: '10px', background: '#673DE6', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Dumbbell size={14} />
                   </div>
                   <div>
@@ -1605,7 +1606,8 @@ export default function ExerciseLibrary() {
                         placeholder="أو ضع مسار / رابط صورة البداية"
                         value={newExerciseData.image_stretch}
                         onChange={(e) => setNewExerciseData({ ...newExerciseData, image_stretch: e.target.value })}
-                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '32px',
+                            borderRadius: '10px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1739,7 +1741,8 @@ export default function ExerciseLibrary() {
                 background: '#F8FAFC'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#673DE6', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '28px', height: '32px',
+                            borderRadius: '10px', background: '#673DE6', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Edit3 size={14} />
                   </div>
                   <div>
@@ -1912,7 +1915,8 @@ export default function ExerciseLibrary() {
                         placeholder="أو ضع مسار / رابط صورة البداية"
                         value={editFormData.image_stretch}
                         onChange={(e) => setEditFormData({ ...editFormData, image_stretch: e.target.value })}
-                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '32px',
+                            borderRadius: '10px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1945,7 +1949,8 @@ export default function ExerciseLibrary() {
                         placeholder="أو ضع مسار / رابط صورة الأداء"
                         value={editFormData.image_contraction}
                         onChange={(e) => setEditFormData({ ...editFormData, image_contraction: e.target.value })}
-                        style={{ width: '100%', height: '28px', borderRadius: '8px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '32px',
+                            borderRadius: '10px', border: '1px solid #EAECF0', padding: '0 8px', fontSize: '10px', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
                   </div>

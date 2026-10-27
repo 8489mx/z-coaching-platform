@@ -25,7 +25,7 @@ export function TierFilter({ value = 'ALL', onChange, counts = null, fullWidth =
         gap: '3px',
         background: '#F1F5F9',
         padding: '3px',
-        borderRadius: '9999px',
+        borderRadius: '12px',
         border: '1px solid #E2E8F0',
         boxSizing: 'border-box'
       }}
@@ -49,7 +49,7 @@ export function TierFilter({ value = 'ALL', onChange, counts = null, fullWidth =
               color: isSelected ? '#101828' : '#64748B',
               background: isSelected ? '#FFFFFF' : 'transparent',
               border: 'none',
-              borderRadius: '9999px',
+              borderRadius: '9px',
               cursor: 'pointer',
               boxShadow: isSelected ? '0 1px 3px rgba(16, 24, 40, 0.08)' : 'none',
               transition: 'all 0.15s ease',
@@ -67,7 +67,7 @@ export function TierFilter({ value = 'ALL', onChange, counts = null, fullWidth =
                   fontSize: '10px',
                   fontWeight: 700,
                   padding: '1px 5px',
-                  borderRadius: '9999px',
+                  borderRadius: '9px',
                   background: isSelected ? '#F1F5F9' : '#E2E8F0',
                   color: isSelected ? '#101828' : '#64748B',
                   fontFamily: 'JetBrains Mono, Cairo, sans-serif',

@@ -496,7 +496,7 @@ div.page-header,
 .page-header .button,
 .page-header-actions button,
 .page-header-actions a {
-  border-radius: 9999px !important;
+  border-radius: 12px !important;
 }
 
 /* ========================================================
@@ -535,7 +535,7 @@ input[type="text"].global-search-input {
   padding-inline-start: 14px !important;
   padding-inline-end: 34px !important;
   border: 1px solid #D0D5DD !important;
-  border-radius: 9999px !important;
+  border-radius: 12px !important;
   background: #FFFFFF !important;
   background-color: #FFFFFF !important;
   color: #111827 !important;
@@ -597,7 +597,7 @@ a.hostinger-btn-secondary,
 .btn-sm,
 input[type="button"],
 input[type="submit"] {
-  border-radius: 9999px !important;
+  border-radius: 12px !important;
 }
 
 /* Secondary Button Hostinger Pure Styling (White, Light Border, Subtle Shadow) */
@@ -605,7 +605,7 @@ button.btn-secondary,
 .btn-secondary,
 .button-secondary,
 .hostinger-btn-secondary {
-  border-radius: 9999px !important;
+  border-radius: 12px !important;
   border: 1px solid #D0D5DD !important;
   background: #FFFFFF !important;
   color: #344054 !important;
@@ -627,7 +627,7 @@ button.btn-primary,
 .btn-primary,
 .button-primary,
 .hostinger-btn-primary {
-  border-radius: 9999px !important;
+  border-radius: 12px !important;
   background: #673DE6 !important;
   border: 1px solid #673DE6 !important;
   color: #FFFFFF !important;
@@ -658,7 +658,10 @@ header .global-search-input,
 .app-layout header button,
 .app-layout header input,
 .app-layout header a,
-.app-layout header .btn,
+.app-layout header .btn {
+  border-radius: 12px !important;
+}
+
 .hostinger-badge,
 .h-badge,
 .badge,
@@ -666,7 +669,7 @@ header .global-search-input,
 .chip,
 .tag,
 .status-pill {
-  border-radius: 9999px !important;
+  border-radius: 8px !important;
 }
 
 .status-badge,
@@ -705,4 +708,28 @@ header .global-search-input,
   width: 100% !important;
   height: 100% !important;
   padding: 0 !important;
+}
+
+
+/* ========================================================
+   GOOGLE AI STUDIO SQUIRCLE ICON BUTTONS (SOFT ROUNDED SQUARE)
+   ======================================================== */
+.squircle-icon-btn,
+button.icon-btn,
+button.btn-icon,
+button[style*="width: 24px"],
+button[style*="width: 26px"],
+button[style*="width: 28px"],
+button[style*="width: 30px"],
+button[style*="width: 32px"],
+button[style*="width: 34px"],
+button[style*="width: 36px"],
+button[style*="width:24px"],
+button[style*="width:26px"],
+button[style*="width:28px"],
+button[style*="width:30px"],
+button[style*="width:32px"],
+button[style*="width:34px"],
+button[style*="width:36px"] {
+  border-radius: 10px !important;
 }

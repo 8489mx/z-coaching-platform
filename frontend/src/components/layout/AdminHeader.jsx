@@ -55,7 +55,7 @@ export function AdminHeader({ onOpenNewClient }) {
             padding: 0,
             width: '28px',
             height: '28px',
-            borderRadius: '9999px',
+            borderRadius: '8px',
             justifyContent: 'center',
             cursor: 'pointer',
             color: '#667085',
