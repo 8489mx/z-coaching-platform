@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2225/2225 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2232/2232 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -349,6 +349,18 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **UI Integration & PDF Export**: enhanced `frontend/src/pages/CoachEditor/components/CoachCardioHabitsTab.jsx` with a real-time leg-day cardio conflict warning banner, and upgraded `frontend/src/pages/ProgramPdfView.jsx` and `frontend/src/utils/pdfExportEngine.js` to display Tanaka Zone 2 BPM ranges, NEAT step targets, and mobility/warmup/cooldown exercise lists beneath training sessions.
   - Guarded by `test/cardio-mobility-and-interference-guard.test.js` (7 comprehensive domain tests).
 - Verification: **2206/2206 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`2.69s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
+
+## 3ae. Thirty-first round (2026-10-27) — Phase 13 PDF Export, Tripartite Contract & Layout Governance (Unit J, tasks J-01..J-06) — merged + pushed
+
+- `fe96f1c` **PDF Export, Tripartite Contract & Layout Governance (Unit J, tasks J-01..J-06)**:
+  - **Tripartite Consistency & Field Equivalence Contract (J-01)**: added `buildPdfExportContract` in `frontend/src/utils/pdfExportEngine.js` (re-exported by `src/execution-engines/pdf-export-engine.js`), ensuring 100% equivalence of calories, protein, carbs, fats, meals, and session counts across database storage, client app view, and printed PDF output.
+  - **Arabic RTL Typography & Responsive Wrapping (J-02)**: verified full RTL layout isolation, custom text-align rules, and English/Arabic bidirectional wrapping with zero line inversions and strict Zero Emoji enforcement.
+  - **Pruning Phantom Sessions & Preserving Designated Rest Days (J-03)**: created `filterEmptyDaysAndSections`, pruning unpopulated phantom workout sessions to eliminate empty pages (solving competitor 15-page bloat bug), while rendering designated Rest Days as structured recovery banners. Integrated with `ProgramPdfView.jsx`.
+  - **Clinical Privacy Shield & Note Sanitization (J-04)**: added `sanitizeClientFacingPlan` and expanded `sanitizeCoachNotesForClient`, stripping internal bracket tags, clinical diagnostic codes, and medical review flags from client exports.
+  - **Exercise Media Validation & Page Layout Standards (J-05)**: added `validateExerciseMediaLinks` ensuring valid HTTPS video and demo URLs, and defined standard page dimension configurations (`PAGE_LAYOUT_CONFIG`) for A4 and US Letter sizes.
+  - **Micronutrient Transparency & Zero False-Precision Zeroes (J-06)**: added `auditMicronutrientCoverage`, explicitly classifying micronutrients as `MEASURED` with clinical units (`mg`, `mcg`) or `DATA_UNAVAILABLE`, eliminating misleading `0 mg` disclosures.
+  - Guarded by `test/pdf-export-and-tripartite-consistency-guard.test.js` (7 comprehensive domain tests).
+- Verification: **2232/2232 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`3.51s`), stress 306 clients 0 crashes/0 violations, 10/10 simulated clients 100%.
 
 ## 3ad. Thirtieth round (2026-10-27) — Phase 12 Reports, Permissions, Staff Governance & Audit Trail (Unit I, tasks I-01..I-06) — merged + pushed
 

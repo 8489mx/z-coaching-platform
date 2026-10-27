@@ -5,7 +5,7 @@ import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
 import { getItemPortionMeta } from '../utils/kitchenYieldEngine';
-import { sanitizeCoachNotesForClient } from '../utils/pdfExportEngine';
+import { sanitizeCoachNotesForClient, filterEmptyDaysAndSections } from '../utils/pdfExportEngine';
 
 const CSS_STYLES = `
   @page {
@@ -910,7 +910,17 @@ export default function ProgramPdfView() {
                 <div style={{ fontSize: '8.5pt', fontWeight: '800', color: '#0F172A', marginBottom: '4px', background: '#F1F5F9', padding: '4px 8px', borderRadius: '6px', borderRight: '2.5pt solid #0284C7' }}>
                   {session.session_name || `الحصة التدريبية ${cIdx * 2 + sIdx + 1}`}
                 </div>
-                <table className="pdf-table" style={{ margin: 0 }}>
+                {session.is_rest_day ? (
+                  <div style={{ padding: '14px 18px', background: '#F0FDF4', border: '0.5pt solid #BBF7D0', borderRadius: '8px', textAlign: 'center', margin: '4px 0 8px 0' }}>
+                    <div style={{ fontWeight: '800', color: '#166534', fontSize: '9pt', marginBottom: '4px' }}>
+                      يوم راحة واستشفاء عضلي نشط
+                    </div>
+                    <div style={{ color: '#15803D', fontSize: '7.5pt', lineHeight: '1.5' }}>
+                      {session.recovery_guideline_ar || 'يوم مخصص لتعافي الألياف العضلية وتجديد طاقة الجهاز العصبي ومخازن الجليكوجين. احرص على شرب 3-4 لتر ماء والمشي الخفيف 6000-8000 خطوة مع النوم الكافي.'}
+                    </div>
+                  </div>
+                ) : (
+                  <table className="pdf-table" style={{ margin: 0 }}>
                   <thead>
                     <tr>
                       <th style={{ width: '42%', textAlign: 'right' }}>التمرين وتوجيه التكنيك</th>
@@ -962,8 +972,9 @@ export default function ProgramPdfView() {
                     })}
                   </tbody>
                 </table>
+                )}
 
-                {((Array.isArray(session.pre_workout_mobility) && session.pre_workout_mobility.length > 0) ||
+                {!session.is_rest_day && ((Array.isArray(session.pre_workout_mobility) && session.pre_workout_mobility.length > 0) ||
                   (Array.isArray(session.post_workout_stretches) && session.post_workout_stretches.length > 0)) && (
                   <div style={{
                     marginTop: '6px',
