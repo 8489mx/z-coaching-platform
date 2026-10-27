@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2170/2170 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2177/2177 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -293,6 +293,17 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
 
 - `fa09af2` **Plan Cloning & Templates Engine (Units E & F, tasks E-03 & F-05)**: created `frontend/src/utils/planCloningEngine.js` (re-exported by `src/execution-engines/plan-cloning-engine.js` and added to `LIVE_PAIRS`); implemented deep-isolated cloning functions (`cloneExercise`, `duplicateExerciseInSession`, `copyExerciseToSession`, `cloneTrainingSession`, `cloneMeal`, `copyMealItemToMeal`) with zero reference leaking; introduced evidence-based preset training day templates (`PUSH_DAY`, `PULL_DAY`, `LEGS_DAY`, `UPPER_BODY`, `LOWER_BODY`, `FULL_BODY`) using verified catalog exercise codes, and culinary meal templates (`BALANCED_BREAKFAST`, `HIGH_PROTEIN_LUNCH`, `LEAN_BEEF_POTATO_DINNER`, `HIGH_PROTEIN_SNACK`, `LIGHT_COTTAGE_CHEESE_MEAL`) using exact `foodReference.js` USDA data; upgraded `useCoachEditorData.js` to rebalance meals, update `nutrition_program.culinary_meals`, and synchronize multi-week training sessions; added 1-click UI actions in `CoachTrainingTab.jsx` ("نسخ", "نسخ ليوم...", "قوالب الأيام") and `CoachEditorNutritionTab.jsx` ("قوالب الوجبات"). Guarded by `test/plan-cloning-and-templates-guard.test.js`.
 - Verification: **2170/2170 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`7.15s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
+
+## 3x. Twenty-fourth round (2026-10-27) — Phase 6 PDF Export & Client Delivery Unification (Unit J, tasks J-01..J-04) — merged + pushed
+
+- `498521d` **PDF Export & Client Delivery Unification (Unit J, tasks J-01..J-04)**:
+  - **Clinical & Internal Notes Firewall**: implemented `sanitizeCoachNotesForClient` in `frontend/src/utils/pdfExportEngine.js` (re-exported by `src/execution-engines/pdf-export-engine.js`), purging internal developer tags (`[TEST]`, `[DEBUG]`, `[AUDIT]`, `MINEFIELD`), clinical diagnostic warnings, medical review prompt codes (`MEDICAL_REVIEW_PROMPT`, `TIER_0_FLAG`, `تحذير سريري`, `تنبيه سريري`, `تشخيص داخلي`), and emojis. Both `generatePrintablePlanHTML` and `ProgramPdfView.jsx` now render only sanitized coach guidance and strictly block internal clinical alerts (`clinical_alerts`, `clinical_warnings`, `internal_notes`, `medical_review_prompt`, `contraindicated_exercises`).
+  - **Culinary Yield Display Parity**: added `getItemPortionMeta` and `formatItemPortionDisplay` to `frontend/src/utils/kitchenYieldEngine.js` (re-exported by `src/execution-engines/kitchen-yield-engine.js`), accurately resolving raw vs. cooked portions across meats, fish, grains, legumes, and dry oats (e.g. `150 جم مطبوخ (200 جم نيئ) صدور دجاج مشوية`, `180 جم مطبوخ (72 جم نيئ) أرز بسمتي مسلوق`, `70 جم خام (196 جم مطبوخ) شوفان كامل الحبة`). Rendered in `ProgramPdfView.jsx` and `generatePrintablePlanHTML`.
+  - **Backend & Frontend Single Source of Truth**: replaced duplicate implementation in `src/utils/pdf-plan-exporter.js` with direct re-export from `src/execution-engines/pdf-export-engine.js`, guaranteeing 100% parity between server `/api/v1/pdf/export` and client web/PDF view.
+  - **Multi-Week Mesocycle Active Week Extraction**: `ProgramPdfView.jsx` resolves the active training week from query parameter `?week=` or `program.current_week` or `client.current_week` rather than hardcoding `weeks?.[0]`.
+  - **System Invariants**: zero sharp corners enforced across all badges and containers (`border-radius: 6px` to `8px`), zero grocery lists, static hydration range, and RTL layout.
+  - Guarded by `test/pdf-export-and-client-delivery-guard.test.js` (7 comprehensive domain tests).
+- Verification: **2177/2177 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`2.75s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
 
 ## 4. Open work (in priority order)
 
