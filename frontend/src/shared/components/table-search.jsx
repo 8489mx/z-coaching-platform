@@ -25,7 +25,7 @@ export function TableSearch({
         background: '#FFFFFF',
         border: '1px solid',
         borderColor: isFocused ? '#98A2B3' : '#D0D5DD',
-        borderRadius: '16px',
+        borderRadius: '9999px',
         padding: '0 14px',
         height: '34px',
         width,

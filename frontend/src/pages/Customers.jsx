@@ -353,7 +353,7 @@ export default function Customers() {
               style={{
                 height: '34px',
                 padding: '0 14px',
-                borderRadius: '16px',
+                borderRadius: '9999px',
                 border: '1px solid #D0D5DD',
                 background: '#FFFFFF',
                 color: '#344054',
