@@ -32,6 +32,7 @@ import { csrfProtection, isTrustedOrigin } from "./middlewares/csrfProtection.js
 import { exportRateLimiter, uploadRateLimiter, engineCalculatorRateLimiter } from "./middlewares/rateLimiter.js";
 import { recordAuditEvent, readRecentAuditEvents } from "./services/auditLog.service.js";
 import { User } from "./models/index.js";
+import { applyFreezeStart, applyFreezeResume } from "../execution-engines/subscription-freeze-engine.js";
 
 // Deterministic Clinical Execution Engines
 import { getPrehabRoutine } from "../execution-engines/postural-prehab-engine.js";
@@ -341,51 +342,56 @@ app.post('/api/v1/coach/toggle-freeze', requireAuth, requireAdmin, async (req, r
     const now = new Date();
 
     if (newStatus === 'FROZEN') {
-      let notes = user.notes || '';
-      if (!notes.includes('[FREEZE_START:')) {
-        notes = `${notes}\n[FREEZE_START:${now.toISOString()}]`.trim();
-      }
-      await user.update({ subscription_status: 'FROZEN', notes });
-      return res.json({ 
-        success: true, 
-        subscription_status: 'FROZEN',
-        user,
-        message: 'تم تجميد الاشتراك بنجاح وتثبيت الأيام المتبقية' 
+      const freezeResult = applyFreezeStart({
+        client: user,
+        reason: req.body.reason || 'طلب المشترك',
+        performedBy: req.user?.email || 'COACH',
+        now
       });
-    } else {
-      let notes = user.notes || '';
-      let freezeStartDate = null;
-      const match = notes.match(/\[FREEZE_START:(.*?)\]/);
-      if (match && match[1]) {
-        freezeStartDate = new Date(match[1]);
-        notes = notes.replace(/\[FREEZE_START:.*?\]/g, '').trim();
+
+      if (!freezeResult.success) {
+        return res.status(400).json({
+          success: false,
+          message: freezeResult.error,
+          reason_code: freezeResult.reason_code
+        });
       }
 
-      if (freezeStartDate && !isNaN(freezeStartDate.getTime())) {
-        const freezeDays = Math.max(1, Math.round((now.getTime() - freezeStartDate.getTime()) / (1000 * 60 * 60 * 24)));
-        if (user.subscription_end_date) {
-          const currentEnd = new Date(user.subscription_end_date);
-          const newEndDate = new Date(currentEnd.getTime() + (freezeDays * 24 * 60 * 60 * 1000));
-          await user.update({ subscription_status: 'ACTIVE', subscription_end_date: newEndDate, notes });
-        } else {
-          await user.update({ subscription_status: 'ACTIVE', notes });
+      await user.update({ subscription_status: 'FROZEN', notes: freezeResult.updated_notes });
+      return res.json({
+        success: true,
+        subscription_status: 'FROZEN',
+        remaining_freeze_days: freezeResult.remaining_days,
+        user,
+        message: freezeResult.message_ar
+      });
+    } else {
+      const resumeResult = applyFreezeResume({
+        client: user,
+        now,
+        options: {
+          reason: req.body.reason || 'استئناف الاشتراك',
+          performedBy: req.user?.email || 'COACH'
         }
-        return res.json({ 
-          success: true, 
-          subscription_status: 'ACTIVE',
-          freeze_days_added: freezeDays,
-          user,
-          message: `تم استئناف الاشتراك بنجاح وإضافة ${freezeDays} أيام تعويضية لتاريخ الانتهاء` 
-        });
-      } else {
-        await user.update({ subscription_status: 'ACTIVE', notes });
-        return res.json({ 
-          success: true, 
-          subscription_status: 'ACTIVE',
-          user,
-          message: 'تم استئناف وتفعيل الاشتراك بنجاح' 
-        });
+      });
+
+      const updatePayload = {
+        subscription_status: 'ACTIVE',
+        notes: resumeResult.updated_notes
+      };
+      if (resumeResult.updated_end_date) {
+        updatePayload.subscription_end_date = new Date(resumeResult.updated_end_date);
       }
+
+      await user.update(updatePayload);
+      return res.json({
+        success: true,
+        subscription_status: 'ACTIVE',
+        freeze_days_added: resumeResult.freeze_days_added,
+        history: resumeResult.history,
+        user,
+        message: resumeResult.message_ar
+      });
     }
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

@@ -1,4 +1,7 @@
 import { User, IntakeSubmission, CheckinSubmission } from "../models/index.js";
+import { computeRenewalDates, resolveTraineeOverallState } from "../../execution-engines/subscription-state-engine.js";
+import { computeMultiCurrencyFinancialLedger } from "../../execution-engines/financial-ledger-engine.js";
+import { parseFreezeHistory, getFreezeAllowanceForPackage } from "../../execution-engines/subscription-freeze-engine.js";
 
 export const PACKAGE_CONFIG = {
   "MAX_3_PLUS_1": {
@@ -129,11 +132,31 @@ export const getSubscriptionOverview = async (req, res) => {
         }
       }
 
+      const freezeHistory = parseFreezeHistory(c.notes);
+      const freezeAllowance = getFreezeAllowanceForPackage(pkgCode);
+      const remainingFreezeDays = Math.max(0, freezeAllowance - freezeHistory.used_days);
+      const overallState = resolveTraineeOverallState({
+        subscription_status: c.subscription_status,
+        subscription_start_date: c.subscription_start_date,
+        subscription_end_date: c.subscription_end_date,
+        plan_approval_status: c.plan_approval_status,
+        payment_status: c.payment_status,
+        now
+      });
+
       return {
         ...c.toJSON(),
         package_details: config,
         days_remaining: daysRemaining,
-        status
+        status,
+        overall_state: overallState,
+        freeze_info: {
+          allowance_days: freezeAllowance,
+          used_days: freezeHistory.used_days,
+          remaining_days: remainingFreezeDays,
+          records_count: freezeHistory.records.length,
+          active_freeze_start: freezeHistory.active_freeze_start
+        }
       };
     });
 
@@ -144,7 +167,8 @@ export const getSubscriptionOverview = async (req, res) => {
         expiring_soon_count: expiringSoonCount,
         expired_count: expiredCount,
         frozen_count: frozenCount,
-        total_clients: clients.length
+        total_clients: clients.length,
+        multi_currency_ledger: computeMultiCurrencyFinancialLedger(clients).by_currency
       },
       clients: enrichedClients
     });
@@ -185,19 +209,14 @@ export const renewSubscription = async (req, res) => {
       ? Number(amount_paid_egp) 
       : (price !== undefined ? Number(price) : (targetTier === 'MAX' ? 6000 : 4500));
 
-    let startDate = new Date();
     const now = new Date();
-    if (user.subscription_end_date && new Date(user.subscription_end_date) > now) {
-      startDate = new Date(user.subscription_end_date);
-    }
-    
-    let endDate;
-    if (new_end_date && !isNaN(new Date(new_end_date).getTime())) {
-      endDate = new Date(new_end_date);
-    } else {
-      const addedDays = Number(duration_days) || 120;
-      endDate = new Date(startDate.getTime() + (addedDays * 24 * 60 * 60 * 1000));
-    }
+    const renewalDates = computeRenewalDates({
+      currentEndDate: user.subscription_end_date,
+      durationDays: Number(duration_days) || 120,
+      explicitEndDate: new_end_date,
+      now
+    });
+    const endDate = new Date(renewalDates.end_date);
 
     user.package_tier = targetTier;
     user.subscription_package = targetTier;

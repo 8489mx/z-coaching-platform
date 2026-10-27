@@ -17,6 +17,7 @@ const LIVE_PAIRS = {
   'cardio-zones-engine': 'cardioZonesEngine',
   'client-retention-radar-engine': 'clientRetentionRadarEngine',
   'clinical-supplement-safety-engine': 'clinicalSupplementSafetyEngine',
+  'financial-ledger-engine': 'financialLedgerEngine',
   'emergency-scenario-engine': 'emergencyScenarioEngine',
   'food-swap-engine': 'foodSwapEngine',
   'intake-preflight-engine': 'intakePreflightEngine',
@@ -29,7 +30,9 @@ const LIVE_PAIRS = {
   'pdf-export-engine': 'pdfExportEngine',
   'plan-cloning-engine': 'planCloningEngine',
   'plan-quality-preflight-shield': 'planQualityPreflightShield',
-  'postural-prehab-engine': 'posturalPrehabEngine'
+  'postural-prehab-engine': 'posturalPrehabEngine',
+  'subscription-freeze-engine': 'subscriptionFreezeEngine',
+  'subscription-state-engine': 'subscriptionStateEngine'
 };
 
 // Known, deliberate differences. Remove an entry once resolved.

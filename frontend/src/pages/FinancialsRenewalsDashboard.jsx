@@ -13,6 +13,8 @@ import FlexibleRenewalModal from '../components/modals/FlexibleRenewalModal';
 import ClientRetentionRadarModal from '../components/modals/ClientRetentionRadarModal';
 import { calculateClientRetentionHealth, batchEvaluateRetentionRadar } from '../utils/clientRetentionRadarEngine';
 import { generateWhatsAppUrl, MESSAGE_TEMPLATES, compileReminderMessage, REMINDER_CATEGORIES } from '../utils/whatsappRemindersEngine';
+import { computeMultiCurrencyFinancialLedger, resolveTransactionCurrency } from '../utils/financialLedgerEngine';
+import { getFreezeAllowanceForPackage, parseFreezeHistory } from '../utils/subscriptionFreezeEngine';
 
 export default function FinancialsRenewalsDashboard() {
   const [searchParams] = useSearchParams();
@@ -20,6 +22,7 @@ export default function FinancialsRenewalsDashboard() {
 
   const [renewalFilter, setRenewalFilter] = useState('ALL'); // 'ALL' | 'URGENT_3D' | 'WEEK_7D' | 'HIGH_PROPENSITY' | 'AT_RISK' | 'OVERDUE' | 'PAID'
   const [tierFilter, setTierFilter] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
+  const [currencyFilter, setCurrencyFilter] = useState('ALL'); // 'ALL' | 'EGP' | 'SAR'
   const [searchQuery, setSearchQuery] = useState(urlParam ? `#${urlParam}` : '');
   const [renewedMap, _setRenewedMap] = useState({});
   const [toast, setToast] = useState(null);
@@ -109,8 +112,21 @@ export default function FinancialsRenewalsDashboard() {
               currentWeekNumber: 4
             });
 
+            const clientCurrency = resolveTransactionCurrency(c);
+            const currencySymbol = clientCurrency === 'SAR' ? 'ر.س' : (clientCurrency === 'USD' ? '$' : 'ج.م');
+            const pkgCode = c.subscription_package || (isMax ? 'MAX_3_PLUS_1' : 'ELITE_3_PLUS_1');
+            const freezeAllowance = getFreezeAllowanceForPackage(pkgCode);
+            const parsedFreeze = c.freeze_info || {
+              allowance_days: freezeAllowance,
+              used_days: parseFreezeHistory(c.notes).used_days,
+              remaining_days: Math.max(0, freezeAllowance - parseFreezeHistory(c.notes).used_days)
+            };
+
             return {
               ...c,
+              currency: clientCurrency,
+              currencySymbol,
+              freeze_info: parsedFreeze,
               isMax,
               pkgLabel: isMax ? 'MAX' : 'ELITE',
               monthlyFee,
@@ -142,6 +158,11 @@ export default function FinancialsRenewalsDashboard() {
       },
       currentWeekNumber: 4
     })));
+  }, [financialsData]);
+
+  // Multi-Currency Ledger Isolation
+  const multiCurrencyLedger = useMemo(() => {
+    return computeMultiCurrencyFinancialLedger(financialsData);
   }, [financialsData]);
 
   // Calculations & Executive KPIs
@@ -190,6 +211,9 @@ export default function FinancialsRenewalsDashboard() {
         (c.phone_number || '').includes(qClean);
 
       if (!matchSearch) return false;
+
+      // Currency
+      if (currencyFilter !== 'ALL' && c.currency !== currencyFilter) return false;
 
       // Tier
       if (tierFilter === 'MAX' && !c.isMax) return false;
@@ -864,6 +888,32 @@ export default function FinancialsRenewalsDashboard() {
 
             {/* Tier & Search */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: '#F8FAFC', padding: '2px 3px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                {[
+                  { id: 'ALL', label: 'كافة العملات' },
+                  { id: 'EGP', label: 'مصر (EGP)' },
+                  { id: 'SAR', label: 'السعودية (SAR)' }
+                ].map((cur) => (
+                  <button
+                    key={cur.id}
+                    type="button"
+                    onClick={() => setCurrencyFilter(cur.id)}
+                    style={{
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: currencyFilter === cur.id ? 700 : 500,
+                      background: currencyFilter === cur.id ? '#0F172A' : 'transparent',
+                      color: currencyFilter === cur.id ? '#FFFFFF' : '#475569',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.12s ease'
+                    }}
+                  >
+                    {cur.label}
+                  </button>
+                ))}
+              </div>
               <TierFilter value={tierFilter} onChange={setTierFilter} />
 
               <TableSearch value={searchQuery} onChange={setSearchQuery} inputRef={searchInputRef} width="200px" />
@@ -978,7 +1028,7 @@ export default function FinancialsRenewalsDashboard() {
                           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', fontWeight: 700, color: '#111827' }}>
                             {Math.round(client.monthlyFee).toLocaleString('en-US')}
                           </span>
-                          <span style={{ fontSize: '11px', color: '#667085', marginRight: '4px', fontWeight: 600 }}>ج.م</span>
+                          <span style={{ fontSize: '11px', color: '#667085', marginRight: '4px', fontWeight: 600 }}>{client.currencySymbol || 'ج.م'}</span>
                         </td>
 
                         {/* 5. Expiry Date & Status Badge */}
@@ -992,9 +1042,16 @@ export default function FinancialsRenewalsDashboard() {
                                 تم التجديد (30 يوم)
                               </span>
                             ) : client.status === 'FROZEN' ? (
-                              <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: '#F8FAFC', color: '#475467', border: '1px solid #E2E8F0', display: 'inline-block' }}>
-                                مجمد مؤقتاً
-                              </span>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
+                                <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: '#F8FAFC', color: '#475467', border: '1px solid #E2E8F0', display: 'inline-block' }}>
+                                  مجمد مؤقتاً
+                                </span>
+                                {client.freeze_info && (
+                                  <span style={{ fontSize: '9.5px', color: '#64748B', fontWeight: 600 }}>
+                                    متبقي: {client.freeze_info.remaining_days} يوم
+                                  </span>
+                                )}
+                              </div>
                             ) : isOverdue ? (
                               <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: '#FEF3F2', color: '#B42318', border: '1px solid #FECDCA', display: 'inline-block' }}>
                                 متأخر {Math.abs(client.daysRemaining)} يوم
