@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2177/2177 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2183/2183 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -304,6 +304,17 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **System Invariants**: zero sharp corners enforced across all badges and containers (`border-radius: 6px` to `8px`), zero grocery lists, static hydration range, and RTL layout.
   - Guarded by `test/pdf-export-and-client-delivery-guard.test.js` (7 comprehensive domain tests).
 - Verification: **2177/2177 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`2.75s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
+
+## 3y. Twenty-fifth round (2026-10-27) — Phase 7 Client Retention Radar & 1-Click WhatsApp Triage (Units G & H, tasks G-01..G-03, H-01..H-03) — merged + pushed
+
+- `0c191ec` **Client Retention Radar & 1-Click WhatsApp Triage (Units G & H, tasks G-01..G-03 & H-01..H-03)**:
+  - **Single Source of Truth Re-exports**: unified `src/execution-engines/client-retention-radar-engine.js` and `src/execution-engines/overdue-checkin-engine.js` to re-export directly from `frontend/src/utils/clientRetentionRadarEngine.js` and `frontend/src/utils/overdueCheckinEngine.js`, verified by `test/engine-copy-drift-guard.test.js` (20/20 pass).
+  - **1-Click WhatsApp Triage in Command Center**: updated `CoachCommandCenter.jsx` to identify `RENEWAL` actions with an available phone number as WhatsApp triage actions (`btnText = 'تذكير التجديد (واتساب)'`), rendering in emerald green with a `MessageCircle` icon and opening WhatsApp immediately with the direct renewal payment URL.
+  - **Smart WhatsApp Modal Expansion**: expanded `WhatsAppModal.jsx` with two specialized templates (`renewal` with direct renewal link and `rescue_overdue` Egyptian nudge), integrated auto-template selection via `initialTemplate` and `initialCustomText`, with 0 emojis and curved button aesthetics.
+  - **Retention Radar in Client Drawer**: integrated real-time subscription health analysis into `ClientSlideOverDrawer.jsx` via `calculateClientRetentionHealth`, displaying the 0-100 retention score, risk category badge (`HIGH_PROPENSITY`, `NURTURE_ENGAGE`, `AT_RISK`), 4-metric score breakdown (adherence, progress, consistency, urgency), risk alerts, tactical next steps, and 1-click tactical WhatsApp outreach.
+  - **Operational Workflow Parity**: connected `Customers.jsx` table actions to trigger contextual templates (`rescue_overdue` for overdue clients, `renewal` for expiring clients) and handle custom text from the drawer seamlessly.
+  - Guarded by `test/client-retention-and-whatsapp-triage-guard.test.js` (6 comprehensive domain tests).
+- Verification: **2183/2183 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`2.75s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
 
 ## 4. Open work (in priority order)
 
