@@ -444,7 +444,7 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
 
 ## 3aj. Thirty-sixth round (2026-10-27) — Red Team Audit & Complex Realistic Clients Stress Suite Alignment — merged + pushed
 
-- **Red Team Audit & Complex Realistic Clients Stress Suite Alignment**:
+- 99b6da **Red Team Audit & Complex Realistic Clients Stress Suite Alignment**:
   - **Red Team Adversarial Audit Alignment (`scripts/red_team_verification_audit.js`)**: calibrated Item 5 culinary meals portion assertion to use standard 3% macronutrient rebalancing tolerance (`Math.ceil(portion * 0.03)`), matching `test/meal-portion-rebalance-merge.test.js`. Full suite passed 6/6 items (100%).
   - **Complex Realistic Clients Stress Test Alignment (`scripts/stress_test_10_complex_clients.js`)**: modernized `evaluateWeeklyProgress` parameter invocation across Clients 1, 3, and 9 to pass top-level typed parameters (`currentWeightKg`, `previousWeightKg`, `currentCalories`, `nutritionAdherencePct`, `workoutAdherencePct`), resolving historical RangeError. 10/10 complex clients passed across 2 months of simulated progression with zero failures.
   - **Battery Verification**: 306 random clients stress test passed (0 crashes, 0 violations), 10 end-to-end simulated clients passed (100%), 6 long multi-week journeys passed (0 issues), 2311 unit and integration tests passing.
