@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2032/2032 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2144/2144 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -263,6 +263,16 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - Interactive Preview & Simulators: `frontend/public/mobile_app_preview.html` and `frontend/public/mobile_home_pure.html` support live switching, instant calculation, and URL parameter triggers (`?tab=workout&unit_ex=lb`, `?tab=checkin&unit_bw=lb&unit_ms=in`, `?modal=units`).
   - Nutrition Guard: Nutrition plans, macros, and food grams are strictly guarded and completely untouched.
   - Verification: `test/unit-converter.test.js` (7 comprehensive domain tests) + `test/api-preferences.test.js` (API integration test). Full suite: **2032/2032 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean.
+
+## 3t. Twentieth round (2026-10-27) — Phase 1 Critical Fixes (FIX-05, FIX-01, FIX-03, FIX-07) & WhatsApp Hub 360 — merged + pushed
+
+- `baf9740` **WhatsApp Reminders Hub 360 Blueprint & Vite port 5173**: unified 360 trainee blueprint card, interactive variable chips, 11 specialized operational templates (`nutrition_adherence_rescue`, `cardio_steps_compliance`, `training_missed_sessions_alert`), and fixed port `5173` in `frontend/vite.config.js`.
+- `92d800c` **Baseline test alignment**: aligned `tests/progression-ui-render.test.js` with `f06916f` empty-log rendering (`null` -> `''`) and changed `JRN_` temporary phone prefix in `scripts/simulate-long-journeys.mjs` (`010998877...`) to avoid collision with local DB client `#11`.
+- `ac0a122` **FIX-05 Cardiac screening mixed-negation isolation**: `evaluateCardiacScreeningText` in `src/checkin-engine/evaluate-checkin.js` now splits free-text notes into clauses on punctuation and contrast conjunctions (`لكن`, `ولكن`, `بس`, `إلا أن`, `وعندي`, `but`, `however`) before stripping negated symptoms, so `"لا يوجد دوخة لكن عندي ألم بالصدر"` or `"عندي ألم بالصدر، لا يوجد دوخة"` always triggers `CRITICAL_CARDIAC_FLAG`. Guarded by `test/cardiac-screening-mixed-negation.test.js`.
+- `384c1a8` **FIX-01 MacroCalculator save contract**: `MacroCalculator.jsx` and `updateCustomProgram` in `src/api/controllers/program.controller.js` now synchronize updated calories and macro targets across `nutrition.targets`, `nutrition_program.targets`, `nutrition_program.macro_targets`, and `nutrition_program.stages.{energy_target, macro_targets}`, reject empty payloads without `program_data`/`master_program`/`coach_notes`/`publish` with HTTP `400`, and preserve existing meals, fasting toggles, and `coach_notes`. Guarded by `test/macro-calculator-save-contract.test.js`.
+- `f59b99c` **FIX-03 No silent anthropometric defaults in Metabolic Calculator**: `frontend/src/utils/metabolicMacroEngine.js` (re-exported by `src/execution-engines/metabolic-macro-engine.js`) no longer substitutes `75 kg / 175 cm / 25 y` when `weight_kg`, `height_cm`, or `age` is missing or `<= 0`; returns `is_valid: false`, `missing_fields`, and `null` targets, and `MacroCalculator.jsx` blocks applying invalid profiles and stops falling back to `prev.weight`/`prev.height`/`prev.age` when importing a client. Guarded by `test/metabolic-calculator-no-silent-defaults.test.js`.
+- `a753a69` **FIX-07 Preserve trainee experience level into Adaptation Engine**: `src/training-engine-v2/build-training-mesocycle.js` and `src/master-engine-v2/build-master-engine-v2.js` persist `experience` and `experience_level` on `training_program` and `client_profile`; `src/adaptation-engine/build-adapted-plan.js` and `src/api/controllers/checkin.controller.js` resolve and pass the trainee's actual experience level (`BEGINNER`, `INTERMEDIATE`, `ADVANCED`) instead of defaulting every trainee to `BEGINNER`. Guarded by `test/adaptation-preserves-client-experience.test.js`.
+- Verification: **2144/2144 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`3.44s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
 
 ## 4. Open work (in priority order)
 
