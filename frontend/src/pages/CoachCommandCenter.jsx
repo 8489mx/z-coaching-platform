@@ -1402,11 +1402,11 @@ export default function CoachCommandCenter() {
                       else if (isOverdue) btnText = 'تنبيه الشيك إن (واتساب)';
                       else if (isInjury) btnText = isCheckin ? 'مراجعة ثبات الوزن' : 'مراجعة التمارين';
                       else if (isNew) btnText = 'تجهيز الخطة';
-                      else if (isRenewal) btnText = 'متابعة التجديد';
+                      else if (isRenewal) btnText = action.phone ? 'تذكير التجديد (واتساب)' : 'متابعة التجديد';
                       else if (isCheckin) btnText = 'مراجعة التقييم';
 
                       const isUrgentAction = isEndedCycle;
-                      const isWhatsAppAction = action.type === 'OVERDUE_CHECKIN';
+                      const isWhatsAppAction = action.type === 'OVERDUE_CHECKIN' || (action.type === 'RENEWAL' && Boolean(action.phone));
 
                       return (
                         <div style={{
@@ -1439,7 +1439,7 @@ export default function CoachCommandCenter() {
                           <button
                             type="button"
                             onClick={() => {
-                              if (action.type === 'OVERDUE_CHECKIN' && action.phone) {
+                              if ((action.type === 'OVERDUE_CHECKIN' || action.type === 'RENEWAL') && action.phone) {
                                 window.open(generateWhatsAppUrl(action.phone, getWhatsAppMessage(action, true)), '_blank');
                               } else if (action.actionUrl) {
                                 navigate(action.actionUrl);

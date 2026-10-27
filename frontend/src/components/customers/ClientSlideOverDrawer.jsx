@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   X,
   ExternalLink,
@@ -16,11 +16,14 @@ import {
   Check,
   Phone,
   Activity,
-  Utensils
+  Utensils,
+  Radio,
+  AlertTriangle
 } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { ClientPackageBadge } from '../../utils/tierBadgeHelper';
 import { extractClientFastingProfile } from '../../utils/seasonalFastingRadar';
+import { calculateClientRetentionHealth } from '../../utils/clientRetentionRadarEngine';
 
 export default function ClientSlideOverDrawer({
   isOpen,
@@ -80,6 +83,24 @@ export default function ClientSlideOverDrawer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, selectedPhoto]);
 
+  const submissions = checkinData?.submissions || checkinData?.checkins || [];
+  const totalCheckins = submissions.length;
+  const daysRemainingVal = client?.days_remaining !== undefined ? client?.days_remaining : client?.daysRemaining;
+
+  const retentionHealth = useMemo(() => {
+    if (!isOpen || !client) return null;
+    return calculateClientRetentionHealth({
+      client,
+      checkinHistory: submissions,
+      subscription: {
+        days_left: daysRemainingVal,
+        end_date: client.subscription_end_date,
+        tier: client.subscription_package || client.package
+      },
+      currentWeekNumber: Math.max(1, totalCheckins)
+    });
+  }, [isOpen, client, submissions, daysRemainingVal, totalCheckins]);
+
   if (!isOpen || !client) return null;
 
   const fasting = extractClientFastingProfile(client);
@@ -92,8 +113,7 @@ export default function ClientSlideOverDrawer({
     }
   };
 
-  const submissions = checkinData?.submissions || checkinData?.checkins || [];
-  const totalCheckins = submissions.length;
+
   const latestSubmission = totalCheckins > 0 ? submissions[0] : null;
 
   const getWeightVal = (sub) => {
@@ -596,6 +616,199 @@ export default function ClientSlideOverDrawer({
               </div>
             </div>
           </div>
+
+          {/* Retention Radar Card */}
+          {retentionHealth && (
+            <div
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid #EAECF0',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
+              }}
+            >
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '7px',
+                    background: '#F4F0FD',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#673DE6'
+                  }}>
+                    <Radio size={14} />
+                  </div>
+                  <div>
+                    <strong style={{ fontSize: '12.5px', color: '#101828', fontWeight: 800 }}>
+                      رادار صحة التجديد والاحتفاظ
+                    </strong>
+                    <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block' }}>
+                      تقييم ذكي لمؤشرات الاستمرار وخطر التسرب
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    background: retentionHealth.category === 'HIGH_PROPENSITY' ? '#ECFDF3' : (retentionHealth.category === 'AT_RISK' ? '#FEF3F2' : '#FFFAEB'),
+                    color: retentionHealth.category === 'HIGH_PROPENSITY' ? '#027A48' : (retentionHealth.category === 'AT_RISK' ? '#B42318' : '#B54708'),
+                    border: `1px solid ${retentionHealth.category === 'HIGH_PROPENSITY' ? '#A6F4C5' : (retentionHealth.category === 'AT_RISK' ? '#FECDCA' : '#FEDF89')}`
+                  }}>
+                    {retentionHealth.status_title_ar}
+                  </span>
+                  <div style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: '13px',
+                    fontWeight: 900,
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    background: '#F8FAFC',
+                    color: '#101828',
+                    border: '1px solid #E2E8F0'
+                  }}>
+                    {retentionHealth.total_retention_score}/100
+                  </div>
+                </div>
+              </div>
+
+              {/* Score Breakdown (4 Metric Mini-Cards) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#64748B', display: 'block', fontWeight: 600 }}>الالتزام</span>
+                  <strong style={{ fontSize: '12px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
+                    {retentionHealth.score_breakdown.adherence}/35
+                  </strong>
+                </div>
+                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#64748B', display: 'block', fontWeight: 600 }}>التقدم</span>
+                  <strong style={{ fontSize: '12px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
+                    {retentionHealth.score_breakdown.progress}/30
+                  </strong>
+                </div>
+                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#64748B', display: 'block', fontWeight: 600 }}>الانتظام</span>
+                  <strong style={{ fontSize: '12px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
+                    {retentionHealth.score_breakdown.consistency}/20
+                  </strong>
+                </div>
+                <div style={{ background: '#F8FAFC', padding: '8px 6px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                  <span style={{ fontSize: '10px', color: '#64748B', display: 'block', fontWeight: 600 }}>الاستحقاق</span>
+                  <strong style={{ fontSize: '12px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
+                    {retentionHealth.score_breakdown.urgency}/15
+                  </strong>
+                </div>
+              </div>
+
+              {/* Risk Factors Alert (if any) */}
+              {retentionHealth.has_risks && (
+                <div style={{
+                  background: '#FEF3F2',
+                  border: '1px solid #FECDCA',
+                  borderRadius: '8px',
+                  padding: '8px 10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#B42318', fontSize: '11px', fontWeight: 800 }}>
+                    <AlertTriangle size={13} />
+                    <span>ملاحظات تتطلب انتباه الكوتش:</span>
+                  </div>
+                  <ul style={{ margin: 0, paddingRight: '18px', fontSize: '11px', color: '#912018', lineHeight: 1.5 }}>
+                    {retentionHealth.risk_factors.map((factor, idx) => (
+                      <li key={idx}>{factor}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Tactical Recommendation Box */}
+              <div style={{
+                background: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                borderRadius: '8px',
+                padding: '9px 11px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700 }}>
+                  التوجيه التكتيكي المقترح:
+                </span>
+                <span style={{ fontSize: '11.5px', color: '#1E293B', fontWeight: 600, lineHeight: 1.5 }}>
+                  {retentionHealth.recommended_action_ar}
+                </span>
+              </div>
+
+              {/* Tactical Action Button */}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => onOpenWhatsApp && onOpenWhatsApp(client, 'renewal', retentionHealth.whatsapp_outreach_message)}
+                  style={{
+                    flex: 1,
+                    height: '34px',
+                    borderRadius: '8px',
+                    background: '#F0FDF4',
+                    color: '#166534',
+                    border: '1px solid #BBF7D0',
+                    fontSize: '11.5px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#DCFCE7'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#F0FDF4'; }}
+                >
+                  <MessageCircle size={13} />
+                  <span>تواصل تكتيكي مخصص (واتساب)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onOpenRenewal && onOpenRenewal(client)}
+                  style={{
+                    height: '34px',
+                    padding: '0 12px',
+                    borderRadius: '8px',
+                    background: '#F0F9FF',
+                    color: '#0369A1',
+                    border: '1px solid #BAE6FD',
+                    fontSize: '11.5px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#E0F2FE'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#F0F9FF'; }}
+                >
+                  <CreditCard size={13} />
+                  <span>تجديد فوري</span>
+                </button>
+              </div>
+
+            </div>
+          )}
 
           {/* Sports Science Blueprint Card (Training, Nutrition, Cardio, Goal) */}
           <div style={{

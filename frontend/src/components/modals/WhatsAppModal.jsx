@@ -5,7 +5,7 @@ import { copyToClipboard } from '../../utils/clipboardUtils';
 import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 import { ClientCodeBadge } from '../../utils/tierBadgeHelper';
 
-export default function WhatsAppModal({ client, onClose }) {
+export default function WhatsAppModal({ client, onClose, initialTemplate, initialCustomText }) {
   const [template, setTemplate] = useState('intake');
   const [customText, setCustomText] = useState('');
   const [copied, setCopied] = useState(false);
@@ -48,17 +48,47 @@ ${baseUrl}/check-in?code=${clientCode}`,
 تمت مراجعة نتائج أسبوعك وتحديث السعرات والبرنامج لمواصلة التطور والنتائج المطلوبة.
 
 تفضل بالاطلاع على التحديثات الجديدة في خطتك:
-${baseUrl}/user-dashboard?user_id=${clientCode}`
+${baseUrl}/user-dashboard?user_id=${clientCode}`,
+
+    renewal: `مرحباً ${clientName}،
+نود تذكيرك باقتراب موعد تجديد اشتراكك في المنظومة لمواصلة التطور والحفاظ على تقدمك الرياضي والغذائي دون انقطاع.
+
+يمكنك إتمام تجديد اشتراكك واستعراض الباقات المتاحة مباشرة عبر الرابط:
+${baseUrl}/user-dashboard?user_id=${clientCode}&action=renew
+
+نتطلع لاستمرار رحلة التطور معك.`,
+
+    rescue_overdue: `صباح الفل يا ${clientName}،
+حبينا نطمن عليك! مستنيين شيك إنك وصورك الأسبوعية عشان نراجع التطور في الميزان ومحيطات الجسم ونحدث خطتك للأسبوع الجديد.
+
+رابط تسجيل الشيك إن في دقيقة:
+${baseUrl}/check-in?code=${clientCode}`
   };
 
   useEffect(() => {
     if (client) {
-      setCustomText(templates.intake);
-      setTemplate('intake');
+      if (initialCustomText) {
+        setCustomText(initialCustomText);
+        setTemplate(initialTemplate || 'renewal');
+      } else {
+        let chosen = initialTemplate;
+        if (!chosen) {
+          const status = String(client.status || client.subscription_status || '').toUpperCase();
+          if (status === 'EXPIRING_SOON') {
+            chosen = 'renewal';
+          } else if (client.isOverdue || status === 'CHECKIN_OVERDUE') {
+            chosen = 'rescue_overdue';
+          } else {
+            chosen = 'intake';
+          }
+        }
+        setTemplate(chosen);
+        setCustomText(templates[chosen] || templates.intake);
+      }
     }
   // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client]);
+  }, [client, initialTemplate, initialCustomText]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -194,7 +224,9 @@ ${baseUrl}/user-dashboard?user_id=${clientCode}`
                 { id: 'intake', label: 'رابط استمارة البيانات' },
                 { id: 'plan_ready', label: 'إشعار جاهزية الخطة' },
                 { id: 'checkin_reminder', label: 'تذكير التقييم الأسبوعي' },
-                { id: 'checkin_approved', label: 'اعتماد التقييم والتحديث' }
+                { id: 'checkin_approved', label: 'اعتماد التقييم والتحديث' },
+                { id: 'renewal', label: 'تذكير تجديد الاشتراك' },
+                { id: 'rescue_overdue', label: 'استعادة متأخر الشيك إن' }
               ].map(t => {
                 const isActive = template === t.id;
                 return (
