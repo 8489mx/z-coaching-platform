@@ -608,7 +608,21 @@ async function swapContextFor(req) {
   const clientForCoach = requester && ["COACH", "ADMIN"].includes(requester.role) && code
     ? await User.findOne({ where: { client_code: code } }).catch(() => null)
     : null;
-  return resolveSwapContext({ requester, clientForCoach, loadAnswers: loadLatestIntakeAnswers });
+  const baseCtx = await resolveSwapContext({ requester, clientForCoach, loadAnswers: loadLatestIntakeAnswers });
+  const targetClient = requester?.role === "CLIENT" ? requester : clientForCoach;
+  if (targetClient) {
+    const activeProg = await Program.findOne({ where: { user_id: targetClient.id }, order: [["id", "DESC"]], attributes: ["program_data"] }).catch(() => null);
+    const fastCtx = await resolveClientFastingContext(targetClient, activeProg?.program_data || {}).catch(() => null);
+    if (fastCtx?.active && fastCtx?.mode === "CHRISTIAN_FAST") {
+      return {
+        ...baseCtx,
+        isChristianFast: true,
+        fastingDiet: fastCtx.diet,
+        fasting_context: fastCtx,
+      };
+    }
+  }
+  return baseCtx;
 }
 
 /** Meal items the client cannot swap (protein powder) carry the note saying what to do instead. */
@@ -1686,7 +1700,8 @@ export const updateCustomProgram = async (req, res) => {
           : [];
 
       if (activeSessions.length > 0) {
-        const volumeAudit = auditWeeklyMuscleVolume(activeSessions, program_data.client?.experience_level || program_data.training?.experience_level);
+        const resolvedExperienceLevel = program_data.client?.experience_level || program_data.client_profile?.experience_level || program_data.training?.experience_level || program_data.training_program?.experience_level || program_data.training_program?.experience || user.experience_level || "INTERMEDIATE";
+        const volumeAudit = auditWeeklyMuscleVolume(activeSessions, resolvedExperienceLevel);
         const sessionDemand = calculateSessionDemand(activeSessions[0]?.exercises || []);
 
         const targetCalories = Number(program_data.nutrition?.targets?.calories || program_data.nutrition?.energy_target || 2000);
@@ -1697,12 +1712,14 @@ export const updateCustomProgram = async (req, res) => {
         const deficitShield = auditDeficitVolumeShield({
           sessions: activeSessions,
           targetCalories,
-          tdee: clientTdee
+          tdee: clientTdee,
+          experienceLevel: resolvedExperienceLevel
         });
 
         const proteinSparing = evaluateProteinSparingRequirement({
           targetCalories,
           tdee: clientTdee,
+          experienceLevel: resolvedExperienceLevel,
           clientWeightKg: clientWeight,
           currentProteinG: currentProtein,
         });

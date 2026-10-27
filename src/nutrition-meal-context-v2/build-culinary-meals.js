@@ -1140,7 +1140,13 @@ export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
   // bread, rice and chicken alike and every swap list came back empty.
   if (allergenContext.isSoyExcluded && (food.is_soy_free === false || /SOY|TOFU|EDAMAME/.test(foodCode))) return false;
   if (allergenContext.isNutsExcluded && (food.is_nut_free === false || /PEANUT|ALMOND|WALNUT|CASHEW|PISTACHIO|HAZELNUT|NUT_BUTTER|MIXED_NUTS/.test(foodCode))) return false;
-  if (allergenContext.isSesameExcluded && (food.is_sesame_free === false || /SESAME|TAHINI/.test(foodCode))) return false;
+  if (allergenContext.isSesameExcluded && (food.is_sesame_free === false || /SESAME|TAHINI|CHIA|FLAX|SEEDS/.test(foodCode))) return false;
+  if (allergenContext.isBerriesExcluded && /STRAWBERR|BLUEBERR|BERR/.test(foodCode)) return false;
+  if (allergenContext.isTropicalExcluded && /MANGO|KIWI|PINEAPPLE|TROPICAL/.test(foodCode)) return false;
+  if (allergenContext.isChristianFast) {
+    if ((food.is_dairy || /CHICKEN|BEEF|VEAL|TURKEY|LAMB|CAMEL|LIVER|EGG|CHEESE|YOGURT|MILK|LABNEH|HALLOUMI|LABAN|WHEY|CASEIN|BUTTER|GHEE/.test(foodCode)) && !/PEANUT|ALMOND|COCONUT|SOY|TAHINI/.test(foodCode)) return false;
+    if (String(allergenContext.fastingDiet || "").toUpperCase() === "STRICT_VEGAN" && (food.is_fish || /FISH|TUNA|SALMON|SHRIMP|TILAPIA|BOURI|HAMOUR|KANAAD|SEAFOOD/.test(foodCode))) return false;
+  }
   // Foods the client said they do not like leave the meals and swaps like a restriction does
   // (enforceClinicalSafety labels that replacement as a preference, not a clinical one).
   if (allergenContext.dislikedFoodCodes?.has(foodCode)) return false;
@@ -2235,6 +2241,7 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
 
   const isFavism =
     excludedFoods.has("FAVISM") ||
+    excludedFoods.has("FAVISM_G6PD") ||
     excludedFoods.has("G6PD") ||
     excludedFoods.has("FAVA") ||
     excludedFoods.has("FAVA_BEANS") ||
@@ -2280,6 +2287,8 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
     needsMiniPlates,
     isDiabetic,
     isSesameExcluded,
+    isBerriesExcluded: excludedFoods.has("STRAWBERRIES_BERRIES") || excludedFoods.has("STRAWBERRIES") || excludedFoods.has("BERRIES"),
+    isTropicalExcluded: excludedFoods.has("TROPICAL_FRUITS_MANGO") || excludedFoods.has("MANGO") || excludedFoods.has("KIWI") || excludedFoods.has("TROPICAL_FRUITS"),
     // The client's country (EG, SA, AE ...) when known: local foods first in the swap lists.
     country: typeof effectiveRaw.client_country === "string" && effectiveRaw.client_country ? effectiveRaw.client_country.toUpperCase() : null,
     // Food codes of the foods the client does not like (intake form labels mapped in disliked-foods.js).
