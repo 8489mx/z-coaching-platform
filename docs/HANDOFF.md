@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2232/2232 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2239/2239 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -382,6 +382,16 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **Financials Dashboard Enhancement**: upgraded `frontend/src/pages/FinancialsRenewalsDashboard.jsx` with real-time multi-currency breakdown (EGP vs SAR), currency filter toggle buttons, and remaining freeze allowance badges.
   - Guarded by `test/subscription-freeze-and-financial-governance-guard.test.js` (7 comprehensive domain tests).
 - Verification: **2216/2216 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`2.71s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
+
+## 3af. Thirty-second round (2026-10-27) — Phase 14 Coach CRM, Acquisition Channels, Directive Templates & WhatsApp Reminders (Unit K, tasks K-01..K-06) — merged + pushed
+
+- `PENDING_COMMIT` **Coach CRM, Acquisition Channels, Directive Templates & WhatsApp Reminders (Unit K, tasks K-01..K-06)**:
+  - **Coach CRM & Directive Templates Engine (K-01..K-05)**: created `frontend/src/utils/coachCrmAndTemplatesEngine.js` (re-exported by `src/execution-engines/coach-crm-and-templates-engine.js` and registered in `LIVE_PAIRS`), standardizing trainee acquisition channels (`INSTAGRAM`, `FACEBOOK`, `TIKTOK`, `FRIEND_REFERRAL`, `TRAINEE_REFERRAL`, `YOUTUBE`, `TWITTER_X`, `OTHER`), referral credit tracking, and lightweight interaction logs (`CALL`, `NOTE`, `DIRECTIVE`, `MEETING`, `SUPPORT_TOUCHPOINT`) embedded securely inside client notes with balanced braces JSON extractor (`[CRM_META:{...}]`) adhering strictly to the Zero Migration Invariance principle.
+  - **Directive Templates with Client/Coach Separation (K-05)**: provided verified clinical and performance directive templates (`INJURY_PRECAUTION`, `DELOAD_WEEK_MINDSET`, `NUTRITION_CONSISTENCY`, `HYDRATION_SLEEP_FOCUS`, `REFEED_EXPLANATION`) strictly separating trainee-facing actionable bullet points (`client_facing_ar`) from internal physiological and clinical coaching rationales (`internal_rationale_ar`).
+  - **One-Click WhatsApp Reminders Without Paid Gateways (K-02)**: built `buildOneClickWhatsAppAction` generating `https://wa.me/` direct messaging deep links with automated international E.164 and Egyptian phone normalization, parameterized URL encoding for renewal reminders, upcoming reviews, and plateau interventions without third-party recurring fees.
+  - **Zero Unwanted Features Guarded**: strictly rejected habit checkboxes, countdown timers, and grocery lists according to core product invariants.
+  - Guarded by `test/coach-crm-and-directive-templates-guard.test.js` (6 comprehensive domain tests).
+- Verification: **2239/2239 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`3.38s`), stress 306 clients 0 crashes/0 violations, 10/10 simulated clients 100%.
 
 ## 4. Open work (in priority order)
 

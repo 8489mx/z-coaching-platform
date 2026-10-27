@@ -35,7 +35,8 @@ const LIVE_PAIRS = {
   'subscription-state-engine': 'subscriptionStateEngine',
   'sensitive-audit-engine': 'sensitiveAuditEngine',
   'staff-role-governance-engine': 'staffRoleGovernanceEngine',
-  'unified-metrics-dictionary': 'unifiedMetricsDictionary'
+  'unified-metrics-dictionary': 'unifiedMetricsDictionary',
+  'coach-crm-and-templates-engine': 'coachCrmAndTemplatesEngine'
 };
 
 // Known, deliberate differences. Remove an entry once resolved.
