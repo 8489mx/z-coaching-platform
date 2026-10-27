@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, X, ArrowRightLeft, Zap, Target, ShieldAlert, Copy } from 'lucide-react';
+import { Plus, Trash2, X, ArrowRightLeft, Zap, Target, ShieldAlert, Copy, Sparkles } from 'lucide-react';
 import { balanceMealItems, dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer.js';
 
 function getCleanMealTitle(rawName) {
@@ -11,11 +11,12 @@ function getCleanMealTitle(rawName) {
 
 
 export default function CoachEditorNutritionTab(props) {
-  const { searchParams: _searchParams, setSearchParams: _setSearchParams, loading: _loading, setLoading: _setLoading, saving: _saving, setSaving: _setSaving, publishing: _publishing, setPublishing: _setPublishing, program, setProgram, coachNotes: _coachNotes, setCoachNotes: _setCoachNotes, activeSessionIdx: _activeSessionIdx, setActiveSessionIdx: _setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab: _setActiveWorkspaceTab, notification: _notification, setNotification: _setNotification, clientsList: _clientsList, setClientsList: _setClientsList, queueFilter: _queueFilter, setQueueFilter: _setQueueFilter, queueSearch: _queueSearch, setQueueSearch: _setQueueSearch, allExercisesList: _allExercisesList, setAllExercisesList: _setAllExercisesList, cardioSwapModal: _cardioSwapModal, setCardioSwapModal: _setCardioSwapModal, addFoodModal: _addFoodModal, setAddFoodModal, swapFoodModal: _swapFoodModal, setSwapFoodModal, addExModal: _addExModal, setAddExModal: _setAddExModal, swapExModal: _swapExModal, setSwapExModal: _setSwapExModal, mobilityModal: _mobilityModal, setMobilityModal: _setMobilityModal, allMobilityList: _allMobilityList, setAllMobilityList: _setAllMobilityList, showReasoning: _showReasoning, setShowReasoning: _setShowReasoning, exModalSearch: _exModalSearch, setExModalSearch: _setExModalSearch, foodModalSearch: _foodModalSearch, setFoodModalSearch: _setFoodModalSearch, mobilityModalSearch: _mobilityModalSearch, setMobilityModalSearch: _setMobilityModalSearch, swapFoodSearch: _swapFoodSearch, setSwapFoodSearch: _setSwapFoodSearch, swapExSearch: _swapExSearch, setSwapExSearch: _setSwapExSearch, handleSelectClient: _handleSelectClient, handleUpdateFoodAmount, handleDeleteFood, handleAddNewMeal, handleDuplicateMeal, handleDeleteMeal, handleAddFoodToMeal: _handleAddFoodToMeal, handleExecuteFoodSwap: _handleExecuteFoodSwap, handleExecuteExerciseSwap: _handleExecuteExerciseSwap, handleUpdateExerciseParam: _handleUpdateExerciseParam, handleDeleteExercise: _handleDeleteExercise, handleAddExerciseToSession: _handleAddExerciseToSession, handleSelectCardioModality: _handleSelectCardioModality, handleAddMobilityToSession: _handleAddMobilityToSession, handleRemoveMobilityFromSession: _handleRemoveMobilityFromSession, handleSaveDraft: _handleSaveDraft, handleApproveAndPublish: _handleApproveAndPublish, FOOD_DATABASE_LIST: _FOOD_DATABASE_LIST, CARDIO_MODALITY_OPTIONS: _CARDIO_MODALITY_OPTIONS } = props;
+  const { searchParams: _searchParams, setSearchParams: _setSearchParams, loading: _loading, setLoading: _setLoading, saving: _saving, setSaving: _setSaving, publishing: _publishing, setPublishing: _setPublishing, program, setProgram, coachNotes: _coachNotes, setCoachNotes: _setCoachNotes, activeSessionIdx: _activeSessionIdx, setActiveSessionIdx: _setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab: _setActiveWorkspaceTab, notification: _notification, setNotification: _setNotification, clientsList: _clientsList, setClientsList: _setClientsList, queueFilter: _queueFilter, setQueueFilter: _setQueueFilter, queueSearch: _queueSearch, setQueueSearch: _setQueueSearch, allExercisesList: _allExercisesList, setAllExercisesList: _setAllExercisesList, cardioSwapModal: _cardioSwapModal, setCardioSwapModal: _setCardioSwapModal, addFoodModal: _addFoodModal, setAddFoodModal, swapFoodModal: _swapFoodModal, setSwapFoodModal, addExModal: _addExModal, setAddExModal: _setAddExModal, swapExModal: _swapExModal, setSwapExModal: _setSwapExModal, mobilityModal: _mobilityModal, setMobilityModal: _setMobilityModal, allMobilityList: _allMobilityList, setAllMobilityList: _setAllMobilityList, showReasoning: _showReasoning, setShowReasoning: _setShowReasoning, exModalSearch: _exModalSearch, setExModalSearch: _setExModalSearch, foodModalSearch: _foodModalSearch, setFoodModalSearch: _setFoodModalSearch, mobilityModalSearch: _mobilityModalSearch, setMobilityModalSearch: _setMobilityModalSearch, swapFoodSearch: _swapFoodSearch, setSwapFoodSearch: _setSwapFoodSearch, swapExSearch: _swapExSearch, setSwapExSearch: _setSwapExSearch, handleSelectClient: _handleSelectClient, handleUpdateFoodAmount, handleDeleteFood, handleAddNewMeal, handleDuplicateMeal, handleApplyMealTemplate, handleDeleteMeal, PRESET_MEAL_TEMPLATES, handleAddFoodToMeal: _handleAddFoodToMeal, handleExecuteFoodSwap: _handleExecuteFoodSwap, handleExecuteExerciseSwap: _handleExecuteExerciseSwap, handleUpdateExerciseParam: _handleUpdateExerciseParam, handleDeleteExercise: _handleDeleteExercise, handleAddExerciseToSession: _handleAddExerciseToSession, handleSelectCardioModality: _handleSelectCardioModality, handleAddMobilityToSession: _handleAddMobilityToSession, handleRemoveMobilityFromSession: _handleRemoveMobilityFromSession, handleSaveDraft: _handleSaveDraft, handleApproveAndPublish: _handleApproveAndPublish, FOOD_DATABASE_LIST: _FOOD_DATABASE_LIST, CARDIO_MODALITY_OPTIONS: _CARDIO_MODALITY_OPTIONS } = props;
 
   const showToast = props.showToast || ((msg) => console.log(msg));
 
   const [localAutoRipple, setLocalAutoRipple] = useState(true);
+  const [showMealTemplateDropdown, setShowMealTemplateDropdown] = useState(false);
   const isAutoRippleOn = props.autoRippleEnabled !== undefined ? props.autoRippleEnabled : localAutoRipple;
   const toggleAutoRipple = () => {
     if (props.setAutoRippleEnabled) {
@@ -515,6 +516,90 @@ export default function CoachEditorNutritionTab(props) {
                   <Plus size={14} />
                   <span>إضافة وجبة</span>
                 </button>
+
+                {handleApplyMealTemplate && PRESET_MEAL_TEMPLATES && (
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowMealTemplateDropdown(prev => !prev)}
+                      style={{
+                        height: '40px',
+                        padding: '0 14px',
+                        borderRadius: '8px',
+                        background: '#FFFFFF',
+                        color: '#344054',
+                        border: '1px solid #D0D5DD',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = '#F9FAFB'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; }}
+                      title="إضافة وجبة جديدة من قائمة القوالب الغذائية المعتمدة"
+                    >
+                      <Sparkles size={14} color="#673DE6" />
+                      <span>قوالب الوجبات</span>
+                    </button>
+
+                    {showMealTemplateDropdown && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '46px',
+                          left: 0,
+                          background: '#FFFFFF',
+                          border: '1px solid #EAECF0',
+                          borderRadius: '12px',
+                          padding: '8px',
+                          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+                          zIndex: 50,
+                          minWidth: '240px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '4px'
+                        }}
+                      >
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: '#475467', padding: '4px 8px' }}>
+                          اختر قالب وجبة متكامل لإضافته:
+                        </div>
+                        {Object.values(PRESET_MEAL_TEMPLATES).map((tpl) => (
+                          <button
+                            key={tpl.key}
+                            type="button"
+                            onClick={() => {
+                              handleApplyMealTemplate(tpl.key);
+                              setShowMealTemplateDropdown(false);
+                            }}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'flex-start',
+                              padding: '8px 10px',
+                              borderRadius: '8px',
+                              border: 'none',
+                              background: 'transparent',
+                              cursor: 'pointer',
+                              textAlign: 'right',
+                              transition: 'background 0.12s ease'
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                          >
+                            <strong style={{ fontSize: '12px', color: '#101828' }}>{tpl.name_ar}</strong>
+                            <span style={{ fontSize: '10.5px', color: '#667085' }}>
+                              {tpl.items.map(i => i.name_ar).join(' • ')}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -217,6 +217,10 @@ export default function CoachEditor() {
             handleMoveExercise={handleMoveExercise}
             handleDuplicateSession={handleDuplicateSession}
             handleDeleteSession={handleDeleteSession}
+            handleDuplicateExercise={editor.handleDuplicateExercise}
+            handleCopyExerciseToSession={editor.handleCopyExerciseToSession}
+            handleApplyDayTemplate={editor.handleApplyDayTemplate}
+            PRESET_TRAINING_DAY_TEMPLATES={editor.PRESET_TRAINING_DAY_TEMPLATES}
             activeSessionDemand={activeSessionDemand}
             weeklyVolumeAudit={weeklyVolumeAudit}
             clientProgression={editor.clientProgression}

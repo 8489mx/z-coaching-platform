@@ -25,6 +25,7 @@ const LIVE_PAIRS = {
   'offline-sync-engine': 'offlineSyncEngine',
   'overdue-checkin-engine': 'overdueCheckinEngine',
   'pdf-export-engine': 'pdfExportEngine',
+  'plan-cloning-engine': 'planCloningEngine',
   'plan-quality-preflight-shield': 'planQualityPreflightShield',
   'postural-prehab-engine': 'posturalPrehabEngine'
 };

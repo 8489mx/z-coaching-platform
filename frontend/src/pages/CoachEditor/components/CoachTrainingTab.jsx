@@ -8,7 +8,9 @@ import {
   X,
   ArrowUp,
   ArrowDown,
-  Copy
+  Copy,
+  Sparkles,
+  Layers
 } from 'lucide-react';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
 import ProgressionTimeline from './ProgressionTimeline';
@@ -34,9 +36,15 @@ export function CoachTrainingTab({
   handleDeleteSession,
   activeSessionDemand,
   weeklyVolumeAudit,
-  clientProgression = null
+  clientProgression = null,
+  handleDuplicateExercise,
+  handleCopyExerciseToSession,
+  handleApplyDayTemplate,
+  PRESET_TRAINING_DAY_TEMPLATES
 }) {
   const [showAllVolumeLandmarks, setShowAllVolumeLandmarks] = React.useState(false);
+  const [showDayTemplateDropdown, setShowDayTemplateDropdown] = React.useState(false);
+  const [copyTargetExIdx, setCopyTargetExIdx] = React.useState(null);
 
   const _formatSplitName = (split) => {
     if (!split) return '';
@@ -151,6 +159,88 @@ export function CoachTrainingTab({
                 <Copy size={13} color="#667085" />
                 <span>نسخ هذا اليوم</span>
               </button>
+            )}
+
+            {/* Apply Preset Day Template Button */}
+            {handleApplyDayTemplate && PRESET_TRAINING_DAY_TEMPLATES && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowDayTemplateDropdown(prev => !prev)}
+                  style={{
+                    height: '36px',
+                    padding: '0 14px',
+                    borderRadius: '8px',
+                    border: '1px solid #D0D5DD',
+                    background: '#FFFFFF',
+                    color: '#344054',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                  title="تطبيق قالب يوم تدريبي جاهز معتمد على اليوم الحالي"
+                >
+                  <Sparkles size={13} color="#673DE6" />
+                  <span>قوالب الأيام</span>
+                </button>
+
+                {showDayTemplateDropdown && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '42px',
+                      right: 0,
+                      background: '#FFFFFF',
+                      border: '1px solid #EAECF0',
+                      borderRadius: '12px',
+                      padding: '8px',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+                      zIndex: 50,
+                      minWidth: '260px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px'
+                    }}
+                  >
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#475467', padding: '4px 8px' }}>
+                      اختر قالباً لتطبيقه على هذا اليوم:
+                    </div>
+                    {Object.values(PRESET_TRAINING_DAY_TEMPLATES).map((tpl) => (
+                      <button
+                        key={tpl.key}
+                        type="button"
+                        onClick={() => {
+                          handleApplyDayTemplate(activeSessionIdx, tpl.key);
+                          setShowDayTemplateDropdown(false);
+                        }}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: 'transparent',
+                          cursor: 'pointer',
+                          textAlign: 'right',
+                          transition: 'background 0.12s ease'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <strong style={{ fontSize: '12px', color: '#101828' }}>{tpl.name_ar}</strong>
+                        <span style={{ fontSize: '10.5px', color: '#667085' }}>{tpl.target_muscles}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Delete Workout Day Button */}
@@ -604,6 +694,123 @@ export function CoachTrainingTab({
                       >
                         <ArrowDown size={12} />
                       </button>
+                    </div>
+                  )}
+
+                  {/* Duplicate Exercise Button */}
+                  {handleDuplicateExercise && (
+                    <button
+                      type="button"
+                      onClick={() => handleDuplicateExercise(activeSessionIdx, eIdx)}
+                      style={{
+                        height: '30px',
+                        padding: '0 8px',
+                        borderRadius: '8px',
+                        background: '#FFFFFF',
+                        border: '1px solid #D0D5DD',
+                        color: '#344054',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                        transition: 'all 0.12s ease'
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                      title="نسخ وتكرار هذا التمرين في نفس اليوم"
+                    >
+                      <Copy size={11} color="#475467" />
+                      <span>نسخ</span>
+                    </button>
+                  )}
+
+                  {/* Copy to another Day Button */}
+                  {handleCopyExerciseToSession && currentSessions.length > 1 && (
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        type="button"
+                        onClick={() => setCopyTargetExIdx(prev => prev === eIdx ? null : eIdx)}
+                        style={{
+                          height: '30px',
+                          padding: '0 8px',
+                          borderRadius: '8px',
+                          background: '#FFFFFF',
+                          border: '1px solid #D0D5DD',
+                          color: '#344054',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                          transition: 'all 0.12s ease'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                        title="نسخ هذا التمرين إلى يوم تدريبي آخر"
+                      >
+                        <Layers size={11} color="#673DE6" />
+                        <span>نسخ ليوم...</span>
+                      </button>
+
+                      {copyTargetExIdx === eIdx && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '34px',
+                            right: 0,
+                            background: '#FFFFFF',
+                            border: '1px solid #EAECF0',
+                            borderRadius: '10px',
+                            padding: '6px',
+                            boxShadow: '0 8px 16px rgba(0, 0, 0, 0.08)',
+                            zIndex: 40,
+                            minWidth: '160px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '3px'
+                          }}
+                        >
+                          <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#475467', padding: '2px 6px' }}>
+                            نسخ إلى:
+                          </div>
+                          {currentSessions.map((s, targetIdx) => {
+                            if (targetIdx === activeSessionIdx) return null;
+                            return (
+                              <button
+                                key={s.id || targetIdx}
+                                type="button"
+                                onClick={() => {
+                                  handleCopyExerciseToSession(activeSessionIdx, eIdx, targetIdx);
+                                  setCopyTargetExIdx(null);
+                                }}
+                                style={{
+                                  display: 'block',
+                                  width: '100%',
+                                  padding: '5px 8px',
+                                  borderRadius: '6px',
+                                  border: 'none',
+                                  background: 'transparent',
+                                  color: '#101828',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                  textAlign: 'right',
+                                  transition: 'background 0.12s ease'
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = '#F9FAFB')}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                              >
+                                {s.name || `اليوم ${targetIdx + 1}`}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
 
