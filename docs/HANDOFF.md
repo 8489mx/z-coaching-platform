@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2239/2239 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2263/2263 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -392,6 +392,36 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **Zero Unwanted Features Guarded**: strictly rejected habit checkboxes, countdown timers, and grocery lists according to core product invariants.
   - Guarded by `test/coach-crm-and-directive-templates-guard.test.js` (6 comprehensive domain tests).
 - Verification: **2239/2239 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`3.38s`), stress 306 clients 0 crashes/0 violations, 10/10 simulated clients 100%.
+
+## 3ag. Thirty-third round (2026-10-27) — Phase 15 Cross-Unit Acceptance Test Matrix & Scientific Equations Audit (Sections 8 & 9) — merged + pushed
+
+- `PENDING_COMMIT` **Cross-Unit Acceptance Test Matrix & Scientific Equations Audit (Sections 8 & 9)**:
+  - **Comprehensive 22-Scenario Integration Battery (Section 9)**: verified complete end-to-end integration contracts across all 22 scenarios specified in the Master Brief:
+    1. Adult Healthy Lifecycle (Intake -> Draft -> Active Plan -> PDF Tripartite Equivalence).
+    2. Missing Anthropometric Data Safety (Refuses silent zeros/fallbacks for BMI & Tanaka HR).
+    3. High Body Fat Bulking Overload Firewall (Redirects to Recomposition with explicit Arabic reasoning).
+    4. Body Fat Input Range Normalization & Authoritative Priority (Checkin > Intake > Profile).
+    5. Youth Trainee Protection (Under 18 gate, Schofield equations, surplus preservation, no failure sets).
+    6. Mandatory Clinical Review Gate (Cardiac symptoms withhold direct publishing).
+    7. Text Symptoms Parsing with Mixed Negation (Preserves affirmed injuries without false-positive negation).
+    8. Clinical Lockout Lifecycle (Secure authorization audit for coach unlocking).
+    9. Calculator Save Contract & Macro Energy Balance (Exact $4P + 4C + 9F = Kcal$ consistency).
+    10. Macro Budget Clinical Conflict (Diabetic carbs $\le 45\%$, fat $\le 35\%$ enforced).
+    11. Trainee Experience Persistence (FIX-07 flow into mesocycle deload rules).
+    12. Progression Engine Logging Integrity (Single ExerciseLogCard, top of range progression, zero timers).
+    13. Checkin Schedule Anchor Invariance (MAX 7d, ELITE 14d unshifted by coach review delays).
+    14. Independent Checkin Review vs Adaptation (FIX-10 independent approval without forced plan mutation).
+    15. Subscription Freeze Governance (14/28/45 package allowances, same-day ceil rounding, ledger).
+    16. Renewal Date Chaining (Active chains from expiration, lapsed restarts from today).
+    17. Multi-Currency Financial Ledger Segregation (Complete EGP vs SAR isolation).
+    18. Staff Governance & RBAC/ABAC Permissions (403 for cross-tenant breach, role normalization).
+    19. Multi-Account Cache & State Isolation (Redacts credentials, prevents credential leaks).
+    20. PDF Tripartite Consistency & Layout Governance (Prunes phantom sessions, recovery rest days, clinical shield).
+    21. Unified Metrics Dictionary (Mathematical MRR, retention, churn, and coach capacity).
+    22. UI Invariants & Prohibited Features Defense (Zero sharp corners, no spinners, no grocery lists).
+  - **Scientific Equations & Claim Integrity Audit (Section 8)**: verified Tanaka Zone 2 HR formula ($208 - 0.7 \times \text{age}$), NEAT step recommendation bands (8,000-10,000 for desk workers), and strict rejection of pseudo-scientific claims ("كسر ثبات مضمون", "إعادة تشغيل الهرمونات").
+  - Guarded by `test/cross-unit-acceptance-matrix-guard.test.js` (24 comprehensive tests).
+- Verification: **2263/2263 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`3.54s`), stress 306 clients 0 crashes/0 violations, 10/10 simulated clients 100%.
 
 ## 4. Open work (in priority order)
 
