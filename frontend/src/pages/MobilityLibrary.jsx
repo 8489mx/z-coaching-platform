@@ -571,6 +571,8 @@ export default function MobilityLibrary() {
             const isWarmup = drill.category === 'DYNAMIC_WARMUP';
             const isStretch = drill.category === 'STATIC_STRETCH';
             const tagLabel = isCardio ? 'كارديو' : isWarmup ? 'إحماء ديناميكي' : isStretch ? 'إطالة ثابتة' : 'تصحيح قوام';
+            const currentExpanded = expandedView[drill.id] !== undefined ? expandedView[drill.id] : 'CUES';
+            const isVideoCopied = copiedKey === `video_${drill.id}` || copiedId === `video_${drill.id}`;
             return (
               <div
                 key={drill.id}
