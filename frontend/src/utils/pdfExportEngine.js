@@ -15,6 +15,7 @@
  */
 
 import { getExerciseDisplayNames } from './exerciseTranslator.js';
+import { getItemPortionMeta, formatItemPortionDisplay } from './kitchenYieldEngine.js';
 
 export const SMART_GUIDELINES_MATRIX = Object.freeze([
   {
@@ -43,6 +44,43 @@ export const SMART_GUIDELINES_MATRIX = Object.freeze([
     instruction_ar: 'التزم بإيقاف الجولات عند الـ RIR المحدد (1-2 عدات في الاحتياط) لحماية الجهاز العصبي المركزي وضمان الاستمرار في التطور الأسبوعي.'
   }
 ]);
+
+/**
+ * Sanitizes coach notes intended for client-facing views and PDF exports.
+ * Purges internal developer tags, clinical warnings, and medical review prompt codes.
+ */
+export function sanitizeCoachNotesForClient(notes) {
+  if (!notes || typeof notes !== 'string') return '';
+
+  const emojiRegex = /[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]/gu;
+
+  // Split into lines to filter out line-based internal tags and clinical alerts
+  const lines = notes.split(/\r?\n/);
+  const cleanLines = [];
+
+  for (let line of lines) {
+    let l = line.trim();
+    if (!l) continue;
+
+    // Check for internal tags or clinical markers
+    if (/^\[(CLINICAL|INTERNAL|DEBUG|TEST|AUDIT|MINEFIELD)[^\]]*\]/i.test(l)) continue;
+    if (/(CLINICAL_ALERT|CLINICAL_WARNING|MEDICAL_REVIEW|CONTRAINDICATION|INTERNAL_DEBUG)/i.test(l)) continue;
+    if (/(TIER_0_|TIER_1_|AUDIT_ID)/i.test(l)) continue;
+    if (/(تحذير سريري|تنبيه سريري|تشخيص داخلي|ملاحظة سريرية|موانع الاستخدام)/.test(l)) continue;
+
+    // Strip inline bracket tags if any remain
+    l = l.replace(/\[(CLINICAL|INTERNAL|DEBUG|TEST|AUDIT|MINEFIELD)[^\]]*\]/gi, '').trim();
+
+    // Strip any emojis
+    l = l.replace(emojiRegex, '').trim();
+
+    if (l) {
+      cleanLines.push(l);
+    }
+  }
+
+  return cleanLines.join('\n').trim();
+}
 
 export function generateMasterPdfExportData({
   client_name = 'المتدرب المعتمد',
@@ -149,6 +187,10 @@ export function generateMasterPdfExportData({
 export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new Date().toISOString().split('T')[0] }) {
   const { prehab, workout = {}, meals = [], cardio = {}, supplements = [], guidelines: _guidelines } = plan;
 
+  const cleanCoachNotes = sanitizeCoachNotesForClient(
+    plan.coach_notes || client.coach_notes || plan.notes || client.notes
+  );
+
   return `
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -161,18 +203,18 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
     .header { border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end; }
     .header h1 { margin: 0; font-size: 18px; font-weight: 900; }
     .header p { margin: 2px 0 0; color: #475569; font-size: 10px; }
-    .macro-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; margin-bottom: 12px; text-align: center; }
+    .macro-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-bottom: 12px; text-align: center; }
     .macro-box { font-size: 10px; font-weight: bold; }
     .macro-val { font-size: 14px; font-weight: 900; color: #0f172a; }
     .section-title { font-size: 12px; font-weight: 900; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 3px; margin: 10px 0 6px; color: #1e293b; display: flex; justify-content: space-between; }
     .table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
     .table th, .table td { border: 1px solid #e2e8f0; padding: 5px 6px; text-align: right; }
     .table th { background: #f1f5f9; font-weight: 800; font-size: 10px; }
-    .badge { display: inline-block; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; background: #e2e8f0; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 6px; font-size: 9px; font-weight: bold; background: #e2e8f0; }
     .badge-rir { background: #dcfce7; color: #166534; }
     .badge-prehab { background: #e0e7ff; color: #3730a3; }
     .guidelines-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
-    .guide-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px; }
+    .guide-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 8px; }
     .guide-item strong { display: block; margin-bottom: 2px; color: #0f172a; }
     @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
   </style>
@@ -196,6 +238,17 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
     <div class="macro-box">الدهون الصحية<div class="macro-val">${client.target_fats || 60}g</div></div>
   </div>
 
+  <!-- Coach Notes if present -->
+  ${cleanCoachNotes ? `
+    <div class="section-title">
+      <span>توجيهات وملاحظات الكوتش الخاصة</span>
+      <span class="badge">توصيات مخصصة</span>
+    </div>
+    <div class="guide-item" style="margin-bottom: 10px; font-size: 10px; line-height: 1.5; color: #1e293b; background: #f0f9ff; border: 1px solid #bae6fd;">
+      ${cleanCoachNotes.replace(/\n/g, '<br>')}
+    </div>
+  ` : ''}
+
   <!-- Prehab Protocol if exists -->
   ${prehab && prehab.has_prehab ? `
     <div class="section-title">
@@ -212,7 +265,7 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
         </tr>
       </thead>
       <tbody>
-        ${prehab.exercises.map((ex) => `
+        ${(prehab.exercises || []).map((ex) => `
           <tr>
             <td><strong>${ex.name_ar}</strong></td>
             <td>${ex.sets}</td>
@@ -277,10 +330,13 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
         <tr>
           <td><strong>${meal.title_ar}</strong></td>
           <td>
-            ${meal.items.map((i) => `• ${i.name_ar}: <strong>${i.grams} جم</strong> (أو بديل متكافئ)`).join('<br>')}
+            ${(meal.items || []).map((i) => {
+              const meta = getItemPortionMeta(i);
+              return `• ${meta.name || i.name_ar || i.name}: <strong>${meta.badge_text}</strong>`;
+            }).join('<br>')}
           </td>
           <td>
-            ${meal.items.map((i) => `${i.hand_portion || '-'}`).join('<br>')}
+            ${(meal.items || []).map((i) => `${i.hand_portion || '-'}`).join('<br>')}
           </td>
           <td><strong>${meal.calories}</strong> Kcal</td>
         </tr>
@@ -346,7 +402,7 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
   </table>
   ` : ''}
 
-  <!-- Clinical & Lifestyle Guidelines -->
+  <!-- Practical & Lifestyle Guidelines -->
   <div class="section-title">
     <span>إرشادات التنفيذ وقواعد الاستدامة</span>
   </div>

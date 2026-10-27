@@ -124,3 +124,120 @@ export function convertPortionCookingYield({
     display_summary_ar: `وزن ${safeAmount}g (${from_state === 'COOKED' ? 'مطبوخ' : 'نيئ'}) يعادل ${convertedAmountG}g (${to_state === 'RAW' ? 'نيئ قبل الطهي' : 'مطبوخ جاهز للأكل'}).`
   };
 }
+
+
+/**
+ * Resolves comprehensive portion metadata for any meal item including raw vs cooked yields.
+ */
+export function getItemPortionMeta(item) {
+  if (!item) {
+    return {
+      name: '',
+      amount: 0,
+      unit: 'جم',
+      cooked_g: null,
+      raw_g: null,
+      is_yield_applicable: false,
+      badge_text: '0 جم',
+      display_text: ''
+    };
+  }
+
+  if (typeof item === 'string') {
+    return {
+      name: item,
+      amount: 0,
+      unit: '',
+      cooked_g: null,
+      raw_g: null,
+      is_yield_applicable: false,
+      badge_text: item,
+      display_text: item
+    };
+  }
+
+  const name = item.name_ar || item.name || item.name_en || '';
+  const unit = item.unit || 'جم';
+  const amount = Number(item.amount_g ?? item.amount ?? item.grams ?? item.weight_g ?? 0);
+
+  // If unit is count / spoon / scoop (not grams)
+  if (unit !== 'جم' && unit !== 'g' && unit !== 'grams') {
+    const badgeText = `${amount} ${unit}`.trim();
+    return {
+      name,
+      amount,
+      unit,
+      cooked_g: null,
+      raw_g: null,
+      is_yield_applicable: false,
+      badge_text: badgeText,
+      display_text: `${badgeText} ${name}`.trim()
+    };
+  }
+
+  // If item already has a full descriptive portion string like "150 جم مطبوخ (200 جم نيئ)"
+  if (item.portion && (item.portion.includes('مطبوخ') || item.portion.includes('نيئ') || item.portion.includes('خام'))) {
+    return {
+      name,
+      amount,
+      unit: 'جم',
+      cooked_g: null,
+      raw_g: null,
+      is_yield_applicable: true,
+      badge_text: item.portion,
+      display_text: `${item.portion} ${name}`.trim()
+    };
+  }
+
+  const foodCode = item.food_code || item.code || name;
+  const yieldRule = resolveFoodYieldRule(foodCode);
+
+  if (yieldRule && yieldRule.raw_to_cooked !== 1) {
+    const isRawBase = yieldRule.base_state === 'RAW';
+    const conv = convertPortionCookingYield({
+      food_code: foodCode,
+      amount_g: amount,
+      from_state: isRawBase ? 'RAW' : 'COOKED',
+      to_state: isRawBase ? 'COOKED' : 'RAW'
+    });
+
+    const cookedG = isRawBase ? conv.converted_amount_g : amount;
+    const rawG = isRawBase ? amount : conv.converted_amount_g;
+    const badgeText = isRawBase
+      ? `${amount} جم خام (${conv.converted_amount_g} جم مطبوخ)`
+      : `${amount} جم مطبوخ (${conv.converted_amount_g} جم نيئ)`;
+
+    return {
+      name,
+      amount,
+      unit: 'جم',
+      cooked_g: cookedG,
+      raw_g: rawG,
+      is_yield_applicable: true,
+      badge_text: badgeText,
+      display_text: `${badgeText} ${name}`.trim()
+    };
+  }
+
+  // Standard items without weight delta
+  const badgeText = `${amount} جم`;
+  return {
+    name,
+    amount,
+    unit: 'جم',
+    cooked_g: amount,
+    raw_g: amount,
+    is_yield_applicable: false,
+    badge_text: badgeText,
+    display_text: `${badgeText} ${name}`.trim()
+  };
+}
+
+/**
+ * Formats a clean portion display string for a meal item.
+ */
+export function formatItemPortionDisplay(item, options = {}) {
+  const meta = getItemPortionMeta(item);
+  if (options.badgeOnly) return meta.badge_text;
+  return meta.display_text;
+}
