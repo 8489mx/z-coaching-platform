@@ -119,8 +119,10 @@ export function evaluateCheckin(submission) {
 
     // Negation check: trainee explicitly stating absence of pain or symptoms
     // e.g. "لا يوجد ألم بالصدر أو دوخة", "ما فيش أي ألم بالصدر", "no chest pain, no dizziness"
-    const negationRegex = /(?:لا\s*يوجد|ما\s*(?:فيش|عندي|حسيت|شعرت)|بدون|no|without|never\s*had)\s+[^.،,\n]*(?:ألم|وجع|ضغط|حرقان|خفقان|دوخة|إغماء|صدر|chest|pain|syncope|dizziness)[^.،,\n]*/gi;
-    const workingText = t.replace(negationRegex, " ").trim();
+    const clauseDelimiter = /(?:[.،,؛;!\?\n]+|(?:^|\s+)(?:لكن|ولكن|بس|إلا\s+أن|غير\s+أن|إنما|بينما|مع\s+وجود|وعندي|وأعاني|واعاني|وأشعر|واشعر|وبحس|وحسيت|وشعرت|وجالي|وفقدت|وأغمى|واغمى|و\s+(?:عندي|أعاني|اعاني|أشعر|اشعر|بحس|حسيت|شعرت|جالي|فقدت|أغمى|اغمى)|but|however|yet|though|although|except)(?=\s+|$))/i;
+    const negationClauseRegex = /^(?:\s*(?:و|أو|او|ولا|ثم|الحمد\s*لله|كله\s*تمام|الامور\s*تمام|الأمور\s*تمام|and|or|nor)*\s*)*(?:لا\s*يوجد|لا\s*توجد|لا\s*أشعر|لا\s*اشعر|لا\s*أعاني|لا\s*اعاني|لم\s*أشعر|لم\s*اشعر|ما\s*(?:فيش|عنديش|عندي|حسيت|شعرت)|معنديش|محسيتش|مش\s*(?:حاسس|بحس|عندي)|بدون|بلا|no|without|never\s*had|not\s+(?:having|feeling|experiencing))(?:\s+|$)/i;
+    const negationRegex = /(?:لا\s*يوجد|لا\s*توجد|لا\s*أشعر|لا\s*اشعر|ما\s*(?:فيش|عنديش|عندي|حسيت|شعرت)|معنديش|محسيتش|بدون|بلا|no|without|never\s*had)\s+(?:أي\s+|اي\s+|any\s+)?(?:ألم|وجع|ضغط|حرقان|خفقان|دوخة|إغماء|اغماء|صدر|chest|pain|syncope|dizziness)(?:\s+(?:في\s+الصدر|بالصدر|أو|او|ولا|or|nor|at\s+all)\s*(?:ألم|وجع|ضغط|حرقان|خفقان|دوخة|إغماء|اغماء|صدر|بالصدر|في\s+الصدر|chest|pain|syncope|dizziness|at\s+all)*)*/gi;
+    const workingText = t.split(clauseDelimiter).map((c) => c.trim()).filter((c) => c && !negationClauseRegex.test(c)).map((c) => c.replace(negationRegex, " ").trim()).filter(Boolean).join(" ").trim();
     if (!workingText) return false;
 
     // Benign muscular soreness / DOMS in pectorals
