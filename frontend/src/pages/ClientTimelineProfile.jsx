@@ -154,7 +154,7 @@ export default function ClientTimelineProfile() {
         subscription_package: 'MAX',
         subscription_status: 'ACTIVE',
         days_remaining: 60,
-        current_weight: checkinsData[0]?.average_weight_kg || 80
+        current_weight: checkinsData[0]?.average_weight_kg || resolvedUser?.weight_kg || null
       };
 
       setClient(finalClient);

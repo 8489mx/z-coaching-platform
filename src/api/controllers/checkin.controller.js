@@ -498,6 +498,190 @@ export async function getClientCheckins(req, res) {
 }
 
 /**
+ * Update and correct check-in measurements with authoritative cascade and audit trail.
+ * Solves Competitor Disconnect (WF26-06 to WF26-09 & B-06).
+ * Ensures weight, waist, and hip corrections propagate to:
+ * 1. CheckinSubmission record and delta calculations.
+ * 2. Active Program client_profile (for latest checkin).
+ * 3. Audit trail stored in analysis_output.measurement_corrections.
+ */
+export async function updateCheckinMeasurements(req, res) {
+  try {
+    if ('user' in req || req.headers) {
+      const requester = req.user?.role
+        ? req.user
+        : (req.user?.id ? await User.findByPk(req.user.id) : null);
+      if (requester && !['COACH', 'ADMIN'].includes(requester.role)) {
+        return res.status(403).json({ success: false, error: "تعديل القياسات مصرح به للمدربين فقط" });
+      }
+    }
+
+    const { checkinId } = req.params;
+    const checkin = await CheckinSubmission.findByPk(checkinId);
+    if (!checkin) {
+      return res.status(404).json({ success: false, error: "لم يتم العثور على سجل المتابعة" });
+    }
+
+    const {
+      average_weight_kg,
+      weight_kg,
+      waist_circumference_cm,
+      hip_circumference_cm,
+      daily_weights_kg,
+      correction_reason
+    } = req.body;
+
+    const newWeightRaw = average_weight_kg !== undefined ? average_weight_kg : weight_kg;
+    let parsedWeight = null;
+    if (newWeightRaw !== undefined && newWeightRaw !== null) {
+      parsedWeight = typeof newWeightRaw === 'number' ? newWeightRaw : parseFloat(newWeightRaw);
+      if (isNaN(parsedWeight) || parsedWeight <= 20 || parsedWeight > 300) {
+        return res.status(400).json({ success: false, error: "يجب إدخال وزن حقيقي وصالح بين 20 و 300 كجم" });
+      }
+      parsedWeight = Math.round(parsedWeight * 100) / 100;
+    }
+
+    let parsedWaist = undefined;
+    if (waist_circumference_cm !== undefined) {
+      const pw = typeof waist_circumference_cm === 'number' ? waist_circumference_cm : parseFloat(waist_circumference_cm);
+      parsedWaist = (!isNaN(pw) && pw > 0) ? Math.round(pw * 10) / 10 : null;
+    }
+
+    let parsedHip = undefined;
+    if (hip_circumference_cm !== undefined) {
+      const ph = typeof hip_circumference_cm === 'number' ? hip_circumference_cm : parseFloat(hip_circumference_cm);
+      parsedHip = (!isNaN(ph) && ph > 0) ? Math.round(ph * 10) / 10 : null;
+    }
+
+    const oldWeight = checkin.average_weight_kg;
+    const oldWaist = checkin.waist_circumference_cm;
+    const effectiveWeight = parsedWeight !== null ? parsedWeight : oldWeight;
+
+    // Load all user checkins to resolve sequence and recompute deltas
+    const allCheckins = await CheckinSubmission.findAll({
+      where: { user_id: checkin.user_id },
+      order: [["week_number", "ASC"]]
+    });
+
+    const currentIndex = allCheckins.findIndex(c => c.id === checkin.id);
+    const prevCheckin = currentIndex > 0 ? allCheckins[currentIndex - 1] : null;
+    const nextCheckin = (currentIndex >= 0 && currentIndex < allCheckins.length - 1) ? allCheckins[currentIndex + 1] : null;
+    const isLatest = currentIndex === allCheckins.length - 1 || currentIndex === -1;
+
+    let newWeightDelta = 0;
+    if (prevCheckin && prevCheckin.average_weight_kg) {
+      newWeightDelta = Math.round((effectiveWeight - prevCheckin.average_weight_kg) * 100) / 100;
+    }
+
+    // Apply updates to current checkin
+    if (parsedWeight !== null) {
+      checkin.average_weight_kg = parsedWeight;
+      checkin.weight_change_kg = newWeightDelta;
+      if (Array.isArray(daily_weights_kg) && daily_weights_kg.length === 7) {
+        checkin.daily_weights_kg = daily_weights_kg.map(w => Number(w));
+      } else {
+        checkin.daily_weights_kg = [parsedWeight];
+      }
+    }
+
+    if (parsedWaist !== undefined) {
+      checkin.waist_circumference_cm = parsedWaist;
+    }
+
+    // Append to immutable audit trail inside analysis_output
+    const analysisObj = typeof checkin.analysis_output === 'string'
+      ? JSON.parse(checkin.analysis_output)
+      : (checkin.analysis_output || {});
+
+    const history = Array.isArray(analysisObj.measurement_corrections)
+      ? [...analysisObj.measurement_corrections]
+      : [];
+
+    const auditEntry = {
+      previous_weight_kg: oldWeight,
+      corrected_weight_kg: effectiveWeight,
+      previous_waist_cm: oldWaist,
+      corrected_waist_cm: checkin.waist_circumference_cm,
+      previous_hip_cm: analysisObj.hip_circumference_cm || null,
+      corrected_hip_cm: parsedHip !== undefined ? parsedHip : (analysisObj.hip_circumference_cm || null),
+      corrected_by: req.user?.id || 'COACH',
+      corrected_at: new Date().toISOString(),
+      reason: String(correction_reason || 'تصحيح قراءة القياس بواسطة الكوتش').trim()
+    };
+    history.push(auditEntry);
+
+    analysisObj.measurement_corrections = history;
+    analysisObj.is_measurement_corrected = true;
+    analysisObj.latest_corrected_weight = effectiveWeight;
+    analysisObj.weight_change_kg = newWeightDelta;
+    if (parsedWaist !== undefined) analysisObj.waist_circumference_cm = checkin.waist_circumference_cm;
+    if (parsedHip !== undefined) analysisObj.hip_circumference_cm = parsedHip;
+
+    checkin.analysis_output = analysisObj;
+    checkin.changed('analysis_output', true);
+    await checkin.save();
+
+    // Cascade delta to the subsequent checkin if present
+    if (nextCheckin && nextCheckin.average_weight_kg) {
+      nextCheckin.weight_change_kg = Math.round((nextCheckin.average_weight_kg - effectiveWeight) * 100) / 100;
+      const nextAnalysis = typeof nextCheckin.analysis_output === 'string'
+        ? JSON.parse(nextCheckin.analysis_output)
+        : (nextCheckin.analysis_output || {});
+      nextAnalysis.weight_change_kg = nextCheckin.weight_change_kg;
+      nextCheckin.analysis_output = nextAnalysis;
+      nextCheckin.changed('analysis_output', true);
+      await nextCheckin.save();
+    }
+
+    // Synchronize Trainee's Active Program client_profile if this is the latest checkin
+    let programUpdated = false;
+    if (isLatest) {
+      const activeProg = await Program.findOne({
+        where: { user_id: checkin.user_id, status: "ACTIVE" },
+        order: [["id", "DESC"]]
+      });
+      if (activeProg) {
+        const pData = typeof activeProg.program_data === 'string'
+          ? JSON.parse(activeProg.program_data)
+          : (activeProg.program_data || {});
+        if (!pData.client_profile) pData.client_profile = {};
+        if (parsedWeight !== null) {
+          pData.client_profile.weight = parsedWeight;
+          pData.client_profile.weight_kg = parsedWeight;
+          pData.client_profile.latest_checkin_weight = parsedWeight;
+        }
+        if (parsedWaist !== undefined && parsedWaist !== null) {
+          pData.client_profile.waist_cm = parsedWaist;
+        }
+        pData.client_profile.measurement_source = {
+          source: 'CHECKIN',
+          week_number: checkin.week_number,
+          checkin_id: checkin.id,
+          is_corrected: true,
+          updated_at: auditEntry.corrected_at
+        };
+        activeProg.program_data = pData;
+        activeProg.changed('program_data', true);
+        await activeProg.save();
+        programUpdated = true;
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "تم حفظ وتوثيق قياسات المتابعة وتزامنها مع ملف المتدرب بنجاح",
+      checkin,
+      is_latest_measurement: isLatest,
+      program_updated: programUpdated,
+      audit: auditEntry
+    });
+  } catch (error) {
+    console.error("Error updating checkin measurements:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
+
+/**
  * 1-Click Coach Approval and Program Auto-Regulation
  */
 export async function approveCheckin(req, res) {

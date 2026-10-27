@@ -296,3 +296,58 @@ export async function evaluateClientCheckinSchedule(userId, now = new Date()) {
     program_id: activeProgram.id,
   };
 }
+
+/**
+ * Resolves authoritative lifecycle status for a check-in event:
+ * - 'REVIEWED': Coach has approved and closed the review.
+ * - 'SUBMITTED': Trainee submitted; pending coach review.
+ * - 'OPEN': Window is currently active (within 72 hours).
+ * - 'UPCOMING': Scheduled in the future (due date not yet opened).
+ * - 'OVERDUE': Window expired (> 72 hours) without submission.
+ */
+export function resolveCheckinLifecycleStatus({ checkin = null, schedule = null } = {}) {
+  if (checkin) {
+    if (checkin.status === 'APPROVED' || checkin.status === 'AUTO_APPLIED') {
+      return {
+        lifecycle_status: 'REVIEWED',
+        label_ar: 'تمت المراجعة والاعتماد',
+        is_action_required: false
+      };
+    }
+    return {
+      lifecycle_status: 'SUBMITTED',
+      label_ar: 'بانتظار مراجعة الكوتش',
+      is_action_required: true
+    };
+  }
+
+  if (schedule) {
+    if (schedule.status === 'OPEN') {
+      return {
+        lifecycle_status: 'OPEN',
+        label_ar: 'نافذة التسجيل مفتوحة الآن',
+        is_action_required: false
+      };
+    }
+    if (schedule.status === 'UPCOMING') {
+      return {
+        lifecycle_status: 'UPCOMING',
+        label_ar: 'متابعة قادمة',
+        is_action_required: false
+      };
+    }
+    if (schedule.status === 'EXPIRED') {
+      return {
+        lifecycle_status: 'OVERDUE',
+        label_ar: 'متأخرة عن موعدها',
+        is_action_required: true
+      };
+    }
+  }
+
+  return {
+    lifecycle_status: 'UPCOMING',
+    label_ar: 'متابعة قادمة',
+    is_action_required: false
+  };
+}

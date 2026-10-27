@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Flame, Droplet, Activity, Check, Save, RotateCw, MessageCircle, UtensilsCrossed, Search, Plus, Edit2, Trash2, X, Scale, ShieldCheck } from 'lucide-react';
+import { Calculator, Flame, Droplet, Activity, Check, Save, RotateCw, MessageCircle, UtensilsCrossed, Search, Plus, Edit2, Trash2, X, Scale, ShieldCheck, Target } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import { copyToClipboard } from '../utils/clipboardUtils';
@@ -50,6 +50,7 @@ export default function MacroCalculator() {
   // --- CALCULATOR STATES ---
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
+  const activeClient = clients.find(c => String(c.id) === String(selectedClient));
   const [calcForm, setCalcForm] = useState({
     gender: 'MALE',
     age: 26,
@@ -877,6 +878,45 @@ export default function MacroCalculator() {
                   )}
                 </div>
 
+                {/* Measurement Source of Truth Banner */}
+                {activeClient && (
+                  <div style={{
+                    marginBottom: '14px',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    background: activeClient.is_measurement_corrected ? '#F4F0FD' : '#F0F9FF',
+                    border: `1px solid ${activeClient.is_measurement_corrected ? '#DDD6FE' : '#BAE6FD'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '10px',
+                    fontSize: '11.5px',
+                    fontWeight: 600,
+                    color: activeClient.is_measurement_corrected ? '#5B21B6' : '#0369A1'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Target size={15} />
+                      <span>
+                        المتدرب المحدد: <strong>{activeClient.full_name || `${activeClient.first_name || ''} ${activeClient.last_name || ''}`.trim() || activeClient.client_code}</strong>
+                      </span>
+                      <span>•</span>
+                      <span>{activeClient.latest_measurement_source?.label_ar || `الوزن المسجل: ${activeClient.weight_kg || '--'} كجم`}</span>
+                    </div>
+                    {activeClient.is_measurement_corrected && (
+                      <span style={{
+                        background: '#EDE9FE',
+                        color: '#6D28D9',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        fontSize: '10px',
+                        fontWeight: 800
+                      }}>
+                        قراءة مصححة بواسطة الكوتش
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Section 1: Biological Profile */}
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: '#344054', marginBottom: '8px' }}>
@@ -1274,8 +1314,14 @@ export default function MacroCalculator() {
                       <div style={{ fontSize: '12px', fontWeight: 700, color: '#673DE6', marginBottom: '2px' }}>
                         السعرات اليومية المستهدفة للخطة
                       </div>
-                      <div style={{ fontSize: '28px', fontWeight: 900, color: '#101828', lineHeight: 1.1 }}>
-                        <bdi dir="ltr">{targetCalories}</bdi> <span style={{ fontSize: '13px', fontWeight: 700, color: '#475467' }}>سعرة حرارية / اليوم</span>
+                      <div style={{ fontSize: metabolic.is_valid && targetCalories ? '28px' : '18px', fontWeight: 900, color: metabolic.is_valid && targetCalories ? '#101828' : '#64748B', lineHeight: 1.1 }}>
+                        {metabolic.is_valid && targetCalories ? (
+                          <>
+                            <bdi dir="ltr">{targetCalories}</bdi> <span style={{ fontSize: '13px', fontWeight: 700, color: '#475467' }}>سعرة حرارية / اليوم</span>
+                          </>
+                        ) : (
+                          <span>بيانات القياسات الأساسية غير مكتملة</span>
+                        )}
                       </div>
                     </div>
 
@@ -1299,9 +1345,9 @@ export default function MacroCalculator() {
                   {/* Sub-strip with BMR, TDEE, and Methodology */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', borderTop: '1px solid #E4D9FB', paddingTop: '10px', fontSize: '11px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: '#475467', fontWeight: 600 }}>
-                      <span>الحرق الأساسي (BMR): <strong style={{ color: '#101828' }}>{bmr} سعرة</strong></span>
+                      <span>الحرق الأساسي (BMR): <strong style={{ color: '#101828' }}>{metabolic.is_valid && bmr ? `${bmr} سعرة` : '--'}</strong></span>
                       <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
-                      <span>الاستهلاك الكلي (TDEE): <strong style={{ color: '#101828' }}>{tdee} سعرة</strong></span>
+                      <span>الاستهلاك الكلي (TDEE): <strong style={{ color: '#101828' }}>{metabolic.is_valid && tdee ? `${tdee} سعرة` : '--'}</strong></span>
                     </div>
                     <span style={{ background: '#FFFFFF', padding: '1px 8px', borderRadius: '6px', border: '1px solid #D6BBFB', fontWeight: 700, color: '#673DE6', fontSize: '10px' }}>
                       {calcForm.bodyFat ? 'معادلة Katch-McArdle السريرية (LBM)' : 'معادلة Mifflin-St Jeor السريرية'}
@@ -1388,7 +1434,22 @@ export default function MacroCalculator() {
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <CurvedSelect
                       value={selectedClient}
-                      onChange={(e) => setSelectedClient(e.target.value)}
+                      onChange={(e) => {
+                        const cId = e.target.value;
+                        setSelectedClient(cId);
+                        if (!cId) return;
+                        const cl = clients.find(c => String(c.id) === String(cId));
+                        if (cl) {
+                          setCalcForm(prev => ({
+                            ...prev,
+                            gender: cl.gender === 'FEMALE' ? 'FEMALE' : 'MALE',
+                            age: Number(cl.age) > 0 ? Number(cl.age) : '',
+                            weight: Number(cl.weight_kg || cl.weight) > 0 ? Number(cl.weight_kg || cl.weight) : '',
+                            height: Number(cl.height_cm || cl.height) > 0 ? Number(cl.height_cm || cl.height) : '',
+                            bodyFat: Number(cl.body_fat_percent || cl.body_fat) > 0 ? Number(cl.body_fat_percent || cl.body_fat) : null
+                          }));
+                        }
+                      }}
                       style={{ flex: 1, height: '36px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 12px', fontSize: '11.5px', fontWeight: 600, outline: 'none', background: '#FFFFFF' }}
                     >
                       <option value="">-- اختر متدرب لتطبيق الخطة فوراً --</option>

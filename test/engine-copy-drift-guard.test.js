@@ -21,6 +21,7 @@ const LIVE_PAIRS = {
   'food-swap-engine': 'foodSwapEngine',
   'intake-preflight-engine': 'intakePreflightEngine',
   'kitchen-yield-engine': 'kitchenYieldEngine',
+  'measurement-sync-engine': 'measurementSyncEngine',
   'mesocycle-debrief-engine': 'mesocycleDebriefEngine',
   'metabolic-macro-engine': 'metabolicMacroEngine',
   'offline-sync-engine': 'offlineSyncEngine',

@@ -91,9 +91,8 @@ export const getClients = async (req, res) => {
         {
           model: CheckinSubmission,
           as: "checkinSubmissions",
-          where: { status: 'PENDING_REVIEW' },
           required: false,
-          attributes: ['id', 'status', 'week_number', 'createdAt']
+          attributes: ['id', 'status', 'week_number', 'average_weight_kg', 'waist_circumference_cm', 'analysis_output', 'createdAt']
         }
       ],
       order: [['id', 'ASC']]
@@ -202,14 +201,70 @@ export const getClients = async (req, res) => {
         (activeProg?.client_profile?.conditions && activeProg?.client_profile?.conditions?.length > 0)
       );
 
+      // Checkin submissions resolution & triage (authoritative source of truth)
+      const allCheckins = (c.checkinSubmissions || []).slice().sort((a, b) => (Number(b.week_number) || 0) - (Number(a.week_number) || 0));
+      const pendingCheckins = allCheckins.filter(ch => ch.status === 'PENDING_REVIEW');
+      const latestCheckin = allCheckins[0] || null;
+      let latestCheckinAnalysis = {};
+      try {
+        latestCheckinAnalysis = typeof latestCheckin?.analysis_output === 'string'
+          ? JSON.parse(latestCheckin.analysis_output)
+          : (latestCheckin?.analysis_output || {});
+      } catch {
+        latestCheckinAnalysis = {};
+      }
+      const isMeasurementCorrected = Boolean(latestCheckinAnalysis?.is_measurement_corrected);
+
+      // Height and weight resolution (Source of Truth priority: Latest Checkin > Intake > Active Program Profile)
+      const clientWeight = latestCheckin?.average_weight_kg != null
+        ? Number(latestCheckin.average_weight_kg)
+        : (intakeAns?.weight_kg != null
+          ? Number(intakeAns.weight_kg)
+          : (activeProg?.client_profile?.weight != null ? Number(activeProg.client_profile.weight) : null));
+
+      const clientHeight = intakeAns?.height_cm != null
+        ? Number(intakeAns.height_cm)
+        : (activeProg?.client_profile?.height != null ? Number(activeProg.client_profile.height) : null);
+
+      const clientAge = intakeAns?.age != null
+        ? Number(intakeAns.age)
+        : (activeProg?.client_profile?.age != null ? Number(activeProg.client_profile.age) : null);
+
+      const clientGender = c.gender || intakeAns?.gender || activeProg?.client_profile?.gender || 'MALE';
+
+      let measurementSource = { type: 'NONE', label_ar: 'لا توجد قياسات مسجلة' };
+      if (latestCheckin && clientWeight) {
+        measurementSource = {
+          type: 'CHECKIN',
+          week_number: latestCheckin.week_number,
+          date: latestCheckin.createdAt,
+          is_corrected: isMeasurementCorrected,
+          corrected_at: latestCheckinAnalysis.measurement_corrections?.[latestCheckinAnalysis.measurement_corrections.length - 1]?.corrected_at || null,
+          label_ar: `آخر متابعة (الأسبوع ${latestCheckin.week_number}) — ${clientWeight} كجم${isMeasurementCorrected ? ' (مصحح بواسطة الكوتش)' : ''}`
+        };
+      } else if (intakeAns?.weight_kg) {
+        measurementSource = {
+          type: 'INTAKE',
+          date: c.intakeSubmissions?.[0]?.createdAt || null,
+          is_corrected: false,
+          label_ar: `استمارة المتدرب — ${clientWeight} كجم`
+        };
+      }
+
       return {
         ...c,
+        weight_kg: clientWeight,
+        height_cm: clientHeight,
+        age: clientAge,
+        gender: clientGender,
+        latest_measurement_source: measurementSource,
+        is_measurement_corrected: isMeasurementCorrected,
         days_remaining: daysRemaining,
         daysRemaining: daysRemaining,
         subscription_status: calculatedStatus,
         needs_first_plan: activePrograms.length === 0 || c.plan_approval_status === 'PENDING_COACH_REVIEW',
-        has_pending_checkin: Array.isArray(c.checkinSubmissions) && c.checkinSubmissions.length > 0,
-        pending_checkins_count: Array.isArray(c.checkinSubmissions) ? c.checkinSubmissions.length : 0,
+        has_pending_checkin: pendingCheckins.length > 0,
+        pending_checkins_count: pendingCheckins.length,
         status: calculatedStatus,
         plan_summary: {
           trainingDays,

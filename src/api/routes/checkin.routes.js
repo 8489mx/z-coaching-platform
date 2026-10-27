@@ -3,6 +3,7 @@ import {
   submitCheckin,
   getClientCheckins,
   approveCheckin,
+  updateCheckinMeasurements,
   logWorkout,
   getWorkoutLogs,
   decideDeload,
@@ -19,6 +20,8 @@ router.get("/schedule/:userId", requireAuth, getCheckinSchedule);
 router.get("/schedule", requireAuth, getCheckinSchedule);
 router.get("/user/:userId", requireAuth, getClientCheckins);
 router.get("/client/:userId", requireAuth, getClientCheckins);
+router.put("/:checkinId/measurements", requireAuth, updateCheckinMeasurements);
+router.patch("/:checkinId/measurements", requireAuth, updateCheckinMeasurements);
 router.post("/:checkinId/approve", requireAuth, approveCheckin);
 router.post("/:checkinId/deload-decision", requireAuth, decideDeload);
 router.post("/:checkinId/unlock-clinical-safety", requireAuth, unlockClinicalSafety);

@@ -36,6 +36,7 @@ import { FormSection } from '@/shared/components/form-section';
 import InteractivePhotoComparisonStudio from '../components/checkin/InteractivePhotoComparisonStudio';
 import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersReviewStudio';
 import { MilestoneProgressCardModal } from '../components/checkin/MilestoneProgressCardModal';
+import { CorrectMeasurementsModal } from '../components/checkin/CorrectMeasurementsModal';
 import { ClientCodeBadge, ClientPackageBadge } from '../utils/tierBadgeHelper';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
@@ -600,6 +601,7 @@ export default function CheckinReviewDashboard() {
   const [approveError, setApproveError] = useState(null);
   const [inspectionTab, setInspectionTab] = useState('PHOTOS'); // 'PHOTOS' | 'CHART' | 'LABS'
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
+  const [isEditMeasurementsOpen, setIsEditMeasurementsOpen] = useState(false);
   const [clearanceConfirmed, setClearanceConfirmed] = useState(false);
   const [clearanceNotes, setClearanceNotes] = useState('');
   const [isUnlockingClinical, setIsUnlockingClinical] = useState(false);
@@ -1598,11 +1600,38 @@ export default function CheckinReviewDashboard() {
               return (
                 <FormSection
                   title={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284C7' }}>
-                        <Activity size={15} />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284C7' }}>
+                          <Activity size={15} />
+                        </div>
+                        <span>المؤشرات الرقمية والقياسات الحيوية</span>
                       </div>
-                      <span>المؤشرات الرقمية والقياسات الحيوية</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditMeasurementsOpen(true)}
+                        style={{
+                          height: '28px',
+                          padding: '0 12px',
+                          borderRadius: '6px',
+                          background: '#F4F0FD',
+                          border: '1px solid #DDD6FE',
+                          color: '#673DE6',
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          boxShadow: '0 1px 2px rgba(103, 61, 230, 0.08)'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#EDE9FE')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = '#F4F0FD')}
+                        title="تصحيح وتوثيق قراءة الميزان والقياسات الحيوية"
+                      >
+                        <SlidersHorizontal size={13} />
+                        <span>تعديل القياسات</span>
+                      </button>
                     </div>
                   }
                   description="تطور الوزن ومحيط الخصر ومعدل الالتزام مقارنة بالأسبوع الماضي."
@@ -1611,7 +1640,14 @@ export default function CheckinReviewDashboard() {
                     
                     {/* Current Weight */}
                     <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '8px' }}>
-                      <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الوزن الحالي</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الوزن الحالي</span>
+                        {Boolean(activeCheckin?.analysis_output?.is_measurement_corrected || activeCheckin?.is_measurement_corrected) && (
+                          <span style={{ fontSize: '9px', fontWeight: 800, color: '#673DE6', background: '#EDE9FE', border: '1px solid #DDD6FE', padding: '1px 5px', borderRadius: '4px' }}>
+                            مصحح
+                          </span>
+                        )}
+                      </div>
                       <strong style={{ fontSize: '17px', color: '#101828', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                         {safeMetrics.current_weight} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>كجم</span>
                       </strong>
@@ -3412,6 +3448,42 @@ export default function CheckinReviewDashboard() {
             client={safeClient}
             activeCheckin={activeCheckin}
             history={activeCheckin?.history || []}
+          />
+        )}
+
+        {/* Correct Measurements Modal */}
+        {isEditMeasurementsOpen && activeCheckin && (
+          <CorrectMeasurementsModal
+            isOpen={isEditMeasurementsOpen}
+            onClose={() => setIsEditMeasurementsOpen(false)}
+            checkin={activeCheckin}
+            client={safeClient}
+            onSaved={(data) => {
+              if (data?.checkin) {
+                const newW = data.checkin.average_weight_kg;
+                const newDelta = data.checkin.weight_change_kg;
+                const newWaist = data.checkin.waist_circumference_cm;
+                setCheckinList(prev => prev.map(item => {
+                  if (item.id === activeCheckin.id || item.checkin_id === activeCheckin.id) {
+                    return {
+                      ...item,
+                      average_weight_kg: newW,
+                      weight_change_kg: newDelta,
+                      waist_circumference_cm: newWaist,
+                      analysis_output: data.checkin.analysis_output,
+                      is_measurement_corrected: true,
+                      metrics: {
+                        ...(item.metrics || {}),
+                        current_weight: newW,
+                        weight_change: newDelta,
+                        waist_current: newWaist || item.metrics?.waist_current
+                      }
+                    };
+                  }
+                  return item;
+                }));
+              }
+            }}
           />
         )}
 
