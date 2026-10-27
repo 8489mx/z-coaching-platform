@@ -424,7 +424,9 @@ export async function submitCheckin(req, res) {
  */
 export async function decideDeload(req, res) {
   try {
-    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    const requester = req.user?.role
+      ? req.user
+      : (req.user?.id ? await User.findByPk(req.user.id) : null);
     if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
       return res.status(403).json({ success: false, error: "اعتماد الديلود متاح للكوتش فقط" });
     }
@@ -527,7 +529,10 @@ export async function approveCheckin(req, res) {
     // لا يتم تعديل البرنامج إلا بطلب صريح معتمد من المدرب (apply_program_adaptation: true)
     // أو عند إرسال تعديل ماكروز صريح ما لم يحدد المدرب عدم التعديل صراحة (apply_program_adaptation === false)
     const hasCustomMacros = Boolean(custom_macros && typeof custom_macros === "object" && Object.keys(custom_macros).length > 0);
-    const shouldAdaptProgram = apply_program_adaptation === true || (hasCustomMacros && apply_program_adaptation !== false);
+    const alreadyAdaptedForThisCheckin = Boolean(checkin.adapted_program_id);
+    const shouldAdaptProgram =
+      (apply_program_adaptation === true && (!alreadyAdaptedForThisCheckin || hasCustomMacros)) ||
+      (hasCustomMacros && apply_program_adaptation !== false);
 
     if (shouldAdaptProgram && latestProgram && latestProgram.program_data) {
       const progData = typeof latestProgram.program_data === "string"
@@ -579,7 +584,7 @@ export async function approveCheckin(req, res) {
       // Safe, Deterministic, and Idempotent Non-Destructive Deep Merge
       const mergedProgramData = mergeAdaptedPlanIntoProgram(
         progData,
-        adapted || checkin.analysis_output || {},
+        alreadyAdaptedForThisCheckin ? {} : (adapted || checkin.analysis_output || {}),
         custom_macros
       );
 
@@ -665,7 +670,9 @@ export async function logWorkout(req, res) {
       });
     }
     if (!req.user || req.user.id !== userObj.id) {
-      const requester = req.user ? await User.findByPk(req.user.id) : null;
+      const requester = req.user?.role
+      ? req.user
+      : (req.user?.id ? await User.findByPk(req.user.id) : null);
       if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
         return res.status(403).json({ success: false, error: "غير مصرح لك بتسجيل تمارين لمتدرب آخر" });
       }
@@ -769,13 +776,16 @@ export async function getCheckinSchedule(req, res) {
  */
 export async function unlockClinicalSafety(req, res) {
   try {
-    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    const requester = req.user?.role
+      ? req.user
+      : (req.user?.id ? await User.findByPk(req.user.id) : null);
     if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
       return res.status(403).json({ success: false, error: "إلغاء القفل السريري متاح للكوتش أو المشرف الطبي فقط" });
     }
 
     const { checkinId } = req.params;
     const { medical_clearance_confirmed, clearance_notes } = req.body;
+    const cleanClearanceNotes = String(clearance_notes || "").trim();
 
     if (medical_clearance_confirmed !== true) {
       return res.status(400).json({
@@ -787,6 +797,12 @@ export async function unlockClinicalSafety(req, res) {
     const checkin = await CheckinSubmission.findByPk(checkinId);
     if (!checkin) {
       return res.status(404).json({ success: false, error: "سجل المتابعة غير موجود" });
+    }
+    if (!cleanClearanceNotes) {
+      return res.status(400).json({
+        success: false,
+        error: "يجب تدوين ملاحظات التصريح الطبي وإخلاء المسؤولية قبل فك القفل السريري",
+      });
     }
 
     const updatedAnalysis = {
@@ -802,6 +818,7 @@ export async function unlockClinicalSafety(req, res) {
     };
 
     checkin.analysis_output = updatedAnalysis;
+    checkin.changed("analysis_output", true);
     await checkin.save();
 
     // Complete trainee clearance: unlock any other locked checkin rows for this client
@@ -813,6 +830,7 @@ export async function unlockClinicalSafety(req, res) {
           training_locked: false,
           clinical_unlock: updatedAnalysis.clinical_unlock,
         };
+        c.changed("analysis_output", true);
         await c.save();
       }
     }

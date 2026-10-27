@@ -600,6 +600,10 @@ export default function CheckinReviewDashboard() {
   const [approveError, setApproveError] = useState(null);
   const [inspectionTab, setInspectionTab] = useState('PHOTOS'); // 'PHOTOS' | 'CHART' | 'LABS'
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
+  const [clearanceConfirmed, setClearanceConfirmed] = useState(false);
+  const [clearanceNotes, setClearanceNotes] = useState('');
+  const [isUnlockingClinical, setIsUnlockingClinical] = useState(false);
+  const [clinicalUnlockMessage, setClinicalUnlockMessage] = useState(null);
 
   // Live Checkins Fetcher from MariaDB
   // The loader sits outside the effect so the coach can ask for it again without reloading the page.
@@ -925,7 +929,57 @@ export default function CheckinReviewDashboard() {
     });
   };
 
-  const handleApprove = async () => {
+  const handleUnlockClinicalSafety = async () => {
+    if (!activeCheckin?.raw_id) return;
+    if (!clearanceConfirmed) {
+      setApproveError('يجب تأكيد استلام التقرير والتصريح الطبي قبل فك القفل السريري.');
+      return;
+    }
+    if (!String(clearanceNotes || '').trim()) {
+      setApproveError('يجب تدوين ملاحظات التصريح الطبي وإخلاء المسؤولية قبل فك القفل السريري.');
+      return;
+    }
+    setIsUnlockingClinical(true);
+    setApproveError(null);
+    setClinicalUnlockMessage(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/checkin/${activeCheckin.raw_id}/unlock-clinical-safety`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          medical_clearance_confirmed: true,
+          clearance_notes: clearanceNotes.trim()
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setApproveError(data.error || 'تعذر فك القفل السريري.');
+        setIsUnlockingClinical(false);
+        return;
+      }
+      setCheckinList(prev => prev.map(item => item.id === activeCheckin.id ? {
+        ...item,
+        analysis_output: {
+          ...(item.analysis_output || {}),
+          training_locked: false,
+          clinical_unlock: data.clinical_unlock
+        }
+      } : item));
+      setClinicalUnlockMessage(data.message || 'تم فك القفل السريري وتوثيق التصريح الطبي بنجاح.');
+    } catch (err) {
+      console.warn('Clinical unlock error:', err);
+      setApproveError('تعذر الاتصال بالخادم لفك القفل السريري.');
+    } finally {
+      setIsUnlockingClinical(false);
+    }
+  };
+
+  const handleApprove = async (applyAdaptation = false) => {
+    if (!activeCheckin) return;
+    if (!String(coachReply || '').trim()) {
+      setApproveError('يرجى كتابة ملاحظة وتوجيه الكوتش للمتدرب قبل اعتماد المراجعة.');
+      return;
+    }
     if (!activeCheckin) return;
     setIsSubmitting(true);
 
@@ -942,7 +996,8 @@ export default function CheckinReviewDashboard() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             coach_notes: replyMsg,
-            custom_macros: macroAdjustments
+            apply_program_adaptation: Boolean(applyAdaptation),
+            ...(applyAdaptation ? { custom_macros: macroAdjustments } : {})
           })
         });
         if (!res.ok) {
@@ -2875,6 +2930,117 @@ export default function CheckinReviewDashboard() {
                 })()}
               </FormSection>
 
+              {/* Clinical Safety Lockout & Unlock Card (FIX-09) */}
+              {activeCheckin?.analysis_output?.training_locked === true && (
+                <div style={{
+                  background: '#FEF2F2',
+                  border: '1px solid #FECACA',
+                  borderRadius: '12px',
+                  padding: '12px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <span style={{ fontSize: '12.5px', fontWeight: 800, color: '#991B1B' }}>
+                      قفل أمان سريري نشط — إيقاف مؤقت للتمرين لحين توثيق التصريح الطبي
+                    </span>
+                    <span style={{ fontSize: '10.5px', fontWeight: 800, background: '#FEE2E2', color: '#B91C1C', padding: '2px 8px', borderRadius: '9999px' }}>
+                      يتطلب تصريح طبيب
+                    </span>
+                  </div>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', fontWeight: 700, color: '#7F1D1D', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={clearanceConfirmed}
+                      onChange={(e) => setClearanceConfirmed(e.target.checked)}
+                    />
+                    <span>أؤكد استلام التقرير والتصريح الطبي الرسمي باستئناف التدريب لهذا المتدرب</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={clearanceNotes}
+                    onChange={(e) => setClearanceNotes(e.target.value)}
+                    placeholder="اكتب ملخص التصريح الطبي وتوصية الطبيب المعالج..."
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      border: '1px solid #FCA5A5',
+                      background: '#FFFFFF',
+                      fontSize: '11.5px',
+                      color: '#101828',
+                      fontFamily: 'Cairo, sans-serif',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      type="button"
+                      onClick={handleUnlockClinicalSafety}
+                      disabled={isUnlockingClinical}
+                      style={{
+                        height: '34px',
+                        padding: '0 14px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: '#DC2626',
+                        color: '#FFFFFF',
+                        fontSize: '11.5px',
+                        fontWeight: 800,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {isUnlockingClinical ? 'جاري توثيق التصريح...' : 'فك القفل السريري وتوثيق التصريح الطبي'}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {clinicalUnlockMessage && (
+                <div style={{ background: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '10px', padding: '8px 12px', fontSize: '11.5px', fontWeight: 700, color: '#166534' }}>
+                  {clinicalUnlockMessage}
+                </div>
+              )}
+
+              {/* Period Compliance Summary Bar (ملخص التزام الفترة قبل القرار) */}
+              <div style={{
+                background: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                borderRadius: '12px',
+                padding: '10px 12px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+                gap: '8px'
+              }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>تغير الوزن</div>
+                  <div style={{ fontSize: '12.5px', fontWeight: 800, color: Number(safeMetrics?.weight_change || 0) <= 0 ? '#16A34A' : '#D97706', fontFamily: 'JetBrains Mono, Cairo' }}>
+                    {Number(safeMetrics?.weight_change || 0) > 0 ? `+${safeMetrics?.weight_change}` : (safeMetrics?.weight_change || 0)} كجم
+                  </div>
+                </div>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>التزام التغذية</div>
+                  <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#101828', fontFamily: 'JetBrains Mono, Cairo' }}>
+                    {safeMetrics?.adherence ?? 100}%
+                  </div>
+                </div>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>حصص التمرين</div>
+                  <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#101828', fontFamily: 'JetBrains Mono, Cairo' }}>
+                    {safeMetrics?.workouts_completed ?? 0} / {safeMetrics?.workouts_target ?? 4}
+                  </div>
+                </div>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>فرق السعرات</div>
+                  <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#673DE6', fontFamily: 'JetBrains Mono, Cairo' }}>
+                    {(() => {
+                      const diff = (Number(macroAdjustments?.calories) || 0) - (Number(activeCheckin?.baseline_macros?.calories) || 2000);
+                      return diff > 0 ? `+${diff}` : diff;
+                    })()} سعرة
+                  </div>
+                </div>
+              </div>
+
               {/* Coach Reply & Approval */}
               <FormSection
                 title={
@@ -3008,7 +3174,34 @@ export default function CheckinReviewDashboard() {
                     {/* Primary Approve & Next Button */}
                     <button
                       type="button"
-                      onClick={handleApprove}
+                      onClick={() => handleApprove(false)}
+                      disabled={isSubmitting}
+                      style={{
+                        flex: 1,
+                        height: '38px',
+                        background: '#FFFFFF',
+                        color: '#101828',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '9px',
+                        fontSize: '11.5px',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        outline: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title="اعتماد مراجعة المتابعة وحفظ ملاحظات الكوتش دون تعديل أرقام البرنامج الحالي"
+                    >
+                      <span>اعتماد المراجعة فقط</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleApprove(true)}
                       disabled={isSubmitting}
                       style={{
                         flex: 1,
@@ -3037,7 +3230,7 @@ export default function CheckinReviewDashboard() {
                       ) : (
                         <>
                           <Save size={15} />
-                          <span>اعتماد وانتقال للمتدرب التالي</span>
+                          <span>اعتماد وتحديث الخطة</span>
                         </>
                       )}
                     </button>
