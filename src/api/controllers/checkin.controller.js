@@ -558,7 +558,18 @@ export async function approveCheckin(req, res) {
             joint_pain_location: jointLocation,
             pain_score: painScore,
             accumulated_fatigue_score: fatigueScore,
-            weeks_of_accumulated_training: cycle.current_week
+            weeks_of_accumulated_training: cycle.current_week,
+            experience:
+              progData.training_program?.experience ||
+              progData.training_program?.experience_level ||
+              progData.training?.experience ||
+              progData.training?.experience_level ||
+              progData.client_profile?.experience ||
+              progData.client_profile?.experience_level ||
+              progData.client?.experience ||
+              progData.client?.experience_level ||
+              progData.intake_decision?.profile?.experience ||
+              undefined
           }
         });
       } catch (e) {

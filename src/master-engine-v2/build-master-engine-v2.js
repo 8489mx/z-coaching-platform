@@ -1270,6 +1270,8 @@ export function buildMasterEngineV2(inputs) {
     height_cm: bodyHeight,
     bmi: Math.round((bodyWeight / ((bodyHeight / 100) ** 2)) * 10) / 10,
     training_environment: effectiveIntake?.training_environment || null,
+    experience: enrichedTrainingMesocycle?.experience || intake_decision?.profile?.experience || canonicalIntake.training?.experience || null,
+    experience_level: enrichedTrainingMesocycle?.experience || intake_decision?.profile?.experience || canonicalIntake.training?.experience || null,
     injuries: effectiveIntake?.injuries_map?.has_injuries === false ? [] : listOf(effectiveIntake?.injuries_map?.selected_areas),
     conditions: listOf(effectiveIntake?.medical_conditions?.selected),
     allergies: listOf(effectiveIntake?.strict_allergies),

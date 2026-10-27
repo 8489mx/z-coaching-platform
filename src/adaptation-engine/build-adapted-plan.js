@@ -554,7 +554,7 @@ export function buildAdaptedPlan(inputs) {
   }
 
   // Meso-Cycle Progression extraction & Adaptive Biomechanical Tuning
-  const mesoWeeks = currentMasterProgram.training_program?.weeks || [];
+  const mesoWeeks = currentMasterProgram.training_program?.weeks || currentMasterProgram.training?.weeks || [];
   const targetWeekIndex = Math.min(nextWeekNumber - 1, Math.max(0, mesoWeeks.length - 1));
   let adaptedTrainingWeek = mesoWeeks[targetWeekIndex] ? JSON.parse(JSON.stringify(mesoWeeks[targetWeekIndex])) : null;
 
@@ -576,7 +576,16 @@ export function buildAdaptedPlan(inputs) {
       options.experience ||
       checkinAnalysis.experience ||
       currentMasterProgram.client?.experience ||
+      options.experience_level ||
+      checkinAnalysis.experience_level ||
+      currentMasterProgram.client?.experience_level ||
+      currentMasterProgram.client_profile?.experience ||
+      currentMasterProgram.client_profile?.experience_level ||
+      currentMasterProgram.intake_decision?.profile?.experience ||
+      currentMasterProgram.training?.experience ||
+      currentMasterProgram.training?.experience_level ||
       currentMasterProgram.training_program?.experience ||
+      currentMasterProgram.training_program?.experience_level ||
       "BEGINNER"
     ).toUpperCase();
     const isClientAdvanced = clientExp === "ADVANCED";

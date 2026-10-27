@@ -968,6 +968,8 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     schedule_mode: basePlan.schedule_mode,
     strategy: VolumeProgressionStrategy.LINEAR_RIR_DROP,
     muscle_bias: muscleBias,
+    experience: intakeExperience,
+    experience_level: intakeExperience,
     clinical_guardrails: {
       hypertension_guard_active: Boolean(hasHypertensionOrHeart),
       min_rir_enforced: hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR : null,
