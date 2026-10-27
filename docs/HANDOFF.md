@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2191/2191 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2199/2199 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -326,6 +326,17 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **CoachEditor Size Guard Compliance**: compressed imports and modularized props in `frontend/src/pages/CoachEditor.jsx` to strictly maintain the < 500 lines invariant.
   - Guarded by `test/intake-preflight-and-plan-automation-guard.test.js` (7 comprehensive domain tests).
 - Verification: **2191/2191 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`4.12s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
+
+## 3aa. Twenty-seventh round (2026-10-27) — Phase 9 Measurement Source of Truth, Post-Submission Correction & Checkin States Sync (Units B & C, tasks B-06, C-03..C-05) — merged + pushed
+
+- `4e93eda` **Measurement Source of Truth, Post-Submission Correction & Checkin States Sync (Units B & C, tasks B-06, C-03..C-05)**:
+  - **Measurement Sync Engine & Safe BMI**: created `frontend/src/utils/measurementSyncEngine.js` (re-exported by `src/execution-engines/measurement-sync-engine.js` and registered in `LIVE_PAIRS`), enforcing authoritative measurement resolution across priority hierarchy (Latest Check-in > Active Program Profile > Intake Form > User), immutable audit trail builder (`buildMeasurementCorrectionAudit`), and safe BMI calculation (`calculateBmiSafe`) strictly refusing to compute BMI on incomplete/missing anthropometric data (nullifying bogus zero BMIs and false severe wasting).
+  - **Checkin Measurement Correction Endpoint**: implemented `updateCheckinMeasurements` in `src/api/controllers/checkin.controller.js` (`PUT /api/v1/checkin/:checkinId/measurements`), allowing coaches to correct trainee checkin weights/circumferences, appending an immutable audit trail (`analysis_output.measurement_corrections`), cascading delta recalculations forward to subsequent checkins (preventing progression deltas drift), and updating the active program client profile if latest.
+  - **Enriched Client Authoritative Measurements**: upgraded `getClients` in `src/api/controllers/client.controller.js` to expose authoritative `weight_kg`, `height_cm`, `age`, `gender`, `latest_measurement_source`, and `is_measurement_corrected`.
+  - **Checkin Lifecycle Status Sync**: added `resolveCheckinLifecycleStatus` in `src/api/services/checkinScheduleService.js`, standardizing 4 operational lifecycle states (`REVIEWED`, `SUBMITTED`, `UPCOMING`, `OVERDUE`).
+  - **UI Integration & Curved Aesthetics**: created `frontend/src/components/checkin/CorrectMeasurementsModal.jsx` (16px curved container, zero emojis), integrated correction trigger and "مصحح" badge in `CheckinReviewDashboard.jsx`, unified authoritative measurement banner in `MacroCalculator.jsx` with instant sync upon client selection, and corrected weight fallback in `ClientTimelineProfile.jsx`.
+  - Guarded by `test/measurements-source-of-truth-and-checkin-sync-guard.test.js` (7 comprehensive domain tests).
+- Verification: **2199/2199 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`3.76s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
 
 ## 4. Open work (in priority order)
 
