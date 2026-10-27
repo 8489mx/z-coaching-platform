@@ -38,18 +38,26 @@ export const GOAL_CALORIE_MULTIPLIERS = {
 };
 
 /**
- * Calculates BMR deterministically.
+ * Calculates BMR deterministically without silent anthropometric defaults.
  */
 export function calculateBMR({
   gender = 'MALE',
-  age = 26,
-  weight_kg = 85,
-  height_cm = 178,
+  age,
+  weight_kg,
+  height_cm,
   body_fat_percent = null
-}) {
-  const safeWeight = Number(weight_kg) || 75;
-  const safeHeight = Number(height_cm) || 175;
-  const safeAge = Number(age) || 25;
+} = {}) {
+  const safeWeight = Number(weight_kg);
+  const safeHeight = Number(height_cm);
+  const safeAge = Number(age);
+
+  if (
+    !Number.isFinite(safeWeight) || safeWeight <= 0 ||
+    !Number.isFinite(safeHeight) || safeHeight <= 0 ||
+    !Number.isFinite(safeAge) || safeAge <= 0
+  ) {
+    return null;
+  }
 
   if (body_fat_percent && body_fat_percent > 5 && body_fat_percent < 60) {
     const leanMass = safeWeight * (1 - (body_fat_percent / 100));
@@ -63,22 +71,62 @@ export function calculateBMR({
 }
 
 /**
- * Calculates complete metabolic and macronutrient profile.
+ * Calculates complete metabolic and macronutrient profile without silent anthropometric defaults.
  */
 export function calculateMetabolicMacroProfile({
   gender = 'MALE',
-  age = 26,
-  weight_kg = 85,
-  height_cm = 178,
+  age,
+  weight_kg,
+  height_cm,
   body_fat_percent = null,
   daily_activity = 'STANDING_WALKING',
   workout_frequency = 'DAYS_3_TO_5',
   goal = 'FAT_LOSS_STANDARD',
   protein_per_kg = 2.2,
   is_muscular = false
-}) {
-  const safeWeight = Number(weight_kg) || 75;
-  const safeHeight = Number(height_cm) || 175;
+} = {}) {
+  const safeWeight = Number(weight_kg);
+  const safeHeight = Number(height_cm);
+  const safeAge = Number(age);
+
+  const missing_fields = [];
+  if (!Number.isFinite(safeWeight) || safeWeight <= 0) missing_fields.push('weight_kg');
+  if (!Number.isFinite(safeHeight) || safeHeight <= 0) missing_fields.push('height_cm');
+  if (!Number.isFinite(safeAge) || safeAge <= 0) missing_fields.push('age');
+
+  if (missing_fields.length > 0) {
+    return {
+      is_valid: false,
+      missing_fields,
+      error_ar: 'بيانات القياسات الأساسية غير مكتملة (الوزن والطول والعمر مطلوبة لحساب السعرات والماكروز بدقة دون افتراضات صامتة).',
+      gender,
+      age: Number.isFinite(safeAge) && safeAge > 0 ? safeAge : null,
+      weight_kg: Number.isFinite(safeWeight) && safeWeight > 0 ? safeWeight : null,
+      height_cm: Number.isFinite(safeHeight) && safeHeight > 0 ? safeHeight : null,
+      bmi: null,
+      is_bmi_cap_applied: false,
+      calculation_weight_for_protein_kg: null,
+      bmr_kcal: null,
+      tdee_multiplier: null,
+      tdee_kcal: null,
+      target_calories_kcal: null,
+      macro_targets: {
+        protein_g: null,
+        protein_kcal: null,
+        protein_percent: 0,
+        fat_g: null,
+        fat_kcal: null,
+        fat_percent: 0,
+        carbs_g: null,
+        carbs_kcal: null,
+        carbs_percent: 0
+      },
+      hormonal_fat_floor_active: false,
+      water_target_liters: null,
+      steps_target: null
+    };
+  }
+
   const heightMeters = safeHeight / 100;
   const bmi = safeWeight / (heightMeters * heightMeters);
 
@@ -92,7 +140,7 @@ export function calculateMetabolicMacroProfile({
   }
 
   // 2. BMR & Additive TDEE Decoupling
-  const bmr = calculateBMR({ gender, age, weight_kg: safeWeight, height_cm: safeHeight, body_fat_percent });
+  const bmr = calculateBMR({ gender, age: safeAge, weight_kg: safeWeight, height_cm: safeHeight, body_fat_percent });
 
   const activityFactor = (DAILY_ACTIVITY_FACTORS[daily_activity] || DAILY_ACTIVITY_FACTORS.STANDING_WALKING).value;
   const workoutFactor = (WORKOUT_FREQUENCY_FACTORS[workout_frequency] || WORKOUT_FREQUENCY_FACTORS.DAYS_3_TO_5).value;
@@ -124,8 +172,10 @@ export function calculateMetabolicMacroProfile({
   const stepsTarget = (goal.includes('CUT') || goal.includes('FAT')) ? 10000 : 8000;
 
   return {
+    is_valid: true,
+    missing_fields: [],
     gender,
-    age,
+    age: safeAge,
     weight_kg: safeWeight,
     height_cm: safeHeight,
     bmi: Math.round(bmi * 10) / 10,

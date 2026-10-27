@@ -251,16 +251,16 @@ export default function MacroCalculator() {
     is_muscular: calcForm.isMuscular
   });
 
-  const bmr = metabolic.bmr_kcal;
-  const tdee = metabolic.tdee_kcal;
-  const targetCalories = metabolic.target_calories_kcal;
-  const targetProteinGrams = metabolic.macro_targets.protein_g;
-  const targetFatGrams = metabolic.macro_targets.fat_g;
-  const targetCarbGrams = metabolic.macro_targets.carbs_g;
+  const bmr = metabolic.bmr_kcal ?? 0;
+  const tdee = metabolic.tdee_kcal ?? 0;
+  const targetCalories = metabolic.target_calories_kcal ?? 0;
+  const targetProteinGrams = metabolic.macro_targets.protein_g ?? 0;
+  const targetFatGrams = metabolic.macro_targets.fat_g ?? 0;
+  const targetCarbGrams = metabolic.macro_targets.carbs_g ?? 0;
   const proteinCalories = targetProteinGrams * 4;
   const fatCalories = targetFatGrams * 9;
   const carbsCalories = targetCarbGrams * 4;
-  const waterTargetLiters = metabolic.water_target_liters.toFixed(1);
+  const waterTargetLiters = (metabolic.water_target_liters ?? 0).toFixed(1);
   const totalMacroCalories = (proteinCalories + carbsCalories + fatCalories) || targetCalories || 1;
   const proteinPct = Math.round((proteinCalories / totalMacroCalories) * 100);
   const carbsPct = Math.round((carbsCalories / totalMacroCalories) * 100);
@@ -268,6 +268,10 @@ export default function MacroCalculator() {
   const calorieDiff = targetCalories - tdee;
 
   const handleApplyToClient = async () => {
+    if (metabolic.is_valid === false || !targetCalories) {
+      alert(metabolic.error_ar || 'بيانات القياسات الأساسية غير مكتملة (الوزن والطول والعمر مطلوبة قبل تطبيق الخطة)');
+      return;
+    }
     if (!selectedClient) {
       alert('يرجى اختيار متدرب أولاً');
       return;
@@ -844,10 +848,10 @@ export default function MacroCalculator() {
                             setCalcForm(prev => ({
                               ...prev,
                               gender: cl.gender === 'FEMALE' ? 'FEMALE' : 'MALE',
-                              age: Number(cl.age) || prev.age,
-                              weight: Number(cl.weight_kg || cl.weight) || prev.weight,
-                              height: Number(cl.height_cm || cl.height) || prev.height,
-                              bodyFat: Number(cl.body_fat_percent || cl.body_fat) || prev.bodyFat
+                              age: Number(cl.age) > 0 ? Number(cl.age) : '',
+                              weight: Number(cl.weight_kg || cl.weight) > 0 ? Number(cl.weight_kg || cl.weight) : '',
+                              height: Number(cl.height_cm || cl.height) > 0 ? Number(cl.height_cm || cl.height) : '',
+                              bodyFat: Number(cl.body_fat_percent || cl.body_fat) > 0 ? Number(cl.body_fat_percent || cl.body_fat) : null
                             }));
                           }
                         }}
