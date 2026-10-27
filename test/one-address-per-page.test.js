@@ -45,6 +45,6 @@ test("every older address still leads somewhere", () => {
 
 test("the sidebar starts with what is waiting on the coach", () => {
   const sidebar = fs.readFileSync(path.join(ROOT, "frontend/src/components/layout/Sidebar.jsx"), "utf8");
-  const order = [...sidebar.matchAll(/key: '(today|customers|exercises|mobility|calculator|financials|settings)'/g)].map((m) => m[1]);
-  assert.deepEqual(order, ["today", "customers", "exercises", "mobility", "calculator", "financials", "settings"]);
+  const order = [...sidebar.matchAll(/key: '(today|intakes|checkins|customers|reminders|exercises|mobility|calculator|financials|settings)'/g)].map((m) => m[1]);
+  assert.deepEqual(order, ["today", "intakes", "checkins", "customers", "reminders", "exercises", "mobility", "calculator", "financials", "settings"]);
 });

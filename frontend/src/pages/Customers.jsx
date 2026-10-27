@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import {
   Users,
   Plus,
@@ -12,8 +12,7 @@ import {
   Check,
   RotateCw,
   Filter,
-  Target,
-  ClipboardList
+  Target
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
@@ -29,7 +28,6 @@ import { TierFilter } from '@/shared/components/tier-filter';
 import { RefreshButton } from '@/shared/components/refresh-button';
 
 export default function Customers() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -380,41 +378,6 @@ export default function Customers() {
             >
               <Download size={14} color="#027A48" />
               <span>تصدير Excel / CSV</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate('/intake/submissions')}
-              style={{
-                height: '34px',
-                padding: '0 14px',
-                borderRadius: '8px',
-                border: '1px solid #D0D5DD',
-                background: '#FFFFFF',
-                color: '#344054',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#F9FAFB';
-                e.currentTarget.style.borderColor = '#673DE6';
-                e.currentTarget.style.color = '#673DE6';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#FFFFFF';
-                e.currentTarget.style.borderColor = '#D0D5DD';
-                e.currentTarget.style.color = '#344054';
-              }}
-              title="عرض كافة استمارات الاستقبال الجديدة والواردة"
-            >
-              <ClipboardList size={14} color="#673DE6" />
-              <span>الاستمارات</span>
             </button>
 
             <button

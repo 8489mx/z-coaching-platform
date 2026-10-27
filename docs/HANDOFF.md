@@ -449,18 +449,22 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **Complex Realistic Clients Stress Test Alignment (`scripts/stress_test_10_complex_clients.js`)**: modernized `evaluateWeeklyProgress` parameter invocation across Clients 1, 3, and 9 to pass top-level typed parameters (`currentWeightKg`, `previousWeightKg`, `currentCalories`, `nutritionAdherencePct`, `workoutAdherencePct`), resolving historical RangeError. 10/10 complex clients passed across 2 months of simulated progression with zero failures.
   - **Battery Verification**: 306 random clients stress test passed (0 crashes, 0 violations), 10 end-to-end simulated clients passed (100%), 6 long multi-week journeys passed (0 issues), 2311 unit and integration tests passing.
 
-## 3ak. Thirty-seventh round (2026-10-27) — Dashboard Navigation Architecture Simplification (Phase 19) — merged + pushed
+## 3ak. Thirty-seventh round (2026-10-27) — Dashboard Navigation Direct Desks Architecture (Phase 19) — merged + pushed
 
-- **Dashboard Navigation Architecture Simplification (`frontend/src/components/layout/Sidebar.jsx`, `AdminHeader.jsx`, `CoachCommandCenter.jsx`, `Customers.jsx`)**:
-  - **Single 4-Pillar Information Architecture**: Structured coach navigation into 4 crisp, distraction-free destinations based on real daily coach ergonomics:
-    1. **«اليوم» (`/`)**: Central focal point for everything due today or overdue with live badge matching the actionable queue (`actions`), plus 1-click curved secondary access to «كل المتابعات» (`/coach/checkin-review`) and «الرسائل والتذكيرات» (`/coach/reminders`).
-    2. **«المشتركون» (`/customers`)**: All customer management, active clients list, search, filters, timeline profiles, and a direct curved button to «الاستمارات» (`/intake/submissions`) for unlinked or new intake submissions.
-    3. **«المكتبة»**: Clean collapsible group housing verified tools and reference libraries: دليل التمارين (`/exercises`), المرونة والاستشفاء (`/coach/mobility`), and الأغذية والماكروز (`/calculator`).
-    4. **«الإدارة»**: Administrative essentials tucked neatly below: الاشتراكات والمالية (`/coach/financials`) and إعدادات المنظومة والصلاحيات (`/master-settings`).
-  - **Preserved Existing Routes & URLs**: Zero route destruction or URL drift. All existing deep links, query params, and client plan edit routes (`/coach/editor`) remain fully active in client context.
-  - **Strict Invariants**: No sharp corners (all 8px curved buttons), zero emojis, pure Arabic RTL, zero backend drift.
-  - **Guard Testing**: Updated `test/one-address-per-page.test.js` to assert the simplified 4-pillar sidebar structure. 8/8 navigation and screen tests pass.
-  - Verification: lint 0 warnings/0 errors, frontend production build clean.
+- **Direct Desks Navigation Architecture (`frontend/src/components/layout/Sidebar.jsx`, `AdminHeader.jsx`, `CoachCommandCenter.jsx`, `Customers.jsx`)**:
+  - **Explicit Direct Doors**: Eliminated all hidden/nested sub-buttons. Daily coach desks are permanently visible and directly accessible from the sidebar with live badges:
+    1. **«اليوم» (`/`)**: Executive overview and action queue for everything due today and overdue.
+    2. **«الاستمارات الجديدة» (`/intake/submissions`)**: Direct access with live badge for new intake submissions awaiting coach review.
+    3. **«مراجعة التقييمات» (`/coach/checkin-review`)**: Direct access with live badge for pending weekly check-ins.
+    4. **«المشتركون» (`/customers`)**: Customer database, search, and client timeline profiles.
+    5. **«رسائل الواتساب» (`/coach/reminders`)**: WhatsApp reminders and messaging hub.
+  - **Clean Groups Below**:
+    - **«المكتبة»**: Collapsible reference section housing دليل التمارين (`/exercises`), المرونة والاستشفاء (`/coach/mobility`), and الأغذية والماكروز (`/calculator`).
+    - **«الإدارة»**: الاشتراكات والمالية (`/coach/financials`) and إعدادات المنظومة (`/master-settings`).
+  - **Zero Sub-Button Clutter**: Removed experimental secondary buttons from `Customers.jsx` and `CoachCommandCenter.jsx`, keeping screens uncluttered and single-purpose.
+  - **Strict Invariants**: No sharp corners, zero emojis, pure Arabic RTL, zero backend drift.
+  - **Guard Testing**: Updated `test/one-address-per-page.test.js` to assert the direct 5-desk + 2-group order. 8/8 navigation and screen tests pass.
+  - Verification: lint 0 warnings/0 errors, frontend production build clean (3.43s).
 
 ## 4. Open work (in priority order)
 

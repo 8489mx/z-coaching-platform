@@ -19,10 +19,13 @@ import {
 } from 'lucide-react';
 import { getStoredCoachConfig } from '../../utils/themeAndCoachConfig';
 
-// 1. الوجهات الأساسية
+// 1. العمل والمتابعة اليومية (مباشرة ودون أي إخفاء)
 const PRIMARY_NAV_ITEMS = [
-  { key: 'today', label: 'اليوم', to: '/', end: true, icon: CheckCircle2, badgeKey: 'actions' },
+  { key: 'today', label: 'اليوم', to: '/', end: true, icon: Home },
+  { key: 'intakes', label: 'الاستمارات الجديدة', to: '/intake/submissions', icon: ClipboardList, badgeKey: 'intakes' },
+  { key: 'checkins', label: 'مراجعة التقييمات', to: '/coach/checkin-review', icon: CheckCircle2, badgeKey: 'checkins' },
   { key: 'customers', label: 'المشتركون', to: '/customers', icon: Users },
+  { key: 'reminders', label: 'رسائل الواتساب', to: '/coach/reminders', icon: MessageSquare, badgeKey: 'reminders' },
 ];
 
 // 2. المكتبة والإدارة
