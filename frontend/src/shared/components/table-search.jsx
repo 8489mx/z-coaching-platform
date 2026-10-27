@@ -95,7 +95,7 @@ export function TableSearch({
               color: '#98A2B3',
               background: '#F8FAFC',
               border: '1px solid #EAECF0',
-              borderRadius: '10px',
+              borderRadius: '9999px',
               padding: '1px 5px',
               fontFamily: 'JetBrains Mono, monospace',
               flexShrink: 0,

@@ -341,7 +341,7 @@ export default function NotificationsDropdown() {
             fontWeight: 800,
             minWidth: '16px', 
             height: '16px', 
-            borderRadius: '8px',
+            borderRadius: '9999px',
             border: '2px solid #FFFFFF',
             display: 'flex',
             alignItems: 'center',
@@ -365,7 +365,7 @@ export default function NotificationsDropdown() {
           style={{ 
             width: '420px', 
             maxWidth: '92vw',
-            borderRadius: '20px',
+            borderRadius: '24px',
             border: '1px solid #EAECF0',
             zIndex: 1100, 
             position: 'absolute',
@@ -390,7 +390,7 @@ export default function NotificationsDropdown() {
                   background: '#673DE6', 
                   color: '#FFFFFF', 
                   padding: '1px 8px', 
-                  borderRadius: '6px', 
+                  borderRadius: '9999px', 
                   fontWeight: 700 
                 }}>
                   {unreadCount}
@@ -544,7 +544,7 @@ export default function NotificationsDropdown() {
                                 color: '#673DE6', 
                                 background: '#EDE8FD', 
                                 padding: '1.5px 7px', 
-                                borderRadius: '6px',
+                                borderRadius: '9999px',
                                 border: '1px solid rgba(103, 61, 230, 0.18)',
                                 whiteSpace: 'nowrap',
                                 lineHeight: '16px'
@@ -586,7 +586,7 @@ export default function NotificationsDropdown() {
                           style={{
                             height: '32px',
                             padding: '0 18px',
-                            borderRadius: '8px',
+                            borderRadius: '9999px',
                             background: '#FFFFFF',
                             border: isUnread ? '1px solid #C4B5FD' : '1px solid #D0D5DD',
                             color: isUnread ? '#673DE6' : '#111827',

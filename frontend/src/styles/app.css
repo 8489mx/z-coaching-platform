@@ -668,3 +668,28 @@ header .global-search-input,
 .status-pill {
   border-radius: 9999px !important;
 }
+
+.status-badge,
+.filter-pill,
+.tab-pill,
+.btn-pill,
+[role="tab"],
+[class*="badge"],
+[class*="pill"],
+[class*="chip"] {
+  border-radius: 9999px !important;
+}
+
+.hostinger-card,
+.h-card,
+.card,
+.data-card,
+.table-container,
+.hostinger-table-container,
+.h-table-container,
+.modal-container,
+.modal-box,
+.modal-dialog,
+.dialog-box {
+  border-radius: 24px !important;
+}

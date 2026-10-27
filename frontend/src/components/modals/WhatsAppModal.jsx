@@ -147,7 +147,7 @@ ${baseUrl}/check-in?code=${clientCode}`
           width: '100%',
           maxWidth: '560px',
           background: '#FFFFFF',
-          borderRadius: '16px',
+          borderRadius: '24px',
           border: '1px solid #E2E8F0',
           boxShadow: '0 20px 40px rgba(15, 23, 42, 0.2)',
           overflow: 'hidden',
@@ -170,7 +170,7 @@ ${baseUrl}/check-in?code=${clientCode}`
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#F4F0FD',
               color: '#673DE6',
               display: 'flex',
@@ -196,7 +196,7 @@ ${baseUrl}/check-in?code=${clientCode}`
             style={{
               background: '#F8FAFC',
               border: '1px solid #E2E8F0',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               width: '32px',
               height: '32px',
               display: 'flex',
@@ -236,7 +236,7 @@ ${baseUrl}/check-in?code=${clientCode}`
                     onClick={() => applyTemplate(t.id)}
                     style={{
                       height: '36px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: isActive ? '1.5px solid #673DE6' : '1px solid #E2E8F0',
                       background: isActive ? '#673DE6' : '#F8FAFC',
                       color: isActive ? '#FFFFFF' : '#475569',
@@ -299,7 +299,7 @@ ${baseUrl}/check-in?code=${clientCode}`
             style={{
               height: '38px',
               padding: '0 16px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #CBD5E1',
               background: '#FFFFFF',
               color: '#0F172A',
@@ -322,7 +322,7 @@ ${baseUrl}/check-in?code=${clientCode}`
             style={{
               height: '38px',
               padding: '0 20px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: 'none',
               background: '#16A34A',
               color: '#FFFFFF',

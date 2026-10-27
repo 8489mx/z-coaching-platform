@@ -130,7 +130,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
         dir="rtl"
         style={{
           background: '#FFFFFF',
-          borderRadius: '16px',
+          borderRadius: '24px',
           width: '100%',
           maxWidth: '520px',
           maxHeight: '92vh',
@@ -155,7 +155,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
             <div style={{
               width: '36px',
               height: '36px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#F4F0FD',
               color: '#673DE6',
               display: 'flex',
@@ -181,7 +181,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
             style={{
               width: '32px',
               height: '32px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               border: '1px solid #EAECF0',
               background: '#F8FAFC',
               color: '#64748B',
@@ -213,7 +213,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
             background: '#FEF3F2',
             border: '1px solid #FECDCA',
             color: '#B42318',
-            borderRadius: '8px',
+            borderRadius: '9999px',
             padding: '10px 14px',
             display: 'flex',
             alignItems: 'center',
@@ -241,7 +241,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                     type="text" 
                     style={{ 
                       height: '38px', 
-                      borderRadius: '8px', 
+                      borderRadius: '9999px', 
                       fontSize: '13px', 
                       border: '1px solid #D0D5DD',
                       padding: '0 12px',
@@ -266,7 +266,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                     type="tel" 
                     style={{ 
                       height: '38px', 
-                      borderRadius: '8px', 
+                      borderRadius: '9999px', 
                       fontSize: '13px', 
                       border: '1px solid #D0D5DD',
                       padding: '0 12px',
@@ -375,7 +375,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setDurationKey('FOUR_MONTHS'); }}
                     style={{
                       height: '34px',
-                      borderRadius: '7px',
+                      borderRadius: '9999px',
                       fontSize: '12px',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -398,7 +398,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setDurationKey('EIGHT_MONTHS'); }}
                     style={{
                       height: '34px',
-                      borderRadius: '7px',
+                      borderRadius: '9999px',
                       fontSize: '12px',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -427,7 +427,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                     border: '1px solid #A6F4C7', 
                     color: '#027A48', 
                     padding: '2px 10px', 
-                    borderRadius: '6px', 
+                    borderRadius: '9999px', 
                     fontSize: '11px', 
                     fontWeight: 800, 
                     fontFamily: 'JetBrains Mono, Cairo, sans-serif' 
@@ -455,7 +455,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                             padding: '3px 10px',
                             fontSize: '11px',
                             fontWeight: isSel ? 700 : 600,
-                            borderRadius: '6px',
+                            borderRadius: '9999px',
                             cursor: 'pointer',
                             border: isSel ? '1px solid #673DE6' : '1px solid #D0D5DD',
                             background: isSel ? '#673DE6' : '#FFFFFF',
@@ -490,7 +490,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                             padding: '3px 10px',
                             fontSize: '11px',
                             fontWeight: isSel ? 700 : 600,
-                            borderRadius: '6px',
+                            borderRadius: '9999px',
                             cursor: 'pointer',
                             border: isSel ? '1px solid #673DE6' : '1px solid #D0D5DD',
                             background: isSel ? '#673DE6' : '#FFFFFF',
@@ -525,7 +525,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                 style={{
                   height: '36px',
                   padding: '0 16px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #D0D5DD',
                   background: '#FFFFFF',
                   color: '#344054',
@@ -544,7 +544,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                 style={{ 
                   height: '36px', 
                   padding: '0 20px', 
-                  borderRadius: '8px', 
+                  borderRadius: '9999px', 
                   fontSize: '12.5px', 
                   fontWeight: 700, 
                   background: '#673DE6', 
@@ -579,7 +579,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
               justifyContent: 'center',
               gap: '6px',
               padding: '8px 16px',
-              borderRadius: '8px',
+              borderRadius: '9999px',
               background: '#ECFDF3',
               border: '1px solid #A6F4C7',
               color: '#027A48',
@@ -601,7 +601,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                 background: '#FFFFFF',
                 color: '#673DE6',
                 border: '1.5px solid #DDD6FE',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 padding: '8px 32px',
                 fontSize: '1.5rem',
                 fontWeight: 900,
@@ -626,7 +626,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   height: '38px',
                   background: '#25D366',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   color: '#FFFFFF',
                   fontSize: '12.5px',
                   fontWeight: 700,
@@ -649,7 +649,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                 style={{
                   height: '38px',
                   border: '1px solid #D0D5DD',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   background: '#FFFFFF',
                   color: '#344054',
                   fontSize: '12px',
@@ -674,7 +674,7 @@ export default function NewClientQuickModal({ isOpen, onClose, onClientCreated }
                   background: '#F4F0FD',
                   color: '#673DE6',
                   border: '1px solid #DDD6FE',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   fontSize: '12px',
                   fontWeight: 700,
                   display: 'flex',

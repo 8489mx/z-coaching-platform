@@ -329,7 +329,7 @@ export default function IntakeSubmissions() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #D0D5DD',
                   background: '#FFFFFF',
                   color: copiedLink ? '#027A48' : '#344054',
@@ -353,7 +353,7 @@ export default function IntakeSubmissions() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #D0D5DD',
                   background: '#FFFFFF',
                   color: '#344054',
@@ -386,7 +386,7 @@ export default function IntakeSubmissions() {
                 style={{
                   background: isSel ? '#FAF5FF' : '#FFFFFF',
                   border: isSel ? '1.5px solid #673DE6' : '1px solid #EAECF0',
-                  borderRadius: '14px',
+                  borderRadius: '24px',
                   padding: '16px 18px',
                   boxShadow: isSel ? '0 1px 3px rgba(103, 61, 230, 0.12)' : '0 1px 2px rgba(16, 24, 40, 0.05)',
                   display: 'flex',
@@ -403,7 +403,7 @@ export default function IntakeSubmissions() {
                   <div style={{
                     width: '36px',
                     height: '36px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     background: isSel ? '#F4F0FD' : '#F9FAFB',
                     border: isSel ? '1px solid #EDE8FA' : '1px solid #EAECF0',
                     color: isSel ? '#673DE6' : (isEmpty ? '#98A2B3' : '#475467'),
@@ -447,7 +447,7 @@ export default function IntakeSubmissions() {
 
               {/* Active Filter Indicator Tag */}
               {filter !== 'ALL' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F4F0FD', padding: '4px 12px', borderRadius: '8px', border: '1px solid #EDE8FA', fontSize: '11.5px', color: '#673DE6', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F4F0FD', padding: '4px 12px', borderRadius: '9999px', border: '1px solid #EDE8FA', fontSize: '11.5px', color: '#673DE6', fontWeight: 600 }}>
                   <span>التصفية: {statCards.find(c => c.id === filter)?.title}</span>
                   <button
                     type="button"
@@ -472,7 +472,7 @@ export default function IntakeSubmissions() {
               <small style={{ color: '#667085' }}>لم يتم العثور على أي استمارة مسجلة تحت هذا التصنيف أو البحث.</small>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', border: '1px solid #EAECF0', borderRadius: '14px', background: '#FFFFFF', boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)' }}>
+            <div style={{ overflowX: 'auto', border: '1px solid #EAECF0', borderRadius: '24px', background: '#FFFFFF', boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12.5px' }}>
                 <thead>
                   <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #EAECF0', color: '#475467', fontWeight: 600 }}>
@@ -545,7 +545,7 @@ export default function IntakeSubmissions() {
                                     {fasting.primaryFastingBadge && (
                                       <span style={{
                                         fontSize: '10.5px',
-                                        padding: '2px 8px', borderRadius: '6px',
+                                        padding: '2px 8px', borderRadius: '9999px',
                                         background: '#F2F4F7',
                                         border: '1px solid #EAECF0',
                                         color: '#344054',
@@ -557,7 +557,7 @@ export default function IntakeSubmissions() {
                                     {hasInjuries && (
                                       <span style={{
                                         fontSize: '10.5px',
-                                        padding: '2px 8px', borderRadius: '6px',
+                                        padding: '2px 8px', borderRadius: '9999px',
                                         background: '#FEF3F2',
                                         border: '1px solid #FECDCA',
                                         color: '#B42318',
@@ -569,7 +569,7 @@ export default function IntakeSubmissions() {
                                     {hasMedical && (
                                       <span style={{
                                         fontSize: '10.5px',
-                                        padding: '2px 8px', borderRadius: '6px',
+                                        padding: '2px 8px', borderRadius: '9999px',
                                         background: '#FFFAEB',
                                         border: '1px solid #FEDF89',
                                         color: '#B54708',
@@ -581,7 +581,7 @@ export default function IntakeSubmissions() {
                                     {hasAllergies && (
                                       <span style={{
                                         fontSize: '10.5px',
-                                        padding: '2px 8px', borderRadius: '6px',
+                                        padding: '2px 8px', borderRadius: '9999px',
                                         background: '#F2F4F7',
                                         border: '1px solid #EAECF0',
                                         color: '#475467',
@@ -626,25 +626,25 @@ export default function IntakeSubmissions() {
                         {/* 6. Smart Unified Status */}
                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           {isApproved ? (
-                            <span style={{ background: '#ECFDF3', border: '1px solid #A6F4C7', color: '#027A48', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
+                            <span style={{ background: '#ECFDF3', border: '1px solid #A6F4C7', color: '#027A48', padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               معتمد ومنشور
                             </span>
                           ) : sub.status === 'DRAFT_GENERATED' ? (
-                            <span style={{ background: '#F4F0FD', border: '1px solid #EDE8FA', color: '#673DE6', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
+                            <span style={{ background: '#F4F0FD', border: '1px solid #EDE8FA', color: '#673DE6', padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               مسودة جاهزة
                             </span>
                           ) : sub.status === 'PENDING_COACH_REVIEW' ? (
                             sub.payment_status === 'PAID' ? (
-                              <span style={{ background: '#EFF8FF', border: '1px solid #B2DDFF', color: '#175CD3', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
+                              <span style={{ background: '#EFF8FF', border: '1px solid #B2DDFF', color: '#175CD3', padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                                 بانتظار المراجعة
                               </span>
                             ) : (
-                              <span style={{ background: '#FFFAEB', border: '1px solid #FEDF89', color: '#B54708', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
+                              <span style={{ background: '#FFFAEB', border: '1px solid #FEDF89', color: '#B54708', padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                                 بانتظار السداد
                               </span>
                             )
                           ) : (
-                            <span style={{ background: '#F2F4F7', border: '1px solid #EAECF0', color: '#475467', padding: '4px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
+                            <span style={{ background: '#F2F4F7', border: '1px solid #EAECF0', color: '#475467', padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
                               قيد التعبئة
                             </span>
                           )}
@@ -670,7 +670,7 @@ export default function IntakeSubmissions() {
                                 }
                               }}
                               style={{
-                                height: '32px', padding: '0 13px', borderRadius: '8px',
+                                height: '32px', padding: '0 13px', borderRadius: '9999px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
                                 color: '#027A48',
@@ -700,7 +700,7 @@ export default function IntakeSubmissions() {
                               type="button"
                               onClick={() => handleToggleAnswers(sub)}
                               style={{
-                                height: '32px', padding: '0 13px', borderRadius: '8px',
+                                height: '32px', padding: '0 13px', borderRadius: '9999px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
                                 color: '#344054',
@@ -728,7 +728,7 @@ export default function IntakeSubmissions() {
                                 disabled={verifyingPaymentId === sub.id}
                                 onClick={() => handleVerifyPayment(sub)}
                                 style={{
-                                  height: '32px', padding: '0 13px', borderRadius: '8px',
+                                  height: '32px', padding: '0 13px', borderRadius: '9999px',
                                   border: '1px solid #A6F4C7',
                                   background: '#ECFDF3',
                                   color: '#027A48',
@@ -763,7 +763,7 @@ export default function IntakeSubmissions() {
                                   style={{
                                     height: '32px',
                                     padding: '0 14px',
-                                    borderRadius: '8px',
+                                    borderRadius: '9999px',
                                     border: btnBorder,
                                     background: btnBg,
                                     color: btnColor,

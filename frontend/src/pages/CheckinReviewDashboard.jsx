@@ -187,7 +187,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
     <div style={{
       background: '#FFFFFF',
       border: '1px solid #EAECF0',
-      borderRadius: '14px',
+      borderRadius: '24px',
       padding: '16px 20px',
       marginTop: '8px',
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
@@ -203,7 +203,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
         <div style={{
           background: '#F8FAFC',
           border: '1px solid #EAECF0',
-          borderRadius: '12px',
+          borderRadius: '20px',
           padding: '12px 14px'
         }}>
           <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
@@ -220,7 +220,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
         <div style={{
           background: '#F8FAFC',
           border: '1px solid #EAECF0',
-          borderRadius: '12px',
+          borderRadius: '20px',
           padding: '12px 14px'
         }}>
           <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
@@ -237,7 +237,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
         <div style={{
           background: '#F8FAFC',
           border: '1px solid #EAECF0',
-          borderRadius: '12px',
+          borderRadius: '20px',
           padding: '12px 14px'
         }}>
           <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
@@ -254,7 +254,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
         <div style={{
           background: '#F8FAFC',
           border: '1px solid #EAECF0',
-          borderRadius: '12px',
+          borderRadius: '20px',
           padding: '12px 14px'
         }}>
           <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
@@ -279,7 +279,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
         gap: '8px'
       }}>
         {/* Switcher Pills */}
-        <div style={{ display: 'flex', background: '#F1F5F9', padding: '3px', borderRadius: '8px', gap: '3px' }}>
+        <div style={{ display: 'flex', background: '#F1F5F9', padding: '3px', borderRadius: '9999px', gap: '3px' }}>
           {[
             { id: 'weight', label: 'مسار الوزن' },
             { id: 'waist', label: 'محيط الخصر' },
@@ -293,7 +293,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
               style={{
                 height: '26px',
                 padding: '0 12px',
-                borderRadius: '6px',
+                borderRadius: '9999px',
                 border: 'none',
                 background: activeTab === tab.id ? colorPrimary : 'transparent',
                 color: activeTab === tab.id ? '#FFFFFF' : '#64748B',
@@ -547,8 +547,8 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#101828' }}>{item.label}</span>
                 <span style={{ fontSize: '12px', fontWeight: 800, color: item.color, fontFamily: 'JetBrains Mono' }}>{item.score} / {item.max}</span>
               </div>
-              <div style={{ height: '6px', background: '#E2E8F0', borderRadius: '6px', overflow: 'hidden', marginBottom: '6px' }}>
-                <div style={{ width: `${(item.score / item.max) * 100}%`, height: '100%', background: item.color, borderRadius: '6px', transition: 'width 0.3s ease' }} />
+              <div style={{ height: '6px', background: '#E2E8F0', borderRadius: '9999px', overflow: 'hidden', marginBottom: '6px' }}>
+                <div style={{ width: `${(item.score / item.max) * 100}%`, height: '100%', background: item.color, borderRadius: '9999px', transition: 'width 0.3s ease' }} />
               </div>
               <span style={{ fontSize: '9.5px', color: '#64748B', display: 'block', lineHeight: 1.3 }}>{item.desc}</span>
             </div>
@@ -1075,7 +1075,7 @@ export default function CheckinReviewDashboard() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 background: '#FFFFFF',
                 color: '#344054',
                 border: '1px solid #D0D5DD',
@@ -1125,7 +1125,7 @@ export default function CheckinReviewDashboard() {
                   color: '#475569', 
                   border: '1px solid #E2E8F0', 
                   padding: '2px 8px', 
-                  borderRadius: '6px', 
+                  borderRadius: '9999px', 
                   fontWeight: 700 
                 }}>
                   معلق
@@ -1205,7 +1205,7 @@ export default function CheckinReviewDashboard() {
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
                           {(item?.medical_reports_urls?.length > 0 || item?.client?.medical_reports_urls?.length > 0) && (
-                            <span style={{ fontSize: '9px', background: '#ECFDF5', color: '#15803D', border: '1px solid #A7F3D0', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>
+                            <span style={{ fontSize: '9px', background: '#ECFDF5', color: '#15803D', border: '1px solid #A7F3D0', padding: '1px 5px', borderRadius: '9999px', fontWeight: 800 }}>
                               تحاليل
                             </span>
                           )}
@@ -1238,7 +1238,7 @@ export default function CheckinReviewDashboard() {
                                   background: '#F1F5F9',
                                   border: '1px solid #E2E8F0',
                                   padding: '1px 6px',
-                                  borderRadius: '4px'
+                                  borderRadius: '9999px'
                                 }}>
                                   ثبات
                                 </span>
@@ -1250,7 +1250,7 @@ export default function CheckinReviewDashboard() {
                                 fontWeight: 800,
                                 fontSize: '10px',
                                 padding: '1px 6px',
-                                borderRadius: '4px',
+                                borderRadius: '9999px',
                                 background: delta < 0 ? '#ECFDF5' : '#FEF2F2',
                                 border: delta < 0 ? '1px solid #D1FAE5' : '1px solid #FEE2E2',
                                 color: delta < 0 ? '#16A34A' : '#DC2626'
@@ -1320,7 +1320,7 @@ export default function CheckinReviewDashboard() {
                   onClick={() => navigate('/')}
                   style={{
                     marginTop: '8px',
-                    padding: '8px 20px', background: '#673DE6', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 600, boxShadow: '0 1px 2px rgba(103, 61, 230, 0.2)',
+                    padding: '8px 20px', background: '#673DE6', color: '#FFFFFF', border: 'none', borderRadius: '9999px', fontSize: '12px', fontWeight: 600, boxShadow: '0 1px 2px rgba(103, 61, 230, 0.2)',
                     cursor: 'pointer'
                   }}
                 >
@@ -1343,7 +1343,7 @@ export default function CheckinReviewDashboard() {
                 <div style={{
                   background: '#FFFFFF',
                   border: '1px solid #EAECF0',
-                  borderRadius: '14px',
+                  borderRadius: '24px',
                   padding: '14px 18px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -1365,7 +1365,7 @@ export default function CheckinReviewDashboard() {
                           border: `1px solid ${goalConfig.border}`, 
                           color: goalConfig.color, 
                           padding: '2px 8px', 
-                          borderRadius: '6px'
+                          borderRadius: '9999px'
                         }}>
                           {goalConfig.label}
                         </span>
@@ -1382,7 +1382,7 @@ export default function CheckinReviewDashboard() {
                               <span style={{
                                 fontSize: '11px',
                                 padding: '2px 8px',
-                                borderRadius: '6px',
+                                borderRadius: '9999px',
                                 background: fasting.primaryFastingBadge.bg,
                                 border: `1px solid ${fasting.primaryFastingBadge.border}`,
                                 color: fasting.primaryFastingBadge.color,
@@ -1396,7 +1396,7 @@ export default function CheckinReviewDashboard() {
                       })()}
 
                       {/* Review Pager */}
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', border: '1px solid #EAECF0', padding: '2px 4px', borderRadius: '8px' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', border: '1px solid #EAECF0', padding: '2px 4px', borderRadius: '9999px' }}>
                         <button
                           type="button"
                           disabled={selectedIdx <= 0}
@@ -1404,7 +1404,7 @@ export default function CheckinReviewDashboard() {
                           style={{
                             height: '26px',
                             padding: '0 8px',
-                            borderRadius: '6px',
+                            borderRadius: '9999px',
                             border: '1px solid #D0D5DD',
                             background: selectedIdx <= 0 ? '#F1F5F9' : '#FFFFFF',
                             color: selectedIdx <= 0 ? '#94A3B8' : '#101828',
@@ -1430,7 +1430,7 @@ export default function CheckinReviewDashboard() {
                           style={{
                             height: '26px',
                             padding: '0 8px',
-                            borderRadius: '6px',
+                            borderRadius: '9999px',
                             border: '1px solid #D0D5DD',
                             background: selectedIdx >= filteredQueue.length - 1 ? '#F1F5F9' : '#FFFFFF',
                             color: selectedIdx >= filteredQueue.length - 1 ? '#94A3B8' : '#101828',
@@ -1461,7 +1461,7 @@ export default function CheckinReviewDashboard() {
                         تاريخ الإرسال: <span dir="ltr" style={{ color: '#101828', fontWeight: 700, fontFamily: 'JetBrains Mono, monospace' }}>{activeCheckin.submission_date}</span>
                       </span>
                       <span style={{ color: '#CBD5E1' }}>•</span>
-                      <span style={{ fontSize: '11px', background: '#F8FAFC', border: '1px solid #EAECF0', color: '#101828', padding: '2px 8px', borderRadius: '6px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '11px', background: '#F8FAFC', border: '1px solid #EAECF0', color: '#101828', padding: '2px 8px', borderRadius: '9999px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         <span>المتابعة #{activeChkNumber}</span>
                         <span style={{ color: '#94A3B8' }}>•</span>
                         <span>الأسبوع {activeCheckin.week_number}</span>
@@ -1480,7 +1480,7 @@ export default function CheckinReviewDashboard() {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '6px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           background: '#673DE6',
                           color: '#FFFFFF',
                           border: 'none',
@@ -1508,7 +1508,7 @@ export default function CheckinReviewDashboard() {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '6px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           background: '#FFFFFF',
                           color: '#0284C7',
                           border: '1px solid #BAE6FD',
@@ -1535,7 +1535,7 @@ export default function CheckinReviewDashboard() {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
-                            borderRadius: '8px',
+                            borderRadius: '9999px',
                             background: '#F0FDF4',
                             color: '#166534',
                             border: '1px solid #BBF7D0',
@@ -1602,7 +1602,7 @@ export default function CheckinReviewDashboard() {
                   title={
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284C7' }}>
+                        <div style={{ width: '26px', height: '26px', borderRadius: '9999px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284C7' }}>
                           <Activity size={15} />
                         </div>
                         <span>المؤشرات الرقمية والقياسات الحيوية</span>
@@ -1613,7 +1613,7 @@ export default function CheckinReviewDashboard() {
                         style={{
                           height: '28px',
                           padding: '0 12px',
-                          borderRadius: '6px',
+                          borderRadius: '9999px',
                           background: '#F4F0FD',
                           border: '1px solid #DDD6FE',
                           color: '#673DE6',
@@ -1639,11 +1639,11 @@ export default function CheckinReviewDashboard() {
                   <div dir="rtl" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '6px' }}>
                     
                     {/* Current Weight */}
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '8px' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '9999px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الوزن الحالي</span>
                         {Boolean(activeCheckin?.analysis_output?.is_measurement_corrected || activeCheckin?.is_measurement_corrected) && (
-                          <span style={{ fontSize: '9px', fontWeight: 800, color: '#673DE6', background: '#EDE9FE', border: '1px solid #DDD6FE', padding: '1px 5px', borderRadius: '4px' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 800, color: '#673DE6', background: '#EDE9FE', border: '1px solid #DDD6FE', padding: '1px 5px', borderRadius: '9999px' }}>
                             مصحح
                           </span>
                         )}
@@ -1661,7 +1661,7 @@ export default function CheckinReviewDashboard() {
                       background: deltaColor === '#16A34A' ? '#F0FDF4' : (deltaColor === '#0284C7' ? '#F0F9FF' : '#FEF2F2'), 
                       border: deltaColor === '#16A34A' ? '1px solid #BBF7D0' : (deltaColor === '#0284C7' ? '1px solid #BAE6FD' : '1px solid #FECACA'), 
                       padding: '10px 12px', 
-                      borderRadius: '8px' 
+                      borderRadius: '9999px' 
                     }}>
                       <span style={{ fontSize: '11px', color: '#475569', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif', fontWeight: 700 }}>فرق الوزن (Δ)</span>
                       <strong style={{ 
@@ -1683,7 +1683,7 @@ export default function CheckinReviewDashboard() {
                     </div>
 
                     {/* Waist Metric */}
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '8px' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '9999px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>محيط الخصر</span>
                       <strong style={{ fontSize: '17px', color: '#101828', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                         {safeMetrics.waist_current} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>سم</span>
@@ -1694,7 +1694,7 @@ export default function CheckinReviewDashboard() {
                     </div>
 
                     {/* Adherence */}
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '8px' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '9999px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الالتزام والتمارين</span>
                       <strong style={{ fontSize: '17px', color: '#101828', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                         {safeMetrics.adherence}%
@@ -1844,7 +1844,7 @@ export default function CheckinReviewDashboard() {
             <FormSection
               title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7C3AED' }}>
+                  <div style={{ width: '26px', height: '26px', borderRadius: '9999px', background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7C3AED' }}>
                     <Camera size={15} />
                   </div>
                   <span>استوديو الفحص والمقارنة البصرية</span>
@@ -1860,7 +1860,7 @@ export default function CheckinReviewDashboard() {
                   style={{
                     height: '32px',
                     padding: '0 14px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     fontSize: '12px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -1886,7 +1886,7 @@ export default function CheckinReviewDashboard() {
                   style={{
                     height: '32px',
                     padding: '0 14px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     fontSize: '12px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -1915,7 +1915,7 @@ export default function CheckinReviewDashboard() {
                       style={{
                         height: '32px',
                         padding: '0 14px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         fontSize: '12px',
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -1941,7 +1941,7 @@ export default function CheckinReviewDashboard() {
                           background: inspectionTab === 'LABS' ? 'rgba(255,255,255,0.25)' : '#DCFCE7', 
                           color: inspectionTab === 'LABS' ? '#FFFFFF' : '#166534', 
                           padding: '1px 6px', 
-                          borderRadius: '8px', 
+                          borderRadius: '9999px', 
                           fontWeight: 800 
                         }}>
                           مرفق تقرير
@@ -1961,7 +1961,7 @@ export default function CheckinReviewDashboard() {
                   style={{
                     height: '32px',
                     padding: '0 14px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     fontSize: '12px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -1990,7 +1990,7 @@ export default function CheckinReviewDashboard() {
                   style={{
                     height: '32px',
                     padding: '0 14px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     fontSize: '12px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -2038,7 +2038,7 @@ export default function CheckinReviewDashboard() {
                 <div style={{ 
                   background: 'linear-gradient(135deg, #F0FDF4 0%, #F8FAFC 100%)', 
                   border: '1px solid #86EFAC', 
-                  borderRadius: '12px', 
+                  borderRadius: '20px', 
                   padding: '18px 20px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -2063,11 +2063,11 @@ export default function CheckinReviewDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <strong style={{ fontSize: '13.5px', color: '#101828' }}>بروتوكول الفحوصات المخبرية والمؤشرات السريرية</strong>
                           {(activeCheckin?.medical_reports_urls?.length > 0 || safeClient?.medical_reports_urls?.length > 0) ? (
-                            <span style={{ fontSize: '10.5px', background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
+                            <span style={{ fontSize: '10.5px', background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '9999px', fontWeight: 800 }}>
                               مرفق تقرير معتمد
                             </span>
                           ) : (
-                            <span style={{ fontSize: '10.5px', background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                            <span style={{ fontSize: '10.5px', background: '#F1F5F9', color: '#475569', padding: '2px 8px', borderRadius: '9999px', fontWeight: 700 }}>
                               فحص استرشادي
                             </span>
                           )}
@@ -2084,7 +2084,7 @@ export default function CheckinReviewDashboard() {
                       style={{
                         height: '36px',
                         padding: '0 16px',
-                        borderRadius: '12px',
+                        borderRadius: '20px',
                         border: '1px solid #16A34A',
                         background: '#16A34A',
                         color: '#FFFFFF',
@@ -2108,19 +2108,19 @@ export default function CheckinReviewDashboard() {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '4px' }}>
-                    <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '10px 12px' }}>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '10px 12px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>الحالة الطبية العامة</span>
                       <strong style={{ fontSize: '12px', color: '#101828' }}>
                         {safeClient.medical_conditions?.length > 0 ? safeClient.medical_conditions.join('، ') : 'سليم ولا توجد موانع طبية'}
                       </strong>
                     </div>
-                    <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '10px 12px' }}>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '10px 12px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>التقارير المرفوعة</span>
                       <strong style={{ fontSize: '12px', color: (activeCheckin?.medical_reports_urls?.length > 0 || safeClient?.medical_reports_urls?.length > 0) ? '#16A34A' : '#64748B' }}>
                         {(activeCheckin?.medical_reports_urls?.length || safeClient?.medical_reports_urls?.length || 0)} تقرير متاح بالفحص
                       </strong>
                     </div>
-                    <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '10px 12px' }}>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '10px 12px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px' }}>توجيه البروتوكول</span>
                       <strong style={{ fontSize: '12px', color: '#101828' }}>الغذاء أولاً والتدخل المحسوب</strong>
                     </div>
@@ -2133,7 +2133,7 @@ export default function CheckinReviewDashboard() {
             <FormSection
               title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
+                  <div style={{ width: '26px', height: '26px', borderRadius: '9999px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
                     <Calendar size={15} />
                   </div>
                   <span>سياق الأسبوع واستشراف القادم</span>
@@ -2159,13 +2159,13 @@ export default function CheckinReviewDashboard() {
 
                   {safeReflect && (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                      <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '8px 10px' }}>
+                      <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '8px 10px' }}>
                         <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 700, display: 'block', marginBottom: '2px' }}>أبرز إنجاز (NSV):</span>
                         <p style={{ fontSize: '11.5px', color: '#101828', margin: 0, lineHeight: 1.45 }}>
                           {safeReflect.nsv_note || 'لا توجد ملاحظة مسجلة'}
                         </p>
                       </div>
-                      <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '8px 10px' }}>
+                      <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '8px 10px' }}>
                         <span style={{ fontSize: '10.5px', color: '#D97706', fontWeight: 700, display: 'block', marginBottom: '2px' }}>أبرز تحدٍ أو صعوبة:</span>
                         <p style={{ fontSize: '11.5px', color: '#101828', margin: 0, lineHeight: 1.45 }}>
                           {safeReflect.struggle_note || 'لا توجد صعوبة مسجلة'}
@@ -2174,7 +2174,7 @@ export default function CheckinReviewDashboard() {
                     </div>
                   )}
 
-                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '10px 12px', flex: 1 }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '10px 12px', flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                       <MessageCircle size={13} color="#475569" />
                       <strong style={{ fontSize: '11px', color: '#475569' }}>رسالة المتدرب الإضافية:</strong>
@@ -2205,7 +2205,7 @@ export default function CheckinReviewDashboard() {
                     <div style={{
                       background: activeCheckin?.next_week_travel ? '#FEF3C7' : '#FFFFFF',
                       border: activeCheckin?.next_week_travel ? '1px solid #FCD34D' : '1px solid #E2E8F0',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       padding: '8px 10px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
@@ -2221,7 +2221,7 @@ export default function CheckinReviewDashboard() {
                     <div style={{
                       background: activeCheckin?.next_week_gym_available === false ? '#FEF2F2' : '#FFFFFF',
                       border: activeCheckin?.next_week_gym_available === false ? '1px solid #FECACA' : '1px solid #E2E8F0',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       padding: '8px 10px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
@@ -2237,7 +2237,7 @@ export default function CheckinReviewDashboard() {
                     <div style={{
                       background: '#FFFFFF',
                       border: '1px solid #EAECF0',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       padding: '8px 10px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
@@ -2250,7 +2250,7 @@ export default function CheckinReviewDashboard() {
                     </div>
                   </div>
 
-                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '10px 12px', flex: 1 }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '10px 12px', flex: 1 }}>
                     <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700, display: 'block', marginBottom: '2px' }}>
                       ملاحظات واستعدادات الأسبوع المقبل:
                     </span>
@@ -2266,7 +2266,7 @@ export default function CheckinReviewDashboard() {
             <FormSection
               title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4F46E5' }}>
+                  <div style={{ width: '26px', height: '26px', borderRadius: '9999px', background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4F46E5' }}>
                     <BrainCircuit size={15} />
                   </div>
                   <span>تحليل وتوصيات المحرك السريري وقمرة اتخاذ القرار</span>
@@ -2283,7 +2283,7 @@ export default function CheckinReviewDashboard() {
                       <strong style={{ fontSize: '12.5px', color: '#101828' }}>اقتراح المحرك التكيفي</strong>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '10.5px', background: '#E2E8F0', color: '#101828', padding: '2px 8px', borderRadius: '6px', fontWeight: 800 }}>
+                      <span style={{ fontSize: '10.5px', background: '#E2E8F0', color: '#101828', padding: '2px 8px', borderRadius: '9999px', fontWeight: 800 }}>
                         {safeAi.status_badge}
                       </span>
                       <button
@@ -2297,7 +2297,7 @@ export default function CheckinReviewDashboard() {
                           padding: '0 10px',
                           fontSize: '10.5px',
                           fontWeight: 700,
-                          background: '#F4F0FD', color: '#673DE6', border: '1px solid #EDE8FA', borderRadius: '6px',
+                          background: '#F4F0FD', color: '#673DE6', border: '1px solid #EDE8FA', borderRadius: '9999px',
                           cursor: 'pointer',
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -2319,7 +2319,7 @@ export default function CheckinReviewDashboard() {
                   </p>
 
                   {safeAi.warning && (
-                    <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', color: '#B45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '6px 10px', borderRadius: '9999px', fontSize: '11px', color: '#B45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <AlertTriangle size={13} className="flex-shrink-0" />
                       <span>{safeAi.warning}</span>
                     </div>
@@ -2385,7 +2385,7 @@ export default function CheckinReviewDashboard() {
                     <div style={{
                       background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
                       border: '1.5px solid #22C55E',
-                      borderRadius: '12px',
+                      borderRadius: '20px',
                       padding: '12px 14px',
                       display: 'flex',
                       flexDirection: 'column',
@@ -2407,7 +2407,7 @@ export default function CheckinReviewDashboard() {
                               background: '#DC2626',
                               color: '#FFFFFF',
                               padding: '2px 8px',
-                              borderRadius: '8px'
+                              borderRadius: '9999px'
                             }}>
                               جدار حماية المفصل نشط
                             </span>
@@ -2419,7 +2419,7 @@ export default function CheckinReviewDashboard() {
                               background: '#D97706',
                               color: '#FFFFFF',
                               padding: '2px 8px',
-                              borderRadius: '6px'
+                              borderRadius: '9999px'
                             }}>
                               أسبوع تفريغ أحمال تلقائي (Deload)
                             </span>
@@ -2438,7 +2438,7 @@ export default function CheckinReviewDashboard() {
 
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             {(firewallResult.immediate_swaps || []).slice(0, 2).map((sw, sIdx) => (
-                              <div key={sIdx} style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '8px', padding: '6px 10px', fontSize: '11px', color: '#101828' }}>
+                              <div key={sIdx} style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '6px 10px', fontSize: '11px', color: '#101828' }}>
                                 <strong style={{ color: '#15803D', display: 'block', marginBottom: '2px' }}>
                                   البديل الموصى به: {sw.name_ar}
                                 </strong>
@@ -2452,7 +2452,7 @@ export default function CheckinReviewDashboard() {
                       )}
 
                       {isDeloadTriggered && (
-                        <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '12px', padding: '10px 12px', fontSize: '11.5px', color: '#92400E', lineHeight: 1.5 }}>
+                        <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '20px', padding: '10px 12px', fontSize: '11.5px', color: '#92400E', lineHeight: 1.5 }}>
                           <strong style={{ color: '#B45309', display: 'block', marginBottom: '2px' }}>
                             بروتوكول تفريغ الأحمال المعتمد (Auto-Deload Week):
                           </strong>
@@ -2477,7 +2477,7 @@ export default function CheckinReviewDashboard() {
                           style={{
                             height: '30px',
                             padding: '0 12px',
-                            borderRadius: '8px',
+                            borderRadius: '9999px',
                             background: '#15803D',
                             color: '#FFFFFF',
                             border: 'none',
@@ -2502,7 +2502,7 @@ export default function CheckinReviewDashboard() {
                 <div style={{ 
                   background: '#FFFFFF', 
                   border: '1px solid #EAECF0', 
-                  borderRadius: '14px', 
+                  borderRadius: '24px', 
                   padding: '12px 14px', 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -2525,7 +2525,7 @@ export default function CheckinReviewDashboard() {
                         padding: '0 12px',
                         fontSize: '11.5px',
                         fontWeight: 700,
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         cursor: 'pointer',
                         userSelect: 'none',
                         outline: 'none',
@@ -2555,7 +2555,7 @@ export default function CheckinReviewDashboard() {
                         padding: '0 12px',
                         fontSize: '11.5px',
                         fontWeight: 700,
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         cursor: 'pointer',
                         userSelect: 'none',
                         outline: 'none',
@@ -2585,7 +2585,7 @@ export default function CheckinReviewDashboard() {
                         padding: '0 12px',
                         fontSize: '11.5px',
                         fontWeight: 700,
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         cursor: 'pointer',
                         userSelect: 'none',
                         outline: 'none',
@@ -2610,7 +2610,7 @@ export default function CheckinReviewDashboard() {
                         padding: '0 12px',
                         fontSize: '11.5px',
                         fontWeight: 700,
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         cursor: 'pointer',
                         userSelect: 'none',
                         outline: 'none',
@@ -2635,7 +2635,7 @@ export default function CheckinReviewDashboard() {
                         padding: '0 12px',
                         fontSize: '11.5px',
                         fontWeight: 700,
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         cursor: 'pointer',
                         userSelect: 'none',
                         outline: 'none',
@@ -2660,7 +2660,7 @@ export default function CheckinReviewDashboard() {
               <FormSection
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#FFFBEB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706' }}>
+                    <div style={{ width: '26px', height: '26px', borderRadius: '9999px', background: '#FFFBEB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706' }}>
                       <SlidersHorizontal size={15} />
                     </div>
                     <span>تعديل الماكروز للأسبوع القادم</span>
@@ -2685,7 +2685,7 @@ export default function CheckinReviewDashboard() {
                         style={{ 
                           background: '#F8FAFC', 
                           border: '1px solid #EAECF0', 
-                          borderRadius: '12px', 
+                          borderRadius: '20px', 
                           padding: '8px 12px',
                           display: 'flex',
                           alignItems: 'center',
@@ -2704,7 +2704,7 @@ export default function CheckinReviewDashboard() {
                             alignItems: 'center', 
                             background: '#FFFFFF', 
                             border: '1px solid #CBD5E1', 
-                            borderRadius: '8px', 
+                            borderRadius: '9999px', 
                             padding: '2px 8px', 
                             height: '34px',
                             boxSizing: 'border-box'
@@ -2741,7 +2741,7 @@ export default function CheckinReviewDashboard() {
                           style={{ 
                             background: '#FFFFFF', 
                             border: '1px solid #EAECF0', 
-                            borderRadius: '12px', 
+                            borderRadius: '20px', 
                             padding: '8px 6px', 
                             display: 'flex', 
                             flexDirection: 'column', 
@@ -2759,7 +2759,7 @@ export default function CheckinReviewDashboard() {
                               justifyContent: 'center',
                               background: '#F8FAFC', 
                               border: '1px solid #CBD5E1', 
-                              borderRadius: '8px', 
+                              borderRadius: '9999px', 
                               padding: '2px 6px', 
                               height: '32px',
                               width: '100%',
@@ -2805,7 +2805,7 @@ export default function CheckinReviewDashboard() {
                           style={{ 
                             background: '#FFFFFF', 
                             border: '1px solid #EAECF0', 
-                            borderRadius: '12px', 
+                            borderRadius: '20px', 
                             padding: '8px 6px', 
                             display: 'flex', 
                             flexDirection: 'column', 
@@ -2823,7 +2823,7 @@ export default function CheckinReviewDashboard() {
                               justifyContent: 'center',
                               background: '#F8FAFC', 
                               border: '1px solid #CBD5E1', 
-                              borderRadius: '8px', 
+                              borderRadius: '9999px', 
                               padding: '2px 6px', 
                               height: '32px',
                               width: '100%',
@@ -2869,7 +2869,7 @@ export default function CheckinReviewDashboard() {
                           style={{ 
                             background: '#FFFFFF', 
                             border: '1px solid #EAECF0', 
-                            borderRadius: '12px', 
+                            borderRadius: '20px', 
                             padding: '8px 6px', 
                             display: 'flex', 
                             flexDirection: 'column', 
@@ -2887,7 +2887,7 @@ export default function CheckinReviewDashboard() {
                               justifyContent: 'center',
                               background: '#F8FAFC', 
                               border: '1px solid #CBD5E1', 
-                              borderRadius: '8px', 
+                              borderRadius: '9999px', 
                               padding: '2px 6px', 
                               height: '32px',
                               width: '100%',
@@ -2935,7 +2935,7 @@ export default function CheckinReviewDashboard() {
                         style={{ 
                           background: '#F8FAFC', 
                           border: '1px solid #EAECF0', 
-                          borderRadius: '12px', 
+                          borderRadius: '20px', 
                           padding: '7px 12px', 
                           display: 'flex', 
                           justifyContent: 'space-between', 
@@ -2971,7 +2971,7 @@ export default function CheckinReviewDashboard() {
                 <div style={{
                   background: '#FEF2F2',
                   border: '1px solid #FECACA',
-                  borderRadius: '12px',
+                  borderRadius: '20px',
                   padding: '12px 14px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -3001,7 +3001,7 @@ export default function CheckinReviewDashboard() {
                     style={{
                       width: '100%',
                       padding: '8px 10px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: '1px solid #FCA5A5',
                       background: '#FFFFFF',
                       fontSize: '11.5px',
@@ -3018,7 +3018,7 @@ export default function CheckinReviewDashboard() {
                       style={{
                         height: '34px',
                         padding: '0 14px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         border: 'none',
                         background: '#DC2626',
                         color: '#FFFFFF',
@@ -3042,31 +3042,31 @@ export default function CheckinReviewDashboard() {
               <div style={{
                 background: '#F8FAFC',
                 border: '1px solid #E2E8F0',
-                borderRadius: '12px',
+                borderRadius: '20px',
                 padding: '10px 12px',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
                 gap: '8px'
               }}>
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '6px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>تغير الوزن</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: Number(safeMetrics?.weight_change || 0) <= 0 ? '#16A34A' : '#D97706', fontFamily: 'JetBrains Mono, Cairo' }}>
                     {Number(safeMetrics?.weight_change || 0) > 0 ? `+${safeMetrics?.weight_change}` : (safeMetrics?.weight_change || 0)} كجم
                   </div>
                 </div>
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '6px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>التزام التغذية</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#101828', fontFamily: 'JetBrains Mono, Cairo' }}>
                     {safeMetrics?.adherence ?? 100}%
                   </div>
                 </div>
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '6px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>حصص التمرين</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#101828', fontFamily: 'JetBrains Mono, Cairo' }}>
                     {safeMetrics?.workouts_completed ?? 0} / {safeMetrics?.workouts_target ?? 4}
                   </div>
                 </div>
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '6px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>فرق السعرات</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#673DE6', fontFamily: 'JetBrains Mono, Cairo' }}>
                     {(() => {
@@ -3081,7 +3081,7 @@ export default function CheckinReviewDashboard() {
               <FormSection
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#FAF5FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#673DE6' }}>
+                    <div style={{ width: '26px', height: '26px', borderRadius: '9999px', background: '#FAF5FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#673DE6' }}>
                       <Send size={15} />
                     </div>
                     <span>رسالة الكوتش واعتماد الخطة</span>
@@ -3098,7 +3098,7 @@ export default function CheckinReviewDashboard() {
                       style={{
                         height: '30px',
                         padding: '0 12px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         border: '1px solid #CBD5E1',
                         background: '#F8FAFC',
                         color: '#101828',
@@ -3132,7 +3132,7 @@ export default function CheckinReviewDashboard() {
                       width: '100%',
                       height: '115px',
                       padding: '10px 12px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: '1px solid #CBD5E1',
                       fontSize: '12px',
                       outline: 'none',
@@ -3272,7 +3272,7 @@ export default function CheckinReviewDashboard() {
                     </button>
                   </div>
                   {approveError && (
-                    <div role="alert" style={{ marginTop: '8px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '8px 10px', fontSize: '12px', fontWeight: 700, color: '#B91C1C' }}>
+                    <div role="alert" style={{ marginTop: '8px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '9999px', padding: '8px 10px', fontSize: '12px', fontWeight: 700, color: '#B91C1C' }}>
                       {approveError}
                     </div>
                   )}
@@ -3307,7 +3307,7 @@ export default function CheckinReviewDashboard() {
               onClick={(e) => e.stopPropagation()}
               style={{
                 background: '#FFFFFF',
-                borderRadius: '12px',
+                borderRadius: '20px',
                 width: '1100px',
                 maxWidth: '98vw',
                 height: '92vh',
@@ -3370,7 +3370,7 @@ export default function CheckinReviewDashboard() {
               zIndex: 9999,
               background: '#673DE6',
               color: '#FFFFFF',
-              borderRadius: '12px',
+              borderRadius: '20px',
               padding: '12px 18px',
               boxShadow: '0 10px 30px rgba(103, 61, 230, 0.35)',
               display: 'flex',
@@ -3403,7 +3403,7 @@ export default function CheckinReviewDashboard() {
                 style={{
                   height: '30px',
                   padding: '0 10px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   background: '#22C55E',
                   color: '#FFFFFF',
                   border: 'none',

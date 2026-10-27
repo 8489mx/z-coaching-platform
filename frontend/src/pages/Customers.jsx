@@ -391,7 +391,7 @@ export default function Customers() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 background: '#673DE6',
                 color: '#FFFFFF',
                 border: 'none',
@@ -422,7 +422,7 @@ export default function Customers() {
           flexWrap: 'wrap',
           background: '#FFFFFF',
           border: '1px solid #EAECF0',
-          borderRadius: '12px',
+          borderRadius: '9999px',
           padding: '8px 12px',
           boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
         }}>
@@ -445,7 +445,7 @@ export default function Customers() {
                 style={{
                   height: '30px',
                   padding: '0 12px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: active ? '1px solid #673DE6' : '1px solid #E2E8F0',
                   background: active ? '#F4F0FD' : '#F8FAFC',
                   color: active ? '#673DE6' : '#344054',
@@ -479,7 +479,7 @@ export default function Customers() {
         <div style={{
           background: '#FFFFFF',
           border: '1px solid #EAECF0',
-          borderRadius: '14px',
+          borderRadius: '24px',
           boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
           overflow: 'hidden',
           display: 'flex',
@@ -525,7 +525,7 @@ export default function Customers() {
                   style={{
                     height: '34px',
                     padding: '0 14px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: '1px solid #D0D5DD',
                     background: statusFilter !== 'ALL' ? '#F4F0FD' : '#FFFFFF',
                     color: statusFilter !== 'ALL' ? '#673DE6' : '#344054',
@@ -557,7 +557,7 @@ export default function Customers() {
                     right: 0,
                     width: '190px',
                     background: '#FFFFFF',
-                    borderRadius: '16px',
+                    borderRadius: '20px',
                     border: '1px solid #EAECF0',
                     boxShadow: '0 10px 25px -4px rgba(16, 24, 40, 0.12)',
                     padding: '6px',
@@ -582,7 +582,7 @@ export default function Customers() {
                             justifyContent: 'space-between',
                             width: '100%',
                             padding: '8px 10px',
-                            borderRadius: '10px',
+                            borderRadius: '9999px',
                             border: 'none',
                             background: isSelected ? '#F4F0FD' : 'transparent',
                             color: isSelected ? '#673DE6' : '#344054',
@@ -621,7 +621,7 @@ export default function Customers() {
                   style={{
                     height: '34px',
                     padding: '0 14px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: '1px solid #D0D5DD',
                     background: goalFilter !== 'ALL' ? '#F4F0FD' : '#FFFFFF',
                     color: goalFilter !== 'ALL' ? '#673DE6' : '#344054',
@@ -653,7 +653,7 @@ export default function Customers() {
                     right: 0,
                     width: '195px',
                     background: '#FFFFFF',
-                    borderRadius: '16px',
+                    borderRadius: '20px',
                     border: '1px solid #EAECF0',
                     boxShadow: '0 10px 25px -4px rgba(16, 24, 40, 0.12)',
                     padding: '6px',
@@ -678,7 +678,7 @@ export default function Customers() {
                             justifyContent: 'space-between',
                             width: '100%',
                             padding: '8px 10px',
-                            borderRadius: '10px',
+                            borderRadius: '9999px',
                             border: 'none',
                             background: isSelected ? '#F4F0FD' : 'transparent',
                             color: isSelected ? '#673DE6' : '#344054',
@@ -717,7 +717,7 @@ export default function Customers() {
                   style={{
                     height: '34px',
                     padding: '0 14px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: '1px solid #EAECF0',
                     background: '#F9FAFB',
                     color: '#667085',
@@ -802,7 +802,7 @@ export default function Customers() {
                     padding: '0 14px',
                     fontSize: '12px',
                     fontWeight: 600,
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     background: '#FFFFFF',
                     border: '1px solid #D0D5DD',
                     color: '#344054',
@@ -887,7 +887,7 @@ export default function Customers() {
                                 {client.phone_number || '-'}
                               </span>
                               {fasting.intermittentBadge && (
-                                <span style={{ fontSize: '9.5px', padding: '1px 5px', borderRadius: '4px', background: '#E0F2FE', color: '#0284C7', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                                <span style={{ fontSize: '9.5px', padding: '1px 5px', borderRadius: '9999px', background: '#E0F2FE', color: '#0284C7', fontWeight: 700, whiteSpace: 'nowrap' }}>
                                   {fasting.intermittentBadge.shortLabel}
                                 </span>
                               )}
@@ -902,7 +902,7 @@ export default function Customers() {
                               fontSize: '11px',
                               fontWeight: 700,
                               padding: '2px 8px',
-                              borderRadius: '7px',
+                              borderRadius: '9999px',
                               background: '#F4F0FD',
                               color: '#673DE6',
                               border: '1px solid #EDE8FA',
@@ -916,7 +916,7 @@ export default function Customers() {
                                 fontSize: '9px',
                                 fontWeight: 700,
                                 padding: '1px 5px',
-                                borderRadius: '5px',
+                                borderRadius: '9999px',
                                 background: '#FEF3F2',
                                 color: '#B42318',
                                 border: '1px solid #FECDCA',
@@ -947,7 +947,7 @@ export default function Customers() {
                             <strong style={{ fontSize: '11.5px', color: '#101828', fontFamily: 'JetBrains Mono, monospace', whiteSpace: 'nowrap' }}>
                               {Number(client.plan_summary?.nutritionCalories || 2150).toLocaleString()} سعرة
                             </strong>
-                            <span style={{ fontSize: '9.5px', color: '#027A48', fontWeight: 700, background: '#ECFDF3', border: '1px solid #A6F4C7', padding: '1px 6px', borderRadius: '5px', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontSize: '9.5px', color: '#027A48', fontWeight: 700, background: '#ECFDF3', border: '1px solid #A6F4C7', padding: '1px 6px', borderRadius: '9999px', whiteSpace: 'nowrap' }}>
                               {client.plan_summary?.nutritionProtein || 160}g بروتين
                             </span>
                           </div>
@@ -963,7 +963,7 @@ export default function Customers() {
                               background: '#EFF8FF',
                               border: '1px solid #B2DDFF',
                               padding: '2px 7px',
-                              borderRadius: '7px',
+                              borderRadius: '9999px',
                               display: 'inline-block',
                               whiteSpace: 'nowrap'
                             }}>
@@ -977,7 +977,7 @@ export default function Customers() {
                               background: '#F8FAFC',
                               border: '1px solid #E2E8F0',
                               padding: '2px 7px',
-                              borderRadius: '7px',
+                              borderRadius: '9999px',
                               display: 'inline-block',
                               whiteSpace: 'nowrap'
                             }}>
@@ -994,7 +994,7 @@ export default function Customers() {
                               fontSize: '10px',
                               fontWeight: 700,
                               padding: '1.5px 6px',
-                              borderRadius: '5px',
+                              borderRadius: '9999px',
                               display: 'inline-block',
                               whiteSpace: 'nowrap',
                               background: rawStatus === 'FROZEN' ? '#F8FAFC' : rawStatus === 'EXPIRED' ? '#FEF3F2' : (daysRemaining <= 3 ? '#FFFAEB' : '#ECFDF3'),
@@ -1017,7 +1017,7 @@ export default function Customers() {
                               style={{
                                 height: '28px',
                                 padding: '0 9px',
-                                borderRadius: '7px',
+                                borderRadius: '9999px',
                                 border: '1px solid #DDD6FE',
                                 background: '#F4F0FD',
                                 color: '#673DE6',
@@ -1053,7 +1053,7 @@ export default function Customers() {
                               style={{
                                 height: '28px',
                                 padding: '0 8px',
-                                borderRadius: '7px',
+                                borderRadius: '9999px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
                                 color: '#344054',
@@ -1100,7 +1100,7 @@ export default function Customers() {
                                 height: '28px',
                                 width: '28px',
                                 padding: 0,
-                                borderRadius: '7px',
+                                borderRadius: '9999px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
                                 color: '#027A48',
@@ -1131,7 +1131,7 @@ export default function Customers() {
                               style={{
                                 height: '28px',
                                 padding: '0 8px',
-                                borderRadius: '7px',
+                                borderRadius: '9999px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
                                 color: '#344054',
@@ -1223,7 +1223,7 @@ export default function Customers() {
                   style={{
                     height: '30px',
                     padding: '0 12px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: '1px solid #D0D5DD',
                     background: currentPage === 1 ? '#F9FAFB' : '#FFFFFF',
                     color: currentPage === 1 ? '#98A2B3' : '#344054',

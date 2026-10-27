@@ -250,7 +250,7 @@ export default function MasterSettingsHub() {
           background: '#FFFFFF',
           border: '1px solid #EAECF0',
           padding: '8px 14px',
-          borderRadius: '16px',
+          borderRadius: '24px',
           boxShadow: '0 1px 3px rgba(16, 24, 40, 0.03)'
         }}>
           
@@ -270,7 +270,7 @@ export default function MasterSettingsHub() {
                   onClick={() => setActiveTab(tab.id)}
                   style={{
                     padding: '6px 14px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     fontSize: '12px',
                     fontWeight: isSel ? 700 : 600,
                     border: isSel ? '1px solid #673DE6' : '1px solid #EAECF0',
@@ -311,7 +311,7 @@ export default function MasterSettingsHub() {
               style={{
                 padding: '0 16px',
                 height: '34px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 background: '#673DE6',
                 color: '#FFFFFF',
                 border: 'none',
@@ -339,7 +339,7 @@ export default function MasterSettingsHub() {
               style={{
                 padding: '0 16px',
                 height: '34px',
-                borderRadius: '8px',
+                borderRadius: '9999px',
                 background: '#673DE6',
                 color: '#FFFFFF',
                 border: 'none',
@@ -375,7 +375,7 @@ export default function MasterSettingsHub() {
                   width="200px"
                   showShortcut={false}
                 />
-                <div style={{ display: 'inline-flex', gap: '3px', background: '#F2F4F7', padding: '3px', borderRadius: '8px', border: '1px solid #EAECF0' }}>
+                <div style={{ display: 'inline-flex', gap: '3px', background: '#F2F4F7', padding: '3px', borderRadius: '9999px', border: '1px solid #EAECF0' }}>
                   {sectionsList.map(sec => {
                     const isSel = selectedSection === sec.id;
                     return (
@@ -385,7 +385,7 @@ export default function MasterSettingsHub() {
                         onClick={() => setSelectedSection(sec.id)}
                         style={{
                           padding: '4px 10px',
-                          borderRadius: '6px',
+                          borderRadius: '9999px',
                           fontSize: '11px',
                           fontWeight: isSel ? 700 : 600,
                           border: 'none',
@@ -404,7 +404,7 @@ export default function MasterSettingsHub() {
               </div>
             )}
           >
-            <div style={{ overflowX: 'auto', border: '1px solid #EAECF0', borderRadius: '12px', marginTop: '10px' }}>
+            <div style={{ overflowX: 'auto', border: '1px solid #EAECF0', borderRadius: '20px', marginTop: '10px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12.5px' }}>
                 <thead>
                   <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #EAECF0', color: '#475467', fontWeight: 600, fontSize: '12px' }}>
@@ -479,7 +479,7 @@ export default function MasterSettingsHub() {
                             border: '1px solid #DDD6FE',
                             color: '#673DE6',
                             padding: '2px 10px',
-                            borderRadius: '6px',
+                            borderRadius: '9999px',
                             fontSize: '11px',
                             fontWeight: 700,
                             display: 'inline-block'
@@ -495,7 +495,7 @@ export default function MasterSettingsHub() {
                             border: '1px solid #EAECF0',
                             color: '#475467',
                             padding: '2px 8px',
-                            borderRadius: '6px',
+                            borderRadius: '9999px',
                             fontSize: '11px',
                             fontWeight: 600,
                             display: 'inline-block'
@@ -512,7 +512,7 @@ export default function MasterSettingsHub() {
                               onClick={() => handleToggleQuestionRequired(q)}
                               style={{
                                 padding: '2px 8px',
-                                borderRadius: '6px',
+                                borderRadius: '9999px',
                                 border: q.required ? '1px solid #FECDCA' : '1px solid #EAECF0',
                                 background: q.required ? '#FEF3F2' : '#F8FAFC',
                                 color: q.required ? '#B42318' : '#667085',
@@ -530,7 +530,7 @@ export default function MasterSettingsHub() {
                               onClick={() => handleToggleQuestionActive(q)}
                               style={{
                                 padding: '2px 8px',
-                                borderRadius: '6px',
+                                borderRadius: '9999px',
                                 border: q.active ? '1px solid #A6F4C7' : '1px solid #EAECF0',
                                 background: q.active ? '#ECFDF3' : '#F8FAFC',
                                 color: q.active ? '#027A48' : '#94A3B8',
@@ -555,7 +555,7 @@ export default function MasterSettingsHub() {
                               style={{
                                 width: '30px',
                                 height: '30px',
-                                borderRadius: '8px',
+                                borderRadius: '9999px',
                                 border: '1px solid #D0D5DD',
                                 background: '#FFFFFF',
                                 color: '#475467',
@@ -586,7 +586,7 @@ export default function MasterSettingsHub() {
                               style={{
                                 width: '30px',
                                 height: '30px',
-                                borderRadius: '8px',
+                                borderRadius: '9999px',
                                 border: '1px solid #FECDCA',
                                 background: '#FEF3F2',
                                 color: '#B42318',
@@ -631,7 +631,7 @@ export default function MasterSettingsHub() {
                   style={{ 
                     background: '#FFFFFF', 
                     border: '1px solid #EAECF0', 
-                    borderRadius: '16px', 
+                    borderRadius: '24px', 
                     padding: '20px', 
                     display: 'flex', 
                     flexDirection: 'column', 
@@ -649,7 +649,7 @@ export default function MasterSettingsHub() {
                           border: '1px solid #DDD6FE',
                           color: '#673DE6',
                           padding: '3px 10px',
-                          borderRadius: '6px',
+                          borderRadius: '9999px',
                           fontSize: '11px',
                           fontWeight: 700
                         }}>
@@ -698,7 +698,7 @@ export default function MasterSettingsHub() {
                         style={{
                           height: '30px',
                           padding: '0 12px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: '1px solid #D0D5DD',
                           background: '#FFFFFF',
                           color: '#344054',
@@ -716,7 +716,7 @@ export default function MasterSettingsHub() {
                         style={{
                           height: '30px',
                           padding: '0 12px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: '1px solid #FECDCA',
                           background: '#FEF3F2',
                           color: '#B42318',
@@ -747,7 +747,7 @@ export default function MasterSettingsHub() {
                   background: '#ECFDF3', 
                   border: '1px solid #A6F4C7', 
                   padding: '12px 18px', 
-                  borderRadius: '12px', 
+                  borderRadius: '20px', 
                   color: '#027A48', 
                   fontWeight: 700, 
                   fontSize: '13px',
@@ -777,7 +777,7 @@ export default function MasterSettingsHub() {
                     value={coachConfig.coachName || ''}
                     onChange={(e) => setCoachConfig({ ...coachConfig, coachName: e.target.value })}
                     placeholder="مثال: كريم زكريا / Karim Zakaria"
-                    style={{ width: '100%', height: '42px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
+                    style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
                   />
                 </div>
 
@@ -790,7 +790,7 @@ export default function MasterSettingsHub() {
                     value={coachConfig.coachTitle || ''}
                     onChange={(e) => setCoachConfig({ ...coachConfig, coachTitle: e.target.value })}
                     placeholder="مثال: أخصائي تغذية رياضية وإعداد بدني معتمد"
-                    style={{ width: '100%', height: '42px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
+                    style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
                   />
                 </div>
 
@@ -803,7 +803,7 @@ export default function MasterSettingsHub() {
                     value={coachConfig.brandTitle || ''}
                     onChange={(e) => setCoachConfig({ ...coachConfig, brandTitle: e.target.value })}
                     placeholder="مثال: Z COACHING"
-                    style={{ width: '100%', height: '42px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
+                    style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
                   />
                 </div>
 
@@ -817,7 +817,7 @@ export default function MasterSettingsHub() {
                     onChange={(e) => setCoachConfig({ ...coachConfig, whatsappNumber: e.target.value })}
                     placeholder="2010XXXXXXXX"
                     dir="ltr"
-                    style={{ width: '100%', height: '42px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', fontFamily: 'JetBrains Mono, Cairo', outline: 'none', boxSizing: 'border-box', textAlign: 'right', background: '#FFFFFF', color: '#101828' }}
+                    style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', fontFamily: 'JetBrains Mono, Cairo', outline: 'none', boxSizing: 'border-box', textAlign: 'right', background: '#FFFFFF', color: '#101828' }}
                   />
                 </div>
 
@@ -831,7 +831,7 @@ export default function MasterSettingsHub() {
                     onChange={(e) => setCoachConfig({ ...coachConfig, instagramUrl: e.target.value })}
                     placeholder="https://instagram.com/yourhandle"
                     dir="ltr"
-                    style={{ width: '100%', height: '42px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', textAlign: 'right', background: '#FFFFFF', color: '#101828' }}
+                    style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', textAlign: 'right', background: '#FFFFFF', color: '#101828' }}
                   />
                 </div>
 
@@ -847,7 +847,7 @@ export default function MasterSettingsHub() {
               background: '#FFFFFF',
               border: '1px solid #EAECF0',
               padding: '12px 20px',
-              borderRadius: '16px',
+              borderRadius: '24px',
               boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
             }}>
               <button
@@ -856,7 +856,7 @@ export default function MasterSettingsHub() {
                 style={{
                   height: '38px',
                   padding: '0 18px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: '1px solid #D0D5DD',
                   background: '#FFFFFF',
                   color: '#344054',
@@ -875,7 +875,7 @@ export default function MasterSettingsHub() {
                 style={{
                   height: '38px',
                   padding: '0 24px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   fontSize: '12.5px',
                   fontWeight: 700,
                   cursor: 'pointer',

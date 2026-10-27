@@ -387,7 +387,7 @@ export default function MacroCalculator() {
               color: '#673DE6',
               border: '1px solid #EDE8FA',
               padding: '2px 8px',
-              borderRadius: '6px',
+              borderRadius: '9999px',
               fontSize: '11px',
               fontWeight: 700
             }}>
@@ -395,13 +395,13 @@ export default function MacroCalculator() {
             </span>
           )}
           actions={(
-            <div style={{ display: 'inline-flex', background: '#F2F4F7', padding: '3px', borderRadius: '8px', border: '1px solid #EAECF0', gap: '3px' }}>
+            <div style={{ display: 'inline-flex', background: '#F2F4F7', padding: '3px', borderRadius: '9999px', border: '1px solid #EAECF0', gap: '3px' }}>
               <button
                 type="button"
                 onClick={() => setActiveTab('CATALOG')}
                 style={{
                   padding: '6px 16px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: 'none',
                   background: activeTab === 'CATALOG' ? '#FFFFFF' : 'transparent',
                   color: activeTab === 'CATALOG' ? '#101828' : '#475467',
@@ -424,7 +424,7 @@ export default function MacroCalculator() {
                 onClick={() => setActiveTab('CALCULATOR')}
                 style={{
                   padding: '6px 16px',
-                  borderRadius: '8px',
+                  borderRadius: '9999px',
                   border: 'none',
                   background: activeTab === 'CALCULATOR' ? '#FFFFFF' : 'transparent',
                   color: activeTab === 'CALCULATOR' ? '#101828' : '#475467',
@@ -465,7 +465,7 @@ export default function MacroCalculator() {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {/* Food State Filter (Curved Segmented Control) */}
-                  <div style={{ display: 'inline-flex', background: '#F2F4F7', padding: '3px', borderRadius: '8px', border: '1px solid #EAECF0', gap: '2px' }}>
+                  <div style={{ display: 'inline-flex', background: '#F2F4F7', padding: '3px', borderRadius: '9999px', border: '1px solid #EAECF0', gap: '2px' }}>
                     {[
                       { id: 'ALL', label: 'جميع الحالات' },
                       { id: 'COOKED', label: 'مطبوخ' },
@@ -483,7 +483,7 @@ export default function MacroCalculator() {
                             padding: '4px 12px',
                             fontSize: '11.5px',
                             fontWeight: isAct ? 700 : 500,
-                            borderRadius: '8px',
+                            borderRadius: '9999px',
                             background: isAct ? '#FFFFFF' : 'transparent',
                             color: isAct ? '#101828' : '#475467',
                             boxShadow: isAct ? '0 1px 2px rgba(16, 24, 40, 0.06)' : 'none',
@@ -503,7 +503,7 @@ export default function MacroCalculator() {
                     style={{
                       height: '32px',
                       padding: '0 16px',
-                      borderRadius: '8px',
+                      borderRadius: '9999px',
                       border: 'none',
                       background: '#673DE6', color: '#FFFFFF', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px', boxShadow: '0 1px 2px rgba(103, 61, 230, 0.2)'
                     }}
@@ -532,7 +532,7 @@ export default function MacroCalculator() {
                       onClick={() => setCategoryFilter(cat.key)}
                       style={{
                         padding: '5px 12px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         border: isSelected ? '1px solid #0F172A' : '1px solid #E2E8F0',
                         background: isSelected ? '#101828' : '#FFFFFF',
                         color: isSelected ? '#FFFFFF' : '#475569',
@@ -552,7 +552,7 @@ export default function MacroCalculator() {
                         color: isSelected ? '#FFFFFF' : '#64748B',
                         fontSize: '9.5px',
                         padding: '0 4px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         fontWeight: 800
                       }}>
                         {cat.count}
@@ -577,7 +577,7 @@ export default function MacroCalculator() {
                 <div style={{ fontSize: '11px', color: '#64748B' }}>جرب تغيير تصنيف البحث أو إضافة صنف طعام جديد.</div>
               </div>
             ) : (
-              <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', overflowX: 'auto', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)', minHeight: '350px' }}>
+              <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '24px', overflowX: 'auto', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)', minHeight: '350px' }}>
                 <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', textAlign: 'right', fontSize: '12px' }}>
                   <thead>
                     <tr style={{ background: '#F8F9FA', borderBottom: '1px solid #EAECF0', color: '#475569', fontWeight: 800 }}>
@@ -609,7 +609,7 @@ export default function MacroCalculator() {
                                 fontSize: '9.5px',
                                 fontWeight: 700,
                                 padding: '1px 6px',
-                                borderRadius: '8px',
+                                borderRadius: '9999px',
                                 background: food.food_state === 'COOKED' ? '#F1F5F9' : '#FEF2F2',
                                 border: `1px solid ${food.food_state === 'COOKED' ? '#D0D5DD' : '#FECACA'}`,
                                 color: food.food_state === 'COOKED' ? '#334155' : '#DC2626'
@@ -641,7 +641,7 @@ export default function MacroCalculator() {
                               background: '#F8F9FA', border: '1px solid #EAECF0',
                               color: '#92400E',
                               padding: '3px 10px',
-                              borderRadius: '6px',
+                              borderRadius: '9999px',
                               fontSize: '12px',
                               fontWeight: 900,
                               fontFamily: 'JetBrains Mono, Cairo, sans-serif',
@@ -662,7 +662,7 @@ export default function MacroCalculator() {
                                 background: '#F8F9FA', border: '1px solid #EAECF0',
                                 color: '#0369A1',
                                 padding: '3px 0',
-                                borderRadius: '5px',
+                                borderRadius: '9999px',
                                 fontSize: '11px',
                                 fontWeight: 800,
                                 fontFamily: 'JetBrains Mono, Cairo, sans-serif',
@@ -680,7 +680,7 @@ export default function MacroCalculator() {
                                 border: '1px solid #FED7AA',
                                 color: '#C2410C',
                                 padding: '3px 0',
-                                borderRadius: '5px',
+                                borderRadius: '9999px',
                                 fontSize: '11px',
                                 fontWeight: 800,
                                 fontFamily: 'JetBrains Mono, Cairo, sans-serif',
@@ -697,7 +697,7 @@ export default function MacroCalculator() {
                                 background: '#F8F9FA', border: '1px solid #EAECF0',
                                 color: '#15803D',
                                 padding: '3px 0',
-                                borderRadius: '5px',
+                                borderRadius: '9999px',
                                 fontSize: '11px',
                                 fontWeight: 800,
                                 fontFamily: 'JetBrains Mono, Cairo, sans-serif',
@@ -715,7 +715,7 @@ export default function MacroCalculator() {
                                 border: '1px solid #EAECF0',
                                 color: '#64748B',
                                 padding: '3px 0',
-                                borderRadius: '5px',
+                                borderRadius: '9999px',
                                 fontSize: '10.5px',
                                 fontWeight: 700,
                                 fontFamily: 'JetBrains Mono, Cairo, sans-serif',
@@ -740,7 +740,7 @@ export default function MacroCalculator() {
                                 style={{
                                   height: '28px',
                                   padding: '0 10px',
-                                  borderRadius: '5px',
+                                  borderRadius: '9999px',
                                   border: '1px solid #CBD5E1',
                                   background: '#FFFFFF',
                                   color: '#334155',
@@ -763,7 +763,7 @@ export default function MacroCalculator() {
                                 style={{
                                   height: '28px',
                                   padding: '0 8px',
-                                  borderRadius: '5px',
+                                  borderRadius: '9999px',
                                   border: '1px solid #FEE2E2',
                                   background: '#FFF5F5',
                                   color: '#DC2626',
@@ -798,7 +798,7 @@ export default function MacroCalculator() {
             <div style={{
               background: '#FFFFFF',
               border: '1px solid #EAECF0',
-              borderRadius: '16px',
+              borderRadius: '24px',
               padding: '22px 24px',
               boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02)',
               display: 'flex',
@@ -858,7 +858,7 @@ export default function MacroCalculator() {
                         }}
                         style={{
                           height: '32px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: '1px solid #D0D5DD',
                           padding: '0 10px',
                           fontSize: '11px',
@@ -907,7 +907,7 @@ export default function MacroCalculator() {
                         background: '#EDE9FE',
                         color: '#6D28D9',
                         padding: '2px 8px',
-                        borderRadius: '6px',
+                        borderRadius: '9999px',
                         fontSize: '10px',
                         fontWeight: 800
                       }}>
@@ -942,7 +942,7 @@ export default function MacroCalculator() {
                               onClick={() => setCalcForm({ ...calcForm, gender: g.id })}
                               style={{
                                 border: isAct ? '1px solid #673DE6' : '1px solid #D0D5DD',
-                                borderRadius: '8px',
+                                borderRadius: '9999px',
                                 background: isAct ? '#673DE6' : '#FFFFFF',
                                 color: isAct ? '#FFFFFF' : '#344054',
                                 fontWeight: 700,
@@ -974,7 +974,7 @@ export default function MacroCalculator() {
                         style={{
                           width: '100%',
                           height: '38px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: '1px solid #D0D5DD',
                           padding: '0 12px',
                           fontSize: '13px',
@@ -1002,7 +1002,7 @@ export default function MacroCalculator() {
                         style={{
                           width: '100%',
                           height: '38px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: '1px solid #D0D5DD',
                           padding: '0 12px',
                           fontSize: '13px',
@@ -1027,7 +1027,7 @@ export default function MacroCalculator() {
                         style={{
                           width: '100%',
                           height: '38px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: '1px solid #D0D5DD',
                           padding: '0 12px',
                           fontSize: '13px',
@@ -1053,7 +1053,7 @@ export default function MacroCalculator() {
                         style={{
                           width: '100%',
                           height: '38px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: '1px solid #D0D5DD',
                           padding: '0 12px',
                           fontSize: '13px',
@@ -1087,7 +1087,7 @@ export default function MacroCalculator() {
                         style={{
                           width: '100%',
                           height: '38px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: '1px solid #D0D5DD',
                           padding: '0 10px',
                           fontSize: '11px',
@@ -1113,7 +1113,7 @@ export default function MacroCalculator() {
                         style={{
                           width: '100%',
                           height: '38px',
-                          borderRadius: '8px',
+                          borderRadius: '9999px',
                           border: '1px solid #D0D5DD',
                           padding: '0 10px',
                           fontSize: '11px',
@@ -1149,7 +1149,7 @@ export default function MacroCalculator() {
                       style={{
                         width: '100%',
                         height: '38px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         border: '1px solid #D0D5DD',
                         padding: '0 12px',
                         fontSize: '12px',
@@ -1166,13 +1166,13 @@ export default function MacroCalculator() {
                   </div>
 
                   {/* Protein Requirement Control */}
-                  <div style={{ background: '#F9FAFB', padding: '12px 14px', borderRadius: '12px', border: '1px solid #EAECF0' }}>
+                  <div style={{ background: '#F9FAFB', padding: '12px 14px', borderRadius: '24px', border: '1px solid #EAECF0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                       <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#344054' }}>
                         معدل البروتين اليومي لكل كجم وزن
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#673DE6', background: '#F4F0FD', border: '1px solid #EDE8FA', padding: '2px 8px', borderRadius: '6px' }}>
+                        <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#673DE6', background: '#F4F0FD', border: '1px solid #EDE8FA', padding: '2px 8px', borderRadius: '9999px' }}>
                           {calcForm.proteinPerKg} جم / كجم
                         </span>
                         <span style={{ fontSize: '10.5px', color: '#667085', fontWeight: 600 }}>
@@ -1198,7 +1198,7 @@ export default function MacroCalculator() {
                             onClick={() => setCalcForm(prev => ({ ...prev, proteinPerKg: p.val }))}
                             style={{
                               padding: '5px 4px',
-                              borderRadius: '8px',
+                              borderRadius: '9999px',
                               border: isAct ? '1px solid #673DE6' : '1px solid #D0D5DD',
                               background: isAct ? '#673DE6' : '#FFFFFF',
                               color: isAct ? '#FFFFFF' : '#344054',
@@ -1251,7 +1251,7 @@ export default function MacroCalculator() {
             <div style={{
               background: '#FFFFFF',
               border: '1px solid #EAECF0',
-              borderRadius: '16px',
+              borderRadius: '24px',
               padding: '22px 24px',
               boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02)',
               display: 'flex',
@@ -1295,7 +1295,7 @@ export default function MacroCalculator() {
                     background: '#F4F0FD',
                     border: '1px solid #EDE8FA',
                     padding: '3px 9px',
-                    borderRadius: '8px'
+                    borderRadius: '9999px'
                   }}>
                     {GOAL_CALORIE_MULTIPLIERS[calcForm.goal]?.label_ar || 'خطة التغذية'}
                   </span>
@@ -1327,15 +1327,15 @@ export default function MacroCalculator() {
 
                     <div>
                       {calorieDiff < 0 ? (
-                        <span style={{ background: '#FEF3F2', color: '#B42318', border: '1px solid #FECDCA', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                        <span style={{ background: '#FEF3F2', color: '#B42318', border: '1px solid #FECDCA', padding: '4px 10px', borderRadius: '9999px', fontSize: '11px', fontWeight: 700 }}>
                           عجز: {Math.abs(calorieDiff)} سعرة
                         </span>
                       ) : calorieDiff > 0 ? (
-                        <span style={{ background: '#ECFDF3', color: '#027A48', border: '1px solid #A6F4C5', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                        <span style={{ background: '#ECFDF3', color: '#027A48', border: '1px solid #A6F4C5', padding: '4px 10px', borderRadius: '9999px', fontSize: '11px', fontWeight: 700 }}>
                           فائض: +{calorieDiff} سعرة
                         </span>
                       ) : (
-                        <span style={{ background: '#F2F4F7', color: '#344054', border: '1px solid #EAECF0', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700 }}>
+                        <span style={{ background: '#F2F4F7', color: '#344054', border: '1px solid #EAECF0', padding: '4px 10px', borderRadius: '9999px', fontSize: '11px', fontWeight: 700 }}>
                           صيانة (0 عجز)
                         </span>
                       )}
@@ -1349,7 +1349,7 @@ export default function MacroCalculator() {
                       <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
                       <span>الاستهلاك الكلي (TDEE): <strong style={{ color: '#101828' }}>{metabolic.is_valid && tdee ? `${tdee} سعرة` : '--'}</strong></span>
                     </div>
-                    <span style={{ background: '#FFFFFF', padding: '1px 8px', borderRadius: '6px', border: '1px solid #D6BBFB', fontWeight: 700, color: '#673DE6', fontSize: '10px' }}>
+                    <span style={{ background: '#FFFFFF', padding: '1px 8px', borderRadius: '9999px', border: '1px solid #D6BBFB', fontWeight: 700, color: '#673DE6', fontSize: '10px' }}>
                       {calcForm.bodyFat ? 'معادلة Katch-McArdle السريرية (LBM)' : 'معادلة Mifflin-St Jeor السريرية'}
                     </span>
                   </div>
@@ -1363,7 +1363,7 @@ export default function MacroCalculator() {
                       بروتين {proteinPct}% • كارب {carbsPct}% • دهون {fatPct}%
                     </span>
                   </div>
-                  <div style={{ display: 'flex', height: '8px', borderRadius: '8px', overflow: 'hidden', gap: '2px', background: '#F2F4F7' }}>
+                  <div style={{ display: 'flex', height: '8px', borderRadius: '9999px', overflow: 'hidden', gap: '2px', background: '#F2F4F7' }}>
                     <div style={{ width: `${proteinPct}%`, background: '#0284C7', borderRadius: '9999px 0 0 9999px', transition: 'width 0.3s ease' }} title={`البروتين: ${proteinPct}%`} />
                     <div style={{ width: `${carbsPct}%`, background: '#D97706', transition: 'width 0.3s ease' }} title={`الكارب: ${carbsPct}%`} />
                     <div style={{ width: `${fatPct}%`, background: '#16A34A', borderRadius: '0 9999px 9999px 0', transition: 'width 0.3s ease' }} title={`الدهون: ${fatPct}%`} />
@@ -1376,7 +1376,7 @@ export default function MacroCalculator() {
                   <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderTop: '3px solid #0284C7', padding: '12px 10px', borderRadius: '10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
                       <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#026AA2' }}>البروتين</span>
-                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#0284C7', background: '#E0F2FE', padding: '1px 5px', borderRadius: '4px' }}>{proteinPct}%</span>
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#0284C7', background: '#E0F2FE', padding: '1px 5px', borderRadius: '9999px' }}>{proteinPct}%</span>
                     </div>
                     <div style={{ fontSize: '20px', fontWeight: 900, color: '#101828' }}>
                       {targetProteinGrams} <small style={{ fontSize: '11px', fontWeight: 700 }}>جم</small>
@@ -1388,7 +1388,7 @@ export default function MacroCalculator() {
                   <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderTop: '3px solid #D97706', padding: '12px 10px', borderRadius: '10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
                       <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#B54708' }}>الكارب</span>
-                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#D97706', background: '#FEF3C7', padding: '1px 5px', borderRadius: '4px' }}>{carbsPct}%</span>
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#D97706', background: '#FEF3C7', padding: '1px 5px', borderRadius: '9999px' }}>{carbsPct}%</span>
                     </div>
                     <div style={{ fontSize: '20px', fontWeight: 900, color: '#101828' }}>
                       {targetCarbGrams} <small style={{ fontSize: '11px', fontWeight: 700 }}>جم</small>
@@ -1400,7 +1400,7 @@ export default function MacroCalculator() {
                   <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderTop: '3px solid #16A34A', padding: '12px 10px', borderRadius: '10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
                       <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#027A48' }}>الدهون</span>
-                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '1px 5px', borderRadius: '4px' }}>{fatPct}%</span>
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '1px 5px', borderRadius: '9999px' }}>{fatPct}%</span>
                     </div>
                     <div style={{ fontSize: '20px', fontWeight: 900, color: '#101828' }}>
                       {targetFatGrams} <small style={{ fontSize: '11px', fontWeight: 700 }}>جم</small>
@@ -1427,7 +1427,7 @@ export default function MacroCalculator() {
               {/* Action Section */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '10px', borderTop: '1px solid #F2F4F7' }}>
                 {/* Sync to Client */}
-                <div style={{ background: '#F9FAFB', padding: '10px 12px', borderRadius: '12px', border: '1px solid #EAECF0' }}>
+                <div style={{ background: '#F9FAFB', padding: '10px 12px', borderRadius: '24px', border: '1px solid #EAECF0' }}>
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '6px' }}>
                     تطبيق هذه الماكروز فوراً على خطة متدرب:
                   </label>
@@ -1450,7 +1450,7 @@ export default function MacroCalculator() {
                           }));
                         }
                       }}
-                      style={{ flex: 1, height: '36px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 12px', fontSize: '11.5px', fontWeight: 600, outline: 'none', background: '#FFFFFF' }}
+                      style={{ flex: 1, height: '36px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 12px', fontSize: '11.5px', fontWeight: 600, outline: 'none', background: '#FFFFFF' }}
                     >
                       <option value="">-- اختر متدرب لتطبيق الخطة فوراً --</option>
                       {clients.map(c => (
@@ -1466,7 +1466,7 @@ export default function MacroCalculator() {
                       style={{
                         padding: '0 18px',
                         height: '36px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         border: 'none',
                         background: '#673DE6',
                         color: '#FFFFFF',
@@ -1496,7 +1496,7 @@ export default function MacroCalculator() {
                   style={{
                     width: '100%',
                     height: '36px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: calcCopied ? '1px solid #A6F4C5' : '1px solid #A6F4C5',
                     background: calcCopied ? '#ECFDF3' : '#ECFDF3',
                     color: '#027A48',
@@ -1540,7 +1540,7 @@ export default function MacroCalculator() {
           }}>
             <div style={{
               background: '#FFFFFF',
-              borderRadius: '12px',
+              borderRadius: '24px',
               maxWidth: '540px',
               width: '100%',
               maxHeight: '90vh',
@@ -1579,7 +1579,7 @@ export default function MacroCalculator() {
                       placeholder="مثال: صدور دجاج مشوية"
                       value={foodFormData.name_ar}
                       onChange={(e) => setFoodFormData({ ...foodFormData, name_ar: e.target.value })}
-                      style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '32px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
 
@@ -1592,7 +1592,7 @@ export default function MacroCalculator() {
                       placeholder="e.g. Grilled Chicken Breast"
                       value={foodFormData.name_en}
                       onChange={(e) => setFoodFormData({ ...foodFormData, name_en: e.target.value })}
-                      style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '32px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11.5px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
@@ -1606,7 +1606,7 @@ export default function MacroCalculator() {
                     <CurvedSelect
                       value={foodFormData.macro_type}
                       onChange={(e) => setFoodFormData({ ...foodFormData, macro_type: e.target.value })}
-                      style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, outline: 'none' }}
+                      style={{ width: '100%', height: '32px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, outline: 'none' }}
                     >
                       <option value="PROTEIN">بروتين (Protein)</option>
                       <option value="CARBS">كاربوهيدرات (Carbs)</option>
@@ -1625,7 +1625,7 @@ export default function MacroCalculator() {
                       placeholder="لحوم، حبوب، مكسرات..."
                       value={foodFormData.category_ar}
                       onChange={(e) => setFoodFormData({ ...foodFormData, category_ar: e.target.value })}
-                      style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: '32px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '11px', outline: 'none', boxSizing: 'border-box' }}
                     />
                   </div>
 
@@ -1636,7 +1636,7 @@ export default function MacroCalculator() {
                     <CurvedSelect
                       value={foodFormData.food_state}
                       onChange={(e) => setFoodFormData({ ...foodFormData, food_state: e.target.value })}
-                      style={{ width: '100%', height: '32px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, outline: 'none' }}
+                      style={{ width: '100%', height: '32px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 6px', fontSize: '11px', fontWeight: 700, outline: 'none' }}
                     >
                       <option value="COOKED">مطبوخ ومجهز</option>
                       <option value="RAW">طازج / نيء</option>
@@ -1645,7 +1645,7 @@ export default function MacroCalculator() {
                 </div>
 
                 {/* Macro Inputs (per 100g) */}
-                <div style={{ background: '#F8F9FA', padding: '10px 12px', borderRadius: '8px', border: '1px solid #EAECF0' }}>
+                <div style={{ background: '#F8F9FA', padding: '10px 12px', borderRadius: '9999px', border: '1px solid #EAECF0' }}>
                   <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#101828', marginBottom: '8px' }}>
                     القيم الغذائية لكل 100 جرام:
                   </div>
@@ -1659,7 +1659,7 @@ export default function MacroCalculator() {
                         type="number"
                         value={foodFormData.calories_per_100g}
                         onChange={(e) => setFoodFormData({ ...foodFormData, calories_per_100g: Number(e.target.value) })}
-                        style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '30px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1672,7 +1672,7 @@ export default function MacroCalculator() {
                         step="0.1"
                         value={foodFormData.protein_per_100g}
                         onChange={(e) => setFoodFormData({ ...foodFormData, protein_per_100g: Number(e.target.value) })}
-                        style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '30px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1685,7 +1685,7 @@ export default function MacroCalculator() {
                         step="0.1"
                         value={foodFormData.carbs_per_100g}
                         onChange={(e) => setFoodFormData({ ...foodFormData, carbs_per_100g: Number(e.target.value) })}
-                        style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '30px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1698,7 +1698,7 @@ export default function MacroCalculator() {
                         step="0.1"
                         value={foodFormData.fat_per_100g}
                         onChange={(e) => setFoodFormData({ ...foodFormData, fat_per_100g: Number(e.target.value) })}
-                        style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '30px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
 
@@ -1711,7 +1711,7 @@ export default function MacroCalculator() {
                         step="0.1"
                         value={foodFormData.fiber_per_100g}
                         onChange={(e) => setFoodFormData({ ...foodFormData, fiber_per_100g: Number(e.target.value) })}
-                        style={{ width: '100%', height: '30px', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '30px', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '0 4px', fontSize: '11.5px', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                       />
                     </div>
                   </div>
@@ -1727,7 +1727,7 @@ export default function MacroCalculator() {
                     placeholder="نصائح تناول الصنف، الفوائد الهرمونية، وقت التناول المقترح..."
                     value={foodFormData.notes_ar}
                     onChange={(e) => setFoodFormData({ ...foodFormData, notes_ar: e.target.value })}
-                    style={{ width: '100%', borderRadius: '8px', border: '1px solid #CBD5E1', padding: '6px 8px', fontSize: '11px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
+                    style={{ width: '100%', borderRadius: '9999px', border: '1px solid #CBD5E1', padding: '6px 8px', fontSize: '11px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -1736,14 +1736,14 @@ export default function MacroCalculator() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    style={{ padding: '0 14px', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '0 14px', height: '34px', borderRadius: '9999px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     إلغاء
                   </button>
                   <button
                     type="submit"
                     disabled={savingFood}
-                    style={{ padding: '0 18px', height: '34px', borderRadius: '8px', border: 'none', background: '#101828', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    style={{ padding: '0 18px', height: '34px', borderRadius: '9999px', border: 'none', background: '#101828', color: '#FFFFFF', fontSize: '11.5px', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                   >
                     <Save size={13} />
                     <span>{savingFood ? 'جاري الحفظ...' : 'حفظ الصنف في المكتبة'}</span>

@@ -447,7 +447,7 @@ export default function WhatsAppRemindersHub() {
         <div style={{
           background: '#FFFFFF',
           border: '1px solid #EAECF0',
-          borderRadius: '14px',
+          borderRadius: '24px',
           padding: '14px 20px',
           display: 'flex',
           justifyContent: 'space-between',
@@ -491,7 +491,7 @@ export default function WhatsAppRemindersHub() {
                   onClick={() => setSelectedFilter(f.id)}
                   style={{
                     padding: '6px 12px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     fontSize: '11.5px',
                     fontWeight: isSel ? 700 : 600,
                     border: isSel ? '1px solid #0F172A' : '1px solid #E2E8F0',
@@ -511,7 +511,7 @@ export default function WhatsAppRemindersHub() {
                     fontWeight: 800,
                     fontFamily: 'JetBrains Mono, monospace',
                     padding: '1px 6px',
-                    borderRadius: '6px',
+                    borderRadius: '9999px',
                     background: isSel ? 'rgba(255,255,255,0.2)' : f.bg,
                     color: isSel ? '#FFFFFF' : f.color
                   }}>
@@ -524,7 +524,7 @@ export default function WhatsAppRemindersHub() {
 
           {/* Tier Switch & Search */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '8px', border: '1px solid #EAECF0' }}>
+            <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '9999px', border: '1px solid #EAECF0' }}>
               {[
                 { id: 'ALL', label: 'الكل' },
                 { id: 'MAX', label: 'MAX' },
@@ -538,7 +538,7 @@ export default function WhatsAppRemindersHub() {
                     onClick={() => setSelectedTier(t.id)}
                     style={{
                       padding: '4px 10px',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       fontSize: '11px',
                       fontWeight: 800,
                       fontFamily: t.id !== 'ALL' ? 'JetBrains Mono, sans-serif' : 'inherit',
@@ -572,7 +572,7 @@ export default function WhatsAppRemindersHub() {
           <div style={{
             background: '#FFFFFF',
             border: '1px solid #EAECF0',
-            borderRadius: '14px',
+            borderRadius: '24px',
             overflow: 'hidden',
             boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)'
           }}>
@@ -654,7 +654,7 @@ export default function WhatsAppRemindersHub() {
                                   fontSize: '9.5px',
                                   fontWeight: 700,
                                   padding: '1px 6px',
-                                  borderRadius: '6px',
+                                  borderRadius: '9999px',
                                   background: '#FEF2F2',
                                   border: '1px solid #FECACA',
                                   color: '#DC2626',
@@ -672,13 +672,13 @@ export default function WhatsAppRemindersHub() {
                           
                           {/* Training, Nutrition & Cardio Badges */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '10px', color: '#475569', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1px 6px', borderRadius: '6px' }}>
+                            <span style={{ fontSize: '10px', color: '#475569', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '1px 6px', borderRadius: '9999px' }}>
                               {plan.trainingSplit} ({plan.trainingDays}d)
                             </span>
-                            <span style={{ fontSize: '10px', color: '#0284C7', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '1px 6px', borderRadius: '6px' }}>
+                            <span style={{ fontSize: '10px', color: '#0284C7', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '1px 6px', borderRadius: '9999px' }}>
                               {plan.nutritionCalories} سعرة ({plan.nutritionProtein}g بروتين)
                             </span>
-                            <span style={{ fontSize: '10px', color: '#D97706', background: '#FFFBEB', border: '1px solid #FDE68A', padding: '1px 6px', borderRadius: '6px' }}>
+                            <span style={{ fontSize: '10px', color: '#D97706', background: '#FFFBEB', border: '1px solid #FDE68A', padding: '1px 6px', borderRadius: '9999px' }}>
                               {plan.cardioSessions} جلسات كارديو
                             </span>
                           </div>
@@ -691,7 +691,7 @@ export default function WhatsAppRemindersHub() {
                           fontSize: '10px',
                           fontWeight: 700,
                           padding: '3px 8px',
-                          borderRadius: '6px',
+                          borderRadius: '9999px',
                           background: reasonBadge.bg,
                           border: `1px solid ${reasonBadge.border}`,
                           color: reasonBadge.color,
@@ -718,7 +718,7 @@ export default function WhatsAppRemindersHub() {
           <div style={{
             background: '#FFFFFF',
             border: '1px solid #EAECF0',
-            borderRadius: '14px',
+            borderRadius: '24px',
             padding: '18px',
             display: 'flex',
             flexDirection: 'column',
@@ -756,7 +756,7 @@ export default function WhatsAppRemindersHub() {
                   title="المشترك السابق (اختصار: [ أو Alt+Up)"
                   style={{
                     padding: '4px 10px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: '1px solid #CBD5E1',
                     background: '#F8FAFC',
                     cursor: filteredClients.length <= 1 ? 'not-allowed' : 'pointer',
@@ -792,7 +792,7 @@ export default function WhatsAppRemindersHub() {
                   title="المشترك التالي (اختصار: ] أو Alt+Down)"
                   style={{
                     padding: '4px 10px',
-                    borderRadius: '8px',
+                    borderRadius: '9999px',
                     border: '1px solid #CBD5E1',
                     background: '#F8FAFC',
                     cursor: filteredClients.length <= 1 ? 'not-allowed' : 'pointer',
@@ -816,7 +816,7 @@ export default function WhatsAppRemindersHub() {
               <div style={{
                 background: '#F8FAFC',
                 border: '1px solid #E2E8F0',
-                borderRadius: '12px',
+                borderRadius: '20px',
                 padding: '12px 14px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -830,7 +830,7 @@ export default function WhatsAppRemindersHub() {
                     </strong>
                   </div>
                   {hasInjuries && (
-                    <span style={{ fontSize: '10px', color: '#DC2626', fontWeight: 700, background: '#FEF2F2', padding: '1px 6px', borderRadius: '6px', border: '1px solid #FECACA', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                    <span style={{ fontSize: '10px', color: '#DC2626', fontWeight: 700, background: '#FEF2F2', padding: '1px 6px', borderRadius: '9999px', border: '1px solid #FECACA', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                       <ShieldAlert size={10} />
                       <span>حالة طبية مسجلة</span>
                     </span>
@@ -839,7 +839,7 @@ export default function WhatsAppRemindersHub() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   {/* Pillar 1: Training */}
-                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '8px 10px' }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '8px 10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748B', fontSize: '10px', fontWeight: 700, marginBottom: '2px' }}>
                       <Dumbbell size={11} color="#673DE6" />
                       <span>التدريب</span>
@@ -853,7 +853,7 @@ export default function WhatsAppRemindersHub() {
                   </div>
 
                   {/* Pillar 2: Nutrition */}
-                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '8px 10px' }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '8px 10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748B', fontSize: '10px', fontWeight: 700, marginBottom: '2px' }}>
                       <Utensils size={11} color="#0284C7" />
                       <span>التغذية</span>
@@ -867,7 +867,7 @@ export default function WhatsAppRemindersHub() {
                   </div>
 
                   {/* Pillar 3: Cardio */}
-                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '8px', padding: '8px 10px' }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '8px 10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748B', fontSize: '10px', fontWeight: 700, marginBottom: '2px' }}>
                       <Flame size={11} color="#D97706" />
                       <span>الكارديو والنشاط</span>
@@ -897,7 +897,7 @@ export default function WhatsAppRemindersHub() {
                       background: '#FFFFFF',
                       border: '1px solid #BAE6FD',
                       padding: '2px 8px',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '4px'
@@ -922,7 +922,7 @@ export default function WhatsAppRemindersHub() {
                       background: '#FFFFFF',
                       border: '1px solid #CBD5E1',
                       padding: '2px 8px',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -947,7 +947,7 @@ export default function WhatsAppRemindersHub() {
                       background: '#FFFFFF',
                       border: '1px solid #CBD5E1',
                       padding: '2px 8px',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -972,7 +972,7 @@ export default function WhatsAppRemindersHub() {
                       background: '#FFFFFF',
                       border: '1px solid #CBD5E1',
                       padding: '2px 8px',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -1008,7 +1008,7 @@ export default function WhatsAppRemindersHub() {
                       onClick={() => setActiveGroup(g.id)}
                       style={{
                         padding: '4px 10px',
-                        borderRadius: '6px',
+                        borderRadius: '9999px',
                         fontSize: '10.5px',
                         fontWeight: isSel ? 800 : 600,
                         border: isSel ? '1px solid #673DE6' : '1px solid #E2E8F0',
@@ -1034,7 +1034,7 @@ export default function WhatsAppRemindersHub() {
                       onClick={() => setActiveTemplateKey(tpl.id)}
                       style={{
                         padding: '8px 10px',
-                        borderRadius: '8px',
+                        borderRadius: '9999px',
                         border: isSel ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
                         background: isSel ? '#0F172A' : '#FFFFFF',
                         color: isSel ? '#FFFFFF' : '#334155',
@@ -1050,7 +1050,7 @@ export default function WhatsAppRemindersHub() {
                           fontSize: '9.5px',
                           fontWeight: 800,
                           padding: '1px 5px',
-                          borderRadius: '4px',
+                          borderRadius: '9999px',
                           background: isSel ? 'rgba(255,255,255,0.2)' : '#F1F5F9',
                           color: isSel ? '#FFFFFF' : '#64748B'
                         }}>
@@ -1096,7 +1096,7 @@ export default function WhatsAppRemindersHub() {
                     onClick={() => handleInsertVariable(chip.val)}
                     style={{
                       padding: '3px 8px',
-                      borderRadius: '6px',
+                      borderRadius: '9999px',
                       border: '1px solid #CBD5E1',
                       background: '#F8FAFC',
                       color: '#334155',
@@ -1181,7 +1181,7 @@ export default function WhatsAppRemindersHub() {
                 onChange={(e) => setCustomMessage(e.target.value)}
                 style={{
                   width: '100%',
-                  borderRadius: '12px',
+                  borderRadius: '20px',
                   border: '1.5px solid #CBD5E1',
                   padding: '12px 14px',
                   fontSize: '12px',
