@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2206/2206 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2216/2216 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -349,6 +349,17 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **UI Integration & PDF Export**: enhanced `frontend/src/pages/CoachEditor/components/CoachCardioHabitsTab.jsx` with a real-time leg-day cardio conflict warning banner, and upgraded `frontend/src/pages/ProgramPdfView.jsx` and `frontend/src/utils/pdfExportEngine.js` to display Tanaka Zone 2 BPM ranges, NEAT step targets, and mobility/warmup/cooldown exercise lists beneath training sessions.
   - Guarded by `test/cardio-mobility-and-interference-guard.test.js` (7 comprehensive domain tests).
 - Verification: **2206/2206 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`2.69s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
+
+## 3ac. Twenty-ninth round (2026-10-27) — Phase 11 Subscription Freeze Governance, State Decoupling & Multi-Currency Ledger (Unit H, tasks H-01..H-12) — merged + pushed
+
+- `2dc7018` **Subscription Freeze Governance, State Decoupling & Multi-Currency Ledger (Unit H, tasks H-01..H-12)**:
+  - **Subscription Freeze Governance Engine**: created `frontend/src/utils/subscriptionFreezeEngine.js` (re-exported by `src/execution-engines/subscription-freeze-engine.js` and registered in `LIVE_PAIRS`), enforcing package-based freeze allowances (14 days for 4M, 28 days for 8M, 45 days for 12M), same-day ceil rounding to guarantee a minimum of 1 compensatory day, and structured immutable freeze ledger (`[FREEZE_HISTORY:{records, used_days}]`) tracking reasons, actors, and dates.
+  - **Subscription State Decoupling & Renewal Date Chaining**: created `frontend/src/utils/subscriptionStateEngine.js` (re-exported by `src/execution-engines/subscription-state-engine.js` and registered in `LIVE_PAIRS`), strictly separating `CLIENT_LIFECYCLE_STATUS`, `PLAN_APPROVAL_STATUS`, and `PAYMENT_LIFECYCLE_STATUS`, and computing renewal date chaining (seamlessly extending from active end date without lost days for current trainees, while restarting fresh for lapsed trainees).
+  - **Multi-Currency Financial Ledger Engine**: created `frontend/src/utils/financialLedgerEngine.js` (re-exported by `src/execution-engines/financial-ledger-engine.js` and registered in `LIVE_PAIRS`), strictly isolating Egyptian pounds (EGP) and Saudi riyals (SAR), preventing uncalibrated currency blending, and distinguishing collected cash from outstanding uncollected receivables.
+  - **Server & Subscription Controller Integration**: upgraded `app.post("/api/v1/coach/toggle-freeze")` in `src/api/server.js` with structured freeze auditing and allowance depletion validation; updated `renewSubscription` and `getSubscriptionOverview` in `src/api/controllers/subscription.controller.js` to expose decoupled states, freeze balances, and multi-currency metrics.
+  - **Financials Dashboard Enhancement**: upgraded `frontend/src/pages/FinancialsRenewalsDashboard.jsx` with real-time multi-currency breakdown (EGP vs SAR), currency filter toggle buttons, and remaining freeze allowance badges.
+  - Guarded by `test/subscription-freeze-and-financial-governance-guard.test.js` (7 comprehensive domain tests).
+- Verification: **2216/2216 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`2.71s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
 
 ## 4. Open work (in priority order)
 
