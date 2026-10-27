@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2199/2199 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2206/2206 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -337,6 +337,18 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **UI Integration & Curved Aesthetics**: created `frontend/src/components/checkin/CorrectMeasurementsModal.jsx` (16px curved container, zero emojis), integrated correction trigger and "مصحح" badge in `CheckinReviewDashboard.jsx`, unified authoritative measurement banner in `MacroCalculator.jsx` with instant sync upon client selection, and corrected weight fallback in `ClientTimelineProfile.jsx`.
   - Guarded by `test/measurements-source-of-truth-and-checkin-sync-guard.test.js` (7 comprehensive domain tests).
 - Verification: **2199/2199 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`3.76s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
+
+## 3ab. Twenty-eighth round (2026-10-27) — Phase 10 Cardio Prescription, Mobility Protocols & Leg-Day Interference Shield (Unit G, tasks G-01..G-05) — merged + pushed
+
+- `760d6a7` **Cardio Prescription, Mobility Protocols & Leg-Day Interference Shield (Unit G, tasks G-01..G-05)**:
+  - **Cardio Interference Engine & Conflict Shield**: updated `frontend/src/utils/cardioInterferenceEngine.js` (re-exported by `src/execution-engines/cardio-interference-engine.js` and registered in `LIVE_PAIRS`), introducing `evaluateLegDayCardioConflict` to detect high-intensity HIIT collisions with lower-body resistance sessions (squat, leg press, lunges, deadlifts) and `resolveNeatStepTarget` to recommend evidence-based daily NEAT steps based on occupation and baseline activity levels.
+  - **Cardio Zones & Tanaka Zone 2 HR Engine**: updated `frontend/src/utils/cardioZonesEngine.js` to compute Tanaka formula Zone 2 target heart rate ranges (`208 - 0.7 * age`), strictly nullifying calculations without silent fallback defaults when age is missing, and integrating NEAT daily step recommendations into `getPracticalCardioPrescription`.
+  - **Session-Specific Mobility Protocol with Clinical Prehab**: updated `src/mobility-warmup-engine-v2/build-session-mobility.js` supporting direct injury array handling and strict clinical filtering (e.g. replacing deep squat-to-stand with glute bridge activation for knee issues / patellofemoral pain, replacing arm circles with gentle band dislocates for rotator cuff impingement, and replacing rounded-back hamstring stretches with neutral-spine strap stretches for lumbar disc herniation).
+  - **Program Delivery & Session Integration**: updated `src/api/controllers/program.controller.js` to enrich active training sessions delivered to the client (`client_view.training_session`) with `dynamic_warmup`, `static_cooldown`, `pre_workout_mobility`, and `post_workout_stretches`, and passing accurate client age and NEAT parameters.
+  - **Master Engine V2 Age Resolution**: updated `src/master-engine-v2/build-master-engine-v2.js` to resolve age reliably from canonical or effective intake (`Number(canonicalIntake.personal?.age) || Number(effectiveIntake?.personal?.age) || 30`).
+  - **UI Integration & PDF Export**: enhanced `frontend/src/pages/CoachEditor/components/CoachCardioHabitsTab.jsx` with a real-time leg-day cardio conflict warning banner, and upgraded `frontend/src/pages/ProgramPdfView.jsx` and `frontend/src/utils/pdfExportEngine.js` to display Tanaka Zone 2 BPM ranges, NEAT step targets, and mobility/warmup/cooldown exercise lists beneath training sessions.
+  - Guarded by `test/cardio-mobility-and-interference-guard.test.js` (7 comprehensive domain tests).
+- Verification: **2206/2206 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`2.69s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
 
 ## 4. Open work (in priority order)
 
