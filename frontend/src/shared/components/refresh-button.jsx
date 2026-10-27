@@ -19,7 +19,7 @@ export function RefreshButton({ onClick, loading = false, shortcut = null, title
         display: 'inline-flex',
         alignItems: 'center',
         gap: '6px',
-        borderRadius: '8px',
+        borderRadius: '16px',
         background: '#FFFFFF',
         color: '#344054',
         border: '1px solid #D0D5DD',

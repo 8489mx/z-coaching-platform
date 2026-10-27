@@ -118,10 +118,10 @@ export function ClientCodeBadge({ code, item, tier: _tier, size = 'md', style = 
   const formattedCode = cleanCode.replace(/^JRN_0?/, '').replace(/^TEST_?/, '');
 
   const sizeStyles = {
-    xs: { fontSize: '9.5px', padding: '1px 6px', borderRadius: '6px' },
-    sm: { fontSize: '10.5px', padding: '2px 7px', borderRadius: '6px' },
-    md: { fontSize: '11px', padding: '2px 8px', borderRadius: '6px' },
-    lg: { fontSize: '12px', padding: '3px 10px', borderRadius: '6px' }
+    xs: { fontSize: '9.5px', padding: '1px 6px', borderRadius: '9999px' },
+    sm: { fontSize: '10.5px', padding: '2px 7px', borderRadius: '9999px' },
+    md: { fontSize: '11px', padding: '2px 8px', borderRadius: '9999px' },
+    lg: { fontSize: '12px', padding: '3px 10px', borderRadius: '9999px' }
   };
 
   return (
@@ -155,10 +155,10 @@ export function ClientPackageBadge({ item, tier, size = 'md', style = {} }) {
   const colors = getTierColors(resolvedTier);
 
   const sizeStyles = {
-    xs: { fontSize: '9.5px', padding: '1px 6px', borderRadius: '6px' },
-    sm: { fontSize: '10px', padding: '2px 7px', borderRadius: '6px' },
-    md: { fontSize: '11px', padding: '2px 8px', borderRadius: '6px' },
-    lg: { fontSize: '12px', padding: '3px 10px', borderRadius: '6px' }
+    xs: { fontSize: '9.5px', padding: '1px 6px', borderRadius: '9999px' },
+    sm: { fontSize: '10px', padding: '2px 7px', borderRadius: '9999px' },
+    md: { fontSize: '11px', padding: '2px 8px', borderRadius: '9999px' },
+    lg: { fontSize: '12px', padding: '3px 10px', borderRadius: '9999px' }
   };
 
   return (

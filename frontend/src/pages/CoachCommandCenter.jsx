@@ -737,7 +737,7 @@ export default function CoachCommandCenter() {
                   boxShadow: isActive 
                     ? '0 0 0 1px #673DE6, 0 4px 14px rgba(103, 61, 230, 0.12)' 
                     : '0 1px 3px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02)',
-                  borderRadius: '14px',
+                  borderRadius: '16px',
                   padding: '16px 18px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -779,7 +779,7 @@ export default function CoachCommandCenter() {
                   <div style={{ 
                     width: '38px', 
                     height: '38px', 
-                    borderRadius: '10px', 
+                    borderRadius: '14px', 
                     background: st.visuals.bg, 
                     border: st.visuals.border,
                     boxShadow: st.visuals.shadow,
@@ -853,7 +853,7 @@ export default function CoachCommandCenter() {
                   background: '#F2F4F7',
                   border: '1px solid #EAECF0',
                   padding: '4px 12px',
-                  borderRadius: '8px'
+                  borderRadius: '16px'
                 }}>
                   {filteredActions.length} إجراء متاح
                 </span>
@@ -876,7 +876,7 @@ export default function CoachCommandCenter() {
                       padding: '0 14px',
                       background: '#FFFFFF',
                       border: '1px solid #D0D5DD',
-                      borderRadius: '8px',
+                      borderRadius: '16px',
                       fontSize: '12px',
                       fontWeight: 600,
                       color: '#344054',
@@ -931,7 +931,7 @@ export default function CoachCommandCenter() {
                               justifyContent: 'space-between',
                               width: '100%',
                               padding: '8px 12px',
-                              borderRadius: '8px',
+                              borderRadius: '12px',
                               border: 'none',
                               background: isSelected ? '#F4F0FD' : 'transparent',
                               color: isSelected ? '#673DE6' : '#344054',
@@ -982,12 +982,12 @@ export default function CoachCommandCenter() {
                         textAlign: 'center',
                         background: '#FAFAFB',
                         border: '1px solid #EAECF0',
-                        borderRadius: '14px'
+                        borderRadius: '16px'
                       }}>
                         <div style={{
                           width: '44px',
                           height: '44px',
-                          borderRadius: '10px',
+                          borderRadius: '14px',
                           background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
                           border: '1px solid #BBF7D0',
                           color: '#059669',
@@ -1022,12 +1022,12 @@ export default function CoachCommandCenter() {
                         textAlign: 'center',
                         background: '#FAFAFB',
                         border: '1px solid #EAECF0',
-                        borderRadius: '14px'
+                        borderRadius: '16px'
                       }}>
                         <div style={{
                           width: '44px',
                           height: '44px',
-                          borderRadius: '10px',
+                          borderRadius: '14px',
                           background: 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
                           border: '1px solid #E2E8F0',
                           color: '#475569',
@@ -1053,7 +1053,7 @@ export default function CoachCommandCenter() {
                             padding: '0 14px',
                             fontSize: '12px',
                             fontWeight: 600,
-                            borderRadius: '8px',
+                            borderRadius: '16px',
                             background: '#FFFFFF',
                             border: '1px solid #D0D5DD',
                             color: '#344054',
@@ -1089,12 +1089,12 @@ export default function CoachCommandCenter() {
                       textAlign: 'center',
                       background: '#FAFAFB',
                       border: '1px solid #EAECF0',
-                      borderRadius: '14px'
+                      borderRadius: '16px'
                     }}>
                       <div style={{
                         width: '44px',
                         height: '44px',
-                        borderRadius: '10px',
+                        borderRadius: '14px',
                         background: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
                         border: '1px solid #E9D7FE',
                         color: '#673DE6',
@@ -1123,7 +1123,7 @@ export default function CoachCommandCenter() {
                           padding: '0 14px',
                           fontSize: '12px',
                           fontWeight: 600,
-                          borderRadius: '8px',
+                          borderRadius: '16px',
                           background: '#FFFFFF',
                           border: '1px solid #D0D5DD',
                           color: '#344054',
@@ -1154,7 +1154,7 @@ export default function CoachCommandCenter() {
                     style={{
                       background: '#FFFFFF',
                       border: '1px solid #EAECF0',
-                      borderRadius: '14px',
+                      borderRadius: '16px',
                       overflow: 'hidden',
                       display: 'flex',
                       flexDirection: 'column',
@@ -1194,7 +1194,7 @@ export default function CoachCommandCenter() {
                               style={{ 
                                 width: '34px', 
                                 height: '34px', 
-                                borderRadius: '10px',
+                                borderRadius: '14px',
                                 background: v.bg, 
                                 border: v.border,
                                 color: v.color,
@@ -1219,7 +1219,7 @@ export default function CoachCommandCenter() {
                           background: '#F2F4F7',
                           border: '1px solid #EAECF0',
                           padding: '2px 8px',
-                          borderRadius: '8px',
+                          borderRadius: '14px',
                           flexShrink: 0
                         }}>
                           #{action.clientCode}
@@ -1251,7 +1251,7 @@ export default function CoachCommandCenter() {
                             fontWeight: 800,
                             fontFamily: 'JetBrains Mono, Cairo, sans-serif',
                             padding: '2px 8px',
-                            borderRadius: '6px',
+                            borderRadius: '12px',
                             background: '#F8FAFC',
                             color: String(action.tier).includes('MAX') ? '#B45309' : '#0284C7',
                             border: '1px solid #EAECF0',
@@ -1267,7 +1267,7 @@ export default function CoachCommandCenter() {
                             fontWeight: 800,
                             fontFamily: 'JetBrains Mono, Cairo, sans-serif',
                             padding: '2px 8px',
-                            borderRadius: '6px',
+                            borderRadius: '12px',
                             background: action.adherenceScore >= 85 ? '#ECFDF3' : action.adherenceScore >= 70 ? '#FFFAEB' : '#FEF3F2',
                             color: action.adherenceScore >= 85 ? '#027A48' : action.adherenceScore >= 70 ? '#B54708' : '#B42318',
                             border: '1px solid ' + (action.adherenceScore >= 85 ? '#D1FADF' : action.adherenceScore >= 70 ? '#FEDF89' : '#FECDCA'),
@@ -1284,7 +1284,7 @@ export default function CoachCommandCenter() {
                             background: '#F4F0FD',
                             border: '1px solid #EDE8FA',
                             padding: '2px 8px',
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             flexShrink: 0
                           }}>
                             الدورة {action.cycleNumber}
@@ -1332,7 +1332,7 @@ export default function CoachCommandCenter() {
                           padding: '6px 10px',
                           background: '#F8FAFC',
                           border: '1px solid #EAECF0',
-                          borderRadius: '8px',
+                          borderRadius: '12px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
@@ -1429,7 +1429,7 @@ export default function CoachCommandCenter() {
                               background: pillBg,
                               border: `1px solid ${pillBorder}`,
                               padding: '3px 10px',
-                              borderRadius: '8px',
+                              borderRadius: '14px',
                               lineHeight: 1.3
                             }}>
                               {pillText}
@@ -1447,9 +1447,7 @@ export default function CoachCommandCenter() {
                               }
                             }}
                             style={{
-                              height: '32px',
-                              padding: '0 14px',
-                              borderRadius: '8px',
+                              height: '34px', padding: '0 16px', borderRadius: '16px',
                               background: isUrgentAction ? '#673DE6' : '#FFFFFF',
                               color: isUrgentAction ? '#FFFFFF' : (isWhatsAppAction ? '#027A48' : '#344054'),
                               border: isUrgentAction ? '1px solid #673DE6' : '1px solid #D0D5DD',
@@ -1527,9 +1525,7 @@ export default function CoachCommandCenter() {
                     onClick={() => setActionsPage(p => Math.max(1, p - 1))}
                     disabled={actionsPage === 1}
                     style={{
-                      height: '32px',
-                      padding: '0 14px',
-                      borderRadius: '8px',
+                      height: '34px', padding: '0 16px', borderRadius: '16px',
                       border: '1px solid #D0D5DD',
                       background: '#FFFFFF',
                       color: actionsPage === 1 ? '#98A2B3' : '#344054',
@@ -1551,7 +1547,7 @@ export default function CoachCommandCenter() {
                     fontWeight: 600, 
                     fontSize: '12px', 
                     background: '#F2F4F7', 
-                    borderRadius: '8px', 
+                    borderRadius: '16px', 
                     height: '30px', 
                     display: 'inline-flex', 
                     alignItems: 'center' 
@@ -1564,9 +1560,7 @@ export default function CoachCommandCenter() {
                     onClick={() => setActionsPage(p => Math.min(totalActionPages, p + 1))}
                     disabled={actionsPage === totalActionPages}
                     style={{
-                      height: '32px',
-                      padding: '0 14px',
-                      borderRadius: '8px',
+                      height: '34px', padding: '0 16px', borderRadius: '16px',
                       border: '1px solid #D0D5DD',
                       background: '#FFFFFF',
                       color: actionsPage === totalActionPages ? '#98A2B3' : '#344054',

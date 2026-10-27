@@ -333,7 +333,7 @@ export default function GlobalSearchModal() {
           paddingBottom: 0,
           border: '1px solid',
           borderColor: isFocused ? '#673DE6' : '#D0D5DD',
-          borderRadius: '8px',
+          borderRadius: '16px',
           backgroundColor: '#FFFFFF',
           fontSize: '12.5px',
           fontFamily: "'Cairo', sans-serif",
