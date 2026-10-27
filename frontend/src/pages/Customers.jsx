@@ -40,6 +40,7 @@ export default function Customers() {
   const [tierFilter, setTierFilter] = useState('ALL'); // 'ALL' | 'MAX' | 'ELITE'
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'ACTIVE' | 'EXPIRING_SOON' | 'EXPIRED' | 'FROZEN'
   const [goalFilter, setGoalFilter] = useState('ALL'); // 'ALL' | 'FAT_LOSS' | 'MUSCLE_GAIN' | 'RECOMP' | 'HEALTH'
+  const [quickOpFilter, setQuickOpFilter] = useState('ALL'); // 'ALL' | 'NEEDS_FIRST_PLAN' | 'PENDING_CHECKIN' | 'EXPIRING_SOON' | 'FROZEN'
   
   // Dropdown UI States (Zero Native Dropdowns / Zero Sharp Corners)
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
@@ -206,6 +207,15 @@ export default function Customers() {
       if (statusFilter === 'FROZEN' && rawStatus !== 'FROZEN') return false;
     }
 
+    // 2.b Operational Quick Filter (1-Click Coach Queue Filter)
+    if (quickOpFilter !== 'ALL') {
+      const rawStatus = String(client.subscription_status || client.status || 'ACTIVE').toUpperCase();
+      if (quickOpFilter === 'NEEDS_FIRST_PLAN' && !client.needs_first_plan) return false;
+      if (quickOpFilter === 'PENDING_CHECKIN' && !client.has_pending_checkin) return false;
+      if (quickOpFilter === 'EXPIRING_SOON' && rawStatus !== 'EXPIRING_SOON') return false;
+      if (quickOpFilter === 'FROZEN' && rawStatus !== 'FROZEN') return false;
+    }
+
     // 3. Search Matching
     let matchesSearch = true;
     if (term) {
@@ -233,7 +243,7 @@ export default function Customers() {
   // Reset pagination on filter change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, tierFilter, statusFilter, goalFilter, pageSize]);
+  }, [searchTerm, tierFilter, statusFilter, goalFilter, quickOpFilter, pageSize]);
 
   const totalPages = Math.ceil(filteredClients.length / pageSize) || 1;
   const paginatedClients = filteredClients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -283,6 +293,8 @@ export default function Customers() {
   const expiringSoonCount = clients.filter(c => (c.subscription_status || c.status) === 'EXPIRING_SOON').length;
   const expiredCount = clients.filter(c => (c.subscription_status || c.status) === 'EXPIRED').length;
   const frozenCount = clients.filter(c => (c.subscription_status || c.status) === 'FROZEN').length;
+  const needsFirstPlanCount = clients.filter(c => Boolean(c.needs_first_plan)).length;
+  const pendingCheckinCount = clients.filter(c => Boolean(c.has_pending_checkin)).length;
 
   const fatLossCount = clients.filter(c => (c.plan_summary?.cleanGoal || '').includes('تنشيف')).length;
   const muscleGainCount = clients.filter(c => (c.plan_summary?.cleanGoal || '').includes('تضخيم')).length;
@@ -305,13 +317,14 @@ export default function Customers() {
     { id: 'HEALTH', label: 'صحة عامة ولياقة', count: healthCount },
   ];
 
-  const hasActiveFilters = Boolean(searchTerm.trim() || tierFilter !== 'ALL' || statusFilter !== 'ALL' || goalFilter !== 'ALL');
+  const hasActiveFilters = Boolean(searchTerm.trim() || tierFilter !== 'ALL' || statusFilter !== 'ALL' || goalFilter !== 'ALL' || quickOpFilter !== 'ALL');
 
   const resetAllFilters = () => {
     setSearchTerm('');
     setTierFilter('ALL');
     setStatusFilter('ALL');
     setGoalFilter('ALL');
+    setQuickOpFilter('ALL');
   };
 
   return (
@@ -397,6 +410,67 @@ export default function Customers() {
               <span>إضافة مشترك جديد</span>
             </button>
           </div>
+        </div>
+
+        {/* شريط فلاتر التشغيل السريعة بنقرة واحدة (1-Click Coach Operational Queue Filters) */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          flexWrap: 'wrap',
+          background: '#FFFFFF',
+          border: '1px solid #EAECF0',
+          borderRadius: '12px',
+          padding: '8px 12px',
+          boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
+        }}>
+          <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#475467', marginLeft: '4px' }}>
+            فلاتر التشغيل السريعة:
+          </span>
+          {[
+            { id: 'ALL', label: 'الكل', count: clients.length },
+            { id: 'NEEDS_FIRST_PLAN', label: 'ينتظر خطة أولى', count: needsFirstPlanCount },
+            { id: 'PENDING_CHECKIN', label: 'ينتظر مراجعة متابعة', count: pendingCheckinCount },
+            { id: 'EXPIRING_SOON', label: 'ينتهي خلال 7 أيام', count: expiringSoonCount },
+            { id: 'FROZEN', label: 'مجمد مؤقتاً', count: frozenCount }
+          ].map(pill => {
+            const active = quickOpFilter === pill.id;
+            return (
+              <button
+                key={pill.id}
+                type="button"
+                onClick={() => setQuickOpFilter(pill.id)}
+                style={{
+                  height: '30px',
+                  padding: '0 12px',
+                  borderRadius: '8px',
+                  border: active ? '1px solid #673DE6' : '1px solid #E2E8F0',
+                  background: active ? '#F4F0FD' : '#F8FAFC',
+                  color: active ? '#673DE6' : '#344054',
+                  fontSize: '11.5px',
+                  fontWeight: active ? 800 : 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>{pill.label}</span>
+                <span style={{
+                  fontSize: '10.5px',
+                  fontWeight: 800,
+                  padding: '1px 6px',
+                  borderRadius: '9999px',
+                  background: active ? '#673DE6' : '#E2E8F0',
+                  color: active ? '#FFFFFF' : '#475467',
+                  fontFamily: 'JetBrains Mono, Cairo'
+                }}>
+                  {pill.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* 2. Main Data Card — Unified Hostinger Data Table Card */}

@@ -87,6 +87,13 @@ export const getClients = async (req, res) => {
           where: { status: 'ACTIVE' },
           required: false,
           attributes: ['id', 'status', 'version', 'program_data', 'updatedAt', 'createdAt']
+        },
+        {
+          model: CheckinSubmission,
+          as: "checkinSubmissions",
+          where: { status: 'PENDING_REVIEW' },
+          required: false,
+          attributes: ['id', 'status', 'week_number', 'createdAt']
         }
       ],
       order: [['id', 'ASC']]
@@ -200,6 +207,9 @@ export const getClients = async (req, res) => {
         days_remaining: daysRemaining,
         daysRemaining: daysRemaining,
         subscription_status: calculatedStatus,
+        needs_first_plan: activePrograms.length === 0 || c.plan_approval_status === 'PENDING_COACH_REVIEW',
+        has_pending_checkin: Array.isArray(c.checkinSubmissions) && c.checkinSubmissions.length > 0,
+        pending_checkins_count: Array.isArray(c.checkinSubmissions) ? c.checkinSubmissions.length : 0,
         status: calculatedStatus,
         plan_summary: {
           trainingDays,
