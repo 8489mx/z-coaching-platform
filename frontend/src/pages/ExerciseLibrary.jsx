@@ -748,50 +748,6 @@ export default function ExerciseLibrary() {
           )}
         />
 
-        {/* Exercise & Mobility Studio Switcher */}
-        <div style={{ display: 'inline-flex', gap: '4px', background: '#F2F4F7', padding: '3px', borderRadius: '8px', border: '1px solid #EAECF0', width: 'fit-content' }}>
-          <button
-            type="button"
-            style={{
-              padding: '6px 16px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: 'default',
-              background: '#673DE6', color: '#FFFFFF', boxShadow: '0 1px 2px rgba(103, 61, 230, 0.2)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <Dumbbell size={14} />
-            <span>تمارين المقاومة والأجهزة ({allExercises.length})</span>
-          </button>
-          <Link
-            to="/coach/mobility"
-            style={{
-              padding: '6px 16px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: 600,
-              border: 'none',
-              textDecoration: 'none',
-              color: '#475467',
-              background: 'transparent',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'color 0.12s ease'
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#0F172A')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#64748B')}
-          >
-            <HeartPulse size={14} />
-            <span>المرونة والاستشفاء</span>
-          </Link>
-        </div>
-
         {/* 2. Muscle Selector & Search & Filters Controls */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           

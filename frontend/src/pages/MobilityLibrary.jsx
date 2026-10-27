@@ -430,51 +430,6 @@ export default function MobilityLibrary() {
           )}
         />
 
-        {/* Exercise & Mobility Studio Switcher */}
-        <div style={{ display: 'inline-flex', gap: '4px', background: '#F2F4F7', padding: '3px', borderRadius: '9999px', border: '1px solid #EAECF0', width: 'fit-content' }}>
-          <Link
-            to="/exercises"
-            style={{
-              padding: '6px 14px',
-              borderRadius: '9999px',
-              fontSize: '12px',
-              fontWeight: 600,
-              border: 'none',
-              textDecoration: 'none',
-              color: '#475467',
-              background: 'transparent',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'color 0.12s ease'
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#0F172A')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = '#64748B')}
-          >
-            <Dumbbell size={14} />
-            <span>تمارين المقاومة والأجهزة</span>
-          </Link>
-          <button
-            type="button"
-            style={{
-              padding: '6px 14px',
-              borderRadius: '9999px',
-              fontSize: '12px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: 'default',
-              background: '#673DE6', color: '#FFFFFF',
-              boxShadow: '0 2px 5px rgba(15, 23, 42, 0.25)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <HeartPulse size={14} />
-            <span>بروتوكولات المرونة والتأهيل والاستشفاء ({drills.length})</span>
-          </button>
-        </div>
-
         {/* 2. Unified Control Bar (Tabs + Search + Sub-filters) */}
         <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '20px', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 3px rgba(15, 23, 42, 0.02)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
