@@ -279,6 +279,42 @@ export default function MacroCalculator() {
       const progData = await res.json();
       
       const master = progData.master_program || {};
+      if (!master.nutrition) master.nutrition = {};
+      master.nutrition.targets = {
+        ...(master.nutrition.targets || {}),
+        calories: targetCalories,
+        target_calories_kcal: targetCalories,
+        protein: targetProteinGrams,
+        protein_g: targetProteinGrams,
+        carbs: targetCarbGrams,
+        carbs_g: targetCarbGrams,
+        carbohydrate_g: targetCarbGrams,
+        fats: targetFatGrams,
+        fat_g: targetFatGrams,
+        fats_g: targetFatGrams
+      };
+      if (!master.nutrition_program) master.nutrition_program = {};
+      master.nutrition_program.targets = {
+        ...(master.nutrition_program.targets || {}),
+        calories_kcal: targetCalories,
+        target_calories_kcal: targetCalories,
+        protein_g: targetProteinGrams,
+        carbohydrate_g: targetCarbGrams,
+        carbs_g: targetCarbGrams,
+        fat_g: targetFatGrams,
+        fats_g: targetFatGrams
+      };
+      master.nutrition_program.macro_targets = {
+        ...(master.nutrition_program.macro_targets || {}),
+        calories_kcal: targetCalories,
+        target_calories_kcal: targetCalories,
+        protein_g: targetProteinGrams,
+        carbohydrate_g: targetCarbGrams,
+        carb_g: targetCarbGrams,
+        carbs_g: targetCarbGrams,
+        fat_g: targetFatGrams,
+        fats_g: targetFatGrams
+      };
       if (!master.nutrition_program) master.nutrition_program = {};
       if (!master.nutrition_program.stages) master.nutrition_program.stages = {};
 
@@ -301,6 +337,7 @@ export default function MacroCalculator() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           client_code: selectedClient,
+          program_data: master,
           master_program: master
         })
       });

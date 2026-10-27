@@ -1401,9 +1401,105 @@ export const getActiveProgramByUserId = async (req, res) => {
   }
 };
 
+function syncProgramDataNutritionTargets(programData, previousData = null, preferStages = false) {
+  if (!programData || typeof programData !== "object") return programData;
+  const stagesEnergy = programData.nutrition_program?.stages?.energy_target;
+  const stagesMacros = programData.nutrition_program?.stages?.macro_targets;
+  const navTargets = programData.nutrition?.targets;
+
+  const prevStagesCal = Number(previousData?.nutrition_program?.stages?.energy_target?.target_calories_kcal || 0);
+  const prevNavCal = Number(previousData?.nutrition?.targets?.calories || 0);
+
+  const stagesCal = Number(stagesEnergy?.target_calories_kcal || stagesEnergy?.calories_kcal || 0);
+  const navCal = Number(navTargets?.calories || navTargets?.target_calories_kcal || 0);
+
+  const stagesChanged = stagesCal > 0 && stagesCal !== prevStagesCal;
+  const navChanged = navCal > 0 && navCal !== prevNavCal;
+
+  const useStages = stagesCal > 0 && ((stagesChanged && !navChanged) || (preferStages && !navChanged) || navCal === 0);
+  const useNav = !useStages && navCal > 0;
+
+  if (!useStages && !useNav) return programData;
+
+  const calories = useStages ? stagesCal : navCal;
+  const protein = useStages
+    ? Number(stagesMacros?.protein_g ?? stagesMacros?.protein ?? navTargets?.protein ?? navTargets?.protein_g ?? 0)
+    : Number(navTargets?.protein ?? navTargets?.protein_g ?? stagesMacros?.protein_g ?? 0);
+  const carbs = useStages
+    ? Number(stagesMacros?.carbs_g ?? stagesMacros?.carbohydrate_g ?? stagesMacros?.carbs ?? navTargets?.carbs ?? navTargets?.carbs_g ?? 0)
+    : Number(navTargets?.carbs ?? navTargets?.carbs_g ?? navTargets?.carbohydrate_g ?? stagesMacros?.carbs_g ?? stagesMacros?.carbohydrate_g ?? 0);
+  const fats = useStages
+    ? Number(stagesMacros?.fats_g ?? stagesMacros?.fat_g ?? stagesMacros?.fats ?? navTargets?.fats ?? navTargets?.fat_g ?? 0)
+    : Number(navTargets?.fats ?? navTargets?.fat_g ?? stagesMacros?.fats_g ?? stagesMacros?.fat_g ?? 0);
+
+  if (!programData.nutrition || typeof programData.nutrition !== "object") {
+    programData.nutrition = {};
+  }
+  programData.nutrition.targets = {
+    ...(programData.nutrition.targets || {}),
+    calories,
+    target_calories_kcal: calories,
+    protein,
+    protein_g: protein,
+    carbs,
+    carbs_g: carbs,
+    carbohydrate_g: carbs,
+    fats,
+    fat_g: fats,
+    fats_g: fats,
+  };
+
+  if (!programData.nutrition_program || typeof programData.nutrition_program !== "object") {
+    programData.nutrition_program = {};
+  }
+  programData.nutrition_program.targets = {
+    ...(programData.nutrition_program.targets || {}),
+    calories_kcal: calories,
+    target_calories_kcal: calories,
+    protein_g: protein,
+    carbohydrate_g: carbs,
+    carbs_g: carbs,
+    fat_g: fats,
+    fats_g: fats,
+  };
+  programData.nutrition_program.macro_targets = {
+    ...(programData.nutrition_program.macro_targets || {}),
+    calories_kcal: calories,
+    target_calories_kcal: calories,
+    protein_g: protein,
+    carbohydrate_g: carbs,
+    carb_g: carbs,
+    carbs_g: carbs,
+    fat_g: fats,
+    fats_g: fats,
+  };
+  if (!programData.nutrition_program.stages || typeof programData.nutrition_program.stages !== "object") {
+    programData.nutrition_program.stages = {};
+  }
+  programData.nutrition_program.stages.energy_target = {
+    ...(programData.nutrition_program.stages.energy_target || {}),
+    target_calories_kcal: calories,
+  };
+  programData.nutrition_program.stages.macro_targets = {
+    ...(programData.nutrition_program.stages.macro_targets || {}),
+    protein_g: protein,
+    carbs_g: carbs,
+    carbohydrate_g: carbs,
+    fats_g: fats,
+    fat_g: fats,
+  };
+
+  return programData;
+}
+
 export const updateCustomProgram = async (req, res) => {
   try {
-    const { user_id, client_code, program_data, coach_notes, is_published, publish } = req.body;
+    const { user_id, client_code, program_data: rawProgramData, master_program, coach_notes, is_published, publish } = req.body;
+    const program_data = rawProgramData ?? master_program;
+    const hasPublishAction = Boolean(is_published || publish);
+    if (!program_data && coach_notes === undefined && !hasPublishAction) {
+      return res.status(400).json({ error: "program_data or master_program is required" });
+    }
     const lookup = user_id || client_code;
 
     if (!lookup) {
@@ -1657,7 +1753,9 @@ export const updateCustomProgram = async (req, res) => {
     if (!program) {
       program = await Program.create({
         user_id: user.id,
-        program_data: shouldPublish ? startCycleOnPublish(program_data || {}) : (program_data || {}),
+        program_data: shouldPublish
+          ? startCycleOnPublish(syncProgramDataNutritionTargets(program_data || {}, null, Boolean(master_program && !rawProgramData)))
+          : syncProgramDataNutritionTargets(program_data || {}, null, Boolean(master_program && !rawProgramData)),
         status: shouldPublish ? "ACTIVE" : "DRAFT"
       });
     } else {
@@ -1667,7 +1765,15 @@ export const updateCustomProgram = async (req, res) => {
         if (previousOverride && typeof program_data === "object" && program_data.fasting_override === undefined) {
           program_data.fasting_override = previousOverride;
         }
+        const previousCoachNotes = program.program_data?.coach_notes;
+        if (previousCoachNotes !== undefined && typeof program_data === "object" && program_data.coach_notes === undefined) {
+          program_data.coach_notes = previousCoachNotes;
+        }
+        syncProgramDataNutritionTargets(program_data, program.program_data, Boolean(master_program && !rawProgramData));
         program.program_data = program_data;
+        if (typeof program.changed === "function") {
+          program.changed("program_data", true);
+        }
       }
       if (shouldPublish) {
         // A draft going live starts its cycle today; re-publishing a live plan keeps its dates.
