@@ -1686,7 +1686,8 @@ export const updateCustomProgram = async (req, res) => {
           : [];
 
       if (activeSessions.length > 0) {
-        const volumeAudit = auditWeeklyMuscleVolume(activeSessions, program_data.client?.experience_level || program_data.training?.experience_level);
+        const resolvedExperienceLevel = program_data.client?.experience_level || program_data.client_profile?.experience_level || program_data.training?.experience_level || program_data.training_program?.experience_level || program_data.training_program?.experience || user.experience_level || "INTERMEDIATE";
+        const volumeAudit = auditWeeklyMuscleVolume(activeSessions, resolvedExperienceLevel);
         const sessionDemand = calculateSessionDemand(activeSessions[0]?.exercises || []);
 
         const targetCalories = Number(program_data.nutrition?.targets?.calories || program_data.nutrition?.energy_target || 2000);
@@ -1697,12 +1698,14 @@ export const updateCustomProgram = async (req, res) => {
         const deficitShield = auditDeficitVolumeShield({
           sessions: activeSessions,
           targetCalories,
-          tdee: clientTdee
+          tdee: clientTdee,
+          experienceLevel: resolvedExperienceLevel
         });
 
         const proteinSparing = evaluateProteinSparingRequirement({
           targetCalories,
           tdee: clientTdee,
+          experienceLevel: resolvedExperienceLevel,
           clientWeightKg: clientWeight,
           currentProteinG: currentProtein,
         });

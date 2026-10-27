@@ -8,7 +8,7 @@
  * 4. Peri-Workout Meal Role Identification.
  */
 
-import { getExerciseDisplayNames } from './exerciseTranslator';
+import { getExerciseDisplayNames } from './exerciseTranslator.js';
 
 export const HEAVY_PRIMARY_COMPOUNDS = new Set([
   'BARBELL_BACK_SQUAT',
@@ -115,6 +115,54 @@ export function resolveMuscleGroupKey(exercise) {
 /**
  * Evaluates session volume load, heavy compound count, and metabolic demand.
  */
+export function resolveExerciseSets(ex) {
+  if (!ex || typeof ex !== 'object') return 3;
+  const raw = ex.sets ?? ex.target_sets ?? ex.prescription?.sets;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 3;
+}
+
+export function isCompoundExercise(exercise, primaryKey = null) {
+  if (!exercise) return false;
+  const code = String(exercise.code || exercise.exercise_code || exercise.id || '').toUpperCase();
+  const profile = String(exercise.profile || '').toUpperCase();
+  if (ISOLATION_MOVEMENTS.has(code) || profile.includes('ISOLATION')) return false;
+  if (HEAVY_PRIMARY_COMPOUNDS.has(code) || SECONDARY_COMPOUNDS.has(code) || profile.includes('COMPOUND')) return true;
+  if (/CURL|EXTENSION|FLY|FLIES|LATERAL_RAISE|REAR_DELT|FACE_PULL|PUSHDOWN|KICKBACK|CALF|PLANK|CRUNCH|DEAD_BUG|LEG_RAISE|SHRUG/.test(code)) {
+    return false;
+  }
+  const key = primaryKey || resolveMuscleGroupKey(exercise);
+  if (['BICEPS', 'CALVES', 'CORE'].includes(key)) return false;
+  return /SQUAT|PRESS|ROW|PULL|DEADLIFT|RDL|ROMANIAN|LUNGE|STEP_UP|THRUST|BRIDGE|DIP|PUSH_UP|CHIN_UP/.test(code);
+}
+
+export function resolveSynergistMuscles(exercise, primaryKey = null) {
+  if (!exercise) return [];
+  const primary = primaryKey || resolveMuscleGroupKey(exercise);
+  if (!isCompoundExercise(exercise, primary)) return [];
+  const code = String(exercise.code || exercise.exercise_code || exercise.id || '').toUpperCase();
+
+  if (primary === 'CHEST') {
+    return ['TRICEPS', 'SHOULDERS'];
+  }
+  if (primary === 'SHOULDERS' && /PRESS|PIKE_PUSH_UP/.test(code)) {
+    return ['TRICEPS'];
+  }
+  if (primary === 'BACK') {
+    return ['BICEPS'];
+  }
+  if (primary === 'QUADS') {
+    return ['GLUTES'];
+  }
+  if (primary === 'HAMSTRINGS' && /DEADLIFT|ROMANIAN|RDL|GOOD_MORNING/.test(code)) {
+    return ['GLUTES'];
+  }
+  if (primary === 'TRICEPS' && /CLOSE_GRIP|DIP/.test(code)) {
+    return ['CHEST'];
+  }
+  return [];
+}
+
 export function calculateSessionDemand(exercises = []) {
   if (!Array.isArray(exercises) || exercises.length === 0) {
     return {
@@ -135,10 +183,10 @@ export function calculateSessionDemand(exercises = []) {
   let heavyCompoundsCount = 0;
 
   for (const ex of exercises) {
-    const sets = Number(ex.sets || 3);
+    const sets = resolveExerciseSets(ex);
     totalSets += sets;
 
-    const code = String(ex.code || ex.id || '').toUpperCase();
+    const code = String(ex.code || ex.exercise_code || ex.id || '').toUpperCase();
     let intensityFactor = 1.0;
 
     if (HEAVY_PRIMARY_COMPOUNDS.has(code)) {
@@ -173,8 +221,8 @@ export function calculateSessionDemand(exercises = []) {
   }
 
   const estimatedDurationMin = Math.round(exercises.reduce((acc, ex) => {
-    const sets = Number(ex.sets || 3);
-    const code = String(ex.code || '').toUpperCase();
+    const sets = resolveExerciseSets(ex);
+    const code = String(ex.code || ex.exercise_code || ex.id || '').toUpperCase();
     const isHeavy = HEAVY_PRIMARY_COMPOUNDS.has(code);
     return acc + (sets * (isHeavy ? 2.5 : 1.8));
   }, 8));
@@ -258,6 +306,32 @@ export function volumeLandmarksFor(experienceLevel = "INTERMEDIATE") {
 }
 
 export function auditWeeklyMuscleVolume(sessions = [], experienceLevel = "INTERMEDIATE") {
+  const compoundMap = {};
+  const isolationMap = {};
+  const synergistMap = {};
+  Object.keys(MUSCLE_VOLUME_LANDMARKS).forEach(k => {
+    compoundMap[k] = 0;
+    isolationMap[k] = 0;
+    synergistMap[k] = 0;
+  });
+  for (const session of sessions) {
+    for (const ex of (session.exercises || [])) {
+      const key = resolveMuscleGroupKey(ex);
+      const sets = resolveExerciseSets(ex);
+      if (compoundMap[key] !== undefined) {
+        if (isCompoundExercise(ex, key)) {
+          compoundMap[key] += sets;
+        } else {
+          isolationMap[key] += sets;
+        }
+      }
+      for (const synKey of resolveSynergistMuscles(ex, key)) {
+        if (synergistMap[synKey] !== undefined) {
+          synergistMap[synKey] += sets * 0.5;
+        }
+      }
+    }
+  }
   const landmarks = volumeLandmarksFor(experienceLevel);
   const volumeMap = {};
 
@@ -268,7 +342,7 @@ export function auditWeeklyMuscleVolume(sessions = [], experienceLevel = "INTERM
   for (const session of sessions) {
     for (const ex of (session.exercises || [])) {
       const key = resolveMuscleGroupKey(ex);
-      const sets = Number(ex.sets || 3);
+      const sets = resolveExerciseSets(ex);
       if (volumeMap[key] !== undefined) {
         volumeMap[key] += sets;
       }
@@ -313,6 +387,11 @@ export function auditWeeklyMuscleVolume(sessions = [], experienceLevel = "INTERM
       mev: landmark.mev,
       mav_range: `${landmark.mav_min}-${landmark.mav_max}`,
       mrv: landmark.mrv,
+      direct_sets: sets,
+      compound_sets: compoundMap[key] || 0,
+      isolation_sets: isolationMap[key] || 0,
+      synergist_sets: +(synergistMap[key] || 0).toFixed(1),
+      effective_sets: +(sets + (synergistMap[key] || 0)).toFixed(1),
       status,
       status_label_ar: statusLabelAr,
     };
@@ -401,7 +480,7 @@ export function calibrateAddedExercise(rawExercise, weekNumber = 1, clientData =
 // 5. DEFICIT-ADJUSTED VOLUME LANDMARKS (Deficit Volume Shield)
 // =========================================================================
 
-export function calculateEnergyAdjustedLandmarks({ targetCalories = 2000, tdee = 2400 }) {
+export function calculateEnergyAdjustedLandmarks({ targetCalories = 2000, tdee = 2400, experienceLevel = "INTERMEDIATE" } = {}) {
   const safeCalories = Math.max(800, Number(targetCalories) || 2000);
   const safeTdee = Math.max(1200, Number(tdee) || safeCalories);
   const energyDelta = safeTdee - safeCalories;
@@ -425,7 +504,7 @@ export function calculateEnergyAdjustedLandmarks({ targetCalories = 2000, tdee =
   }
 
   const adjustedLandmarks = {};
-  for (const [key, base] of Object.entries(MUSCLE_VOLUME_LANDMARKS)) {
+  for (const [key, base] of Object.entries(volumeLandmarksFor(experienceLevel))) {
     const adjMrv = Math.max(base.mev + 2, Math.round(base.mrv * mrvMultiplier));
     const adjMavMax = Math.max(base.mev + 1, Math.min(adjMrv - 1, Math.round(base.mav_max * mavMultiplier)));
     const adjMavMin = Math.max(base.mev, Math.round(base.mav_min * mavMultiplier));
@@ -452,8 +531,8 @@ export function calculateEnergyAdjustedLandmarks({ targetCalories = 2000, tdee =
   };
 }
 
-export function auditDeficitVolumeShield({ sessions = [], targetCalories = 2000, tdee = 2400 }) {
-  const energyStatus = calculateEnergyAdjustedLandmarks({ targetCalories, tdee });
+export function auditDeficitVolumeShield({ sessions = [], targetCalories = 2000, tdee = 2400, experienceLevel = "INTERMEDIATE" } = {}) {
+  const energyStatus = calculateEnergyAdjustedLandmarks({ targetCalories, tdee, experienceLevel });
   const volumeMap = {};
 
   Object.keys(MUSCLE_VOLUME_LANDMARKS).forEach(k => {
@@ -463,7 +542,7 @@ export function auditDeficitVolumeShield({ sessions = [], targetCalories = 2000,
   for (const session of sessions) {
     for (const ex of (session.exercises || [])) {
       const key = resolveMuscleGroupKey(ex);
-      const sets = Number(ex.sets || ex.target_sets || 3);
+      const sets = resolveExerciseSets(ex);
       if (volumeMap[key] !== undefined) {
         volumeMap[key] += sets;
       }

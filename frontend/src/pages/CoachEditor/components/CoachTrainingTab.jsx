@@ -288,7 +288,7 @@ export function CoachTrainingTab({
                       title={data.status_label_ar}
                     >
                       <strong>{data.muscle_name_ar}:</strong>
-                      <span>{data.weekly_sets} جولة</span>
+                      <span>{data.weekly_sets} جولة{data.synergist_sets > 0 ? ` (+${data.synergist_sets} مركب)` : ''}</span>
                       <span style={{ fontSize: '9px', opacity: 0.85 }}>({data.mav_range})</span>
                     </span>
                   );
