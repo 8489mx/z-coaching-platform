@@ -38,7 +38,12 @@ class CheckinService {
       if (backPhotoPath != null && File(backPhotoPath).existsSync()) {
         backBase64 = base64Encode(await File(backPhotoPath).readAsBytes());
       }
-    } catch (_) {}
+    } catch (_) {
+      return ApiResponse.failure(
+        'تعذر قراءة ملفات الصور المختارة للمتابعة. يرجى إعادة اختيار الصور أو التحقق من أذونات التخزين.',
+        statusCode: 400,
+      );
+    }
 
     // الخادم لا يخزن ساعات النوم كحقل مستقل، فتصل للكوتش ضمن الملاحظات
     final sleepLine = 'متوسط النوم: $sleepHours ساعات';

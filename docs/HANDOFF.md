@@ -433,6 +433,15 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
     - 11 items excluded as out-of-scope for 1-on-1 private elite coaching: group challenges/leaderboards, public CMS broadcasting (7.2%).
   - Verification: **2263/2263 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`3.54s`), stress 306 clients 0 crashes/0 violations, 10/10 simulated clients 100%.
 
+## 3ai. Thirty-fifth round (2026-10-27) — Phase 17 Mobile App Hardening, Item Notes & Error Defense Guard — merged + pushed
+
+- **Mobile App Hardening, Item Notes & Error Defense Guard**:
+  - **Item Notes Presentation**: added rendering of `item.note` in `mobile_app/lib/features/nutrition/screens/nutrition_screen.dart` (such as protein powder fixed prescription notes) with curved typography, eliminating missing client instructions.
+  - **Clinical 409 Swap Error Defense**: updated `_applySwap` in `nutrition_screen.dart` to intercept clinical rejections (409 `SWAP_NOT_CLINICALLY_SAFE` and `NO_SWAP_FOR_FOOD`) and display the server error message in a floating curved SnackBar (`borderRadius: 10px`) rather than silently failing.
+  - **Check-in Photo I/O Error Protection**: hardened `submitWeeklyCheckin` in `mobile_app/lib/features/checkin/services/checkin_service.dart` so that unreadable or permission-blocked photos return an explicit `ApiResponse.failure` instead of silently omitting selected photos.
+  - **Contract & Guard Testing**: extended `test/mobile-app-contract.test.js` to assert `item.note` rendering, curved SnackBar error handling, and elimination of silent photo catch omission.
+  - Verification: **2264/2264 node:test pass**, **47/47 vitest pass** (total 2311 tests), lint 0 warnings/0 errors, frontend production build clean (`2.69s`).
+
 ## 4. Open work (in priority order)
 
 
@@ -454,7 +463,7 @@ Suggested approach (confirm with owner first, show proposed Arabic labels):
 - Served, plan held for a person to confirm: liver disease; bariatric surgery; a heart condition with clearance; dangerous symptoms on exertion; breastfeeding or a recent birth; an injury red flag; anything unstable or unclassified; every trainee under 18.
 - Served with the engine’s own adjustments: type 2 diabetes and insulin resistance, blood pressure, thyroid, gout, IBS and reflux, favism, PCOS, asthma, coeliac disease and food allergies, joint injuries.
 1. **Look at the new screens in a real browser** (needs the backend restarted on the latest code + the owner signed in and the health-data consent ticked by the owner): coach editor notes (balance, potassium, kidney energy, oil), cardio picker, exercise swap warning, web client swap windows (food: same taste group/close value/protein powder note), intake training step (training age question) and the potassium field.
-2. **Flutter app** — on hold by the owner's decision until the engine is clean. When resumed (needs the Flutter SDK + a device): display `item.note` (protein powder note), show the swap-food 409 `error`, verify swaps on a device. Also (verified 2026-09-22 in the Dart source): `checkin_service.dart:41` empty catch - an unreadable photo sends the check-in without it silently; `workout_service.dart:65` - any non-success reply (a server 500 too) goes to the offline queue as if the network failed; empty catches also in `local_storage.dart` 82/106, `auth_service.dart` 83, `notification_service.dart` 18, `nutrition_screen.dart` 398.
+2. **Flutter app** — `item.note` display and swap-food 409 error SnackBar DONE (Round 3ai); `checkin_service.dart` photo I/O catch hardened (Round 3ai); `workout_service.dart` queue isolation already secured. When tested on physical device (needs Flutter SDK + device): verify live rendering, smooth transitions, and push notifications.
 3. **Production data audit**: must run on the VPS itself (see 3d): `node --env-file=.env scripts/audit-grown-cycles.mjs` (read-only). The owner is not technical — walk them through it or get server access. Repair only with backup + plan + owner approval.
 4. **Extreme case** (130 kg, diabetes + kidney + liver, coeliac + nuts): balanced (3254 kcal, fat 35%, oil 17-24 g a meal), no portion flags (quinoa, 3i); carbohydrate 52% (kidney cap) with the coach note. Needs the doctor anyway.
 5. **Swaps with no equivalent**: lupini only (intentional: nothing of the same kind and value). Protein powder has no swap by the owner's rule.

@@ -86,6 +86,7 @@ test("mobile_app Dart code points at the routes and fields the server serves", (
     assert.ok(checkin.includes(key), key);
   }
   assert.match(checkin, /if \(response\.statusCode == 0\) \{/, "only network failures are queued");
+  assert.ok(!checkin.includes("    } catch (_) {}"), "photo read errors are returned, not swallowed");
 });
 
 // Only one Flutter app exists (mobile_app/). The older mobile/ stub was deleted so nobody edits it by mistake.
@@ -122,3 +123,10 @@ test("the mobile app defaultBaseUrl points to the production subdomain over HTTP
   assert.match(constants, /defaultBaseUrl = 'https:\/\/app\.karimzakaria\.com';/);
 });
 
+
+test("nutrition screen renders item note and displays swap error feedback", () => {
+  const nutrition = read("mobile_app/lib/features/nutrition/screens/nutrition_screen.dart");
+  assert.match(nutrition, /item\.note != null && item\.note!\.trim\(\)\.isNotEmpty/);
+  assert.match(nutrition, /ScaffoldMessenger\.of\(context\)\.showSnackBar/);
+  assert.match(nutrition, /BorderRadius\.circular\(10\)/, "curved error snackbar");
+});

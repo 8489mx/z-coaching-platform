@@ -413,6 +413,19 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                if (item.note != null && item.note!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    item.note!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -762,6 +775,20 @@ class _SwapSheetContentState extends State<_SwapSheetContent> {
         );
 
         widget.onSwapSelected(newItem);
+        if (mounted) Navigator.of(context).pop();
+      } else {
+        final data = response.data;
+        final err = (data is Map ? (data['message_ar'] ?? data['error'] ?? data['message']) : null)?.toString() ?? response.errorMessage ?? 'تعذر استبدال هذا الصنف';
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(err, style: const TextStyle(fontWeight: FontWeight.w600)),
+              backgroundColor: const Color(0xFFDC2626),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
       }
     } catch (_) {}
   }
