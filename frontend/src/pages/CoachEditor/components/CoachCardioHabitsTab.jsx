@@ -46,7 +46,8 @@ export function CoachCardioHabitsTab({
   const zone = String(program?.cardio?.target_heart_rate_zone || '');
   const isHiitCardio = /hiit|sprint|كثافة عالية/i.test(modality) || /hiit|zone 4/i.test(zone);
 
-  const clientAge = Number(program?.client?.age) || 28;
+  const rawClientAge = program?.client?.age ?? program?.client_profile?.age ?? null;
+  const clientAge = Number.isFinite(Number(rawClientAge)) && Number(rawClientAge) > 0 ? Number(rawClientAge) : null;
   const interferenceAudit = evaluateCardioInterferenceDecoupling({
     age: clientAge,
     cardio_type: isHiitCardio ? CARDIO_INTENSITIES.HIGH_INTENSITY_HIIT : CARDIO_INTENSITIES.ZONE_2_STEADY_STATE,
@@ -422,7 +423,7 @@ export function CoachCardioHabitsTab({
                   alignItems: 'center',
                   width: 'fit-content'
                 }}>
-                  النبض المستهدف (العمر {clientAge} سنة): {interferenceAudit.heart_rate_prescription.range_display}
+                  {clientAge ? `النبض المستهدف (العمر ${clientAge} سنة): ${interferenceAudit.heart_rate_prescription.range_display}` : interferenceAudit.heart_rate_prescription.range_display}
                 </div>
               )}
             </div>

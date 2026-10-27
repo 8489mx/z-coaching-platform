@@ -5,7 +5,7 @@
  *    - Separates heavy resistance training from high-intensity cardio by >= 6 hours (or separate days)
  *      to avoid AMPK-mediated dephosphorylation of mTORC1.
  * 2. Zone 2 Polarized Prescription:
- *    - Directs aerobic work to Zone 2 (65% - 75% Max HR) for mitochondrial biogenesis without muscle catabolism.
+ *    - Directs aerobic work to Zone 2 (60% - 70% Max HR via Tanaka 208 - 0.7 * age) for mitochondrial biogenesis without muscle catabolism.
  */
 
 export const CARDIO_INTENSITIES = {
@@ -15,14 +15,30 @@ export const CARDIO_INTENSITIES = {
 };
 
 /**
- * Calculates heart rate zones based on Fox formula (220 - age) with Zone 2 boundaries.
+ * Calculates heart rate zones based on Tanaka formula (208 - 0.7 * age) with Zone 2 boundaries (60% - 70%).
+ * Does NOT fabricate a silent age default when age is missing.
  */
-export function calculateHeartRateZones(age = 28) {
-  const safeAge = Math.max(16, Math.min(80, Number(age) || 28));
-  const maxHr = 220 - safeAge;
+export function calculateHeartRateZones(age) {
+  const numericAge = Number(age);
+  if (age === undefined || age === null || age === '' || !Number.isFinite(numericAge) || numericAge <= 0) {
+    return {
+      age: null,
+      max_heart_rate_bpm: null,
+      zone_2_target: {
+        min_bpm: null,
+        max_bpm: null,
+        range_display: null,
+        missing_age: true,
+        description_ar: 'يرجى تحديد عمر المتدرب في ملفه الشخصي لحساب نطاق نبض القلب بدقة وفق معادلة Tanaka'
+      }
+    };
+  }
 
-  const zone2Min = Math.round(maxHr * 0.65);
-  const zone2Max = Math.round(maxHr * 0.75);
+  const safeAge = Math.max(16, Math.min(80, Math.round(numericAge)));
+  const maxHr = Math.round(208 - 0.7 * safeAge);
+
+  const zone2Min = Math.round(maxHr * 0.6);
+  const zone2Max = Math.round(maxHr * 0.7);
 
   return {
     age: safeAge,
@@ -31,6 +47,7 @@ export function calculateHeartRateZones(age = 28) {
       min_bpm: zone2Min,
       max_bpm: zone2Max,
       range_display: `${zone2Min} - ${zone2Max} نبضة/دقيقة`,
+      missing_age: false,
       description_ar: 'نطاق تنقية اللاكتات وزيادة كفاءة الميتوكوندريا دون إفراز كورتيزول مفرط'
     }
   };
@@ -40,12 +57,12 @@ export function calculateHeartRateZones(age = 28) {
  * Evaluates cardio timing to decouple AMPK-mTOR molecular interference.
  */
 export function evaluateCardioInterferenceDecoupling({
-  age = 28,
+  age,
   cardio_type = CARDIO_INTENSITIES.ZONE_2_STEADY_STATE,
   resistance_session_time = "17:00",
   cardio_session_time = "18:00",
   is_same_day = true
-}) {
+} = {}) {
   const hrZones = calculateHeartRateZones(age);
 
   if (!is_same_day) {
