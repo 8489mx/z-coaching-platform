@@ -195,7 +195,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
             if (!e.currentTarget.classList.contains('active')) {
               e.currentTarget.style.backgroundColor = '#EAECEF';
               e.currentTarget.style.color = '#111827';
-              e.currentTarget.style.borderRadius = '16px';
+              e.currentTarget.style.borderRadius = '9999px';
               const icon = e.currentTarget.querySelector('.sidebar-item-icon');
               if (icon) {
                 icon.style.stroke = '#111827';

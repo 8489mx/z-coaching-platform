@@ -1089,7 +1089,7 @@ export default function CoachCommandCenter() {
                       textAlign: 'center',
                       background: '#FAFAFB',
                       border: '1px solid #EAECF0',
-                      borderRadius: '16px'
+                      borderRadius: '24px'
                     }}>
                       <div style={{
                         width: '44px',
@@ -1330,7 +1330,7 @@ export default function CoachCommandCenter() {
                           padding: '6px 10px',
                           background: '#F8FAFC',
                           border: '1px solid #EAECF0',
-                          borderRadius: '16px',
+                          borderRadius: '24px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
