@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { HeartPulse, Search, Plus, X, Play, Copy, Check, RotateCw, Flame, ShieldCheck, Layers, Edit3, Upload, ArrowRightLeft, Lock, Activity, Dumbbell, RefreshCw, Target } from 'lucide-react';
+import { HeartPulse, Search, Plus, X, Play, Copy, Check, RotateCw, Flame, ShieldCheck, Layers, Edit3, Upload, ArrowRightLeft, Lock, Activity, Dumbbell, RefreshCw, Target, BookOpen, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
@@ -82,6 +82,29 @@ export default function MobilityLibrary() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeVideo, setActiveVideo] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
+  const [copiedKey, setCopiedKey] = useState(null);
+  const [expandedView, setExpandedView] = useState({}); // { [drillId]: 'CUES' | 'MISTAKES' | 'TARGET' | null }
+
+  const toggleCardView = (id, type) => {
+    setExpandedView(prev => {
+      const current = prev[id] !== undefined ? prev[id] : 'CUES';
+      return {
+        ...prev,
+        [id]: current === type ? null : type
+      };
+    });
+  };
+
+  const handleCopyDirect = (text, key, successMsg = 'تم النسخ بنجاح') => {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedKey(key);
+      showToast(successMsg);
+      setTimeout(() => setCopiedKey(null), 2000);
+    }).catch(err => {
+      console.error('Clipboard copy error:', err);
+    });
+  };
   const [notification, setNotification] = useState(null);
 
   // Add Drill Modal State
@@ -587,7 +610,7 @@ export default function MobilityLibrary() {
         </div>
 
         {/* 3. Spacious Standard Cards Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '12px' }}>
           {filteredDrills.map((drill) => {
             const isCardio = drill.category === 'CARDIO_MODALITY';
             const isWarmup = drill.category === 'DYNAMIC_WARMUP';
@@ -805,54 +828,216 @@ export default function MobilityLibrary() {
                     )}
                   </div>
 
-                  {/* Technique Cue Box with embedded in-header copy button */}
-                  {drill.cue_ar && (
-                    <div style={{
-                      background: '#F8FAFC',
-                      border: '1px solid #EAECF0',
-                      borderRight: '3px solid #0F172A',
-                      padding: '8px 10px',
-                      borderRadius: '9999px',
-                      fontSize: '11.5px',
-                      color: '#334155',
-                      lineHeight: 1.45,
-                      marginBottom: '6px'
-                    }}>
+                  {/* Expandable Technique Box (with In-Header Copy Button) */}
+                  {currentExpanded === 'CUES' && (
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRight: '3px solid #0F172A', padding: '8px 10px', borderRadius: '10px', fontSize: '11.5px', color: '#334155', lineHeight: 1.45 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#0F172A' }}>التوجيه الحركي:</span>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Check size={11} />
+                          <span>التوجيه الحركي للأداء:</span>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => handleCopy(drill.cue_ar, drill.id)}
+                          onClick={() => handleCopyDirect(drill.cue_ar, `CUES_${drill.id}`, 'تم نسخ التوجيه الحركي')}
                           style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: copiedId === drill.id ? '#16A34A' : '#64748B',
-                            cursor: 'pointer',
+                            padding: '2px 7px',
+                            borderRadius: '9999px',
+                            border: copiedKey === `CUES_${drill.id}` ? '1px solid #86EFAC' : '1px solid #CBD5E1',
+                            background: copiedKey === `CUES_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
+                            color: copiedKey === `CUES_${drill.id}` ? '#16A34A' : '#475569',
                             fontSize: '10.5px',
                             fontWeight: 700,
+                            cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '3px',
-                            padding: 0
+                            transition: 'all 0.15s ease'
                           }}
-                          title="نسخ التوجيه للحافظة"
+                          title="نسخ نص التوجيه"
                         >
-                          {copiedId === drill.id ? <Check size={11} color="#16A34A" /> : <Copy size={11} />}
-                          <span>{copiedId === drill.id ? 'تم النسخ' : 'نسخ'}</span>
+                          {copiedKey === `CUES_${drill.id}` ? <CheckCircle2 size={10} color="#16A34A" /> : <Copy size={10} />}
+                          <span>{copiedKey === `CUES_${drill.id}` ? 'تم النسخ' : 'نسخ'}</span>
                         </button>
                       </div>
-                      <p style={{ margin: 0 }}>{drill.cue_ar}</p>
+                      <p style={{ margin: 0 }}>
+                        {drill.cue_ar}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Expandable Injury Prevention Box (with In-Header Copy Button) */}
+                  {currentExpanded === 'MISTAKES' && (
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRight: '3px solid #D97706', padding: '8px 10px', borderRadius: '10px', fontSize: '11.5px', color: '#78350F', lineHeight: 1.45 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <AlertTriangle size={11} />
+                          <span>الأثر الفسيولوجي والوقاية:</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyDirect(drill.scientific_benefit_ar, `MISTAKES_${drill.id}`, 'تم نسخ الأثر الوقائي')}
+                          style={{
+                            padding: '2px 7px',
+                            borderRadius: '9999px',
+                            border: copiedKey === `MISTAKES_${drill.id}` ? '1px solid #86EFAC' : '1px solid #FDE68A',
+                            background: copiedKey === `MISTAKES_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
+                            color: copiedKey === `MISTAKES_${drill.id}` ? '#16A34A' : '#B45309',
+                            fontSize: '10.5px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title="نسخ نص الأثر والوقاية"
+                        >
+                          {copiedKey === `MISTAKES_${drill.id}` ? <CheckCircle2 size={10} color="#16A34A" /> : <Copy size={10} />}
+                          <span>{copiedKey === `MISTAKES_${drill.id}` ? 'تم النسخ' : 'نسخ'}</span>
+                        </button>
+                      </div>
+                      <p style={{ margin: 0 }}>
+                        {drill.scientific_benefit_ar || 'يعزز المدى الحركي وصحة المفاصل والأنسجة ويحمي من الإصابات.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Expandable Target Area Box (with In-Header Copy Button) */}
+                  {currentExpanded === 'TARGET' && (
+                    <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRight: '3px solid #0284C7', padding: '8px 10px', borderRadius: '10px', fontSize: '11.5px', color: '#0C4A6E', lineHeight: 1.45 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#0284C7', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Target size={11} />
+                          <span>منطقة التركيز والمعدل:</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyDirect(drill.target_area_ar, `TARGET_${drill.id}`, 'تم نسخ منطقة التركيز')}
+                          style={{
+                            padding: '2px 7px',
+                            borderRadius: '9999px',
+                            border: copiedKey === `TARGET_${drill.id}` ? '1px solid #86EFAC' : '1px solid #BAE6FD',
+                            background: copiedKey === `TARGET_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
+                            color: copiedKey === `TARGET_${drill.id}` ? '#16A34A' : '#0284C7',
+                            fontSize: '10.5px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title="نسخ منطقة التركيز"
+                        >
+                          {copiedKey === `TARGET_${drill.id}` ? <CheckCircle2 size={10} color="#16A34A" /> : <Copy size={10} />}
+                          <span>{copiedKey === `TARGET_${drill.id}` ? 'تم النسخ' : 'نسخ'}</span>
+                        </button>
+                      </div>
+                      <p style={{ margin: 0, fontWeight: 700, color: '#0F172A' }}>
+                        {drill.target_area_ar}
+                      </p>
+                      {(drill.reps || drill.duration_seconds || drill.hold_seconds) && (
+                        <div style={{ marginTop: '5px', fontSize: '10.5px', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Clock size={11} />
+                          <span>المعدل الموصى به: <strong>{drill.reps || (drill.duration_seconds ? `${Math.round(drill.duration_seconds / 60)} دقيقة` : (drill.hold_seconds ? `${drill.hold_seconds} ثانية ثبات` : 'حسب الخطة'))}</strong></span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
 
-                {/* Footer: Target Area Focus */}
-                {drill.target_area_ar && (
-                  <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '8px', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#475569' }}>
-                    <Target size={12} color="#673DE6" />
-                    <span>التركيز: <strong style={{ color: '#0F172A' }}>{drill.target_area_ar}</strong></span>
-                  </div>
-                )}
+                {/* Unified Segmented Details Toggle Bar */}
+                <div style={{
+                  background: '#F1F5F9',
+                  padding: '3px',
+                  borderRadius: '10px',
+                  border: '1px solid #E2E8F0',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '3px',
+                  marginTop: '2px'
+                }}>
+                  {/* Technique Segment */}
+                  <button
+                    type="button"
+                    onClick={() => toggleCardView(drill.id, 'CUES')}
+                    style={{
+                      padding: '6px 4px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: currentExpanded === 'CUES' ? '#0F172A' : 'transparent',
+                      color: currentExpanded === 'CUES' ? '#FFFFFF' : '#475569',
+                      fontSize: '11px',
+                      fontWeight: currentExpanded === 'CUES' ? 800 : 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      boxShadow: currentExpanded === 'CUES' ? '0 1px 3px rgba(15, 23, 42, 0.15)' : 'none',
+                      transition: 'all 0.15s ease',
+                      whiteSpace: 'nowrap'
+                    }}
+                    title="عرض / إخفاء التوجيه الحركي والتكنيك"
+                  >
+                    <BookOpen size={11} />
+                    <span>التكنيك</span>
+                  </button>
+
+                  {/* Injury Prevention Segment */}
+                  <button
+                    type="button"
+                    onClick={() => toggleCardView(drill.id, 'MISTAKES')}
+                    style={{
+                      padding: '6px 4px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: currentExpanded === 'MISTAKES' ? '#FFFBEB' : 'transparent',
+                      color: currentExpanded === 'MISTAKES' ? '#B45309' : '#64748B',
+                      fontSize: '11px',
+                      fontWeight: currentExpanded === 'MISTAKES' ? 800 : 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      boxShadow: currentExpanded === 'MISTAKES' ? '0 1px 3px rgba(180, 83, 9, 0.15)' : 'none',
+                      transition: 'all 0.15s ease',
+                      whiteSpace: 'nowrap'
+                    }}
+                    title="عرض / إخفاء تجنب الإصابات والأثر الوقائي"
+                  >
+                    <AlertTriangle size={11} />
+                    <span>تجنب الإصابات</span>
+                  </button>
+
+                  {/* Target Area Segment */}
+                  <button
+                    type="button"
+                    onClick={() => toggleCardView(drill.id, 'TARGET')}
+                    style={{
+                      padding: '6px 4px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: currentExpanded === 'TARGET' ? '#F0F9FF' : 'transparent',
+                      color: currentExpanded === 'TARGET' ? '#0284C7' : '#64748B',
+                      fontSize: '11px',
+                      fontWeight: currentExpanded === 'TARGET' ? 800 : 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      boxShadow: currentExpanded === 'TARGET' ? '0 1px 3px rgba(2, 132, 199, 0.15)' : 'none',
+                      transition: 'all 0.15s ease',
+                      whiteSpace: 'nowrap'
+                    }}
+                    title="عرض / إخفاء منطقة التركيز والاستهداف"
+                  >
+                    <Target size={11} />
+                    <span>التركيز</span>
+                  </button>
+                </div>
               </div>
             );
           })}
