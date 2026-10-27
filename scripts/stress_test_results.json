@@ -6,44 +6,44 @@
     "status": "SUCCESS",
     "calories": 2129,
     "macros": {
-      "protein": 90,
-      "carbs": 321,
+      "protein": 198,
+      "carbs": 213,
       "fats": 54
     },
     "clinicalDecisions": {
-      "kidneyGuardActive": true,
-      "maxSafeProteinCeiling": 90,
-      "coachManualOverrideBlockedWithoutConsciousFlag": true,
-      "enforcedProteinValue": 90,
+      "kidneyGuardActive": false,
+      "maxSafeProteinCeiling": null,
+      "coachManualOverrideBlockedWithoutConsciousFlag": false,
+      "enforcedProteinValue": 160,
       "overrideProteinValueWhenDocumented": 160,
       "hypertensionSafeTraining": true
     },
     "mealsSummary": [
       {
         "day_or_meal": "Meal 1: وجبة الإفطار",
-        "recipe_title": "سفرة الإفطار المتكاملة (بيض كامل مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
+        "recipe_title": "وجبة الإفطار (بيض مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
         "target_macros": {
-          "protein_g": 30,
-          "carb_g": 96,
+          "protein_g": 66,
+          "carb_g": 64,
           "fat_g": 18,
-          "calories_kcal": 667
+          "calories_kcal": 682
         },
         "actual_macros": {
-          "protein_g": 48,
-          "carb_g": 96,
-          "fat_g": 18,
-          "calories_kcal": 745
+          "protein_g": 66,
+          "carb_g": 64,
+          "fat_g": 20,
+          "calories_kcal": 714
         },
         "items": [
           {
-            "name_ar": "بيض كامل مسلوق أو أومليت بالخضار (2 بيضات كاملة)",
+            "name_ar": "بيض كامل مسلوق أو أومليت بالخضار (3 بيضات كاملة)",
             "category": "PROTEIN",
-            "portion_g": 110,
-            "household": "2 بيضات كاملة (صفار وبياض للاستفادة الكاملة من الفيتامينات والدهون الطبيعية دون أي هدر)",
-            "calories": 142,
-            "protein": 13,
+            "portion_g": 165,
+            "household": "3 بيضات كاملة (صفار وبياض للاستفادة الكاملة من الفيتامينات والدهون الطبيعية دون أي هدر)",
+            "calories": 215,
+            "protein": 20,
             "carbs": 1,
-            "fats": 10
+            "fats": 15
           },
           {
             "name_ar": "طبق سلطة خضراء طازجة (خيار، طماطم، جرجير، بقدونس، رشة ليمون)",
@@ -56,7 +56,7 @@
             "fats": 0
           },
           {
-            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف (150 جم)",
+            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف",
             "category": "PROTEIN",
             "portion_g": 150,
             "household": "150 جم (نصف كوب متبل بالنعناع والزعتر - حجم مثالي مستساغ)",
@@ -68,39 +68,39 @@
           {
             "name_ar": "خبز بلدي مصري بالردة (قمح كامل)",
             "category": "CARBS",
-            "portion_g": 165,
-            "household": "165 جم (~1.9 رغيف بلدي متوسط)",
-            "calories": 429,
-            "protein": 15,
-            "carbs": 86,
-            "fats": 2
+            "portion_g": 104,
+            "household": "104 جم (~1.2 رغيف بلدي متوسط)",
+            "calories": 270,
+            "protein": 9,
+            "carbs": 54,
+            "fats": 1
           },
           {
-            "name_ar": "زيت زيتون بكر ممتاز (مسحة خفيفة للطهي أو تتبيل الوجبة)",
-            "category": "FATS",
-            "portion_g": 4,
-            "household": "4 جم (1 ملعقة صغيرة / مسحة طهي خفيفة)",
-            "calories": 36,
-            "protein": 0,
+            "name_ar": "صدور دجاج مشوية خفيفة للإفطار",
+            "category": "PROTEIN",
+            "portion_g": 55,
+            "household": "55 جم وزن مطبوخ (شريحة خفيفة)",
+            "calories": 91,
+            "protein": 17,
             "carbs": 0,
-            "fats": 4
+            "fats": 2
           }
         ]
       },
       {
         "day_or_meal": "Meal 2: وجبة قبل التمرين / الغداء",
-        "recipe_title": "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)",
+        "recipe_title": "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)",
         "target_macros": {
-          "protein_g": 30,
-          "carb_g": 128,
+          "protein_g": 66,
+          "carb_g": 85,
           "fat_g": 18,
-          "calories_kcal": 796
+          "calories_kcal": 767
         },
         "actual_macros": {
-          "protein_g": 30,
-          "carb_g": 128,
+          "protein_g": 66,
+          "carb_g": 85,
           "fat_g": 18,
-          "calories_kcal": 813
+          "calories_kcal": 808
         },
         "items": [
           {
@@ -116,49 +116,49 @@
           {
             "name_ar": "أرز بسمتي أبيض أو حبة طويلة مطبوخ",
             "category": "CARBS",
-            "portion_g": 443,
-            "household": "443 جم وزن مطبوخ (18 ملاعق طعام كبيرة)",
-            "calories": 576,
-            "protein": 12,
-            "carbs": 124,
-            "fats": 2
+            "portion_g": 289,
+            "household": "289 جم وزن مطبوخ (12 ملاعق طعام كبيرة)",
+            "calories": 376,
+            "protein": 8,
+            "carbs": 81,
+            "fats": 1
           },
           {
             "name_ar": "صدور دجاج متبلة مشوية على الجريل",
             "category": "PROTEIN",
-            "portion_g": 52,
-            "household": "52 جم وزن مطبوخ (حجم كف اليد ونصف)",
-            "calories": 86,
-            "protein": 16,
+            "portion_g": 181,
+            "household": "181 جم وزن مطبوخ (حجم كف اليد ونصف)",
+            "calories": 299,
+            "protein": 56,
             "carbs": 0,
-            "fats": 2
+            "fats": 5
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز للطهي والتتبيل",
             "category": "FATS",
-            "portion_g": 14,
-            "household": "14 جم (1 ملعقة طعام كبيرة)",
-            "calories": 126,
+            "portion_g": 12,
+            "household": "12 جم (1 ملعقة طعام كبيرة)",
+            "calories": 108,
             "protein": 0,
             "carbs": 0,
-            "fats": 14
+            "fats": 12
           }
         ]
       },
       {
         "day_or_meal": "Meal 3: وجبة العشاء / بعد التمرين",
-        "recipe_title": "طبق العشاء المتوازن والمريح للاستشفاء",
+        "recipe_title": "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)",
         "target_macros": {
-          "protein_g": 30,
-          "carb_g": 96,
+          "protein_g": 66,
+          "carb_g": 64,
           "fat_g": 18,
-          "calories_kcal": 667
+          "calories_kcal": 682
         },
         "actual_macros": {
-          "protein_g": 33,
-          "carb_g": 96,
-          "fat_g": 18,
-          "calories_kcal": 699
+          "protein_g": 66,
+          "carb_g": 64,
+          "fat_g": 16,
+          "calories_kcal": 675
         },
         "items": [
           {
@@ -174,32 +174,32 @@
           {
             "name_ar": "خبز بلدي مصري بالردة",
             "category": "CARBS",
-            "portion_g": 177,
-            "household": "177 جم (~2.1 رغيف بلدي)",
-            "calories": 460,
-            "protein": 16,
-            "carbs": 92,
-            "fats": 2
+            "portion_g": 115,
+            "household": "115 جم (~1.4 رغيف بلدي)",
+            "calories": 299,
+            "protein": 10,
+            "carbs": 60,
+            "fats": 1
           },
           {
-            "name_ar": "صدور دجاج مشوية خفيفة للعشاء",
+            "name_ar": "تونة لايت قطع مصفاة بالليمون والكمون",
             "category": "PROTEIN",
-            "portion_g": 48,
-            "household": "48 جم وزن مطبوخ (حجم كف اليد)",
-            "calories": 79,
-            "protein": 15,
+            "portion_g": 278,
+            "household": "278 جم مصفى (~2.3 علبة تونة)",
+            "calories": 243,
+            "protein": 54,
             "carbs": 0,
-            "fats": 1
+            "fats": 3
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز",
             "category": "FATS",
-            "portion_g": 15,
-            "household": "15 جم (1 ملعقة طعام كبيرة)",
-            "calories": 135,
+            "portion_g": 12,
+            "household": "12 جم (1 ملعقة طعام كبيرة)",
+            "calories": 108,
             "protein": 0,
             "carbs": 0,
-            "fats": 15
+            "fats": 12
           }
         ]
       }
@@ -281,6 +281,15 @@
             "rest": 150
           },
           {
+            "name": "هيب ثرست بالبار للمؤخرة والأرداف",
+            "code": "BARBELL_HIP_THRUST",
+            "sets": 3,
+            "reps": "8-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "بنش برس مائل بالدمبل",
             "code": "INCLINE_DUMBBELL_BENCH_PRESS",
             "sets": 3,
@@ -351,6 +360,15 @@
             "rest": 120
           },
           {
+            "name": "MACHINE CHEST PRESS",
+            "code": "MACHINE_CHEST_PRESS",
+            "sets": 3,
+            "reps": "10-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "سحب أرضي على الكيبل للظهر",
             "code": "SEATED_CABLE_ROW",
             "sets": 3,
@@ -390,7 +408,7 @@
       }
     ],
     "timelineEvents": {
-      "week2_coach_override": "محاولة الكابتن رفع البروتين إلى 160g: تم كبحها تلقائياً إلى 90g (السقف الآمن 1.0g/kg)، وقُبلت إلى 160g عند التوثيق الصريح لكود التجاوز الواعي.",
+      "week2_coach_override": "محاولة الكابتن رفع البروتين إلى 160g: تم كبحها تلقائياً إلى 160g (السقف الآمن 1.0g/kg)، وقُبلت إلى 160g عند التوثيق الصريح لكود التجاوز الواعي.",
       "week4_checkin": "تقييم المتابعة: نقص الوزن 0.8 كجم بنجاح، حالة التقييم: undefined"
     },
     "errors": []
@@ -403,8 +421,8 @@
     "calories": 2877,
     "macros": {
       "protein": 160,
-      "carbs": 402,
-      "fats": 70
+      "carbs": 323,
+      "fats": 105
     },
     "clinicalDecisions": {
       "hypoglycemiaGuardActive": true,
@@ -416,18 +434,18 @@
     "mealsSummary": [
       {
         "day_or_meal": "Meal 1: وجبة الإفطار",
-        "recipe_title": "سفرة الإفطار المتكاملة (بيض كامل مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
+        "recipe_title": "وجبة الإفطار (بيض مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
         "target_macros": {
           "protein_g": 53,
-          "carb_g": 121,
-          "fat_g": 23,
-          "calories_kcal": 906
+          "carb_g": 97,
+          "fat_g": 35,
+          "calories_kcal": 916
         },
         "actual_macros": {
-          "protein_g": 52,
-          "carb_g": 121,
-          "fat_g": 23,
-          "calories_kcal": 915
+          "protein_g": 48,
+          "carb_g": 97,
+          "fat_g": 36,
+          "calories_kcal": 904
         },
         "items": [
           {
@@ -451,7 +469,7 @@
             "fats": 0
           },
           {
-            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف (150 جم)",
+            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف",
             "category": "PROTEIN",
             "portion_g": 150,
             "household": "150 جم (نصف كوب متبل بالنعناع والزعتر - حجم مثالي مستساغ)",
@@ -461,41 +479,41 @@
             "fats": 2
           },
           {
-            "name_ar": "خبز بلدي مصري بالردة (قمح كامل)",
+            "name_ar": "خبز تميس بر أسمر بالنخالة (مخبوز حجري)",
             "category": "CARBS",
-            "portion_g": 213,
-            "household": "213 جم (~2.5 رغيف بلدي متوسط)",
-            "calories": 554,
-            "protein": 19,
-            "carbs": 111,
-            "fats": 2
+            "portion_g": 155,
+            "household": "155 جم خبز تميس بر",
+            "calories": 435,
+            "protein": 15,
+            "carbs": 87,
+            "fats": 3
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز (مسحة خفيفة للطهي أو تتبيل الوجبة)",
             "category": "FATS",
-            "portion_g": 9,
-            "household": "9 جم (1 ملعقة صغيرة / مسحة طهي خفيفة)",
-            "calories": 81,
+            "portion_g": 21,
+            "household": "21 جم (1 ملعقة صغيرة / مسحة طهي خفيفة)",
+            "calories": 189,
             "protein": 0,
             "carbs": 0,
-            "fats": 9
+            "fats": 21
           }
         ]
       },
       {
         "day_or_meal": "Meal 2: وجبة قبل التمرين / الغداء",
-        "recipe_title": "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)",
+        "recipe_title": "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)",
         "target_macros": {
           "protein_g": 53,
-          "carb_g": 161,
-          "fat_g": 23,
-          "calories_kcal": 1067
+          "carb_g": 129,
+          "fat_g": 35,
+          "calories_kcal": 1045
         },
         "actual_macros": {
           "protein_g": 53,
-          "carb_g": 161,
-          "fat_g": 23,
-          "calories_kcal": 1102
+          "carb_g": 129,
+          "fat_g": 36,
+          "calories_kcal": 1068
         },
         "items": [
           {
@@ -511,49 +529,69 @@
           {
             "name_ar": "أرز بسمتي أبيض أو حبة طويلة مطبوخ",
             "category": "CARBS",
-            "portion_g": 561,
-            "household": "561 جم وزن مطبوخ (22 ملاعق طعام كبيرة)",
-            "calories": 729,
-            "protein": 16,
-            "carbs": 157,
+            "portion_g": 382,
+            "household": "382 جم مطبوخ",
+            "calories": 497,
+            "protein": 11,
+            "carbs": 107,
             "fats": 2
+          },
+          {
+            "name_ar": "مكرونة مسلوقة (قمح كامل)",
+            "category": "CARBS",
+            "portion_g": 43,
+            "household": "43 جم مطبوخ",
+            "calories": 69,
+            "protein": 3,
+            "carbs": 13,
+            "fats": 1
           },
           {
             "name_ar": "صدور دجاج متبلة مشوية على الجريل",
             "category": "PROTEIN",
-            "portion_g": 113,
-            "household": "113 جم وزن مطبوخ (حجم كف اليد ونصف)",
-            "calories": 186,
-            "protein": 35,
+            "portion_g": 116,
+            "household": "116 جم مطبوخ",
+            "calories": 192,
+            "protein": 36,
             "carbs": 0,
-            "fats": 3
+            "fats": 4
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز للطهي والتتبيل",
             "category": "FATS",
-            "portion_g": 18,
-            "household": "18 جم (1 ملعقة طعام كبيرة)",
-            "calories": 162,
+            "portion_g": 20,
+            "household": "20 جم",
+            "calories": 180,
             "protein": 0,
             "carbs": 0,
-            "fats": 18
+            "fats": 20
+          },
+          {
+            "name_ar": "أفوكادو طازج (دهون أحادية غير مشبعة وألياف ذائبة)",
+            "category": "FATS",
+            "portion_g": 61,
+            "household": "61 جم",
+            "calories": 105,
+            "protein": 1,
+            "carbs": 5,
+            "fats": 9
           }
         ]
       },
       {
         "day_or_meal": "Meal 3: وجبة العشاء / بعد التمرين",
-        "recipe_title": "طبق العشاء المتوازن والمريح للاستشفاء",
+        "recipe_title": "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)",
         "target_macros": {
           "protein_g": 53,
-          "carb_g": 121,
-          "fat_g": 23,
-          "calories_kcal": 906
+          "carb_g": 97,
+          "fat_g": 35,
+          "calories_kcal": 916
         },
         "actual_macros": {
           "protein_g": 53,
-          "carb_g": 121,
-          "fat_g": 23,
-          "calories_kcal": 937
+          "carb_g": 97,
+          "fat_g": 36,
+          "calories_kcal": 942
         },
         "items": [
           {
@@ -567,34 +605,44 @@
             "fats": 0
           },
           {
-            "name_ar": "خبز بلدي مصري بالردة",
+            "name_ar": "خبز تميس بر أسمر بالنخالة (مخبوز حجري)",
             "category": "CARBS",
-            "portion_g": 225,
-            "household": "225 جم (~2.6 رغيف بلدي)",
-            "calories": 585,
-            "protein": 20,
-            "carbs": 117,
-            "fats": 2
+            "portion_g": 156,
+            "household": "156 جم",
+            "calories": 433,
+            "protein": 15,
+            "carbs": 87,
+            "fats": 3
           },
           {
             "name_ar": "صدور دجاج مشوية خفيفة للعشاء",
             "category": "PROTEIN",
-            "portion_g": 100,
-            "household": "100 جم وزن مطبوخ (حجم كف اليد)",
-            "calories": 165,
-            "protein": 31,
+            "portion_g": 113,
+            "household": "113 جم وزن مطبوخ (حجم كف اليد)",
+            "calories": 186,
+            "protein": 35,
             "carbs": 0,
             "fats": 3
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز",
             "category": "FATS",
-            "portion_g": 18,
-            "household": "18 جم (1 ملعقة طعام كبيرة)",
-            "calories": 162,
+            "portion_g": 20,
+            "household": "20 جم",
+            "calories": 180,
             "protein": 0,
             "carbs": 0,
-            "fats": 18
+            "fats": 20
+          },
+          {
+            "name_ar": "أفوكادو طازج (دهون أحادية غير مشبعة وألياف ذائبة)",
+            "category": "FATS",
+            "portion_g": 68,
+            "household": "68 جم",
+            "calories": 118,
+            "protein": 1,
+            "carbs": 6,
+            "fats": 10
           }
         ]
       }
@@ -676,6 +724,15 @@
             "rest": 150
           },
           {
+            "name": "DUMBBELL GLUTE BRIDGE",
+            "code": "DUMBBELL_GLUTE_BRIDGE",
+            "sets": 3,
+            "reps": "8-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "بنش برس مائل بالدمبل",
             "code": "INCLINE_DUMBBELL_BENCH_PRESS",
             "sets": 3,
@@ -728,13 +785,13 @@
         "mobility": "إحماء عام",
         "exercises": [
           {
-            "name": "جوبلت سكوات بالدمبل",
-            "code": "GOBLET_SQUAT",
+            "name": "جلوت بريدج بوزن الجسم للأرداف",
+            "code": "GLUTE_BRIDGE",
             "sets": 3,
-            "reps": "8-10",
+            "reps": "12-20",
             "rir": 3,
             "tempo": "2-0-1-0",
-            "rest": 90
+            "rest": 60
           },
           {
             "name": "ضغط كتف بالدمبل واقفاً",
@@ -746,6 +803,15 @@
             "rest": 120
           },
           {
+            "name": "تمرين الضغط القياسي بوزن الجسم",
+            "code": "PUSH_UP",
+            "sets": 3,
+            "reps": "10-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "منشار تجديف فردي بالدمبل",
             "code": "ONE_ARM_DUMBBELL_ROW",
             "sets": 3,
@@ -755,8 +821,8 @@
             "rest": 90
           },
           {
-            "name": "جلوت بريدج بوزن الجسم للأرداف",
-            "code": "GLUTE_BRIDGE",
+            "name": "NORDIC HAMSTRING CURL",
+            "code": "NORDIC_HAMSTRING_CURL",
             "sets": 3,
             "reps": "10-12",
             "rir": 3,
@@ -795,11 +861,11 @@
     "name": "عميل 3 — حمل + تكيس مبايض + قصور غدة درقية",
     "profile": "أنثى 28 سنة، حامل في الشهر الخامس، الحفاظ على لياقة صحية، نشاط منخفض",
     "status": "SUCCESS",
-    "calories": 2463,
+    "calories": 2123,
     "macros": {
-      "protein": 122,
-      "carbs": 359,
-      "fats": 60
+      "protein": 150,
+      "carbs": 197,
+      "fats": 82
     },
     "clinicalDecisions": {
       "pregnancySafetyGateTriggered": true,
@@ -810,18 +876,18 @@
     "mealsSummary": [
       {
         "day_or_meal": "Meal 1: وجبة الإفطار",
-        "recipe_title": "سفرة الإفطار المتكاملة (بيض كامل مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
+        "recipe_title": "وجبة الإفطار (بيض مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
         "target_macros": {
-          "protein_g": 41,
-          "carb_g": 108,
-          "fat_g": 20,
-          "calories_kcal": 773
+          "protein_g": 50,
+          "carb_g": 59,
+          "fat_g": 27,
+          "calories_kcal": 682
         },
         "actual_macros": {
           "protein_g": 50,
-          "carb_g": 108,
-          "fat_g": 20,
-          "calories_kcal": 823
+          "carb_g": 59,
+          "fat_g": 27,
+          "calories_kcal": 689
         },
         "items": [
           {
@@ -845,7 +911,7 @@
             "fats": 0
           },
           {
-            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف (150 جم)",
+            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف",
             "category": "PROTEIN",
             "portion_g": 150,
             "household": "150 جم (نصف كوب متبل بالنعناع والزعتر - حجم مثالي مستساغ)",
@@ -857,39 +923,49 @@
           {
             "name_ar": "خبز بلدي مصري بالردة (قمح كامل)",
             "category": "CARBS",
-            "portion_g": 188,
-            "household": "188 جم (~2.2 رغيف بلدي متوسط)",
-            "calories": 489,
-            "protein": 17,
-            "carbs": 98,
-            "fats": 2
+            "portion_g": 94,
+            "household": "94 جم (~1.1 رغيف بلدي متوسط)",
+            "calories": 244,
+            "protein": 8,
+            "carbs": 49,
+            "fats": 1
+          },
+          {
+            "name_ar": "صدور دجاج مشوية خفيفة للإفطار",
+            "category": "PROTEIN",
+            "portion_g": 29,
+            "household": "29 جم وزن مطبوخ (شريحة خفيفة)",
+            "calories": 48,
+            "protein": 9,
+            "carbs": 0,
+            "fats": 1
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز (مسحة خفيفة للطهي أو تتبيل الوجبة)",
             "category": "FATS",
-            "portion_g": 6,
-            "household": "6 جم (1 ملعقة صغيرة / مسحة طهي خفيفة)",
-            "calories": 54,
+            "portion_g": 13,
+            "household": "13 جم (1 ملعقة صغيرة / مسحة طهي خفيفة)",
+            "calories": 117,
             "protein": 0,
             "carbs": 0,
-            "fats": 6
+            "fats": 13
           }
         ]
       },
       {
         "day_or_meal": "Meal 2: وجبة قبل التمرين / الغداء",
-        "recipe_title": "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)",
+        "recipe_title": "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)",
         "target_macros": {
-          "protein_g": 41,
-          "carb_g": 144,
-          "fat_g": 20,
-          "calories_kcal": 917
+          "protein_g": 50,
+          "carb_g": 79,
+          "fat_g": 27,
+          "calories_kcal": 761
         },
         "actual_macros": {
-          "protein_g": 41,
-          "carb_g": 144,
-          "fat_g": 20,
-          "calories_kcal": 953
+          "protein_g": 50,
+          "carb_g": 80,
+          "fat_g": 27,
+          "calories_kcal": 788
         },
         "items": [
           {
@@ -905,49 +981,59 @@
           {
             "name_ar": "أرز بسمتي أبيض أو حبة طويلة مطبوخ",
             "category": "CARBS",
-            "portion_g": 500,
-            "household": "500 جم وزن مطبوخ (20 ملاعق طعام كبيرة)",
-            "calories": 650,
-            "protein": 14,
-            "carbs": 140,
-            "fats": 2
+            "portion_g": 268,
+            "household": "268 جم وزن مطبوخ (11 ملاعق طعام كبيرة)",
+            "calories": 348,
+            "protein": 8,
+            "carbs": 75,
+            "fats": 1
           },
           {
             "name_ar": "صدور دجاج متبلة مشوية على الجريل",
             "category": "PROTEIN",
-            "portion_g": 81,
-            "household": "81 جم وزن مطبوخ (حجم كف اليد ونصف)",
-            "calories": 134,
-            "protein": 25,
+            "portion_g": 129,
+            "household": "129 جم وزن مطبوخ (حجم كف اليد ونصف)",
+            "calories": 213,
+            "protein": 40,
             "carbs": 0,
-            "fats": 2
+            "fats": 4
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز للطهي والتتبيل",
             "category": "FATS",
-            "portion_g": 16,
-            "household": "16 جم (1 ملعقة طعام كبيرة)",
-            "calories": 144,
+            "portion_g": 20,
+            "household": "20 جم",
+            "calories": 180,
             "protein": 0,
             "carbs": 0,
-            "fats": 16
+            "fats": 20
+          },
+          {
+            "name_ar": "أفوكادو طازج (دهون أحادية غير مشبعة وألياف ذائبة)",
+            "category": "FATS",
+            "portion_g": 14,
+            "household": "14 جم",
+            "calories": 22,
+            "protein": 0,
+            "carbs": 1,
+            "fats": 2
           }
         ]
       },
       {
         "day_or_meal": "Meal 3: وجبة العشاء / بعد التمرين",
-        "recipe_title": "طبق العشاء المتوازن والمريح للاستشفاء",
+        "recipe_title": "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)",
         "target_macros": {
-          "protein_g": 41,
-          "carb_g": 108,
-          "fat_g": 20,
-          "calories_kcal": 773
+          "protein_g": 50,
+          "carb_g": 59,
+          "fat_g": 27,
+          "calories_kcal": 682
         },
         "actual_macros": {
-          "protein_g": 41,
-          "carb_g": 108,
-          "fat_g": 20,
-          "calories_kcal": 801
+          "protein_g": 50,
+          "carb_g": 60,
+          "fat_g": 25,
+          "calories_kcal": 673
         },
         "items": [
           {
@@ -963,32 +1049,42 @@
           {
             "name_ar": "خبز بلدي مصري بالردة",
             "category": "CARBS",
-            "portion_g": 200,
-            "household": "200 جم (~2.4 رغيف بلدي)",
-            "calories": 520,
-            "protein": 18,
-            "carbs": 104,
-            "fats": 2
+            "portion_g": 106,
+            "household": "106 جم (~1.2 رغيف بلدي)",
+            "calories": 276,
+            "protein": 10,
+            "carbs": 55,
+            "fats": 1
           },
           {
-            "name_ar": "صدور دجاج مشوية خفيفة للعشاء",
+            "name_ar": "تونة لايت قطع مصفاة بالليمون والكمون",
             "category": "PROTEIN",
-            "portion_g": 68,
-            "household": "68 جم وزن مطبوخ (حجم كف اليد)",
-            "calories": 112,
-            "protein": 21,
+            "portion_g": 197,
+            "household": "197 جم مصفى (~1.6 علبة تونة)",
+            "calories": 170,
+            "protein": 38,
             "carbs": 0,
             "fats": 2
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز",
             "category": "FATS",
-            "portion_g": 16,
-            "household": "16 جم (1 ملعقة طعام كبيرة)",
-            "calories": 144,
+            "portion_g": 20,
+            "household": "20 جم",
+            "calories": 180,
             "protein": 0,
             "carbs": 0,
-            "fats": 16
+            "fats": 20
+          },
+          {
+            "name_ar": "أفوكادو طازج (دهون أحادية غير مشبعة وألياف ذائبة)",
+            "category": "FATS",
+            "portion_g": 14,
+            "household": "14 جم",
+            "calories": 22,
+            "protein": 0,
+            "carbs": 1,
+            "fats": 2
           }
         ]
       }
@@ -1070,6 +1166,15 @@
             "rest": 150
           },
           {
+            "name": "هيب ثرست بالبار للمؤخرة والأرداف",
+            "code": "BARBELL_HIP_THRUST",
+            "sets": 3,
+            "reps": "8-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "بنش برس مائل بالدمبل",
             "code": "INCLINE_DUMBBELL_BENCH_PRESS",
             "sets": 3,
@@ -1138,6 +1243,15 @@
             "rir": 3,
             "tempo": "2-0-1-0",
             "rest": 120
+          },
+          {
+            "name": "MACHINE CHEST PRESS",
+            "code": "MACHINE_CHEST_PRESS",
+            "sets": 3,
+            "reps": "10-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
           },
           {
             "name": "سحب أرضي على الكيبل للظهر",
@@ -1203,7 +1317,7 @@
     "mealsSummary": [
       {
         "day_or_meal": "Meal 1: وجبة الإفطار",
-        "recipe_title": "سفرة الإفطار المتكاملة الخالية من الجلوتين (بيض كامل مع صدور دجاج وبطاطس مشوية وسلطة خضراء)",
+        "recipe_title": "وجبة الإفطار (بيض مع صدور دجاج وبطاطس مشوية وسلطة)",
         "target_macros": {
           "protein_g": 53,
           "carb_g": 71,
@@ -1238,7 +1352,7 @@
             "fats": 0
           },
           {
-            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف (150 جم)",
+            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف",
             "category": "PROTEIN",
             "portion_g": 150,
             "household": "150 جم (نصف كوب متبل بالنعناع والزعتر - حجم مثالي مستساغ)",
@@ -1258,7 +1372,7 @@
             "fats": 0
           },
           {
-            "name_ar": "صدور دجاج مشوية خفيفة للإفطار (شريحة إضافية لتغطية البروتين)",
+            "name_ar": "صدور دجاج مشوية خفيفة للإفطار",
             "category": "PROTEIN",
             "portion_g": 45,
             "household": "45 جم وزن مطبوخ (شريحة خفيفة)",
@@ -1281,7 +1395,7 @@
       },
       {
         "day_or_meal": "Meal 2: وجبة قبل التمرين / الغداء",
-        "recipe_title": "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)",
+        "recipe_title": "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)",
         "target_macros": {
           "protein_g": 53,
           "carb_g": 95,
@@ -1339,7 +1453,7 @@
       },
       {
         "day_or_meal": "Meal 3: وجبة العشاء / بعد التمرين",
-        "recipe_title": "طبق العشاء المتوازن والمريح للاستشفاء",
+        "recipe_title": "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)",
         "target_macros": {
           "protein_g": 53,
           "carb_g": 71,
@@ -1349,8 +1463,8 @@
         "actual_macros": {
           "protein_g": 53,
           "carb_g": 71,
-          "fat_g": 16,
-          "calories_kcal": 669
+          "fat_g": 14,
+          "calories_kcal": 629
         },
         "items": [
           {
@@ -1374,14 +1488,14 @@
             "fats": 0
           },
           {
-            "name_ar": "صدور دجاج مشوية خفيفة للعشاء",
+            "name_ar": "تونة لايت قطع مصفاة بالليمون والكمون",
             "category": "PROTEIN",
-            "portion_g": 142,
-            "household": "142 جم وزن مطبوخ (حجم كف اليد)",
-            "calories": 234,
+            "portion_g": 227,
+            "household": "227 جم مصفى (~1.9 علبة تونة)",
+            "calories": 194,
             "protein": 44,
             "carbs": 0,
-            "fats": 4
+            "fats": 2
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز",
@@ -1473,6 +1587,15 @@
             "rest": 150
           },
           {
+            "name": "هيب ثرست بالبار للمؤخرة والأرداف",
+            "code": "BARBELL_HIP_THRUST",
+            "sets": 3,
+            "reps": "8-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "بنش برس مائل بالدمبل",
             "code": "INCLINE_DUMBBELL_BENCH_PRESS",
             "sets": 3,
@@ -1543,6 +1666,15 @@
             "rest": 120
           },
           {
+            "name": "MACHINE CHEST PRESS",
+            "code": "MACHINE_CHEST_PRESS",
+            "sets": 3,
+            "reps": "10-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "سحب أرضي على الكيبل للظهر",
             "code": "SEATED_CABLE_ROW",
             "sets": 3,
@@ -1593,8 +1725,8 @@
     "status": "SUCCESS",
     "calories": 1922,
     "macros": {
-      "protein": 209,
-      "carbs": 143,
+      "protein": 161,
+      "carbs": 191,
       "fats": 57
     },
     "clinicalDecisions": {
@@ -1606,29 +1738,29 @@
     "mealsSummary": [
       {
         "day_or_meal": "Meal 1: وجبة الإفطار",
-        "recipe_title": "سفرة الإفطار المتكاملة (بيض كامل مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
+        "recipe_title": "وجبة الإفطار (بيض مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
         "target_macros": {
-          "protein_g": 70,
-          "carb_g": 43,
+          "protein_g": 54,
+          "carb_g": 57,
           "fat_g": 19,
-          "calories_kcal": 621
+          "calories_kcal": 615
         },
         "actual_macros": {
-          "protein_g": 70,
-          "carb_g": 43,
-          "fat_g": 20,
-          "calories_kcal": 644
+          "protein_g": 54,
+          "carb_g": 57,
+          "fat_g": 19,
+          "calories_kcal": 628
         },
         "items": [
           {
-            "name_ar": "بيض كامل مسلوق أو أومليت بالخضار (3 بيضات كاملة)",
+            "name_ar": "بيض كامل مسلوق أو أومليت بالخضار (2 بيضات كاملة)",
             "category": "PROTEIN",
-            "portion_g": 165,
-            "household": "3 بيضات كاملة (صفار وبياض للاستفادة الكاملة من الفيتامينات والدهون الطبيعية دون أي هدر)",
-            "calories": 215,
-            "protein": 20,
+            "portion_g": 110,
+            "household": "2 بيضات كاملة (صفار وبياض للاستفادة الكاملة من الفيتامينات والدهون الطبيعية دون أي هدر)",
+            "calories": 142,
+            "protein": 13,
             "carbs": 1,
-            "fats": 15
+            "fats": 10
           },
           {
             "name_ar": "طبق سلطة خضراء طازجة (خيار، طماطم، جرجير، بقدونس، رشة ليمون)",
@@ -1641,7 +1773,7 @@
             "fats": 0
           },
           {
-            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف (150 جم)",
+            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف",
             "category": "PROTEIN",
             "portion_g": 150,
             "household": "150 جم (نصف كوب متبل بالنعناع والزعتر - حجم مثالي مستساغ)",
@@ -1653,39 +1785,49 @@
           {
             "name_ar": "خبز بلدي مصري بالردة (قمح كامل)",
             "category": "CARBS",
-            "portion_g": 63,
-            "household": "63 جم (~0.7 رغيف بلدي متوسط)",
-            "calories": 164,
-            "protein": 6,
-            "carbs": 33,
+            "portion_g": 90,
+            "household": "90 جم (~1.1 رغيف بلدي متوسط)",
+            "calories": 234,
+            "protein": 8,
+            "carbs": 47,
             "fats": 1
           },
           {
-            "name_ar": "صدور دجاج مشوية خفيفة للإفطار (شريحة إضافية لتغطية البروتين)",
+            "name_ar": "صدور دجاج مشوية خفيفة للإفطار",
             "category": "PROTEIN",
-            "portion_g": 77,
-            "household": "77 جم وزن مطبوخ (شريحة خفيفة)",
-            "calories": 127,
-            "protein": 24,
+            "portion_g": 42,
+            "household": "42 جم وزن مطبوخ (شريحة خفيفة)",
+            "calories": 69,
+            "protein": 13,
             "carbs": 0,
-            "fats": 2
+            "fats": 1
+          },
+          {
+            "name_ar": "زيت زيتون بكر ممتاز (مسحة خفيفة للطهي أو تتبيل الوجبة)",
+            "category": "FATS",
+            "portion_g": 5,
+            "household": "5 جم (1 ملعقة صغيرة / مسحة طهي خفيفة)",
+            "calories": 45,
+            "protein": 0,
+            "carbs": 0,
+            "fats": 5
           }
         ]
       },
       {
         "day_or_meal": "Meal 2: وجبة قبل التمرين / الغداء",
-        "recipe_title": "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)",
+        "recipe_title": "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)",
         "target_macros": {
-          "protein_g": 70,
-          "carb_g": 57,
+          "protein_g": 54,
+          "carb_g": 76,
           "fat_g": 19,
-          "calories_kcal": 678
+          "calories_kcal": 691
         },
         "actual_macros": {
-          "protein_g": 70,
-          "carb_g": 57,
+          "protein_g": 54,
+          "carb_g": 76,
           "fat_g": 19,
-          "calories_kcal": 714
+          "calories_kcal": 724
         },
         "items": [
           {
@@ -1701,49 +1843,49 @@
           {
             "name_ar": "أرز بسمتي أبيض أو حبة طويلة مطبوخ",
             "category": "CARBS",
-            "portion_g": 189,
-            "household": "189 جم وزن مطبوخ (8 ملاعق طعام كبيرة)",
-            "calories": 246,
-            "protein": 5,
-            "carbs": 53,
+            "portion_g": 257,
+            "household": "257 جم وزن مطبوخ (10 ملاعق طعام كبيرة)",
+            "calories": 334,
+            "protein": 7,
+            "carbs": 72,
             "fats": 1
           },
           {
             "name_ar": "صدور دجاج متبلة مشوية على الجريل",
             "category": "PROTEIN",
-            "portion_g": 203,
-            "household": "203 جم وزن مطبوخ (حجم كف اليد ونصف)",
-            "calories": 335,
-            "protein": 63,
+            "portion_g": 145,
+            "household": "145 جم وزن مطبوخ (حجم كف اليد ونصف)",
+            "calories": 239,
+            "protein": 45,
             "carbs": 0,
-            "fats": 6
+            "fats": 4
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز للطهي والتتبيل",
             "category": "FATS",
-            "portion_g": 12,
-            "household": "12 جم (1 ملعقة طعام كبيرة)",
-            "calories": 108,
+            "portion_g": 14,
+            "household": "14 جم (1 ملعقة طعام كبيرة)",
+            "calories": 126,
             "protein": 0,
             "carbs": 0,
-            "fats": 12
+            "fats": 14
           }
         ]
       },
       {
         "day_or_meal": "Meal 3: وجبة العشاء / بعد التمرين",
-        "recipe_title": "طبق العشاء المتوازن والمريح للاستشفاء",
+        "recipe_title": "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)",
         "target_macros": {
-          "protein_g": 70,
-          "carb_g": 43,
+          "protein_g": 54,
+          "carb_g": 57,
           "fat_g": 19,
-          "calories_kcal": 621
+          "calories_kcal": 615
         },
         "actual_macros": {
-          "protein_g": 70,
-          "carb_g": 43,
-          "fat_g": 19,
-          "calories_kcal": 653
+          "protein_g": 54,
+          "carb_g": 57,
+          "fat_g": 17,
+          "calories_kcal": 606
         },
         "items": [
           {
@@ -1759,32 +1901,32 @@
           {
             "name_ar": "خبز بلدي مصري بالردة",
             "category": "CARBS",
-            "portion_g": 75,
-            "household": "75 جم (~0.9 رغيف بلدي)",
-            "calories": 195,
-            "protein": 7,
-            "carbs": 39,
+            "portion_g": 102,
+            "household": "102 جم (~1.2 رغيف بلدي)",
+            "calories": 265,
+            "protein": 9,
+            "carbs": 53,
             "fats": 1
           },
           {
-            "name_ar": "صدور دجاج مشوية خفيفة للعشاء",
+            "name_ar": "تونة لايت قطع مصفاة بالليمون والكمون",
             "category": "PROTEIN",
-            "portion_g": 197,
-            "household": "197 جم وزن مطبوخ (حجم كف اليد)",
-            "calories": 325,
-            "protein": 61,
+            "portion_g": 222,
+            "household": "222 جم مصفى (~1.9 علبة تونة)",
+            "calories": 190,
+            "protein": 43,
             "carbs": 0,
-            "fats": 6
+            "fats": 2
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز",
             "category": "FATS",
-            "portion_g": 12,
-            "household": "12 جم (1 ملعقة طعام كبيرة)",
-            "calories": 108,
+            "portion_g": 14,
+            "household": "14 جم (1 ملعقة طعام كبيرة)",
+            "calories": 126,
             "protein": 0,
             "carbs": 0,
-            "fats": 12
+            "fats": 14
           }
         ]
       }
@@ -1796,13 +1938,13 @@
         "mobility": "إحماء عام",
         "exercises": [
           {
-            "name": "جوبلت سكوات بالدمبل",
-            "code": "GOBLET_SQUAT",
+            "name": "دفع الأرجل على جهاز المكبس",
+            "code": "LEG_PRESS_MACHINE",
             "sets": 3,
-            "reps": "6-8",
+            "reps": "8-10",
             "rir": 3,
             "tempo": "2-0-1-0",
-            "rest": 150
+            "rest": 120
           },
           {
             "name": "بنش برس بالبار مستوي",
@@ -1866,6 +2008,15 @@
             "rest": 150
           },
           {
+            "name": "هيب ثرست بالبار للمؤخرة والأرداف",
+            "code": "BARBELL_HIP_THRUST",
+            "sets": 3,
+            "reps": "8-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "بنش برس مائل بالدمبل",
             "code": "INCLINE_DUMBBELL_BENCH_PRESS",
             "sets": 3,
@@ -1884,8 +2035,8 @@
             "rest": 90
           },
           {
-            "name": "جوبلت سكوات بالدمبل",
-            "code": "GOBLET_SQUAT",
+            "name": "دفع الأرجل على جهاز المكبس",
+            "code": "LEG_PRESS_MACHINE",
             "sets": 3,
             "reps": "8-10",
             "rir": 3,
@@ -1918,13 +2069,13 @@
         "mobility": "إحماء عام",
         "exercises": [
           {
-            "name": "جوبلت سكوات بالدمبل",
-            "code": "GOBLET_SQUAT",
+            "name": "هيب ثرست بالبار للمؤخرة والأرداف",
+            "code": "BARBELL_HIP_THRUST",
             "sets": 3,
             "reps": "8-10",
             "rir": 3,
             "tempo": "2-0-1-0",
-            "rest": 90
+            "rest": 120
           },
           {
             "name": "ضغط كتف بالبار واقفاً",
@@ -1934,6 +2085,15 @@
             "rir": 3,
             "tempo": "2-0-1-0",
             "rest": 120
+          },
+          {
+            "name": "MACHINE CHEST PRESS",
+            "code": "MACHINE_CHEST_PRESS",
+            "sets": 3,
+            "reps": "10-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
           },
           {
             "name": "سحب أرضي على الكيبل للظهر",
@@ -1998,7 +2158,7 @@
     "mealsSummary": [
       {
         "day_or_meal": "Meal 1: وجبة الإفطار",
-        "recipe_title": "سفرة الإفطار المتكاملة (بيض كامل مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
+        "recipe_title": "وجبة الإفطار (بيض مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
         "target_macros": {
           "protein_g": 48,
           "carb_g": 80,
@@ -2033,7 +2193,7 @@
             "fats": 0
           },
           {
-            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف (150 جم)",
+            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف",
             "category": "PROTEIN",
             "portion_g": 150,
             "household": "150 جم (نصف كوب متبل بالنعناع والزعتر - حجم مثالي مستساغ)",
@@ -2066,7 +2226,7 @@
       },
       {
         "day_or_meal": "Meal 2: وجبة قبل التمرين / الغداء",
-        "recipe_title": "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)",
+        "recipe_title": "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)",
         "target_macros": {
           "protein_g": 48,
           "carb_g": 107,
@@ -2124,7 +2284,7 @@
       },
       {
         "day_or_meal": "Meal 3: وجبة العشاء / بعد التمرين",
-        "recipe_title": "طبق العشاء المتوازن والمريح للاستشفاء",
+        "recipe_title": "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)",
         "target_macros": {
           "protein_g": 48,
           "carb_g": 80,
@@ -2197,13 +2357,13 @@
             "rest": 150
           },
           {
-            "name": "بنش برس بالبار مستوي",
-            "code": "BARBELL_BENCH_PRESS",
+            "name": "MACHINE CHEST PRESS",
+            "code": "MACHINE_CHEST_PRESS",
             "sets": 3,
-            "reps": "6-8",
+            "reps": "8-12",
             "rir": 3,
             "tempo": "2-0-1-0",
-            "rest": 120
+            "rest": 90
           },
           {
             "name": "تجديف مسنود الصدر للأعلى",
@@ -2258,13 +2418,22 @@
             "rest": 150
           },
           {
-            "name": "رفرفة جانبية للأكتاف بالدمبل",
-            "code": "DUMBBELL_LATERAL_RAISE",
+            "name": "هيب ثرست بالبار للمؤخرة والأرداف",
+            "code": "BARBELL_HIP_THRUST",
             "sets": 3,
-            "reps": "8-10",
+            "reps": "8-12",
             "rir": 3,
             "tempo": "2-0-1-0",
-            "rest": 120
+            "rest": 90
+          },
+          {
+            "name": "فلور بريس بالدمبل على الأرض",
+            "code": "DUMBBELL_FLOOR_PRESS",
+            "sets": 3,
+            "reps": "8-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
           },
           {
             "name": "سحب عالي للظهر قبضة واسعة",
@@ -2319,13 +2488,22 @@
             "rest": 90
           },
           {
-            "name": "رفرفة جانبية للأكتاف بالدمبل",
-            "code": "DUMBBELL_LATERAL_RAISE",
+            "name": "تدوير الكتف الخارجي (وقاية وتثبيت الكفة المدورة)",
+            "code": "ROTATOR_CUFF_EXTERNAL_ROTATION",
             "sets": 3,
-            "reps": "6-8",
+            "reps": "12-20",
             "rir": 3,
             "tempo": "2-0-1-0",
-            "rest": 120
+            "rest": 60
+          },
+          {
+            "name": "MACHINE CHEST PRESS",
+            "code": "MACHINE_CHEST_PRESS",
+            "sets": 3,
+            "reps": "10-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
           },
           {
             "name": "سحب أرضي على الكيبل للظهر",
@@ -2391,7 +2569,7 @@
     "mealsSummary": [
       {
         "day_or_meal": "Meal 1: وجبة الإفطار",
-        "recipe_title": "سفرة الإفطار المتكاملة (بيض كامل مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
+        "recipe_title": "وجبة الإفطار (بيض مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
         "target_macros": {
           "protein_g": 35,
           "carb_g": 85,
@@ -2399,10 +2577,10 @@
           "calories_kcal": 626
         },
         "actual_macros": {
-          "protein_g": 46,
+          "protein_g": 36,
           "carb_g": 85,
           "fat_g": 16,
-          "calories_kcal": 681
+          "calories_kcal": 628
         },
         "items": [
           {
@@ -2426,24 +2604,24 @@
             "fats": 0
           },
           {
-            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف (150 جم)",
+            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف",
             "category": "PROTEIN",
-            "portion_g": 150,
+            "portion_g": 58,
             "household": "150 جم (نصف كوب متبل بالنعناع والزعتر - حجم مثالي مستساغ)",
-            "calories": 113,
-            "protein": 18,
-            "carbs": 5,
-            "fats": 2
+            "calories": 44,
+            "protein": 7,
+            "carbs": 2,
+            "fats": 1
           },
           {
             "name_ar": "خبز بلدي مصري بالردة (قمح كامل)",
             "category": "CARBS",
-            "portion_g": 144,
-            "household": "144 جم (~1.7 رغيف بلدي متوسط)",
-            "calories": 374,
-            "protein": 13,
-            "carbs": 75,
-            "fats": 1
+            "portion_g": 150,
+            "household": "150 جم (~1.8 رغيف بلدي متوسط)",
+            "calories": 390,
+            "protein": 14,
+            "carbs": 78,
+            "fats": 2
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز (مسحة خفيفة للطهي أو تتبيل الوجبة)",
@@ -2459,7 +2637,7 @@
       },
       {
         "day_or_meal": "Meal 2: وجبة قبل التمرين / الغداء",
-        "recipe_title": "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)",
+        "recipe_title": "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)",
         "target_macros": {
           "protein_g": 35,
           "carb_g": 114,
@@ -2517,7 +2695,7 @@
       },
       {
         "day_or_meal": "Meal 3: وجبة العشاء / بعد التمرين",
-        "recipe_title": "طبق العشاء المتوازن والمريح للاستشفاء",
+        "recipe_title": "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)",
         "target_macros": {
           "protein_g": 35,
           "carb_g": 85,
@@ -2651,6 +2829,15 @@
             "rest": 150
           },
           {
+            "name": "هيب ثرست بالبار للمؤخرة والأرداف",
+            "code": "BARBELL_HIP_THRUST",
+            "sets": 3,
+            "reps": "8-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "بنش برس مائل بالدمبل",
             "code": "INCLINE_DUMBBELL_BENCH_PRESS",
             "sets": 3,
@@ -2719,6 +2906,15 @@
             "rir": 3,
             "tempo": "2-0-1-0",
             "rest": 120
+          },
+          {
+            "name": "MACHINE CHEST PRESS",
+            "code": "MACHINE_CHEST_PRESS",
+            "sets": 3,
+            "reps": "10-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
           },
           {
             "name": "سحب أرضي على الكيبل للظهر",
@@ -2784,7 +2980,7 @@
     "mealsSummary": [
       {
         "day_or_meal": "Meal 1: وجبة الإفطار",
-        "recipe_title": "سفرة الإفطار المتكاملة (بيض كامل مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
+        "recipe_title": "وجبة الإفطار (بيض مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
         "target_macros": {
           "protein_g": 53,
           "carb_g": 124,
@@ -2792,10 +2988,10 @@
           "calories_kcal": 924
         },
         "actual_macros": {
-          "protein_g": 60,
+          "protein_g": 53,
           "carb_g": 124,
           "fat_g": 24,
-          "calories_kcal": 967
+          "calories_kcal": 943
         },
         "items": [
           {
@@ -2819,40 +3015,40 @@
             "fats": 0
           },
           {
-            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف (150 جم)",
+            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف",
             "category": "PROTEIN",
-            "portion_g": 150,
+            "portion_g": 92,
             "household": "150 جم (نصف كوب متبل بالنعناع والزعتر - حجم مثالي مستساغ)",
-            "calories": 113,
-            "protein": 18,
-            "carbs": 5,
-            "fats": 2
+            "calories": 69,
+            "protein": 11,
+            "carbs": 3,
+            "fats": 1
           },
           {
             "name_ar": "خبز بلدي مصري بالردة (قمح كامل)",
             "category": "CARBS",
-            "portion_g": 219,
-            "household": "219 جم (~2.6 رغيف بلدي متوسط)",
-            "calories": 569,
+            "portion_g": 223,
+            "household": "223 جم (~2.6 رغيف بلدي متوسط)",
+            "calories": 580,
             "protein": 20,
-            "carbs": 114,
+            "carbs": 116,
             "fats": 2
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز (مسحة خفيفة للطهي أو تتبيل الوجبة)",
             "category": "FATS",
-            "portion_g": 5,
-            "household": "5 جم (1 ملعقة صغيرة / مسحة طهي خفيفة)",
-            "calories": 45,
+            "portion_g": 6,
+            "household": "6 جم (1 ملعقة صغيرة / مسحة طهي خفيفة)",
+            "calories": 54,
             "protein": 0,
             "carbs": 0,
-            "fats": 5
+            "fats": 6
           }
         ]
       },
       {
         "day_or_meal": "Meal 2: وجبة قبل التمرين / الغداء",
-        "recipe_title": "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)",
+        "recipe_title": "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)",
         "target_macros": {
           "protein_g": 53,
           "carb_g": 165,
@@ -2863,7 +3059,7 @@
           "protein_g": 53,
           "carb_g": 165,
           "fat_g": 24,
-          "calories_kcal": 1130
+          "calories_kcal": 1118
         },
         "items": [
           {
@@ -2879,38 +3075,48 @@
           {
             "name_ar": "أرز بسمتي أبيض أو حبة طويلة مطبوخ",
             "category": "CARBS",
-            "portion_g": 575,
-            "household": "575 جم وزن مطبوخ (23 ملاعق طعام كبيرة)",
-            "calories": 748,
-            "protein": 16,
-            "carbs": 161,
-            "fats": 2
+            "portion_g": 400,
+            "household": "400 جم مطبوخ",
+            "calories": 520,
+            "protein": 11,
+            "carbs": 112,
+            "fats": 1
+          },
+          {
+            "name_ar": "مكرونة مسلوقة (قمح كامل)",
+            "category": "CARBS",
+            "portion_g": 164,
+            "household": "164 جم مطبوخ",
+            "calories": 261,
+            "protein": 10,
+            "carbs": 49,
+            "fats": 3
           },
           {
             "name_ar": "صدور دجاج متبلة مشوية على الجريل",
             "category": "PROTEIN",
-            "portion_g": 113,
-            "household": "113 جم وزن مطبوخ (حجم كف اليد ونصف)",
-            "calories": 186,
-            "protein": 35,
+            "portion_g": 97,
+            "household": "97 جم مطبوخ",
+            "calories": 159,
+            "protein": 30,
             "carbs": 0,
             "fats": 3
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز للطهي والتتبيل",
             "category": "FATS",
-            "portion_g": 19,
-            "household": "19 جم (1 ملعقة طعام كبيرة)",
-            "calories": 171,
+            "portion_g": 17,
+            "household": "17 جم",
+            "calories": 153,
             "protein": 0,
             "carbs": 0,
-            "fats": 19
+            "fats": 17
           }
         ]
       },
       {
         "day_or_meal": "Meal 3: وجبة العشاء / بعد التمرين",
-        "recipe_title": "طبق العشاء المتوازن والمريح للاستشفاء",
+        "recipe_title": "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)",
         "target_macros": {
           "protein_g": 53,
           "carb_g": 124,
@@ -2976,18 +3182,18 @@
           {
             "name": "سكوات بالبار الخلفي للرجلين",
             "code": "BARBELL_BACK_SQUAT",
-            "sets": 3,
+            "sets": 4,
             "reps": "6-8",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 150
           },
           {
             "name": "بنش برس بالبار مستوي",
             "code": "BARBELL_BENCH_PRESS",
-            "sets": 3,
+            "sets": 4,
             "reps": "6-8",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 120
           },
@@ -2996,7 +3202,7 @@
             "code": "CHEST_SUPPORTED_ROW",
             "sets": 3,
             "reps": "8-10",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 90
           },
@@ -3005,7 +3211,7 @@
             "code": "SEATED_LEG_CURL",
             "sets": 3,
             "reps": "10-12",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 90
           },
@@ -3014,7 +3220,7 @@
             "code": "STANDING_CALF_RAISE",
             "sets": 3,
             "reps": "10-15",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 60
           },
@@ -3023,7 +3229,7 @@
             "code": "CABLE_LATERAL_RAISE",
             "sets": 3,
             "reps": "12-15",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 60
           },
@@ -3032,7 +3238,7 @@
             "code": "TRICEPS_ROPE_PUSHDOWN",
             "sets": 3,
             "reps": "12-15",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 60
           },
@@ -3041,7 +3247,7 @@
             "code": "DUMBBELL_HAMMER_CURL",
             "sets": 3,
             "reps": "12-15",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 60
           }
@@ -3055,18 +3261,27 @@
           {
             "name": "ديدليفت روماني بالدمبل للخلفيات",
             "code": "DUMBBELL_ROMANIAN_DEADLIFT",
-            "sets": 3,
+            "sets": 4,
             "reps": "6-8",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 150
+          },
+          {
+            "name": "هيب ثرست بالبار للمؤخرة والأرداف",
+            "code": "BARBELL_HIP_THRUST",
+            "sets": 4,
+            "reps": "8-12",
+            "rir": 2,
+            "tempo": "2-0-1-0",
+            "rest": 90
           },
           {
             "name": "بنش برس مائل بالدمبل",
             "code": "INCLINE_DUMBBELL_BENCH_PRESS",
             "sets": 3,
             "reps": "8-10",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 120
           },
@@ -3075,16 +3290,16 @@
             "code": "LAT_PULLDOWN",
             "sets": 3,
             "reps": "8-10",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 90
           },
           {
             "name": "دفع الأرجل على جهاز المكبس",
             "code": "LEG_PRESS_MACHINE",
-            "sets": 3,
+            "sets": 4,
             "reps": "8-10",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 120
           },
@@ -3093,7 +3308,7 @@
             "code": "INCLINE_DUMBBELL_CURL",
             "sets": 3,
             "reps": "10-12",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 60
           },
@@ -3102,7 +3317,7 @@
             "code": "OVERHEAD_CABLE_TRICEPS_EXTENSION",
             "sets": 3,
             "reps": "10-12",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 60
           }
@@ -3118,25 +3333,34 @@
             "code": "BULGARIAN_SPLIT_SQUAT",
             "sets": 3,
             "reps": "8-10",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 90
           },
           {
             "name": "ضغط كتف بالبار واقفاً",
             "code": "BARBELL_OVERHEAD_PRESS",
-            "sets": 3,
+            "sets": 4,
             "reps": "6-8",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 120
+          },
+          {
+            "name": "MACHINE CHEST PRESS",
+            "code": "MACHINE_CHEST_PRESS",
+            "sets": 3,
+            "reps": "10-12",
+            "rir": 2,
+            "tempo": "2-0-1-0",
+            "rest": 90
           },
           {
             "name": "سحب أرضي على الكيبل للظهر",
             "code": "SEATED_CABLE_ROW",
             "sets": 3,
             "reps": "10-12",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 90
           },
@@ -3145,7 +3369,7 @@
             "code": "LYING_LEG_CURL_MACHINE",
             "sets": 3,
             "reps": "10-12",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 90
           },
@@ -3154,7 +3378,7 @@
             "code": "DUMBBELL_LATERAL_RAISE",
             "sets": 4,
             "reps": "12-15",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 60
           },
@@ -3163,7 +3387,7 @@
             "code": "FACE_PULL",
             "sets": 3,
             "reps": "12-15",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 60
           },
@@ -3172,7 +3396,7 @@
             "code": "HANGING_LEG_RAISE",
             "sets": 3,
             "reps": "12-15",
-            "rir": 3,
+            "rir": 2,
             "tempo": "2-0-1-0",
             "rest": 60
           }
@@ -3180,7 +3404,7 @@
       }
     ],
     "timelineEvents": {
-      "meso1_and_meso2_progression": "الميزوسايكل الأول: تدرج الحمل من الأسبوع الأول (RIR 3) إلى ذروة الأسبوع الرابع (RIR 0)، يليه أسبوع الديلود الخامس (RIR 4). الميزوسايكل الثاني تم بناؤه وتدويره بنجاح."
+      "meso1_and_meso2_progression": "الميزوسايكل الأول: تدرج الحمل من الأسبوع الأول (RIR 2) إلى ذروة الأسبوع الرابع (RIR 1)، يليه أسبوع الديلود الخامس (RIR 4). الميزوسايكل الثاني تم بناؤه وتدويره بنجاح."
     },
     "errors": []
   },
@@ -3204,7 +3428,7 @@
     "mealsSummary": [
       {
         "day_or_meal": "Meal 1: وجبة الإفطار",
-        "recipe_title": "سفرة الإفطار المتكاملة (بيض كامل مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
+        "recipe_title": "وجبة الإفطار (بيض مع جبن قريش متبل بالزعتر وخبز بلدي وسلطة)",
         "target_macros": {
           "protein_g": 62,
           "carb_g": 72,
@@ -3239,7 +3463,7 @@
             "fats": 0
           },
           {
-            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف (150 جم)",
+            "name_ar": "جبن قريش طبيعي متبل برشة زعتر وزيت زيتون خفيف",
             "category": "PROTEIN",
             "portion_g": 150,
             "household": "150 جم (نصف كوب متبل بالنعناع والزعتر - حجم مثالي مستساغ)",
@@ -3259,7 +3483,7 @@
             "fats": 1
           },
           {
-            "name_ar": "صدور دجاج مشوية خفيفة للإفطار (شريحة إضافية لتغطية البروتين)",
+            "name_ar": "صدور دجاج مشوية خفيفة للإفطار",
             "category": "PROTEIN",
             "portion_g": 35,
             "household": "35 جم وزن مطبوخ (شريحة خفيفة)",
@@ -3272,7 +3496,7 @@
       },
       {
         "day_or_meal": "Meal 2: وجبة قبل التمرين / الغداء",
-        "recipe_title": "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)",
+        "recipe_title": "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)",
         "target_macros": {
           "protein_g": 62,
           "carb_g": 96,
@@ -3330,7 +3554,7 @@
       },
       {
         "day_or_meal": "Meal 3: وجبة العشاء / بعد التمرين",
-        "recipe_title": "طبق العشاء المتوازن والمريح للاستشفاء",
+        "recipe_title": "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)",
         "target_macros": {
           "protein_g": 62,
           "carb_g": 72,
@@ -3340,8 +3564,8 @@
         "actual_macros": {
           "protein_g": 62,
           "carb_g": 72,
-          "fat_g": 18,
-          "calories_kcal": 730
+          "fat_g": 15,
+          "calories_kcal": 684
         },
         "items": [
           {
@@ -3365,14 +3589,14 @@
             "fats": 1
           },
           {
-            "name_ar": "صدور دجاج مشوية خفيفة للعشاء",
+            "name_ar": "تونة لايت قطع مصفاة بالليمون والكمون",
             "category": "PROTEIN",
-            "portion_g": 155,
-            "household": "155 جم وزن مطبوخ (حجم كف اليد)",
-            "calories": 256,
+            "portion_g": 248,
+            "household": "248 جم مصفى (~2.1 علبة تونة)",
+            "calories": 210,
             "protein": 48,
             "carbs": 0,
-            "fats": 5
+            "fats": 2
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز",
@@ -3464,6 +3688,15 @@
             "rest": 150
           },
           {
+            "name": "هيب ثرست بالبار للمؤخرة والأرداف",
+            "code": "BARBELL_HIP_THRUST",
+            "sets": 3,
+            "reps": "8-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "بنش برس مائل بالدمبل",
             "code": "INCLINE_DUMBBELL_BENCH_PRESS",
             "sets": 3,
@@ -3532,6 +3765,15 @@
             "rir": 3,
             "tempo": "2-0-1-0",
             "rest": 120
+          },
+          {
+            "name": "MACHINE CHEST PRESS",
+            "code": "MACHINE_CHEST_PRESS",
+            "sets": 3,
+            "reps": "10-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
           },
           {
             "name": "سحب أرضي على الكيبل للظهر",
@@ -3599,7 +3841,7 @@
     "mealsSummary": [
       {
         "day_or_meal": "Meal 1: وجبة الإفطار",
-        "recipe_title": "سفرة الإفطار المتكاملة الخالية من الجلوتين (بيض كامل مع صدور دجاج وبطاطس مشوية وسلطة خضراء)",
+        "recipe_title": "وجبة الإفطار (بيض مع صدور دجاج وبطاطس مشوية وسلطة)",
         "target_macros": {
           "protein_g": 50,
           "carb_g": 121,
@@ -3608,9 +3850,9 @@
         },
         "actual_macros": {
           "protein_g": 50,
-          "carb_g": 121,
-          "fat_g": 23,
-          "calories_kcal": 910
+          "carb_g": 123,
+          "fat_g": 24,
+          "calories_kcal": 923
         },
         "items": [
           {
@@ -3636,38 +3878,48 @@
           {
             "name_ar": "بطاطس ودجز مشوية بالأعشاب في الإيرفراير (خالية من الجلوتين)",
             "category": "CARBS",
-            "portion_g": 580,
-            "household": "580 جم (حوالي 4 ثمرات بطاطس مشوية بالأعشاب)",
-            "calories": 522,
-            "protein": 12,
-            "carbs": 116,
+            "portion_g": 400,
+            "household": "400 جم",
+            "calories": 360,
+            "protein": 8,
+            "carbs": 80,
             "fats": 0
           },
           {
-            "name_ar": "صدور دجاج مشوية خفيفة للإفطار (شريحة إضافية لتغطية البروتين)",
+            "name_ar": "كينوا مسلوقة",
+            "category": "CARBS",
+            "portion_g": 179,
+            "household": "179 جم",
+            "calories": 214,
+            "protein": 8,
+            "carbs": 38,
+            "fats": 3
+          },
+          {
+            "name_ar": "صدور دجاج مشوية خفيفة للإفطار",
             "category": "PROTEIN",
-            "portion_g": 74,
-            "household": "74 جم وزن مطبوخ (شريحة خفيفة)",
-            "calories": 122,
-            "protein": 23,
+            "portion_g": 61,
+            "household": "61 جم مطبوخ",
+            "calories": 101,
+            "protein": 19,
             "carbs": 0,
             "fats": 2
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز (مسحة خفيفة للطهي أو تتبيل الوجبة)",
             "category": "FATS",
-            "portion_g": 11,
-            "household": "11 جم (1 ملعقة صغيرة / مسحة طهي خفيفة)",
-            "calories": 99,
+            "portion_g": 9,
+            "household": "9 جم",
+            "calories": 81,
             "protein": 0,
             "carbs": 0,
-            "fats": 11
+            "fats": 9
           }
         ]
       },
       {
         "day_or_meal": "Meal 2: وجبة قبل التمرين / الغداء",
-        "recipe_title": "طبق القوة والأداء العضلي (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه مشكل)",
+        "recipe_title": "وجبة الغداء (صدور دجاج مشوية مع أرز بسمتي وخضار سوتيه)",
         "target_macros": {
           "protein_g": 50,
           "carb_g": 162,
@@ -3675,10 +3927,10 @@
           "calories_kcal": 1056
         },
         "actual_macros": {
-          "protein_g": 50,
+          "protein_g": 49,
           "carb_g": 162,
-          "fat_g": 23,
-          "calories_kcal": 1090
+          "fat_g": 22,
+          "calories_kcal": 1080
         },
         "items": [
           {
@@ -3694,12 +3946,22 @@
           {
             "name_ar": "أرز بسمتي أبيض أو حبة طويلة مطبوخ",
             "category": "CARBS",
-            "portion_g": 564,
-            "household": "564 جم وزن مطبوخ (23 ملاعق طعام كبيرة)",
-            "calories": 733,
-            "protein": 16,
-            "carbs": 158,
-            "fats": 2
+            "portion_g": 400,
+            "household": "400 جم مطبوخ",
+            "calories": 520,
+            "protein": 11,
+            "carbs": 112,
+            "fats": 1
+          },
+          {
+            "name_ar": "أرز مصري مطبوخ بالشعرية الخفيفة",
+            "category": "CARBS",
+            "portion_g": 161,
+            "household": "161 جم مطبوخ",
+            "calories": 203,
+            "protein": 4,
+            "carbs": 46,
+            "fats": 0
           },
           {
             "name_ar": "صدور دجاج متبلة مشوية على الجريل",
@@ -3725,7 +3987,7 @@
       },
       {
         "day_or_meal": "Meal 3: وجبة العشاء / بعد التمرين",
-        "recipe_title": "طبق العشاء المتوازن والمريح للاستشفاء",
+        "recipe_title": "وجبة العشاء (صدور دجاج مشوية مع بطاطس مشوية وسلطة)",
         "target_macros": {
           "protein_g": 50,
           "carb_g": 121,
@@ -3734,9 +3996,9 @@
         },
         "actual_macros": {
           "protein_g": 50,
-          "carb_g": 121,
-          "fat_g": 23,
-          "calories_kcal": 923
+          "carb_g": 123,
+          "fat_g": 24,
+          "calories_kcal": 919
         },
         "items": [
           {
@@ -3752,32 +4014,42 @@
           {
             "name_ar": "بطاطس ودجز مشوية بالأعشاب في الإيرفراير (خالية من الجلوتين)",
             "category": "CARBS",
-            "portion_g": 585,
-            "household": "585 جم (حوالي 4 ثمرات بطاطس مشوية بالأعشاب)",
-            "calories": 527,
-            "protein": 12,
-            "carbs": 117,
+            "portion_g": 400,
+            "household": "400 جم",
+            "calories": 360,
+            "protein": 8,
+            "carbs": 80,
             "fats": 0
           },
           {
-            "name_ar": "صدور دجاج مشوية خفيفة للعشاء",
-            "category": "PROTEIN",
-            "portion_g": 116,
-            "household": "116 جم وزن مطبوخ (حجم كف اليد)",
-            "calories": 191,
-            "protein": 36,
-            "carbs": 0,
+            "name_ar": "كينوا مسلوقة",
+            "category": "CARBS",
+            "portion_g": 184,
+            "household": "184 جم",
+            "calories": 221,
+            "protein": 8,
+            "carbs": 39,
             "fats": 3
+          },
+          {
+            "name_ar": "لحم حاشي (إبل) هبرة خالي الشحم متبل بالبهارات العربية",
+            "category": "PROTEIN",
+            "portion_g": 114,
+            "household": "114 جم مطبوخ",
+            "calories": 160,
+            "protein": 32,
+            "carbs": 0,
+            "fats": 4
           },
           {
             "name_ar": "زيت زيتون بكر ممتاز",
             "category": "FATS",
-            "portion_g": 20,
-            "household": "20 جم (1 ملعقة طعام كبيرة)",
-            "calories": 180,
+            "portion_g": 17,
+            "household": "17 جم",
+            "calories": 153,
             "protein": 0,
             "carbs": 0,
-            "fats": 20
+            "fats": 17
           }
         ]
       }
@@ -3859,6 +4131,15 @@
             "rest": 150
           },
           {
+            "name": "هيب ثرست بالبار للمؤخرة والأرداف",
+            "code": "BARBELL_HIP_THRUST",
+            "sets": 3,
+            "reps": "8-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
+          },
+          {
             "name": "بنش برس مائل بالدمبل",
             "code": "INCLINE_DUMBBELL_BENCH_PRESS",
             "sets": 3,
@@ -3927,6 +4208,15 @@
             "rir": 3,
             "tempo": "2-0-1-0",
             "rest": 120
+          },
+          {
+            "name": "MACHINE CHEST PRESS",
+            "code": "MACHINE_CHEST_PRESS",
+            "sets": 3,
+            "reps": "10-12",
+            "rir": 3,
+            "tempo": "2-0-1-0",
+            "rest": 90
           },
           {
             "name": "سحب أرضي على الكيبل للظهر",

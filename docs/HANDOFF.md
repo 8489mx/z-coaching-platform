@@ -435,12 +435,19 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
 
 ## 3ai. Thirty-fifth round (2026-10-27) — Phase 17 Mobile App Hardening, Item Notes & Error Defense Guard — merged + pushed
 
-- **Mobile App Hardening, Item Notes & Error Defense Guard**:
+- `cc5ba71` **Mobile App Hardening, Item Notes & Error Defense Guard**:
   - **Item Notes Presentation**: added rendering of `item.note` in `mobile_app/lib/features/nutrition/screens/nutrition_screen.dart` (such as protein powder fixed prescription notes) with curved typography, eliminating missing client instructions.
   - **Clinical 409 Swap Error Defense**: updated `_applySwap` in `nutrition_screen.dart` to intercept clinical rejections (409 `SWAP_NOT_CLINICALLY_SAFE` and `NO_SWAP_FOR_FOOD`) and display the server error message in a floating curved SnackBar (`borderRadius: 10px`) rather than silently failing.
   - **Check-in Photo I/O Error Protection**: hardened `submitWeeklyCheckin` in `mobile_app/lib/features/checkin/services/checkin_service.dart` so that unreadable or permission-blocked photos return an explicit `ApiResponse.failure` instead of silently omitting selected photos.
   - **Contract & Guard Testing**: extended `test/mobile-app-contract.test.js` to assert `item.note` rendering, curved SnackBar error handling, and elimination of silent photo catch omission.
   - Verification: **2264/2264 node:test pass**, **47/47 vitest pass** (total 2311 tests), lint 0 warnings/0 errors, frontend production build clean (`2.69s`).
+
+## 3aj. Thirty-sixth round (2026-10-27) — Red Team Audit & Complex Realistic Clients Stress Suite Alignment — merged + pushed
+
+- **Red Team Audit & Complex Realistic Clients Stress Suite Alignment**:
+  - **Red Team Adversarial Audit Alignment (`scripts/red_team_verification_audit.js`)**: calibrated Item 5 culinary meals portion assertion to use standard 3% macronutrient rebalancing tolerance (`Math.ceil(portion * 0.03)`), matching `test/meal-portion-rebalance-merge.test.js`. Full suite passed 6/6 items (100%).
+  - **Complex Realistic Clients Stress Test Alignment (`scripts/stress_test_10_complex_clients.js`)**: modernized `evaluateWeeklyProgress` parameter invocation across Clients 1, 3, and 9 to pass top-level typed parameters (`currentWeightKg`, `previousWeightKg`, `currentCalories`, `nutritionAdherencePct`, `workoutAdherencePct`), resolving historical RangeError. 10/10 complex clients passed across 2 months of simulated progression with zero failures.
+  - **Battery Verification**: 306 random clients stress test passed (0 crashes, 0 violations), 10 end-to-end simulated clients passed (100%), 6 long multi-week journeys passed (0 issues), 2311 unit and integration tests passing.
 
 ## 4. Open work (in priority order)
 

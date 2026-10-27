@@ -149,14 +149,12 @@ async function runAll10StressTests() {
     });
 
     const checkin1_audit = evaluateWeeklyProgress({
-      currentCheckin: {
-        weight_kg: 89.2,
-        previous_weight_kg: 90.0,
-        nutrition_adherence_percent: 95,
-        workouts_completed: 3,
-        workouts_scheduled: 3,
-        occupation_type: "DESK_OFFICE"
-      }
+      currentWeightKg: 89.2,
+      previousWeightKg: 90.0,
+      currentCalories: c1_calories,
+      nutritionAdherencePct: 95,
+      workoutAdherencePct: 100,
+      occupationType: "DESK_OFFICE"
     });
 
     results.push({
@@ -293,14 +291,14 @@ async function runAll10StressTests() {
 
     // Check checkin behavior for pregnancy: weight gain should NEVER trigger calorie deficit
     const checkin3_audit = evaluateWeeklyProgress({
-      currentCheckin: {
-        weight_kg: 69.5, // Gained 1.5kg in pregnancy
-        previous_weight_kg: 68.0,
-        nutrition_adherence_percent: 92,
-        workouts_completed: 3,
-        workouts_scheduled: 3,
-        lifestyle_variance: "NORMAL_WORK"
-      }
+      currentWeightKg: 69.5, // Gained 1.5kg in pregnancy
+      previousWeightKg: 68.0,
+      currentCalories: c3_calories,
+      nutritionAdherencePct: 92,
+      workoutAdherencePct: 100,
+      lifestyleVariance: "NORMAL_WORK",
+      isFemale: true,
+      goalType: "MAINTENANCE"
     });
 
     results.push({
@@ -686,15 +684,13 @@ async function runAll10StressTests() {
     });
 
     const checkin9_audit = evaluateWeeklyProgress({
-      currentCheckin: {
-        weight_kg: 85.0,
-        previous_weight_kg: 85.0,
-        nutrition_adherence_percent: 95,
-        workouts_completed: 4,
-        workouts_scheduled: 4,
-        lifestyle_variance: "HOME_VACATION",
-        occupation_type: "FIELD_MOBILE"
-      }
+      currentWeightKg: 85.0,
+      previousWeightKg: 85.0,
+      currentCalories: c9_calories,
+      nutritionAdherencePct: 95,
+      workoutAdherencePct: 100,
+      lifestyleVariance: "HOME_VACATION",
+      occupationType: "FIELD_MOBILE"
     });
 
     const neatLockActive = checkin9_eval.analysis_status === "OCCUPATIONAL_NEAT_LOCK" ||
