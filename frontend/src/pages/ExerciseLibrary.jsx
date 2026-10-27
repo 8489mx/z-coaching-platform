@@ -921,9 +921,9 @@ export default function ExerciseLibrary() {
             <small style={{ fontSize: '11.5px', color: '#64748B' }}>جرب تغيير العضلة أو الأداة أو فلتر الأمان الطبي.</small>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: '14px' }}>
             {exercises.map((ex) => {
-              const currentExpanded = expandedView[ex.id];
+              const currentExpanded = expandedView[ex.id] !== undefined ? expandedView[ex.id] : 'CUES';
               const isVideoCopied = copiedKey === `VIDEO_${ex.id}`;
               const displayNames = getExerciseDisplayNames(ex);
 

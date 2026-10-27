@@ -565,7 +565,7 @@ export default function MobilityLibrary() {
         </div>
 
         {/* 3. Spacious Standard Cards Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: '14px' }}>
           {filteredDrills.map((drill) => {
             const isCardio = drill.category === 'CARDIO_MODALITY';
             const isWarmup = drill.category === 'DYNAMIC_WARMUP';
@@ -787,22 +787,22 @@ export default function MobilityLibrary() {
 
                   {/* Expandable Technique Box (with In-Header Copy Button) */}
                   {currentExpanded === 'CUES' && (
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRight: '3px solid #0F172A', padding: '8px 10px', borderRadius: '10px', fontSize: '11.5px', color: '#334155', lineHeight: 1.45 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Check size={11} />
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRight: '3.5px solid #0F172A', padding: '10px 12px', borderRadius: '12px', fontSize: '12.5px', color: '#1E293B', lineHeight: 1.65 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Check size={12} strokeWidth={2.5} />
                           <span>التوجيه الحركي للأداء:</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleCopyDirect(drill.cue_ar, `CUES_${drill.id}`, 'تم نسخ التوجيه الحركي')}
                           style={{
-                            padding: '2px 7px',
+                            padding: '2.5px 8px',
                             borderRadius: '9999px',
                             border: copiedKey === `CUES_${drill.id}` ? '1px solid #86EFAC' : '1px solid #CBD5E1',
                             background: copiedKey === `CUES_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
-                            color: copiedKey === `CUES_${drill.id}` ? '#16A34A' : '#475569',
-                            fontSize: '10.5px',
+                            color: copiedKey === `CUES_${drill.id}` ? '#16A34A' : '#334155',
+                            fontSize: '11px',
                             fontWeight: 700,
                             cursor: 'pointer',
                             display: 'inline-flex',
@@ -812,11 +812,11 @@ export default function MobilityLibrary() {
                           }}
                           title="نسخ نص التوجيه"
                         >
-                          {copiedKey === `CUES_${drill.id}` ? <CheckCircle2 size={10} color="#16A34A" /> : <Copy size={10} />}
+                          {copiedKey === `CUES_${drill.id}` ? <CheckCircle2 size={11} color="#16A34A" /> : <Copy size={11} />}
                           <span>{copiedKey === `CUES_${drill.id}` ? 'تم النسخ' : 'نسخ'}</span>
                         </button>
                       </div>
-                      <p style={{ margin: 0 }}>
+                      <p style={{ margin: 0, fontWeight: 500 }}>
                         {drill.cue_ar}
                       </p>
                     </div>
@@ -824,22 +824,22 @@ export default function MobilityLibrary() {
 
                   {/* Expandable Injury Prevention Box (with In-Header Copy Button) */}
                   {currentExpanded === 'MISTAKES' && (
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRight: '3px solid #D97706', padding: '8px 10px', borderRadius: '10px', fontSize: '11.5px', color: '#78350F', lineHeight: 1.45 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#B45309', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <AlertTriangle size={11} />
+                    <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRight: '3.5px solid #D97706', padding: '10px 12px', borderRadius: '12px', fontSize: '12.5px', color: '#78350F', lineHeight: 1.65 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: '#92400E', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <AlertTriangle size={12} />
                           <span>الأثر الفسيولوجي والوقاية:</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleCopyDirect(drill.scientific_benefit_ar, `MISTAKES_${drill.id}`, 'تم نسخ الأثر الوقائي')}
                           style={{
-                            padding: '2px 7px',
+                            padding: '2.5px 8px',
                             borderRadius: '9999px',
                             border: copiedKey === `MISTAKES_${drill.id}` ? '1px solid #86EFAC' : '1px solid #FDE68A',
                             background: copiedKey === `MISTAKES_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
-                            color: copiedKey === `MISTAKES_${drill.id}` ? '#16A34A' : '#B45309',
-                            fontSize: '10.5px',
+                            color: copiedKey === `MISTAKES_${drill.id}` ? '#16A34A' : '#92400E',
+                            fontSize: '11px',
                             fontWeight: 700,
                             cursor: 'pointer',
                             display: 'inline-flex',
@@ -849,11 +849,11 @@ export default function MobilityLibrary() {
                           }}
                           title="نسخ نص الأثر والوقاية"
                         >
-                          {copiedKey === `MISTAKES_${drill.id}` ? <CheckCircle2 size={10} color="#16A34A" /> : <Copy size={10} />}
+                          {copiedKey === `MISTAKES_${drill.id}` ? <CheckCircle2 size={11} color="#16A34A" /> : <Copy size={11} />}
                           <span>{copiedKey === `MISTAKES_${drill.id}` ? 'تم النسخ' : 'نسخ'}</span>
                         </button>
                       </div>
-                      <p style={{ margin: 0 }}>
+                      <p style={{ margin: 0, fontWeight: 500 }}>
                         {drill.scientific_benefit_ar || 'يعزز المدى الحركي وصحة المفاصل والأنسجة ويحمي من الإصابات.'}
                       </p>
                     </div>
@@ -861,22 +861,22 @@ export default function MobilityLibrary() {
 
                   {/* Expandable Target Area Box (with In-Header Copy Button) */}
                   {currentExpanded === 'TARGET' && (
-                    <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRight: '3px solid #0284C7', padding: '8px 10px', borderRadius: '10px', fontSize: '11.5px', color: '#0C4A6E', lineHeight: 1.45 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#0284C7', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Target size={11} />
+                    <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRight: '3.5px solid #0284C7', padding: '10px 12px', borderRadius: '12px', fontSize: '12.5px', color: '#0C4A6E', lineHeight: 1.65 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: '#0284C7', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Target size={12} />
                           <span>منطقة التركيز والمعدل:</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleCopyDirect(drill.target_area_ar, `TARGET_${drill.id}`, 'تم نسخ منطقة التركيز')}
                           style={{
-                            padding: '2px 7px',
+                            padding: '2.5px 8px',
                             borderRadius: '9999px',
                             border: copiedKey === `TARGET_${drill.id}` ? '1px solid #86EFAC' : '1px solid #BAE6FD',
                             background: copiedKey === `TARGET_${drill.id}` ? '#F0FDF4' : '#FFFFFF',
                             color: copiedKey === `TARGET_${drill.id}` ? '#16A34A' : '#0284C7',
-                            fontSize: '10.5px',
+                            fontSize: '11px',
                             fontWeight: 700,
                             cursor: 'pointer',
                             display: 'inline-flex',
@@ -886,7 +886,7 @@ export default function MobilityLibrary() {
                           }}
                           title="نسخ منطقة التركيز"
                         >
-                          {copiedKey === `TARGET_${drill.id}` ? <CheckCircle2 size={10} color="#16A34A" /> : <Copy size={10} />}
+                          {copiedKey === `TARGET_${drill.id}` ? <CheckCircle2 size={11} color="#16A34A" /> : <Copy size={11} />}
                           <span>{copiedKey === `TARGET_${drill.id}` ? 'تم النسخ' : 'نسخ'}</span>
                         </button>
                       </div>
@@ -894,7 +894,7 @@ export default function MobilityLibrary() {
                         {drill.target_area_ar}
                       </p>
                       {(drill.reps || drill.duration_seconds || drill.hold_seconds) && (
-                        <div style={{ marginTop: '5px', fontSize: '10.5px', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <div style={{ marginTop: '5px', fontSize: '11px', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <Clock size={11} />
                           <span>المعدل الموصى به: <strong>{drill.reps || (drill.duration_seconds ? `${Math.round(drill.duration_seconds / 60)} دقيقة` : (drill.hold_seconds ? `${drill.hold_seconds} ثانية ثبات` : 'حسب الخطة'))}</strong></span>
                         </div>
@@ -907,7 +907,7 @@ export default function MobilityLibrary() {
                 <div style={{
                   background: '#F1F5F9',
                   padding: '3px',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   border: '1px solid #E2E8F0',
                   display: 'grid',
                   gridTemplateColumns: 'repeat(3, 1fr)',
@@ -919,25 +919,25 @@ export default function MobilityLibrary() {
                     type="button"
                     onClick={() => toggleCardView(drill.id, 'CUES')}
                     style={{
-                      padding: '6px 4px',
-                      borderRadius: '8px',
+                      padding: '7px 4px',
+                      borderRadius: '9px',
                       border: 'none',
                       background: currentExpanded === 'CUES' ? '#0F172A' : 'transparent',
                       color: currentExpanded === 'CUES' ? '#FFFFFF' : '#475569',
-                      fontSize: '11px',
+                      fontSize: '11.5px',
                       fontWeight: currentExpanded === 'CUES' ? 800 : 700,
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '4px',
+                      gap: '5px',
                       boxShadow: currentExpanded === 'CUES' ? '0 1px 3px rgba(15, 23, 42, 0.15)' : 'none',
                       transition: 'all 0.15s ease',
                       whiteSpace: 'nowrap'
                     }}
                     title="عرض / إخفاء التوجيه الحركي والتكنيك"
                   >
-                    <BookOpen size={11} />
+                    <BookOpen size={12} />
                     <span>التكنيك</span>
                   </button>
 
@@ -946,25 +946,25 @@ export default function MobilityLibrary() {
                     type="button"
                     onClick={() => toggleCardView(drill.id, 'MISTAKES')}
                     style={{
-                      padding: '6px 4px',
-                      borderRadius: '8px',
+                      padding: '7px 4px',
+                      borderRadius: '9px',
                       border: 'none',
                       background: currentExpanded === 'MISTAKES' ? '#FFFBEB' : 'transparent',
                       color: currentExpanded === 'MISTAKES' ? '#B45309' : '#64748B',
-                      fontSize: '11px',
+                      fontSize: '11.5px',
                       fontWeight: currentExpanded === 'MISTAKES' ? 800 : 700,
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '4px',
+                      gap: '5px',
                       boxShadow: currentExpanded === 'MISTAKES' ? '0 1px 3px rgba(180, 83, 9, 0.15)' : 'none',
                       transition: 'all 0.15s ease',
                       whiteSpace: 'nowrap'
                     }}
                     title="عرض / إخفاء تجنب الإصابات والأثر الوقائي"
                   >
-                    <AlertTriangle size={11} />
+                    <AlertTriangle size={12} />
                     <span>تجنب الإصابات</span>
                   </button>
 
@@ -973,25 +973,25 @@ export default function MobilityLibrary() {
                     type="button"
                     onClick={() => toggleCardView(drill.id, 'TARGET')}
                     style={{
-                      padding: '6px 4px',
-                      borderRadius: '8px',
+                      padding: '7px 4px',
+                      borderRadius: '9px',
                       border: 'none',
                       background: currentExpanded === 'TARGET' ? '#F0F9FF' : 'transparent',
                       color: currentExpanded === 'TARGET' ? '#0284C7' : '#64748B',
-                      fontSize: '11px',
+                      fontSize: '11.5px',
                       fontWeight: currentExpanded === 'TARGET' ? 800 : 700,
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '4px',
+                      gap: '5px',
                       boxShadow: currentExpanded === 'TARGET' ? '0 1px 3px rgba(2, 132, 199, 0.15)' : 'none',
                       transition: 'all 0.15s ease',
                       whiteSpace: 'nowrap'
                     }}
                     title="عرض / إخفاء منطقة التركيز والاستهداف"
                   >
-                    <Target size={11} />
+                    <Target size={12} />
                     <span>التركيز</span>
                   </button>
                 </div>
