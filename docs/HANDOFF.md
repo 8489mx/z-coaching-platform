@@ -9,7 +9,7 @@ Everything below is merged into `main` and pushed to GitHub (`8489mx/z-coaching-
 
 1. Read `AI_RULES.md` (how any AI tool must work and prove its work), `CLAUDE.md` (standing iron rules) and this file. Old docs are in `docs/archive/` (history only).
 2. Run the full check and confirm the baseline before touching anything:
-   - `npm.cmd test` (Windows) — expected: node:test **2183/2183 pass**, vitest **47/47 pass**, lint 0.
+   - `npm.cmd test` (Windows) — expected: node:test **2191/2191 pass**, vitest **47/47 pass**, lint 0.
    - In a git worktree: link `node_modules` and `frontend/node_modules` to `D:/zcc`'s (junctions), copy `.env` (ignored), and build the frontend once — `test/hostinger-deployment-readiness.test.js` fails without `frontend/dist`.
    - `cd frontend && npm.cmd run build` — expected: builds.
    - Tests need the env: they load `D:/zcc/.env` (never print its values). Scripts: `node --env-file=.env <script>`.
@@ -315,6 +315,17 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **Operational Workflow Parity**: connected `Customers.jsx` table actions to trigger contextual templates (`rescue_overdue` for overdue clients, `renewal` for expiring clients) and handle custom text from the drawer seamlessly.
   - Guarded by `test/client-retention-and-whatsapp-triage-guard.test.js` (6 comprehensive domain tests).
 - Verification: **2183/2183 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`2.75s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
+
+## 3z. Twenty-sixth round (2026-10-27) — Phase 8 Intake Preflight Shield & 1-Click Plan Automation (Units B & C, tasks B-01..B-04 & C-01..C-04) — merged + pushed
+
+- `a525f29` **Intake Preflight Shield & 1-Click Plan Automation (Units B & C, tasks B-01..B-04 & C-01..C-04)**:
+  - **Clinical & Biomechanical Preflight Engine**: created `frontend/src/utils/intakePreflightEngine.js` (re-exported by `src/execution-engines/intake-preflight-engine.js` and registered in `LIVE_PAIRS`), auditing joint pain/injuries (lower back axial loading swaps e.g. Leg Press/Hip Thrust; knee shear swaps e.g. Goblet/Leg Press; shoulder impingement swaps e.g. Floor Press/Dumbbell Bench/Rotator Cuff), clinical constraints (diabetic carb ceiling <=45%, hypertension Zone 2 guidance, pregnancy/nursing, kidney/liver review flags), and dietary boundaries (strict coptic pescatarian/vegan fasting, zero allergen violations).
+  - **Intake Audit Detail Preflight Modal**: upgraded `frontend/src/components/intake/IntakeAuditDetailModal.jsx` with real-time Preflight Shield display, highlighting calorie/macro targets, clinical flags, and biomechanical exercise swaps before program approval.
+  - **1-Click Plan Automation in Intake Submissions**: added 1-click CTA in `frontend/src/pages/IntakeSubmissions.jsx` (`توليد الخطة الذكية ومراجعتها`) triggering draft generation and instantly navigating to CoachEditor.
+  - **1-Click Plan Automation in CoachEditor**: updated `src/api/controllers/program.controller.js` to expose `latest_intake` for trainees awaiting their first plan; updated `frontend/src/pages/CoachEditor/hooks/useCoachEditorData.js` and `frontend/src/pages/CoachEditor.jsx` to render a prominent 1-click banner (`توليد مسودة الخطة الذكية الآن`) allowing coaches to draft full nutrition, training, and cardio plans instantly without leaving the editor.
+  - **CoachEditor Size Guard Compliance**: compressed imports and modularized props in `frontend/src/pages/CoachEditor.jsx` to strictly maintain the < 500 lines invariant.
+  - Guarded by `test/intake-preflight-and-plan-automation-guard.test.js` (7 comprehensive domain tests).
+- Verification: **2191/2191 node:test pass**, **47/47 vitest pass**, lint 0, frontend build clean (`4.12s`), stress 306 clients 0 crashes/0 violations, 10/10 long journeys 0 issues, 10/10 simulated clients 100%.
 
 ## 4. Open work (in priority order)
 
