@@ -704,10 +704,10 @@ export default function CoachCommandCenter() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: '#111827', letterSpacing: '-0.02em' }}>
-              غرفة العمليات والمتابعة اليومية
+              اليوم
             </h1>
             <p style={{ margin: 0, fontSize: '13px', color: '#667085', fontWeight: 500 }}>
-              متابعة الدورات التدريبية، اعتماد التقييمات الأسبوعية، والبرامج الجديدة للمشتركين
+              متابعة المهام المستحقة والمتأخرة، وإجراءات المشتركين المعلقة
             </p>
           </div>
 
@@ -830,8 +830,8 @@ export default function CoachCommandCenter() {
         {/* 3. Hostinger Unified Action Queue Section */}
         <div style={{ width: '100%' }}>
           <FormSection 
-            title="طابور المتابعة والعمليات اليومية" 
-            description="إدارة وتحديث البرامج التدريبية، اعتماد الدورات، ومراجعة التقييمات الأسبوعية الواردة."
+            title="طابور المهام والإجراءات" 
+            description="المهام المستحقة والمتأخرة، وتجهيز ومراجعة البرامج والتقييمات."
           >
             {/* Single Integrated Controls Toolbar */}
             <div style={{
@@ -859,6 +859,60 @@ export default function CoachCommandCenter() {
                 </span>
 
                 <TierFilter value={tierFilter} onChange={setTierFilter} />
+
+                <button
+                  type="button"
+                  onClick={() => navigate('/coach/checkin-review')}
+                  style={{
+                    height: '32px',
+                    padding: '0 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #D0D5DD',
+                    background: '#FFFFFF',
+                    color: '#344054',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#F9FAFB'; e.currentTarget.style.borderColor = '#673DE6'; e.currentTarget.style.color = '#673DE6'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#D0D5DD'; e.currentTarget.style.color = '#344054'; }}
+                  title="استعراض كافة التقييمات السابقة والمكتملة"
+                >
+                  <CheckCircle2 size={13} color="#673DE6" />
+                  <span>كل المتابعات</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigate('/coach/reminders')}
+                  style={{
+                    height: '32px',
+                    padding: '0 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #D0D5DD',
+                    background: '#FFFFFF',
+                    color: '#344054',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#F9FAFB'; e.currentTarget.style.borderColor = '#673DE6'; e.currentTarget.style.color = '#673DE6'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#D0D5DD'; e.currentTarget.style.color = '#344054'; }}
+                  title="مركز رسائل وقوالب الواتساب والتذكيرات"
+                >
+                  <MessageCircle size={13} color="#027A48" />
+                  <span>الرسائل والتذكيرات</span>
+                </button>
               </div>
 
               {/* Left: Sort Dropdown & Search */}

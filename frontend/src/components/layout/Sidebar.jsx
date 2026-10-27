@@ -19,28 +19,17 @@ import {
 } from 'lucide-react';
 import { getStoredCoachConfig } from '../../utils/themeAndCoachConfig';
 
-// 1. المقر الرئيسي (لوحة التحكم)
+// 1. الوجهات الأساسية
 const PRIMARY_NAV_ITEMS = [
-  { key: 'dashboard', label: 'لوحة التحكم', to: '/', end: true, icon: Home },
+  { key: 'today', label: 'اليوم', to: '/', end: true, icon: CheckCircle2, badgeKey: 'actions' },
+  { key: 'customers', label: 'المشتركون', to: '/customers', icon: Users },
 ];
 
-// 2. المجموعات المنظمة بدقة هندسية تمنع التشتت (Hostinger Navigation Groups)
+// 2. المكتبة والإدارة
 const SIDEBAR_GROUPS = [
   {
-    key: 'coaching-group',
-    label: 'المشتركون والمتابعة اليومية',
-    icon: Users,
-    items: [
-      { key: 'intakes', label: 'الاستمارات الجديدة', to: '/intake/submissions', icon: ClipboardList, badgeKey: 'intakes' },
-      { key: 'checkins', label: 'مراجعة التقييمات', to: '/coach/checkin-review', icon: CheckCircle2, badgeKey: 'checkins' },
-      { key: 'editor', label: 'محرر البرامج', to: '/coach/editor', icon: FileEdit },
-      { key: 'customers', label: 'قائمة المشتركين', to: '/customers', icon: Users },
-      { key: 'reminders', label: 'رسائل الواتساب', to: '/coach/reminders', icon: MessageSquare, badgeKey: 'reminders' },
-    ],
-  },
-  {
-    key: 'engines-group',
-    label: 'المكتبات والمراجع العلمية',
+    key: 'library-group',
+    label: 'المكتبة',
     icon: Dumbbell,
     items: [
       { key: 'exercises', label: 'دليل التمارين', to: '/exercises', icon: Dumbbell },
@@ -49,9 +38,9 @@ const SIDEBAR_GROUPS = [
     ],
   },
   {
-    key: 'financials-group',
-    label: 'الإدارة والمنظومة',
-    icon: Wallet,
+    key: 'admin-group',
+    label: 'الإدارة',
+    icon: Settings,
     items: [
       { key: 'financials', label: 'الاشتراكات والمالية', to: '/coach/financials', icon: Wallet },
       { key: 'settings', label: 'إعدادات المنظومة', to: '/master-settings', icon: Settings },
@@ -65,7 +54,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
   const [coachConfig, setCoachConfig] = useState(getStoredCoachConfig());
   const [openGroupKeys, setOpenGroupKeys] = useState(() => {
     try {
-      const initial = ['coaching-group', 'financials-group', 'engines-group'];
+      const initial = ['library-group', 'admin-group'];
       SIDEBAR_GROUPS.forEach((group) => {
         if (group.items.some((item) => window.location.pathname === item.to || window.location.pathname.startsWith(item.to + '/'))) {
           if (!initial.includes(group.key)) initial.push(group.key);
@@ -73,7 +62,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
       });
       return initial;
     } catch {
-      return ['coaching-group', 'financials-group', 'engines-group'];
+      return ['library-group', 'admin-group'];
     }
   });
   const [liveBadges, setLiveBadges] = useState({ intakes: 0, checkins: 0, reminders: 0 });
@@ -103,15 +92,21 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
 
       const AWAITING_COACH = ['PENDING_COACH_REVIEW', 'PAYMENT_CONFIRMED', 'DRAFT_GENERATED'];
 
-      setLiveBadges(prev => ({
-        ...prev,
-        checkins: Array.isArray(chData?.pending)
+      setLiveBadges(prev => {
+        const checkinsCount = Array.isArray(chData?.pending)
           ? chData.pending.length
-          : (Array.isArray(chData?.checkins) ? chData.checkins.length : (Array.isArray(chData) ? chData.length : prev.checkins)),
-        intakes: Array.isArray(inData?.submissions)
+          : (Array.isArray(chData?.checkins) ? chData.checkins.length : (Array.isArray(chData) ? chData.length : prev.checkins));
+        const intakesCount = Array.isArray(inData?.submissions)
           ? inData.submissions.filter((s) => AWAITING_COACH.includes(String(s?.status || '').toUpperCase())).length
-          : prev.intakes
-      }));
+          : prev.intakes;
+        const total = (Number(checkinsCount) || 0) + (Number(intakesCount) || 0);
+        return {
+          ...prev,
+          checkins: checkinsCount,
+          intakes: intakesCount,
+          actions: total,
+        };
+      });
     };
 
     fetchBadges();

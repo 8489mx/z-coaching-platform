@@ -11,18 +11,18 @@ export function AdminHeader({ onOpenNewClient }) {
 
   const getBreadcrumbs = () => {
     const path = location.pathname;
-    if (path === '/' || path === '/dashboard') return [{ label: 'لوحة التحكم' }];
-    if (path.includes('/intake')) return [{ label: 'الاستمارات', to: '/intake/submissions' }, { label: 'استمارات المشتركين' }];
-    if (path.includes('/checkin')) return [{ label: 'المتابعة', to: '/coach/checkin-review' }, { label: 'مراجعة التقييمات' }];
+    if (path === '/' || path === '/dashboard') return [{ label: 'اليوم' }];
+    if (path.includes('/intake')) return [{ label: 'المشتركون', to: '/customers' }, { label: 'الاستمارات' }];
+    if (path.includes('/checkin')) return [{ label: 'اليوم', to: '/' }, { label: 'كل المتابعات' }];
     if (path.includes('/customers')) return [{ label: 'المشتركون', to: '/customers' }, { label: 'قائمة المشتركين' }];
-    if (path.includes('/financials') || path.includes('/subscriptions')) return [{ label: 'المالية', to: '/coach/financials' }, { label: 'الاشتراكات والمالية' }];
-    if (path.includes('/editor')) return [{ label: 'التدريب', to: '/coach/editor' }, { label: 'محرر البرامج' }];
-    if (path.includes('/exercises')) return [{ label: 'المراجع', to: '/exercises' }, { label: 'دليل التمارين' }];
-    if (path.includes('/calculator')) return [{ label: 'المراجع', to: '/calculator' }, { label: 'الأغذية والماكروز' }];
-    if (path.includes('/mobility')) return [{ label: 'المراجع', to: '/coach/mobility' }, { label: 'المرونة والاستشفاء' }];
-    if (path.includes('/reminders')) return [{ label: 'المراسلات', to: '/coach/reminders' }, { label: 'رسائل الواتساب' }];
-    if (path.includes('/master-settings')) return [{ label: 'الإعدادات', to: '/master-settings' }, { label: 'إعدادات المنظومة' }];
-    return [{ label: 'لوحة التحكم' }];
+    if (path.includes('/financials') || path.includes('/subscriptions')) return [{ label: 'الإدارة', to: '/coach/financials' }, { label: 'الاشتراكات والمالية' }];
+    if (path.includes('/editor')) return [{ label: 'المشتركون', to: '/customers' }, { label: 'محرر البرامج' }];
+    if (path.includes('/exercises')) return [{ label: 'المكتبة', to: '/exercises' }, { label: 'دليل التمارين' }];
+    if (path.includes('/calculator')) return [{ label: 'المكتبة', to: '/calculator' }, { label: 'الأغذية والماكروز' }];
+    if (path.includes('/mobility')) return [{ label: 'المكتبة', to: '/coach/mobility' }, { label: 'المرونة والاستشفاء' }];
+    if (path.includes('/reminders')) return [{ label: 'اليوم', to: '/' }, { label: 'الرسائل والتذكيرات' }];
+    if (path.includes('/master-settings')) return [{ label: 'الإدارة', to: '/master-settings' }, { label: 'إعدادات المنظومة' }];
+    return [{ label: 'اليوم' }];
   };
 
   const breadcrumbs = getBreadcrumbs();
