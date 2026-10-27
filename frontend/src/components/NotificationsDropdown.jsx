@@ -308,7 +308,7 @@ export default function NotificationsDropdown() {
         style={{ 
           width: '34px', 
           height: '34px', 
-          borderRadius: '8px', 
+          borderRadius: '9999px', 
           border: '1px solid #D0D5DD',
           background: isOpen ? '#F1F5F9' : '#FFFFFF',
           color: isOpen ? '#111827' : '#475569',
@@ -365,7 +365,7 @@ export default function NotificationsDropdown() {
           style={{ 
             width: '420px', 
             maxWidth: '92vw',
-            borderRadius: '14px',
+            borderRadius: '20px',
             border: '1px solid #EAECF0',
             zIndex: 1100, 
             position: 'absolute',

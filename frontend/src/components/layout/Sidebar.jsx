@@ -178,7 +178,7 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
             gap: isCollapsed ? '0' : '12px',
             padding: isCollapsed ? '8px 0' : '9px 12px',
             minHeight: '40px',
-            borderRadius: '16px',
+            borderRadius: '9999px',
             textDecoration: 'none',
             color: isActive ? '#111827' : '#1F2937',
             background: isActive ? '#FFFFFF' : 'transparent',

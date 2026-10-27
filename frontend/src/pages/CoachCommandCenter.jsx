@@ -906,7 +906,7 @@ export default function CoachCommandCenter() {
                       left: 0,
                       width: '190px',
                       background: '#FFFFFF',
-                      borderRadius: '12px',
+                      borderRadius: '20px',
                       border: '1px solid #EAECF0',
                       boxShadow: '0 12px 32px rgba(16, 24, 40, 0.12), 0 2px 6px rgba(16, 24, 40, 0.04)',
                       padding: '8px',
@@ -931,7 +931,7 @@ export default function CoachCommandCenter() {
                               justifyContent: 'space-between',
                               width: '100%',
                               padding: '8px 12px',
-                              borderRadius: '12px',
+                              borderRadius: '9999px',
                               border: 'none',
                               background: isSelected ? '#F4F0FD' : 'transparent',
                               color: isSelected ? '#673DE6' : '#344054',
@@ -982,12 +982,12 @@ export default function CoachCommandCenter() {
                         textAlign: 'center',
                         background: '#FAFAFB',
                         border: '1px solid #EAECF0',
-                        borderRadius: '16px'
+                        borderRadius: '24px'
                       }}>
                         <div style={{
                           width: '44px',
                           height: '44px',
-                          borderRadius: '14px',
+                          borderRadius: '9999px',
                           background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
                           border: '1px solid #BBF7D0',
                           color: '#059669',
@@ -1022,12 +1022,12 @@ export default function CoachCommandCenter() {
                         textAlign: 'center',
                         background: '#FAFAFB',
                         border: '1px solid #EAECF0',
-                        borderRadius: '16px'
+                        borderRadius: '24px'
                       }}>
                         <div style={{
                           width: '44px',
                           height: '44px',
-                          borderRadius: '14px',
+                          borderRadius: '9999px',
                           background: 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
                           border: '1px solid #E2E8F0',
                           color: '#475569',
@@ -1053,7 +1053,7 @@ export default function CoachCommandCenter() {
                             padding: '0 14px',
                             fontSize: '12px',
                             fontWeight: 600,
-                            borderRadius: '16px',
+                            borderRadius: '9999px',
                             background: '#FFFFFF',
                             border: '1px solid #D0D5DD',
                             color: '#344054',
@@ -1094,7 +1094,7 @@ export default function CoachCommandCenter() {
                       <div style={{
                         width: '44px',
                         height: '44px',
-                        borderRadius: '14px',
+                        borderRadius: '9999px',
                         background: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
                         border: '1px solid #E9D7FE',
                         color: '#673DE6',
@@ -1123,7 +1123,7 @@ export default function CoachCommandCenter() {
                           padding: '0 14px',
                           fontSize: '12px',
                           fontWeight: 600,
-                          borderRadius: '16px',
+                          borderRadius: '9999px',
                           background: '#FFFFFF',
                           border: '1px solid #D0D5DD',
                           color: '#344054',
@@ -1330,7 +1330,7 @@ export default function CoachCommandCenter() {
                           padding: '6px 10px',
                           background: '#F8FAFC',
                           border: '1px solid #EAECF0',
-                          borderRadius: '12px',
+                          borderRadius: '16px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
