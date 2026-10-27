@@ -1060,7 +1060,7 @@ export function buildMasterEngineV2(inputs) {
   // 3. Cardio Engine V2 with Zone 2 Target Heart Rates
   const clientAge = canonicalIntake.personal?.dateOfBirth
     ? calculateAge(canonicalIntake.personal.dateOfBirth, evaluationContext.assessmentDate)
-    : 30;
+    : (Number(canonicalIntake.personal?.age) || Number(effectiveIntake?.personal?.age) || 30);
   const estimatedMaxHr = Math.round(208 - 0.7 * clientAge);
   const zone2LowBpm = Math.round(0.6 * estimatedMaxHr);
   const zone2HighBpm = Math.round(0.7 * estimatedMaxHr);

@@ -11,6 +11,8 @@
  * Single source of truth: src/execution-engines/cardio-zones-engine.js re-exports this module.
  */
 
+import { resolveNeatStepTarget } from './cardioInterferenceEngine.js';
+
 export const CARDIO_TYPES = {
   LISS_TALK_TEST: 'LISS_TALK_TEST',
   HIIT_INTERVALS: 'HIIT_INTERVALS',
@@ -58,6 +60,10 @@ export function getPracticalCardioPrescription({
   medicalConditions = [],
   weight_kg = null,
   height_cm = null,
+  age = null,
+  neat_level = null,
+  occupation = null,
+  goal = 'fat_loss',
   // False for a client without cardio machines (bands, minimal equipment, home).
   machines_available = true
 }) {
@@ -110,6 +116,40 @@ export function getPracticalCardioPrescription({
 
   const upperType = resolvedType;
 
+  // Resolve Heart Rate Zones via Tanaka (208 - 0.7 * age)
+  const numericAge = Number(age);
+  let heartRateTarget = null;
+  if (Number.isFinite(numericAge) && numericAge > 0) {
+    const safeAge = Math.max(16, Math.min(80, Math.round(numericAge)));
+    const maxHr = Math.round(208 - 0.7 * safeAge);
+    const z2Min = Math.round(maxHr * 0.6);
+    const z2Max = Math.round(maxHr * 0.7);
+    heartRateTarget = {
+      max_heart_rate_bpm: maxHr,
+      zone: 'ZONE_2',
+      target_range_bpm: `${z2Min} - ${z2Max} BPM`,
+      range_display: `${z2Min} - ${z2Max} نبضة/دقيقة`,
+      min_bpm: z2Min,
+      max_bpm: z2Max,
+      missing_age: false,
+      guidance_ar: `معدل نبضات القلب المستهدف أثناء جلسة الكارديو (Zone 2): بين ${z2Min} و ${z2Max} نبضة/دقيقة لحرق الدهون بكفاءة دون إجهاد عصبي.`
+    };
+  } else {
+    heartRateTarget = {
+      max_heart_rate_bpm: null,
+      zone: 'ZONE_2',
+      target_range_bpm: null,
+      range_display: 'غير محدد (يتطلب تسجيل العمر)',
+      min_bpm: null,
+      max_bpm: null,
+      missing_age: true,
+      guidance_ar: 'يرجى تسجيل عمر المتدرب لحساب نطاق نبض القلب بدقة وفق معادلة Tanaka؛ يعتمد حالياً على اختبار التحدث (Talk Test).'
+    };
+  }
+
+  // Resolve NEAT Step Targets
+  const neatStepTarget = resolveNeatStepTarget({ neat_level, goal, occupation });
+
   if (upperType === CARDIO_TYPES.HIIT_INTERVALS || upperType.includes('HIIT')) {
     return {
       type: CARDIO_TYPES.HIIT_INTERVALS,
@@ -119,6 +159,7 @@ export function getPracticalCardioPrescription({
       protocol_title_en: impactRestricted ? 'Low-Impact High-Intensity Interval Training' : 'High-Intensity Interval Training (HIIT)',
       duration_minutes: 15,
       sessions_per_week: Math.min(2, sessions_per_week),
+      rpe_target: 'RPE 9 - 10 (فترات أقصى جهد)',
       talk_test_cue_ar: impactRestricted
         ? 'جهد هوائي حرج؛ لا يمكنك التحدث أثناء فترات التبديل السريع (30 ثانية أقصى مجهود تليها 90 ثانية تبديل هادئ بمقاومة خفيفة).'
         : 'جهد هوائي حرج؛ لا يمكنك التحدث أثناء فترات السبرنت (30 ثانية أقصى مجهود 100% تليها 90 ثانية مشي هادئ 40%).',
@@ -136,7 +177,8 @@ export function getPracticalCardioPrescription({
       fat_oxidation_rationale_ar: 'رفع معدل الاستهلاك الأكسجيني اللاحق للتمرين (EPOC) وتحفيز حرق الدهون في وقت قصير.',
       equipment_recommendation: impactRestricted ? CARDIO_EQUIPMENT.STATIONARY_BIKE : equipment,
       clinical_guidance_ar: impactRestricted ? HIIT_CLINICAL_GUIDANCE_AR.LOW_IMPACT_HIIT : null,
-      clinical_guardrails: clinicalGuardrails
+      clinical_guardrails: clinicalGuardrails,
+      neat_target: neatStepTarget
     };
   }
 
@@ -145,14 +187,16 @@ export function getPracticalCardioPrescription({
       type: CARDIO_TYPES.RECOVERY_WALK,
       protocol_title_ar: 'المشي الاستشفائي اليومي وحرق النشاط الحر (Daily NEAT)',
       protocol_title_en: 'Daily NEAT Recovery Walk',
-      daily_steps_target: '8,000 إلى 10,000 خطوة يومياً',
+      daily_steps_target: neatStepTarget.range_display || '8,000 إلى 10,000 خطوة يومياً',
+      rpe_target: 'RPE 2 - 3 (نشاط حر خفيف)',
       talk_test_cue_ar: 'تنفس طبيعي تماماً مع قدرة على التحدث دون أي نهجان (مجهود هوائي خفيف جداً).',
       execution_breakdown_ar: [
         'توزيع الخطوات على مدار اليوم (مشي 15 دقيقة بعد الوجبات الرئيسية).',
         'استخدام السلالم بدلاً من المصعد وتفضيل المشي للمشاوير القريبة.'
       ],
       fat_oxidation_rationale_ar: 'حرق دهون صافي وتحسين حساسية الإنسولين دون إفراز هرمونات توتر أو إرهاق الجهاز العصبي.',
-      equipment_recommendation: 'مشي حر في أي مكان'
+      equipment_recommendation: 'مشي حر في أي مكان',
+      neat_target: neatStepTarget
     };
   }
 
@@ -163,6 +207,7 @@ export function getPracticalCardioPrescription({
     protocol_title_en: 'Low-Intensity Steady-State (LISS / Zone 2)',
     duration_minutes: duration_minutes,
     sessions_per_week: sessions_per_week,
+    rpe_target: 'RPE 5 - 6 (جهد هوائي معتدل مستقر)',
     talk_test_cue_ar: 'مجهود هوائي معتدل (Zone 2) يسمح لك بالتحدث بجمل كاملة دون نهجان حاد أو انقطاع النفس.',
     suggested_settings_ar: machines_available
       ? 'مشاية بميل Incline 8% إلى 12% على سرعة 4.0 إلى 5.0 كم/س، أو دراجة بمقاومة خفيفة.'
@@ -174,7 +219,9 @@ export function getPracticalCardioPrescription({
     fat_oxidation_rationale_ar: 'أقصى كفاءة لأكسدة الدهون كوقود أساسي وتنشيط الميتوكوندريا دون أي تداخل مع استشفاء العضلات.',
     equipment_recommendation: equipment,
     clinical_guidance_ar: asthmaClinicalNote || (hiitBanReason ? HIIT_CLINICAL_GUIDANCE_AR[hiitBanReason] : null),
-    clinical_guardrails: clinicalGuardrails
+    clinical_guardrails: clinicalGuardrails,
+    heart_rate_target: heartRateTarget,
+    neat_target: neatStepTarget
   };
 }
 

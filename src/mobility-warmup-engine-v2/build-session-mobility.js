@@ -267,32 +267,39 @@ export function buildSessionMobilityProtocol(sessionCode = "FULL_BODY", exercise
   let dynamicWarmup = [...(DYNAMIC_MOBILITY_CATALOG[sessionType] || DYNAMIC_MOBILITY_CATALOG.FULL_BODY)];
   let staticCooldown = [...(STATIC_COOL_DOWN_CATALOG[sessionType] || STATIC_COOL_DOWN_CATALOG.FULL_BODY)];
 
-  const conditions = Array.isArray(medicalContext?.conditions) ? medicalContext.conditions : [];
-  const restrictions = Array.isArray(medicalContext?.movementRestrictions) ? medicalContext.movementRestrictions : [];
-  const injuries = Array.isArray(medicalContext?.injuries) ? medicalContext.injuries : [];
+  let effectiveMedical = medicalContext && typeof medicalContext === "object" ? { ...medicalContext } : {};
+  if (!Array.isArray(exercises) && typeof exercises === "object" && exercises !== null) {
+    effectiveMedical = { ...exercises, ...effectiveMedical };
+  } else if (Array.isArray(exercises) && exercises.length > 0 && typeof exercises[0] === "string" && (!medicalContext || Object.keys(medicalContext).length === 0)) {
+    effectiveMedical.injuries = exercises;
+  }
+
+  const conditions = Array.isArray(effectiveMedical?.conditions) ? effectiveMedical.conditions : [];
+  const restrictions = Array.isArray(effectiveMedical?.movementRestrictions) ? effectiveMedical.movementRestrictions : [];
+  const injuries = Array.isArray(effectiveMedical?.injuries) ? effectiveMedical.injuries : [];
 
   const getConditionStr = (c) => {
-    if (!c) return '';
-    if (typeof c === 'string') return c;
-    return [c.conditionCode, c.label, c.area, c.name, c.substance].filter(Boolean).join(' ');
+    if (!c) return "";
+    if (typeof c === "string") return c;
+    return [c.conditionCode, c.label, c.area, c.name, c.substance, c.id].filter(Boolean).join(" ");
   };
   const allInjuryTokens = conditions.concat(restrictions).concat(injuries).map(getConditionStr);
 
-  const hasLumbarDisc = medicalContext?.hasHerniation || allInjuryTokens.some(c => {
+  const hasLumbarDisc = effectiveMedical?.hasHerniation || allInjuryTokens.some(c => {
     const s = String(c).toUpperCase();
     return s.includes("DISC") || s.includes("LUMBAR") || s.includes("HERNIATION") || s.includes("L4") || s.includes("L5") || s.includes("SPINE") || s.includes("LOWER_BACK") || s.includes("BACK");
   }) || restrictions.includes("NO_AXIAL_SPINAL_LOADING");
 
-  const hasDiastasisRecti = medicalContext?.hasDiastasisRecti || allInjuryTokens.some(c => String(c).toUpperCase().includes("DIASTASIS_RECTI")) || restrictions.includes("NO_CRUNCHES");
+  const hasDiastasisRecti = effectiveMedical?.hasDiastasisRecti || allInjuryTokens.some(c => String(c).toUpperCase().includes("DIASTASIS_RECTI")) || restrictions.includes("NO_CRUNCHES");
 
-  const hasRotatorCuff = medicalContext?.hasRotatorCuff || allInjuryTokens.some(c => {
+  const hasRotatorCuff = effectiveMedical?.hasRotatorCuff || allInjuryTokens.some(c => {
     const s = String(c).toUpperCase();
     return s.includes("ROTATOR") || s.includes("SHOULDER_IMPINGEMENT") || s.includes("IMPINGEMENT") || s.includes("SHOULDER");
   }) || restrictions.includes("NO_BEHIND_NECK_PRESS");
 
-  const hasKneeIssues = medicalContext?.hasKneeIssues || allInjuryTokens.some(c => {
+  const hasKneeIssues = effectiveMedical?.hasKneeIssues || allInjuryTokens.some(c => {
     const s = String(c).toUpperCase();
-    return s.includes("PATELLAR") || s.includes("KNEE") || s.includes("MENISCUS") || s.includes("CHONDROMALACIA");
+    return s.includes("PATELL") || s.includes("KNEE") || s.includes("MENISCUS") || s.includes("CHONDROMALACIA");
   }) || restrictions.includes("NO_DEEP_SQUATS");
 
   const contraindicationsBypassed = [];

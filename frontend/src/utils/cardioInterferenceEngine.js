@@ -6,6 +6,10 @@
  *      to avoid AMPK-mediated dephosphorylation of mTORC1.
  * 2. Zone 2 Polarized Prescription:
  *    - Directs aerobic work to Zone 2 (60% - 70% Max HR via Tanaka 208 - 0.7 * age) for mitochondrial biogenesis without muscle catabolism.
+ * 3. Leg-Day Interference Shield:
+ *    - Guards against combining heavy compound leg training with high-intensity HIIT.
+ * 4. NEAT Step Targets:
+ *    - Recommends activity-specific daily step goals to support fat loss without systemic fatigue.
  */
 
 export const CARDIO_INTENSITIES = {
@@ -101,5 +105,88 @@ export function evaluateCardioInterferenceDecoupling({
     min_required_gap_for_hiit_hours: 6,
     heart_rate_prescription: hrZones.zone_2_target,
     timing_verdict_ar: verdictAr
+  };
+}
+
+const LEG_WORKOUT_REGEX = /SQUAT|LEG_PRESS|DEADLIFT|LUNGE|HACK|ROMANIAN|HAMSTRING|QUAD|CALF|GLUTE|أرجل|سكوات|رجل|فخذ|سمانة/i;
+
+/**
+ * Evaluates cardio conflict with lower body (Leg Day) workouts.
+ * Heavy compound leg work combined with high-intensity HIIT causes severe residual neuromuscular fatigue.
+ */
+export function evaluateLegDayCardioConflict({
+  cardio_type = CARDIO_INTENSITIES.ZONE_2_STEADY_STATE,
+  session_exercises = [],
+  is_same_day = false
+} = {}) {
+  if (!is_same_day || !Array.isArray(session_exercises) || session_exercises.length === 0) {
+    return {
+      has_leg_day_conflict: false,
+      conflict_reason: null,
+      guidance_ar: 'لا يوجد تداخل حركي مباشر مع تمارين الأرجل.'
+    };
+  }
+
+  const hasHeavyLegWork = session_exercises.some((ex) => {
+    const code = String(ex?.code || ex?.exercise_code || ex?.id || '');
+    const name = String(ex?.name || ex?.name_ar || ex?.name_en || '');
+    const muscle = String(ex?.target_muscle || ex?.muscle || ex?.primary_muscle || '');
+    return LEG_WORKOUT_REGEX.test(code) || LEG_WORKOUT_REGEX.test(name) || LEG_WORKOUT_REGEX.test(muscle);
+  });
+
+  const isHiit = cardio_type === CARDIO_INTENSITIES.HIGH_INTENSITY_HIIT || String(cardio_type).toUpperCase().includes('HIIT');
+
+  if (hasHeavyLegWork && isHiit) {
+    return {
+      has_leg_day_conflict: true,
+      conflict_reason: 'HIIT_ON_LEG_DAY',
+      guidance_ar: 'تحذير تداخل تدريبي: ممارسة كارديو الفترات عالي الشدة (HIIT) في نفس يوم تمرين الأرجل يضاعف الإجهاد العصبي المركزي ويعيق الاستشفاء العضلي الموضعي؛ يُلزم حصر الكارديو في المشي الاستشفائي الخفيف (Zone 2) أو فصل الـ HIIT بـ 24 ساعة على الأقل.'
+    };
+  }
+
+  return {
+    has_leg_day_conflict: false,
+    conflict_reason: null,
+    guidance_ar: hasHeavyLegWork
+      ? 'مسموح: كارديو المشي المعتدل (Zone 2) بعد تمرين الأرجل ينشط الدورة الدموية ويعزز الاستشفاء دون إجهاد المفصل.'
+      : 'لا يوجد تداخل بين جلسة الكارديو وتمارين الجزء السفلي.'
+  };
+}
+
+/**
+ * Resolves evidence-based daily NEAT step targets based on occupation and baseline activity.
+ */
+export function resolveNeatStepTarget({
+  neat_level = 'moderate',
+  goal = 'fat_loss',
+  occupation = 'DESK_OFFICE'
+} = {}) {
+  const normNeat = String(neat_level || '').toLowerCase();
+  const normOcc = String(occupation || '').toUpperCase();
+  const isDesk = normOcc.includes('DESK') || normOcc.includes('SEDENTARY') || normNeat.includes('sedentary');
+
+  if (isDesk) {
+    return {
+      min_steps: 8000,
+      max_steps: 10000,
+      range_display: '8,000 - 10,000 خطوة/اليوم',
+      recommendation_ar: 'الحد الأدنى لكسر خمول العمل المكتبي وتنشيط الأيض اليومي (NEAT) دون إجهاد عصبي.'
+    };
+  }
+
+  if (normNeat.includes('high') || normOcc.includes('ACTIVE') || normOcc.includes('STANDING')) {
+    return {
+      min_steps: 10000,
+      max_steps: 12000,
+      range_display: '10,000 - 12,000 خطوة/اليوم',
+      recommendation_ar: 'مستوى نشاط بدني ممتاز؛ يُراعى عدم المبالغة فوق 14,000 خطوة لتجنب تثبيط الاستشفاء العضلي.'
+    };
+  }
+
+  return {
+    min_steps: 8500,
+    max_steps: 10500,
+    range_display: '8,500 - 10,500 خطوة/اليوم',
+    recommendation_ar: 'معدل حركي متوازن ومثالي لدعم العجز الحراري وحرق الدهون.'
   };
 }

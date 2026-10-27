@@ -12,10 +12,11 @@ import {
   Droplets,
   Moon,
   Activity,
+  AlertCircle,
   Flame
 } from 'lucide-react';
 import { getStandardSupplementCatalog } from '../../../utils/clinicalSupplementSafetyEngine';
-import { evaluateCardioInterferenceDecoupling, CARDIO_INTENSITIES } from '../../../utils/cardioInterferenceEngine';
+import { evaluateCardioInterferenceDecoupling, evaluateLegDayCardioConflict, CARDIO_INTENSITIES } from '../../../utils/cardioInterferenceEngine';
 import { getPracticalCardioPrescription, CARDIO_TYPES } from '../../../utils/cardioZonesEngine';
 import CurvedSelect from '../../../components/common/CurvedSelect';
 
@@ -53,13 +54,23 @@ export function CoachCardioHabitsTab({
     cardio_type: isHiitCardio ? CARDIO_INTENSITIES.HIGH_INTENSITY_HIIT : CARDIO_INTENSITIES.ZONE_2_STEADY_STATE,
     is_same_day: true
   });
+  const trainingSessions = program?.training?.sessions || program?.training_program?.sessions || [];
+  const allTrainingExercises = trainingSessions.flatMap(s => s.exercises || []);
+  const legDayAudit = evaluateLegDayCardioConflict({
+    cardio_type: isHiitCardio ? CARDIO_INTENSITIES.HIGH_INTENSITY_HIIT : CARDIO_INTENSITIES.ZONE_2_STEADY_STATE,
+    session_exercises: allTrainingExercises,
+    is_same_day: true
+  });
   const practicalCardio = getPracticalCardioPrescription({
     type: isHiitCardio ? CARDIO_TYPES.HIIT_INTERVALS : CARDIO_TYPES.LISS_TALK_TEST,
     duration_minutes: Number(program.cardio?.session_duration_min) || 30,
     sessions_per_week: Number(program.cardio?.weekly_sessions) || 3,
     medicalConditions: clientConditions,
     weight_kg: program?.client?.weight_kg,
-    height_cm: program?.client?.height_cm
+    height_cm: program?.client?.height_cm,
+    age: clientAge,
+    neat_level: program?.client?.neat_level,
+    occupation: program?.client?.occupation_type
   });
   // HIIT chosen by the coach but blocked by the engine (asthma, cardiovascular, pregnancy, BMI >= 35).
   const hiitBlocked = isHiitCardio && practicalCardio.clinical_guardrails?.hiit_banned === true;
@@ -463,6 +474,25 @@ export function CoachCardioHabitsTab({
               </div>
             </div>
           </div>
+
+          {legDayAudit?.has_leg_day_conflict && (
+            <div style={{
+              marginTop: '10px',
+              padding: '10px 14px',
+              borderRadius: '10px',
+              background: '#FFFBEB',
+              border: '1px solid #FDE68A',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '11px',
+              color: '#92400E',
+              lineHeight: 1.5
+            }}>
+              <AlertCircle size={16} color="#D97706" style={{ flexShrink: 0 }} />
+              <span>{legDayAudit.guidance_ar}</span>
+            </div>
+          )}
         </div>
       </div>
 

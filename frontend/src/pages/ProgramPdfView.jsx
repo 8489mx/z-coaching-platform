@@ -568,10 +568,12 @@ export default function ProgramPdfView() {
   const cardioDuration = program?.cardio?.session_duration_min 
     || program?.cardio_protocol?.duration_minutes 
     || 30;
-  const cardioHeartRate = program?.cardio?.target_heart_rate_zone 
+  const cardioHeartRate = program?.cardio?.heart_rate_target?.range_display
+    || program?.cardio?.target_heart_rate_zone 
     || program?.cardio_protocol?.target_heart_rate_zone 
     || '120 - 135 نبضة / دقيقة (Zone 2)';
-  const cardioNeatSteps = program?.cardio?.neat_target_steps 
+  const cardioNeatSteps = program?.cardio?.neat_target?.range_display
+    || program?.cardio?.neat_target_steps 
     || program?.cardio?.daily_steps 
     || program?.cardio?.target_daily_steps 
     || 8500;
@@ -960,6 +962,46 @@ export default function ProgramPdfView() {
                     })}
                   </tbody>
                 </table>
+
+                {((Array.isArray(session.pre_workout_mobility) && session.pre_workout_mobility.length > 0) ||
+                  (Array.isArray(session.post_workout_stretches) && session.post_workout_stretches.length > 0)) && (
+                  <div style={{
+                    marginTop: '6px',
+                    padding: '6px 10px',
+                    background: '#F8FAFC',
+                    border: '0.5pt solid #E2E8F0',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    fontSize: '6.8pt'
+                  }}>
+                    {Array.isArray(session.pre_workout_mobility) && session.pre_workout_mobility.length > 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: '800', color: '#0284C7', background: '#F0F9FF', border: '0.5pt solid #BAE6FD', padding: '1px 6px', borderRadius: '4px' }}>
+                          الإحماء الحركي الديناميكي:
+                        </span>
+                        {session.pre_workout_mobility.map((m, mIdx) => (
+                          <span key={mIdx} style={{ color: '#334155' }}>
+                            {m.name_ar || m.name || m.name_en} ({m.dose || m.reps || '8-10 تكرارات'}){mIdx < session.pre_workout_mobility.length - 1 ? ' • ' : ''}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {Array.isArray(session.post_workout_stretches) && session.post_workout_stretches.length > 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: '800', color: '#0F766E', background: '#F0FDFA', border: '0.5pt solid #CCFBF1', padding: '1px 6px', borderRadius: '4px' }}>
+                          التهدئة والإطالة الاستشفائية:
+                        </span>
+                        {session.post_workout_stretches.map((s, sIdx) => (
+                          <span key={sIdx} style={{ color: '#334155' }}>
+                            {s.name_ar || s.name || s.name_en} ({s.duration_seconds ? `${s.duration_seconds} ثانية` : (s.dose || '30 ثانية')}){sIdx < session.post_workout_stretches.length - 1 ? ' • ' : ''}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

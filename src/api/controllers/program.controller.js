@@ -27,6 +27,7 @@ import { assessServiceScope, outsideScopeResponse } from "../services/serviceSco
 import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSwapOilText, liveSwapTargetGrams, liveSwapServingText } from "../services/liveFoodSwapValue.js";
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
 import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
+import { buildSessionMobilityProtocol } from "../../../src/mobility-warmup-engine-v2/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1359,6 +1360,9 @@ export const getActiveProgramByUserId = async (req, res) => {
         medicalConditions: [...conditions, ...injuries, ...(answers.is_pregnant === true ? ["PREGNANT"] : [])],
         weight_kg: cardioPayload.weight_kg ?? (Number.isFinite(latestWeight) && latestWeight > 0 ? latestWeight : Number(answers.weight_kg) || null),
         height_cm: cardioPayload.height_cm ?? (Number(answers.height_cm) || null),
+        age: cardioPayload.age ?? (Number(answers.age) || Number(user.age) || null),
+        neat_level: answers.neat_level,
+        occupation: answers.occupation_type,
         machines_available: cardioPayload.machines_available ?? machinesAvailable,
       }),
       advisories_ar
@@ -1376,6 +1380,19 @@ export const getActiveProgramByUserId = async (req, res) => {
     let training_session = sessionRaw ? JSON.parse(JSON.stringify(sessionRaw)) : null;
     if (training_session && progression?.deload?.status === "ACTIVE") {
        training_session = applyDeloadToSession(training_session);
+    }
+
+    if (training_session) {
+      const sessionPattern = training_session.pattern || training_session.type || (training_session.name?.includes("سفلي") || training_session.name?.includes("أرجل") ? "LOWER" : (training_session.name?.includes("علوي") || training_session.name?.includes("صدر") || training_session.name?.includes("ظهر") ? "UPPER" : "FULL_BODY"));
+      const sessionMobility = buildSessionMobilityProtocol(sessionPattern, injuries);
+      training_session.dynamic_warmup = sessionMobility.dynamic_warmup;
+      training_session.static_cooldown = sessionMobility.static_cooldown;
+      if (!Array.isArray(training_session.pre_workout_mobility) || training_session.pre_workout_mobility.length === 0) {
+        training_session.pre_workout_mobility = sessionMobility.dynamic_warmup.exercises;
+      }
+      if (!Array.isArray(training_session.post_workout_stretches) || training_session.post_workout_stretches.length === 0) {
+        training_session.post_workout_stretches = sessionMobility.static_cooldown.exercises;
+      }
     }
 
     // P0 Clinical Safety: Ensure active clinical lockout suspends active session delivery to mobile app

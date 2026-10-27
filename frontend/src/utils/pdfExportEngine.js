@@ -388,6 +388,7 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
         <th>البروتوكول المستهدف</th>
         <th>التكرار الأسبوعي</th>
         <th>المدة الزمنية</th>
+        <th>نطاق النبض المستهدف</th>
         <th>مؤشر الشدة والتنفس (Talk Test Cue)</th>
       </tr>
     </thead>
@@ -396,8 +397,39 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
         <td><strong>${cardio.protocol_title || 'كارديو معتدل الشدة'}</strong></td>
         <td>${cardio.prescription || `${cardio.sessions_per_week || 3} جلسات أسبوعياً`}</td>
         <td>${cardio.session_duration_min ? `${cardio.session_duration_min} دقيقة` : (cardio.duration || '25-30 دقيقة')}</td>
+        <td><strong>${cardio.target_heart_rate_zone || cardio.heart_rate_target?.range_display || 'Zone 2 (مجهود هوائي معتدل)'}</strong></td>
         <td>${cardio.talk_test_cue || 'سرعة منتظمة تسمح بالحديث المتقطع دون انقطاع النفس الحاد.'}</td>
       </tr>
+    </tbody>
+  </table>
+  ` : ''}
+
+  <!-- Pre-Workout Mobility & Dynamic Warm-Up Protocol -->
+  ${((workout?.sessions && workout.sessions.some(s => Array.isArray(s.pre_workout_mobility) && s.pre_workout_mobility.length > 0)) || (Array.isArray(workout?.pre_workout_mobility) && workout.pre_workout_mobility.length > 0)) ? `
+  <div class="section-title">
+    <span>بروتوكول الإحماء الحركي والاستشفاء (Dynamic Warm-Up & Recovery)</span>
+    <span class="badge">مرونة وأمان المفاصل</span>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th style="width: 25px;">#</th>
+        <th>الحركة المستهدفة</th>
+        <th style="width: 140px;">الجرعة / التكرارات</th>
+        <th style="width: 160px;">المفصل والعضلة</th>
+        <th>توجيهات الأداء الفني</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${((workout?.sessions ? workout.sessions.flatMap(s => s.pre_workout_mobility || []) : []) || workout?.pre_workout_mobility || []).slice(0, 6).map((m, mIdx) => `
+        <tr>
+          <td>${mIdx + 1}</td>
+          <td><strong>${m.name_ar || m.name || m.name_en}</strong></td>
+          <td>${m.dose || m.reps || '8-10 تكرارات'}</td>
+          <td>${m.target_joints_ar || m.target_muscle_ar || 'تهيئة المفاصل'}</td>
+          <td>${m.cues_ar || 'أداء حركي سلس مع التنفس العميق'}</td>
+        </tr>
+      `).join('')}
     </tbody>
   </table>
   ` : ''}
