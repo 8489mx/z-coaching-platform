@@ -524,7 +524,7 @@ export default function WhatsAppRemindersHub() {
 
           {/* Tier Switch & Search */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '9999px', border: '1px solid #EAECF0' }}>
+            <div style={{ display: 'flex', gap: '3px', background: '#F1F5F9', padding: '3px', borderRadius: '12px', border: '1px solid #EAECF0' }}>
               {[
                 { id: 'ALL', label: 'الكل' },
                 { id: 'MAX', label: 'MAX' },
@@ -839,7 +839,7 @@ export default function WhatsAppRemindersHub() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   {/* Pillar 1: Training */}
-                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '8px 10px' }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '8px 10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748B', fontSize: '10px', fontWeight: 700, marginBottom: '2px' }}>
                       <Dumbbell size={11} color="#673DE6" />
                       <span>التدريب</span>
@@ -853,7 +853,7 @@ export default function WhatsAppRemindersHub() {
                   </div>
 
                   {/* Pillar 2: Nutrition */}
-                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '8px 10px' }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '8px 10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748B', fontSize: '10px', fontWeight: 700, marginBottom: '2px' }}>
                       <Utensils size={11} color="#0284C7" />
                       <span>التغذية</span>
@@ -867,7 +867,7 @@ export default function WhatsAppRemindersHub() {
                   </div>
 
                   {/* Pillar 3: Cardio */}
-                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '8px 10px' }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '8px 10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748B', fontSize: '10px', fontWeight: 700, marginBottom: '2px' }}>
                       <Flame size={11} color="#D97706" />
                       <span>الكارديو والنشاط</span>

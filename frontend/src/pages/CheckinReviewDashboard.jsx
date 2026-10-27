@@ -1639,7 +1639,7 @@ export default function CheckinReviewDashboard() {
                   <div dir="rtl" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '6px' }}>
                     
                     {/* Current Weight */}
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '9999px' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الوزن الحالي</span>
                         {Boolean(activeCheckin?.analysis_output?.is_measurement_corrected || activeCheckin?.is_measurement_corrected) && (
@@ -1661,7 +1661,7 @@ export default function CheckinReviewDashboard() {
                       background: deltaColor === '#16A34A' ? '#F0FDF4' : (deltaColor === '#0284C7' ? '#F0F9FF' : '#FEF2F2'), 
                       border: deltaColor === '#16A34A' ? '1px solid #BBF7D0' : (deltaColor === '#0284C7' ? '1px solid #BAE6FD' : '1px solid #FECACA'), 
                       padding: '10px 12px', 
-                      borderRadius: '9999px' 
+                      borderRadius: '12px' 
                     }}>
                       <span style={{ fontSize: '11px', color: '#475569', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif', fontWeight: 700 }}>فرق الوزن (Δ)</span>
                       <strong style={{ 
@@ -1683,7 +1683,7 @@ export default function CheckinReviewDashboard() {
                     </div>
 
                     {/* Waist Metric */}
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '9999px' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '12px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>محيط الخصر</span>
                       <strong style={{ fontSize: '17px', color: '#101828', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                         {safeMetrics.waist_current} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>سم</span>
@@ -1694,7 +1694,7 @@ export default function CheckinReviewDashboard() {
                     </div>
 
                     {/* Adherence */}
-                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '9999px' }}>
+                    <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '12px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الالتزام والتمارين</span>
                       <strong style={{ fontSize: '17px', color: '#101828', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
                         {safeMetrics.adherence}%
@@ -2174,7 +2174,7 @@ export default function CheckinReviewDashboard() {
                     </div>
                   )}
 
-                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '10px 12px', flex: 1 }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '10px 12px', flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                       <MessageCircle size={13} color="#475569" />
                       <strong style={{ fontSize: '11px', color: '#475569' }}>رسالة المتدرب الإضافية:</strong>
@@ -2221,7 +2221,7 @@ export default function CheckinReviewDashboard() {
                     <div style={{
                       background: activeCheckin?.next_week_gym_available === false ? '#FEF2F2' : '#FFFFFF',
                       border: activeCheckin?.next_week_gym_available === false ? '1px solid #FECACA' : '1px solid #E2E8F0',
-                      borderRadius: '9999px',
+                      borderRadius: '12px',
                       padding: '8px 10px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
@@ -2319,7 +2319,7 @@ export default function CheckinReviewDashboard() {
                   </p>
 
                   {safeAi.warning && (
-                    <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '6px 10px', borderRadius: '9999px', fontSize: '11px', color: '#B45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '6px 10px', borderRadius: '12px', fontSize: '11px', color: '#B45309', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <AlertTriangle size={13} className="flex-shrink-0" />
                       <span>{safeAi.warning}</span>
                     </div>
@@ -2438,7 +2438,7 @@ export default function CheckinReviewDashboard() {
 
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             {(firewallResult.immediate_swaps || []).slice(0, 2).map((sw, sIdx) => (
-                              <div key={sIdx} style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '6px 10px', fontSize: '11px', color: '#101828' }}>
+                              <div key={sIdx} style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '12px', padding: '6px 10px', fontSize: '11px', color: '#101828' }}>
                                 <strong style={{ color: '#15803D', display: 'block', marginBottom: '2px' }}>
                                   البديل الموصى به: {sw.name_ar}
                                 </strong>
@@ -3048,25 +3048,25 @@ export default function CheckinReviewDashboard() {
                 gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
                 gap: '8px'
               }}>
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '6px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>تغير الوزن</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: Number(safeMetrics?.weight_change || 0) <= 0 ? '#16A34A' : '#D97706', fontFamily: 'JetBrains Mono, Cairo' }}>
                     {Number(safeMetrics?.weight_change || 0) > 0 ? `+${safeMetrics?.weight_change}` : (safeMetrics?.weight_change || 0)} كجم
                   </div>
                 </div>
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '6px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>التزام التغذية</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#101828', fontFamily: 'JetBrains Mono, Cairo' }}>
                     {safeMetrics?.adherence ?? 100}%
                   </div>
                 </div>
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '6px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>حصص التمرين</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#101828', fontFamily: 'JetBrains Mono, Cairo' }}>
                     {safeMetrics?.workouts_completed ?? 0} / {safeMetrics?.workouts_target ?? 4}
                   </div>
                 </div>
-                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '9999px', padding: '6px 8px', textAlign: 'center' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '6px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>فرق السعرات</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#673DE6', fontFamily: 'JetBrains Mono, Cairo' }}>
                     {(() => {
@@ -3272,7 +3272,7 @@ export default function CheckinReviewDashboard() {
                     </button>
                   </div>
                   {approveError && (
-                    <div role="alert" style={{ marginTop: '8px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '9999px', padding: '8px 10px', fontSize: '12px', fontWeight: 700, color: '#B91C1C' }}>
+                    <div role="alert" style={{ marginTop: '8px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', padding: '8px 10px', fontSize: '12px', fontWeight: 700, color: '#B91C1C' }}>
                       {approveError}
                     </div>
                   )}

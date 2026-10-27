@@ -59,7 +59,7 @@
   --h-neutral-border: #EAECF0;
 
   /* Radii (Curved System Aesthetics - No Sharp Corners) */
-  --h-radius-sm: 9999px;
+  --h-radius-sm: 12px;
   --h-radius-md: 10px;
   --h-radius-lg: 16px;
   --h-radius-xl: 20px;

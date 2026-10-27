@@ -244,7 +244,21 @@ export function applyThemeLive(primaryHex) {
     .btn-secondary,
     .button-primary,
     .button-secondary {
-      border-radius: 9999px !important;
+      border-radius: 12px !important;
+    }
+
+    /* Google AI Studio Soft Squircle Icon Buttons */
+    .squircle-icon-btn,
+    button.icon-btn,
+    button.btn-icon,
+    button[style*="width: 24px"],
+    button[style*="width: 26px"],
+    button[style*="width: 28px"],
+    button[style*="width: 30px"],
+    button[style*="width: 32px"],
+    button[style*="width: 34px"],
+    button[style*="width: 36px"] {
+      border-radius: 10px !important;
     }
 
     /* 1. Global Primary Action Buttons (Crisp 4K Anti-Glare) */

@@ -675,12 +675,19 @@ header .global-search-input,
 .status-badge,
 .filter-pill,
 .tab-pill,
-.btn-pill,
 [role="tab"],
+.filter-chip {
+  border-radius: 10px !important;
+}
+
+.btn-pill {
+  border-radius: 12px !important;
+}
+
 [class*="badge"],
 [class*="pill"],
 [class*="chip"] {
-  border-radius: 9999px !important;
+  border-radius: 8px !important;
 }
 
 .hostinger-card,

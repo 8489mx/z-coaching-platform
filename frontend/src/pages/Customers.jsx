@@ -353,7 +353,7 @@ export default function Customers() {
               style={{
                 height: '34px',
                 padding: '0 14px',
-                borderRadius: '9999px',
+                borderRadius: '12px',
                 border: '1px solid #D0D5DD',
                 background: '#FFFFFF',
                 color: '#344054',
@@ -391,7 +391,7 @@ export default function Customers() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                borderRadius: '9999px',
+                borderRadius: '12px',
                 background: '#673DE6',
                 color: '#FFFFFF',
                 border: 'none',
@@ -422,7 +422,7 @@ export default function Customers() {
           flexWrap: 'wrap',
           background: '#FFFFFF',
           border: '1px solid #EAECF0',
-          borderRadius: '9999px',
+          borderRadius: '12px',
           padding: '8px 12px',
           boxShadow: '0 1px 2px rgba(16, 24, 40, 0.03)'
         }}>

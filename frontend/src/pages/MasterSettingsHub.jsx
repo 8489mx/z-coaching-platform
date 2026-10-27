@@ -375,7 +375,7 @@ export default function MasterSettingsHub() {
                   width="200px"
                   showShortcut={false}
                 />
-                <div style={{ display: 'inline-flex', gap: '3px', background: '#F2F4F7', padding: '3px', borderRadius: '9999px', border: '1px solid #EAECF0' }}>
+                <div style={{ display: 'inline-flex', gap: '3px', background: '#F2F4F7', padding: '3px', borderRadius: '12px', border: '1px solid #EAECF0' }}>
                   {sectionsList.map(sec => {
                     const isSel = selectedSection === sec.id;
                     return (
@@ -777,7 +777,7 @@ export default function MasterSettingsHub() {
                     value={coachConfig.coachName || ''}
                     onChange={(e) => setCoachConfig({ ...coachConfig, coachName: e.target.value })}
                     placeholder="مثال: كريم زكريا / Karim Zakaria"
-                    style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
+                    style={{ width: '100%', height: '42px', borderRadius: '12px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
                   />
                 </div>
 
@@ -790,7 +790,7 @@ export default function MasterSettingsHub() {
                     value={coachConfig.coachTitle || ''}
                     onChange={(e) => setCoachConfig({ ...coachConfig, coachTitle: e.target.value })}
                     placeholder="مثال: أخصائي تغذية رياضية وإعداد بدني معتمد"
-                    style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
+                    style={{ width: '100%', height: '42px', borderRadius: '12px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
                   />
                 </div>
 
@@ -803,7 +803,7 @@ export default function MasterSettingsHub() {
                     value={coachConfig.brandTitle || ''}
                     onChange={(e) => setCoachConfig({ ...coachConfig, brandTitle: e.target.value })}
                     placeholder="مثال: Z COACHING"
-                    style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
+                    style={{ width: '100%', height: '42px', borderRadius: '12px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#FFFFFF', color: '#101828' }}
                   />
                 </div>
 
@@ -817,7 +817,7 @@ export default function MasterSettingsHub() {
                     onChange={(e) => setCoachConfig({ ...coachConfig, whatsappNumber: e.target.value })}
                     placeholder="2010XXXXXXXX"
                     dir="ltr"
-                    style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', fontFamily: 'JetBrains Mono, Cairo', outline: 'none', boxSizing: 'border-box', textAlign: 'right', background: '#FFFFFF', color: '#101828' }}
+                    style={{ width: '100%', height: '42px', borderRadius: '12px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', fontFamily: 'JetBrains Mono, Cairo', outline: 'none', boxSizing: 'border-box', textAlign: 'right', background: '#FFFFFF', color: '#101828' }}
                   />
                 </div>
 
@@ -831,7 +831,7 @@ export default function MasterSettingsHub() {
                     onChange={(e) => setCoachConfig({ ...coachConfig, instagramUrl: e.target.value })}
                     placeholder="https://instagram.com/yourhandle"
                     dir="ltr"
-                    style={{ width: '100%', height: '42px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', textAlign: 'right', background: '#FFFFFF', color: '#101828' }}
+                    style={{ width: '100%', height: '42px', borderRadius: '12px', border: '1px solid #D0D5DD', padding: '0 14px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', textAlign: 'right', background: '#FFFFFF', color: '#101828' }}
                   />
                 </div>
 
@@ -856,7 +856,7 @@ export default function MasterSettingsHub() {
                 style={{
                   height: '38px',
                   padding: '0 18px',
-                  borderRadius: '9999px',
+                  borderRadius: '12px',
                   border: '1px solid #D0D5DD',
                   background: '#FFFFFF',
                   color: '#344054',
@@ -875,7 +875,7 @@ export default function MasterSettingsHub() {
                 style={{
                   height: '38px',
                   padding: '0 24px',
-                  borderRadius: '9999px',
+                  borderRadius: '12px',
                   fontSize: '12.5px',
                   fontWeight: 700,
                   cursor: 'pointer',
