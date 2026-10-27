@@ -518,6 +518,43 @@ export default function CoachEditorNutritionTab(props) {
               </div>
             </div>
 
+            {/* شريط مطابقة الماكروز البصري (Visual Macro Compliance Bar: Planned vs Target) */}
+            <div style={{
+              background: '#FFFFFF',
+              border: '1px solid #EAECF0',
+              borderRadius: '12px',
+              padding: '10px 14px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: '10px',
+              boxShadow: '0 1px 2px rgba(16, 24, 40, 0.02)'
+            }}>
+              {[
+                { label: 'السعرات الحرارية', planned: totalPlannedCal, target: targetCal, unit: 'kcal', tol: 30 },
+                { label: 'البروتين', planned: totalPlannedP, target: targetP, unit: 'g', tol: 3 },
+                { label: 'الكاربوهيدرات', planned: totalPlannedC, target: targetC, unit: 'g', tol: 4 },
+                { label: 'الدهون الصحية', planned: totalPlannedF, target: targetF, unit: 'g', tol: 2 }
+              ].map((bar) => {
+                const pct = bar.target > 0 ? Math.min(100, Math.round((bar.planned / bar.target) * 100)) : 0;
+                const diff = bar.planned - bar.target;
+                const isMatch = Math.abs(diff) <= bar.tol;
+                const barColor = isMatch ? '#16A34A' : diff > 0 ? '#D97706' : '#2563EB';
+                return (
+                  <div key={bar.label} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '9px', padding: '7px 10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px', fontSize: '11px' }}>
+                      <span style={{ fontWeight: 800, color: '#344054' }}>{bar.label}</span>
+                      <span style={{ fontWeight: 800, color: barColor, fontFamily: 'JetBrains Mono, Cairo' }}>
+                        {bar.planned} / {bar.target} {bar.unit} ({pct}%)
+                      </span>
+                    </div>
+                    <div style={{ height: '6px', background: '#E2E8F0', borderRadius: '9999px', overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: '9999px', transition: 'width 0.25s ease' }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             {/* Meals Grid (2-Column Balanced Sleek Grid) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: '12px' }}>
               {program.nutrition?.meals?.map((meal) => {

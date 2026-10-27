@@ -300,6 +300,15 @@ export default function CoachCommandCenter() {
         id: actionId,
         clientCode: cleanCode,
         type: 'CHECKIN',
+        adherenceScore: Math.round(Number(chk?.nutrition_adherence_percent ?? 100) * 0.55 + Math.min(100, Math.round((Number(chk?.workouts_completed ?? 4) / Math.max(1, Number(chk?.workouts_scheduled ?? 4))) * 100)) * 0.45),
+        checkinPreview: {
+          weightKg: chk?.average_weight_kg || null,
+          weightDeltaKg: chk?.weight_change_kg ?? null,
+          waistCm: chk?.waist_circumference_cm || null,
+          nutritionAdherence: Number(chk?.nutrition_adherence_percent ?? 100),
+          workoutsCompleted: Number(chk?.workouts_completed ?? 4),
+          workoutsScheduled: Math.max(1, Number(chk?.workouts_scheduled ?? 4))
+        },
         hasInjury: isPlateau,
         clientName: chk?.user?.full_name || `مشترك #${cleanCode}`,
         country,
@@ -1251,6 +1260,21 @@ export default function CoachCommandCenter() {
                           </span>
                         )}
 
+                        {typeof action.adherenceScore === 'number' && action.type === 'CHECKIN' && (
+                          <span style={{
+                            fontSize: '10.5px',
+                            fontWeight: 800,
+                            fontFamily: 'JetBrains Mono, Cairo, sans-serif',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            background: action.adherenceScore >= 85 ? '#ECFDF3' : action.adherenceScore >= 70 ? '#FFFAEB' : '#FEF3F2',
+                            color: action.adherenceScore >= 85 ? '#027A48' : action.adherenceScore >= 70 ? '#B54708' : '#B42318',
+                            border: '1px solid ' + (action.adherenceScore >= 85 ? '#D1FADF' : action.adherenceScore >= 70 ? '#FEDF89' : '#FECDCA'),
+                            flexShrink: 0
+                          }}>
+                            التزام {action.adherenceScore}%
+                          </span>
+                        )}
                         {action.cycleNumber && (
                           <span style={{
                             fontSize: '11px',
@@ -1301,6 +1325,30 @@ export default function CoachCommandCenter() {
                         }}
                       >
                         {action.summary}
+                      {action.checkinPreview && action.type === 'CHECKIN' && (
+                        <div style={{
+                          marginTop: '8px',
+                          padding: '6px 10px',
+                          background: '#F8FAFC',
+                          border: '1px solid #EAECF0',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          flexWrap: 'wrap',
+                          gap: '8px',
+                          fontSize: '11px',
+                          color: '#475467',
+                          fontWeight: 700
+                        }}>
+                          <span>الوزن: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{action.checkinPreview.weightKg ? `${action.checkinPreview.weightKg} كجم` : '—'}</strong></span>
+                          {action.checkinPreview.weightDeltaKg !== null && action.checkinPreview.weightDeltaKg !== undefined && (
+                            <span>التغير: <strong style={{ color: Number(action.checkinPreview.weightDeltaKg) <= 0 ? '#16A34A' : '#D97706', fontFamily: 'JetBrains Mono' }}>{Number(action.checkinPreview.weightDeltaKg) > 0 ? `+${action.checkinPreview.weightDeltaKg}` : action.checkinPreview.weightDeltaKg} كجم</strong></span>
+                          )}
+                          <span>الدايت: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{action.checkinPreview.nutritionAdherence}%</strong></span>
+                          <span>التمرين: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{action.checkinPreview.workoutsCompleted}/{action.checkinPreview.workoutsScheduled}</strong></span>
+                        </div>
+                      )}
                       </p>
                     </div>
 

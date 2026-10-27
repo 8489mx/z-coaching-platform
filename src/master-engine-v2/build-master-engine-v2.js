@@ -901,6 +901,13 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
         : null,
         meal_distribution: mealDistribution,
     diet_framework: dietFramework,
+    methodology_policy: {
+      engine_id: "MASTER_ENGINE_V2",
+      bmr_formula: bmrFormula,
+      pal_model: "COMPOSITE_OCCUPATION_NEAT_PAL",
+      deficit_model: "STEPPED_CALORIC_DEFICIT_WITH_FLOORS",
+      protein_reference_basis: referenceWeightBasis
+    },
     carb_cycling: carbCyclingConfig,
     fasting_window: fastingWindowConfig,
     flexible_80_20: flexible8020Config,
@@ -943,6 +950,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       medical_coordination_notice_ar: (isType1Diabetic || isInsulinDependent) ? CLINICAL_GUIDELINES.DIABETES.INSULIN_COORDINATION_AR : null,
       ear_130g_disclaimer_ar: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.EAR_130G_DISCLAIMER_AR : null,
       diabetic_carb_cap_applied: false,
+      diabetic_reference_ceiling_applied: Boolean(diabeticCarbCapped),
+      diabetic_reference_carb_share: diabeticCarbCapped ? (CLINICAL_GUIDELINES.DIABETES.REFERENCE_CARB_ENERGY_SHARE || 0.45) : null,
       max_carb_energy_share: null,
       diabetic_carb_cap_note_ar: diabeticCarbCapped ? CLINICAL_GUIDELINES.DIABETES.CARB_CAP_RATIONALE_AR : null,
       coach_review_high_fat: hasDiabetesOrInsulinResistance && (fatG * 9) / targetCalories > CLINICAL_GUIDELINES.DIABETES.FAT_SHARE_REVIEW_THRESHOLD,

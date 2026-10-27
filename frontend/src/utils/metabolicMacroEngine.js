@@ -198,6 +198,13 @@ export function calculateMetabolicMacroProfile({
     },
     hormonal_fat_floor_active: targetFatGrams === absoluteMinFat,
     water_target_liters: Number(waterTargetLiters),
-    steps_target: stepsTarget
+    steps_target: stepsTarget,
+    methodology_policy: {
+      engine_id: 'MANUAL_PRECISION_CALCULATOR_V1',
+      bmr_formula: (body_fat_percent && Number(body_fat_percent) > 3 && Number(body_fat_percent) < 60) ? 'KATCH_MCARDLE' : 'MIFFLIN_ST_JEOR',
+      pal_model: 'ADDITIVE_NEAT_PLUS_EAT',
+      deficit_model: 'MULTIPLICATIVE_GOAL_FACTOR',
+      protein_reference_basis: isBmiCapApplied ? 'IDEAL_BODY_WEIGHT_BMI_30_CAP' : 'TOTAL_BODY_WEIGHT'
+    }
   };
 }
