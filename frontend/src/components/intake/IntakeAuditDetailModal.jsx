@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
-import { X, MessageCircle, ExternalLink, Zap, ZoomIn } from 'lucide-react';
+import { X, MessageCircle, ExternalLink, Zap, ZoomIn, AlertTriangle } from 'lucide-react';
+import { auditIntakeClinicalAndBiomechanicalSafety } from '../../utils/intakePreflightEngine';
 import { formatWhatsAppPhone } from '../../utils/whatsappRemindersEngine';
 
 const GOALS_MAP = {
@@ -218,14 +219,18 @@ export default function IntakeAuditDetailModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [submission, previewImage, onClose]);
 
-  if (!submission) return null;
-
-  // الخادم يخزّن جسم الطلب كما أرسله الفورم: { answers: { ...الإجابات } }، فبعد فك التشفير تصل
-  // الإجابات داخل غلاف ثانٍ. نفك الغلاف هنا كما تفعل loadLatestIntakeAnswers على الخادم.
-  const storedAnswers = submission.answers || {};
+  const storedAnswers = submission?.answers || {};
   const answers = storedAnswers.answers && typeof storedAnswers.answers === 'object' && !Array.isArray(storedAnswers.answers)
     ? { ...storedAnswers, ...storedAnswers.answers }
     : storedAnswers;
+
+  const preflight = useMemo(() => {
+    if (!submission) return null;
+    return auditIntakeClinicalAndBiomechanicalSafety(answers);
+  }, [submission, answers]);
+
+  if (!submission || !preflight) return null;
+
   const clientName = submission.user?.full_name || answers.full_name || 'بدون اسم';
   const clientCode = String(submission.user?.client_code || submission.id || '').replace(/^client[-_]?/i, '');
   const clientPhone = submission.user?.phone_number || answers.phone || '';
@@ -355,6 +360,155 @@ export default function IntakeAuditDetailModal({
 
         {/* Body */}
         <div style={{ padding: '16px', overflowY: 'auto', flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          
+          {/* Intake Preflight & Biomechanical Shield Card */}
+          <div style={{
+            gridColumn: '1 / -1',
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRadius: '12px',
+            padding: '14px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            boxShadow: '0 1px 3px rgba(16, 24, 40, 0.04)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '7px',
+                  background: '#F4F0FD',
+                  color: '#673DE6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Zap size={15} />
+                </div>
+                <div>
+                  <strong style={{ fontSize: '13px', color: '#101828', fontWeight: 800 }}>
+                    لوحة الفحص والتدقيق السريري والحركي المسبق
+                  </strong>
+                  <span style={{ fontSize: '11px', color: '#64748B', display: 'block' }}>
+                    مطابقة موانع التمارين وضوابط الماكروز تلقائياً قبل بناء مسودة البرنامج
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  padding: '3px 10px',
+                  borderRadius: '6px',
+                  background: preflight.has_injuries || preflight.has_medical_conditions ? '#FFFBEB' : '#ECFDF3',
+                  color: preflight.has_injuries || preflight.has_medical_conditions ? '#B54708' : '#027A48',
+                  border: `1px solid ${preflight.has_injuries || preflight.has_medical_conditions ? '#FEDF89' : '#A6F4C5'}`
+                }}>
+                  {preflight.has_injuries || preflight.has_medical_conditions ? 'يتطلب مراعاة محاذير' : 'مؤهل للمسار القياسي'}
+                </span>
+                {onGenerateDraft && submission.status !== 'DRAFT_GENERATED' && submission.status !== 'APPROVED' && (
+                  <button
+                    type="button"
+                    onClick={() => onGenerateDraft(submission)}
+                    disabled={generatingId === submission.id}
+                    style={{
+                      height: '32px',
+                      padding: '0 14px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: '#673DE6',
+                      color: '#FFFFFF',
+                      fontSize: '11.5px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 1px 3px rgba(103, 61, 230, 0.25)'
+                    }}
+                  >
+                    <Zap size={13} color="#FBBF24" />
+                    <span>{generatingId === submission.id ? 'جاري التوليد...' : 'توليد الخطة الذكية الآن'}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Metrics Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 600 }}>السعرات المستهدفة</span>
+                <strong style={{ fontSize: '13px', color: '#101828', fontFamily: 'JetBrains Mono, monospace' }}>
+                  {preflight.targets.calories.toLocaleString()} kcal
+                </strong>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 600 }}>البروتين المقترح</span>
+                <strong style={{ fontSize: '13px', color: '#027A48', fontFamily: 'JetBrains Mono, monospace' }}>
+                  {preflight.targets.protein_g}g
+                </strong>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 600 }}>الكاربوهيدرات</span>
+                <strong style={{ fontSize: '13px', color: '#B54708', fontFamily: 'JetBrains Mono, monospace' }}>
+                  {preflight.targets.carbs_g}g
+                </strong>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', fontWeight: 600 }}>الدهون الصحية</span>
+                <strong style={{ fontSize: '13px', color: '#673DE6', fontFamily: 'JetBrains Mono, monospace' }}>
+                  {preflight.targets.fats_g}g
+                </strong>
+              </div>
+            </div>
+
+            {/* Exercise Biomechanical Swaps Alert (if injuries detected) */}
+            {preflight.exercise_swaps.length > 0 && (
+              <div style={{
+                background: '#FEF3F2',
+                border: '1px solid #FECDCA',
+                borderRadius: '8px',
+                padding: '9px 12px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '5px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#B42318', fontSize: '11px', fontWeight: 800 }}>
+                  <AlertTriangle size={13} />
+                  <span>توجيهات الأمان الحركي واستبدال التمارين المجهدة تلقائياً:</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {preflight.exercise_swaps.map((swap, idx) => (
+                    <div key={idx} style={{ fontSize: '11px', color: '#912018', lineHeight: 1.4 }}>
+                      استبعاد {swap.contraindicated} ← البديل الآمن: {swap.safe_alternative} ({swap.reason})
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Clinical / Dietary Alerts (if conditions or fasting detected) */}
+            {preflight.clinical_alerts.length > 0 && (
+              <div style={{
+                background: '#EFF8FF',
+                border: '1px solid #B2DDFF',
+                borderRadius: '8px',
+                padding: '8px 12px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}>
+                {preflight.clinical_alerts.map((alert, idx) => (
+                  <span key={idx} style={{ fontSize: '11px', color: '#175CD3', fontWeight: 600, lineHeight: 1.4 }}>
+                    {alert}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
           
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <Section title="1) القياسات والهدف">

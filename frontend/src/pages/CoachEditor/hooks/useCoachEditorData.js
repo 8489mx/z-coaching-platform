@@ -46,6 +46,8 @@ export function useCoachEditorData() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [pendingIntake, setPendingIntake] = useState(null);
+  const [generatingDraft, setGeneratingDraft] = useState(false);
   
   // Starts empty: an unsaved screen shows nothing rather than another client's demo plan.
   const [program, setProgram] = useState(EMPTY_PROGRAM);
@@ -216,6 +218,13 @@ export function useCoachEditorData() {
         setClientProgression(data.progression || null);
         setClientFasting(data.fasting_context || null);
         setTrainingCycle(data.training_cycle || null);
+        if (data.latest_intake && (!data.has_program || !data.master_program)) {
+          setPendingIntake({
+            ...data.latest_intake,
+            client_name: data.user?.full_name,
+            client_code: targetCode
+          });
+        }
         if (data.master_program && (data.master_program.nutrition || data.master_program.training || data.master_program.training_program)) {
           const userMeta = data.user || {};
           const mapped = mapMasterToEditor(data.master_program, userMeta);
@@ -1765,6 +1774,36 @@ export function useCoachEditorData() {
     await handleSaveDraft(true, true);
   };
 
+  const handleGenerateDraftFromIntake = async (submissionId) => {
+    const subId = submissionId || pendingIntake?.id;
+    if (!subId) return;
+    try {
+      setGeneratingDraft(true);
+      const res = await fetch(`${API_BASE}/api/v1/intake/${subId}/generate-draft`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.master_program) {
+          const userMeta = data.master_program.client || { client_code: clientCodeParam };
+          const mapped = mapMasterToEditor(data.master_program, userMeta);
+          setProgram(mapped);
+          setPendingIntake(null);
+          showToast('تم بناء مسودة الخطة الذكية بنجاح وتجهيز كافة التمارين والوجبات للمراجعة');
+        }
+      } else {
+        const reasons = Array.isArray(data.reasons_ar) ? data.reasons_ar : [];
+        showToast(data.error || 'تعذر توليد المسودة', 'error');
+      }
+    } catch (err) {
+      console.error('handleGenerateDraftFromIntake error:', err);
+      showToast('خطأ في الاتصال بالخادم أثناء توليد المسودة', 'error');
+    } finally {
+      setGeneratingDraft(false);
+    }
+  };
+
   const filteredQueue = useMemo(() => {
     return clientsList.filter(c => {
       const q = queueSearch.trim();
@@ -1925,6 +1964,10 @@ export function useCoachEditorData() {
     setTrainingCycle,
     updateFastingOverride,
     confirmMedicalReviewAndPublish,
+    pendingIntake,
+    setPendingIntake,
+    generatingDraft,
+    handleGenerateDraftFromIntake,
     filteredQueue,
     displayedQueue,
     urgentCount,

@@ -1285,11 +1285,22 @@ export const getActiveProgramByUserId = async (req, res) => {
       : null;
 
     if (!program) {
+      const latestIntake = await IntakeSubmission.findOne({
+        where: { user_id: user.id },
+        order: [["id", "DESC"]],
+        attributes: ["id", "status", "created_at", "submitted_at"]
+      }).catch(() => null);
+
       return res.status(200).json({
         has_program: false,
         is_pending_review: true,
         plan_approval_status: user.plan_approval_status || "PENDING_COACH_REVIEW",
         program_id: null,
+        latest_intake: latestIntake ? {
+          id: latestIntake.id,
+          status: latestIntake.status,
+          created_at: latestIntake.submitted_at || latestIntake.created_at
+        } : null,
         user: {
           id: user.id,
           client_code: user.client_code,

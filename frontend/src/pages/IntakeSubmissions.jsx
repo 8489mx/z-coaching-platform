@@ -1,7 +1,7 @@
 import { ClientCodeBadge, ClientPackageBadge, getClientTier } from '../utils/tierBadgeHelper';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Clock, CheckCircle2, CreditCard, FileText, MessageCircle, Eye, Edit3, X, Layers, Copy, Check } from 'lucide-react';
+import { ExternalLink, Clock, CheckCircle2, CreditCard, FileText, MessageCircle, Eye, Edit3, X, Layers, Copy, Check, Zap } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import { TableSearch } from '@/shared/components/table-search';
@@ -179,7 +179,7 @@ export default function IntakeSubmissions() {
   const handleGenerateDraft = async (submission) => {
     const lookup = submission.user?.client_code || submission.user?.id || '1';
     if (submission.status === 'DRAFT_GENERATED' || submission.status === 'APPROVED') {
-      window.open(`/coach/editor?user_id=${lookup}`, '_blank');
+      window.open(`/coach/editor/${lookup}?submission_id=${submission.id}`, '_blank');
       return;
     }
 
@@ -192,7 +192,7 @@ export default function IntakeSubmissions() {
 
       const data = await res.json();
       if (res.ok) {
-        window.open(`/coach/editor?user_id=${lookup}&submission_id=${submission.id}`, '_blank');
+        window.open(`/coach/editor/${lookup}?submission_id=${submission.id}`, '_blank');
         fetchSubmissions();
       } else {
         const reasons = Array.isArray(data.reasons_ar) ? data.reasons_ar : [];
@@ -747,39 +747,50 @@ export default function IntakeSubmissions() {
                             )}
 
                             {/* Generate / Edit Program CTA - Primary Purple Style */}
-                            <button
-                              type="button"
-                              onClick={() => handleGenerateDraft(sub)}
-                              disabled={generatingId === sub.id}
-                              style={{
-                                height: '32px',
-                                padding: '0 15px',
-                                borderRadius: '8px',
-                                border: isApproved ? '1px solid #673DE6' : '1px solid #D0D5DD',
-                                background: isApproved ? '#673DE6' : '#FFFFFF',
-                                color: isApproved ? '#FFFFFF' : '#344054',
-                                fontSize: '11.5px',
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                boxShadow: isApproved ? '0 1px 3px rgba(103, 61, 230, 0.2)' : '0 1px 2px rgba(16, 24, 40, 0.05)',
-                                transition: 'all 0.15s ease'
-                              }}
-                              onMouseEnter={(e) => {
-                                if (isApproved) e.currentTarget.style.background = '#5025D1';
-                                else e.currentTarget.style.background = '#F9FAFB';
-                              }}
-                              onMouseLeave={(e) => {
-                                if (isApproved) e.currentTarget.style.background = '#673DE6';
-                                else e.currentTarget.style.background = '#FFFFFF';
-                              }}
-                              title={isApproved ? 'تعديل خطة المتدرب بالمحرر' : sub.status === 'DRAFT_GENERATED' ? 'فتح المسودة بالمحرر' : 'توليد مسودة الخطة آلياً'}
-                            >
-                              <Edit3 size={13} color={isApproved ? '#FFFFFF' : '#667085'} />
-                              <span>{isApproved ? 'تعديل الخطة' : sub.status === 'DRAFT_GENERATED' ? 'فتح بالمحرر' : 'توليد الخطة'}</span>
-                            </button>
+                            {(() => {
+                              const isDraft = sub.status === 'DRAFT_GENERATED';
+                              const isPending = !isApproved && !isDraft;
+                              const btnBg = isApproved ? '#FFFFFF' : (isDraft ? '#F4F0FD' : '#673DE6');
+                              const btnColor = isApproved ? '#344054' : (isDraft ? '#673DE6' : '#FFFFFF');
+                              const btnBorder = isApproved ? '1px solid #D0D5DD' : (isDraft ? '1px solid #DDD6FE' : '1px solid #673DE6');
+                              const btnText = isApproved ? 'تعديل الخطة' : (isDraft ? 'فتح بالمحرر' : (generatingId === sub.id ? 'جاري التوليد...' : 'توليد الخطة'));
+
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={() => handleGenerateDraft(sub)}
+                                  disabled={generatingId === sub.id}
+                                  style={{
+                                    height: '32px',
+                                    padding: '0 14px',
+                                    borderRadius: '8px',
+                                    border: btnBorder,
+                                    background: btnBg,
+                                    color: btnColor,
+                                    fontSize: '11.5px',
+                                    fontWeight: 700,
+                                    cursor: generatingId === sub.id ? 'wait' : 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    boxShadow: isPending ? '0 1px 3px rgba(103, 61, 230, 0.25)' : '0 1px 2px rgba(16, 24, 40, 0.05)',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (isPending) e.currentTarget.style.background = '#5025D1';
+                                    else if (isDraft) e.currentTarget.style.background = '#EDE8FA';
+                                    else e.currentTarget.style.background = '#F9FAFB';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = btnBg;
+                                  }}
+                                  title={isApproved ? 'تعديل خطة المتدرب بالمحرر' : isDraft ? 'فتح المسودة بالمحرر' : 'توليد مسودة الخطة الذكية آلياً'}
+                                >
+                                  {isPending ? <Zap size={13} color="#FBBF24" /> : <Edit3 size={13} color={btnColor} />}
+                                  <span>{btnText}</span>
+                                </button>
+                              );
+                            })()}
                           </div>
                         </td>
                       </tr>

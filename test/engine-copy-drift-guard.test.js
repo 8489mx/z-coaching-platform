@@ -19,6 +19,7 @@ const LIVE_PAIRS = {
   'clinical-supplement-safety-engine': 'clinicalSupplementSafetyEngine',
   'emergency-scenario-engine': 'emergencyScenarioEngine',
   'food-swap-engine': 'foodSwapEngine',
+  'intake-preflight-engine': 'intakePreflightEngine',
   'kitchen-yield-engine': 'kitchenYieldEngine',
   'mesocycle-debrief-engine': 'mesocycleDebriefEngine',
   'metabolic-macro-engine': 'metabolicMacroEngine',

@@ -1,24 +1,14 @@
 import React, { useState } from 'react';
-import { Dumbbell, Utensils, Activity } from 'lucide-react';
+import { Dumbbell, Utensils, Activity, Zap } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import CoachEditorNutritionTab from '../features/coach/components/CoachEditorNutritionTab';
 import LabBiomarkersReviewStudio from '../components/clinical/LabBiomarkersReviewStudio';
 import ExerciseVideoModal from '../components/modals/ExerciseVideoModal';
 import {
-  CoachClientsQueue,
-  CoachHeaderBar,
-  CoachTrainingTab,
-  CoachCardioHabitsTab,
-  CoachFastingToggle,
-  CoachCycleStatusLine,
-  CoachSwapFoodModal,
-  CoachAddFoodModal,
-  CoachSwapExerciseModal,
-  CoachAddExerciseModal,
-  CoachCardioSwapModal,
-  CoachMobilityModal,
-  CoachPlanQualityModal,
-  CoachEmergencyModal
+  CoachClientsQueue, CoachHeaderBar, CoachTrainingTab, CoachCardioHabitsTab,
+  CoachFastingToggle, CoachCycleStatusLine, CoachSwapFoodModal, CoachAddFoodModal,
+  CoachSwapExerciseModal, CoachAddExerciseModal, CoachCardioSwapModal, CoachMobilityModal,
+  CoachPlanQualityModal, CoachEmergencyModal
 } from './CoachEditor/components';
 import { useCoachEditorData } from './CoachEditor/hooks';
 
@@ -27,32 +17,24 @@ export default function CoachEditor() {
   const editor = useCoachEditorData();
 
   const {
-    clientCodeParam, trainingCycle, _searchParams, _setSearchParams, _loading, _setLoading,
-    saving, _setSaving, publishing, _setPublishing, program, setProgram,
+    clientCodeParam, trainingCycle, saving, publishing, program, setProgram,
     activeSessionDemand, weeklyVolumeAudit, coachNotes, setCoachNotes,
     activeSessionIdx, setActiveSessionIdx, activeWorkspaceTab, setActiveWorkspaceTab,
-    notification, _setNotification, selectedWeek, setSelectedWeek,
-    activeVideoModalEx, setActiveVideoModalEx, _autoRippleEnabled, _setAutoRippleEnabled,
-    clientsList, _setClientsList, queueFilter, setQueueFilter, queueTierFilter, setQueueTierFilter,
-    queueSearch, setQueueSearch, allExercisesList, _setAllExercisesList,
-    cardioSwapModal, setCardioSwapModal, isLabModalOpen, setIsLabModalOpen,
-    addFoodModal, setAddFoodModal, swapFoodModal, setSwapFoodModal,
-    addExModal, setAddExModal, swapExModal, setSwapExModal,
-    mobilityModal, setMobilityModal, allMobilityList, _setAllMobilityList,
-    _showReasoning, _setShowReasoning, exModalSearch, setExModalSearch,
-    addExMuscleFilter, setAddExMuscleFilter, addExEquipmentFilter, setAddExEquipmentFilter,
-    foodModalSearch, setFoodModalSearch, mobilityModalSearch, setMobilityModalSearch,
-    swapFoodSearch, setSwapFoodSearch, swapExSearch, setSwapExSearch,
-    handleSelectClient, showToast, _handleUpdateFoodAmount, _handleDeleteFood,
-    _handleAddNewMeal, _handleDuplicateMeal, _handleDeleteMeal, handleAddFoodToMeal,
+    notification, selectedWeek, setSelectedWeek, activeVideoModalEx, setActiveVideoModalEx,
+    clientsList, queueFilter, setQueueFilter, queueTierFilter, setQueueTierFilter,
+    queueSearch, setQueueSearch, allExercisesList, cardioSwapModal, setCardioSwapModal,
+    isLabModalOpen, setIsLabModalOpen, addFoodModal, setAddFoodModal, swapFoodModal, setSwapFoodModal,
+    addExModal, setAddExModal, swapExModal, setSwapExModal, mobilityModal, setMobilityModal,
+    allMobilityList, exModalSearch, setExModalSearch, addExMuscleFilter, setAddExMuscleFilter,
+    addExEquipmentFilter, setAddExEquipmentFilter, foodModalSearch, setFoodModalSearch,
+    mobilityModalSearch, setMobilityModalSearch, swapFoodSearch, setSwapFoodSearch,
+    swapExSearch, setSwapExSearch, handleSelectClient, showToast, handleAddFoodToMeal,
     handleExecuteFoodSwap, handleExecuteExerciseSwap, handleUpdateExerciseParam,
     handleMoveExercise, handleDuplicateSession, handleDeleteSession, handleDeleteExercise,
     handleAddExerciseToSession, handleSelectCardioModality, handleUpdateCardioParam,
-    handleAddMobilityToSession, handleRemoveMobilityFromSession,
-    handleSaveDraft, handleApproveAndPublish, filteredQueue, displayedQueue,
-    urgentCount, pendingPlanCount, needsUpdateCount,
-    currentWeekData, currentSessions, activeSession,
-    _FOOD_DATABASE_LIST, _CARDIO_MODALITY_OPTIONS
+    handleAddMobilityToSession, handleRemoveMobilityFromSession, handleSaveDraft,
+    handleApproveAndPublish, filteredQueue, displayedQueue, urgentCount, pendingPlanCount,
+    needsUpdateCount, currentWeekData, currentSessions, activeSession
   } = editor;
 
   const [isPlanQualityOpen, setIsPlanQualityOpen] = React.useState(false);
@@ -135,6 +117,30 @@ export default function CoachEditor() {
           clientsList={clientsList}
           handleSelectClient={handleSelectClient}
         />
+
+        {/* Pending Intake 1-Click Draft Generation Banner */}
+        {editor.pendingIntake && (!program?.nutrition?.meals?.length && !program?.training?.sessions?.length) && (
+          <div style={{ background: '#F4F0FD', border: '1px solid #DDD6FE', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', boxShadow: '0 2px 6px rgba(103, 61, 230, 0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#673DE6', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Zap size={18} color="#FBBF24" />
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 800, color: '#1E1B4B' }}>استمارة المتدرب مكتملة وجاهزة لتوليد البرنامج</h4>
+                <span style={{ fontSize: '11.5px', color: '#6B7280' }}>تم استلام استمارة المشترك بنجاح. انقر لتوليد مسودة الخطة الذكية المخصصة (تغذية + تمارين + كارديو) في ثانية واحدة.</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => editor.handleGenerateDraftFromIntake(editor.pendingIntake.id)}
+              disabled={editor.generatingDraft}
+              style={{ height: '36px', padding: '0 18px', borderRadius: '8px', background: '#673DE6', color: '#FFFFFF', border: 'none', fontWeight: 800, fontSize: '12px', cursor: editor.generatingDraft ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 6px rgba(103, 61, 230, 0.25)', whiteSpace: 'nowrap', flexShrink: 0 }}
+            >
+              <Zap size={14} color="#FBBF24" />
+              <span>{editor.generatingDraft ? 'جاري بناء مسودة الخطة...' : 'توليد مسودة الخطة الذكية الآن'}</span>
+            </button>
+          </div>
+        )}
 
         {/* 2. Unified Clean Workspace Tabs - Hostinger Design System */}
         <div 
