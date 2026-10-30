@@ -742,6 +742,7 @@ export async function approveCheckin(req, res) {
         : JSON.parse(JSON.stringify(latestProgram.program_data));
 
       let adapted = null;
+      let adaptationFailed = false;
       try {
         const bio = checkin.biofeedback || {};
         const painReports = Array.isArray(checkin.pain_reports) ? checkin.pain_reports : [];
@@ -781,6 +782,23 @@ export async function approveCheckin(req, res) {
         });
       } catch (e) {
         console.warn("buildAdaptedPlan fallback in checkin.controller:", e.message);
+        adaptationFailed = true;
+      }
+
+      // S3-6: a failed adaptation engine fails the approval instead of
+      // silently merging the raw analysis_output as if it were an
+      // adaptation result (suggested deltas with no adapted_nutrition,
+      // no week discipline, no requires_coach_approval). Nothing has
+      // been written yet, so the check-in stays PENDING_REVIEW and the
+      // coach can retry. When this check-in was already adapted and only
+      // custom macros are being re-applied, the engine result is
+      // discarded by the merge below, so its failure does not block.
+      if ((adaptationFailed || adapted == null) && !alreadyAdaptedForThisCheckin) {
+        return res.status(500).json({
+          success: false,
+          error: "فشل حساب التكييف، لم يتم اعتماد المتابعة ولم يتغير البرنامج",
+          code: "ADAPTATION_ENGINE_FAILED",
+        });
       }
 
       // Safe, Deterministic, and Idempotent Non-Destructive Deep Merge.

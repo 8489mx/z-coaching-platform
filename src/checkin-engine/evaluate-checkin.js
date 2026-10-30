@@ -113,6 +113,25 @@ export function evaluateCheckin(submission) {
   }
 
   // 5a. Critical Cardiac & Exertional Safety Screening (P0 Clinical Safety)
+  // S3-5: the benign-DOMS check is shared by the free-text screener and
+  // the structured pain-report check, so both apply the same patterns
+  // with the same emergency-keyword guard. A DOMS description is benign
+  // only when no true emergency wording is present alongside it.
+  function isBenignMuscularDomsText(t) {
+    const text = String(t || "");
+    if (!text.trim()) return false;
+    const benignMuscularDoms = [
+      /شد\s*عضلي\s*(في\s*)?(عضلات\s*)?الصدر/i,
+      /عضلات\s*الصدر\s*(بتوجعني|فيها\s*ألم|مألمة|شدت)/i,
+      /ألم\s*عضلي\s*(في\s*)?(عضلات\s*)?الصدر/i,
+      /(chest\s*muscle|pecs|pectoral)\s*(soreness|doms|tightness)/i,
+      /sore\s*(chest\s*muscles|pecs)/i,
+    ];
+    if (!benignMuscularDoms.some((p) => p.test(text))) return false;
+    const trueEmergencyKeywords = /(إغماء|فقدان\s*الوعي|خفقان\s*حاد|ألم\s*ضاغط|حرقان\s*شديد|ضيق\s*تنفس\s*شديد|syncope|passed\s*out|radiat)/i;
+    return !trueEmergencyKeywords.test(text);
+  }
+
   function evaluateCardiacScreeningText(text) {
     const t = String(text || "").toLowerCase().trim();
     if (!t) return false;
@@ -125,19 +144,9 @@ export function evaluateCheckin(submission) {
     const workingText = t.split(clauseDelimiter).map((c) => c.trim()).filter((c) => c && !negationClauseRegex.test(c)).map((c) => c.replace(negationRegex, " ").trim()).filter(Boolean).join(" ").trim();
     if (!workingText) return false;
 
-    // Benign muscular soreness / DOMS in pectorals
-    const benignMuscularDoms = [
-      /شد\s*عضلي\s*(في\s*)?(عضلات\s*)?الصدر/i,
-      /عضلات\s*الصدر\s*(بتوجعني|فيها\s*ألم|مألمة|شدت)/i,
-      /ألم\s*عضلي\s*(في\s*)?(عضلات\s*)?الصدر/i,
-      /(chest\s*muscle|pecs|pectoral)\s*(soreness|doms|tightness)/i,
-      /sore\s*(chest\s*muscles|pecs)/i,
-    ];
-    if (benignMuscularDoms.some((p) => p.test(workingText))) {
-      const trueEmergencyKeywords = /(إغماء|فقدان\s*الوعي|خفقان\s*حاد|ألم\s*ضاغط|حرقان\s*شديد|ضيق\s*تنفس\s*شديد|syncope|passed\s*out|radiat)/i;
-      if (!trueEmergencyKeywords.test(workingText)) {
-        return false;
-      }
+    // Benign muscular soreness / DOMS in pectorals (shared helper, S3-5)
+    if (isBenignMuscularDomsText(workingText)) {
+      return false;
     }
 
     const cardiacEmergencyPatterns = /(ألم.*صدر|وجع.*صدر|ضغط.*صدر|حرقان.*صدر|خفقان.*حاد|إغماء|فقدت.*الوعي|دوخة.*مفاجئة|chest.*pain|syncope|passed.*out|fainted|loss.*of.*consciousness)/i;
@@ -150,9 +159,25 @@ export function evaluateCheckin(submission) {
     String(submission.next_week_notes || "")
   ].join(" ");
 
+  // S3-5: a chest-area pain report is a cardiac flag only when it is
+  // significant (pain_level at or above the engine's injury threshold
+  // of 4, the same threshold flaggedPains uses) or its severity is
+  // unknown (fail closed). Mild chest pain with no other cardiac
+  // signal no longer locks training, and benign DOMS wording in the
+  // report exempts it exactly as in the free-text screener — while the
+  // injury path still applies at level >= 4. Emergency wording in the
+  // report itself still flags at any level.
   const hasChestPainInReports = (Array.isArray(pain_reports) ? pain_reports : []).some((p) => {
     const loc = String(p.area || p.location || p.body_part || "").toUpperCase();
-    return loc.includes("CHEST") || loc.includes("صدر");
+    if (!(loc.includes("CHEST") || loc.includes("صدر"))) return false;
+    const reportText = [p.area, p.location, p.body_part, p.description, p.notes, p.details, p.summary]
+      .filter((v) => typeof v === "string")
+      .join(" ");
+    if (isBenignMuscularDomsText(reportText)) return false;
+    if (typeof p.pain_level === "number" && p.pain_level < 4) {
+      return evaluateCardiacScreeningText(reportText);
+    }
+    return true;
   });
 
   const hasStructuredCardiac = Boolean(
