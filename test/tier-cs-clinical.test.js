@@ -709,6 +709,7 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       try {
         const mockKidneyUser = {
           id: 999,
+          role: "COACH",
           name: "عميل كلى للاختبار",
           weight: 80,
           weight_kg: 80,
@@ -734,6 +735,7 @@ describe("Tier CS Clinical Fixes & Verification", () => {
 
         // Scenario A: Coach attempts to enter 150g protein (exceeding 80g safe cap)
         const unsafeReq = {
+          user: { id: 999 },
           body: {
             user_id: 999,
             program_data: {
@@ -774,6 +776,7 @@ describe("Tier CS Clinical Fixes & Verification", () => {
 
         // Scenario B: Safe update within limits (75g protein <= 80g cap)
         const safeReq = {
+          user: { id: 999 },
           body: {
             user_id: 999,
             program_data: {
@@ -806,6 +809,7 @@ describe("Tier CS Clinical Fixes & Verification", () => {
         // Scenario C: Hypertension override (Coach manually enters LEG_PRESS_MACHINE or RIR 1)
         const hyperUser = {
           id: 998,
+          role: "COACH",
           name: "عميل ضغط للاختبار",
           weight: 85,
           medical_conditions: [{ conditionCode: "HYPERTENSION" }]
@@ -813,6 +817,7 @@ describe("Tier CS Clinical Fixes & Verification", () => {
         User.findByPk = async (id) => (Number(id) === 998 ? hyperUser : (Number(id) === 999 ? mockKidneyUser : null));
 
         const unsafeHyperReq = {
+          user: { id: 998 },
           body: {
             user_id: 998,
             program_data: {
@@ -858,6 +863,7 @@ describe("Tier CS Clinical Fixes & Verification", () => {
         // Scenario D: Asthma override (Coach manually enters HIIT cardio)
         const asthmaUser = {
           id: 997,
+          role: "COACH",
           name: "عميل ربو للاختبار",
           weight: 70,
           medical_conditions: [{ conditionCode: "ASTHMA_OR_RESPIRATORY_CONDITION" }]
@@ -865,6 +871,7 @@ describe("Tier CS Clinical Fixes & Verification", () => {
         User.findByPk = async (id) => (Number(id) === 997 ? asthmaUser : (Number(id) === 998 ? hyperUser : mockKidneyUser));
 
         const unsafeAsthmaReq = {
+          user: { id: 997 },
           body: {
             user_id: 997,
             program_data: {

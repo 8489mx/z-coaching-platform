@@ -28,6 +28,8 @@ async function cleanup() {
     await Program.destroy({ where: { user_id: u.id } });
     await u.destroy();
   }
+  const coach = await User.findOne({ where: { client_code: "TEST_FIX01_COACH" } });
+  if (coach) await coach.destroy();
 }
 
 test("FIX-01: MacroCalculator save contract updates stored plan, editor targets, client_view, and PDF stages while preserving meals and fasting", async (t) => {
@@ -35,6 +37,15 @@ test("FIX-01: MacroCalculator save contract updates stored plan, editor targets,
   t.after(async () => {
     await cleanup();
     await User.sequelize.close();
+  });
+
+  // S4-1: updateCustomProgram is coach-only, so the editor calls use a coach requester.
+  const coach = await User.create({
+    client_code: "TEST_FIX01_COACH",
+    phone_number: "01099880102",
+    full_name: "حاسبة كوتش",
+    role: "COACH",
+    subscription_status: "ACTIVE",
   });
 
   const user = await User.create({
@@ -78,7 +89,7 @@ test("FIX-01: MacroCalculator save contract updates stored plan, editor targets,
 
   await t.test("1. Empty update payload without program_data or master_program is rejected with 400", async () => {
     const emptyRes = await callController(updateCustomProgram, {
-      user: { id: user.id, role: "ADMIN" },
+      user: { id: coach.id, role: "ADMIN" },
       body: { client_code: CODE },
     });
     assert.equal(emptyRes.status, 400);
@@ -86,7 +97,7 @@ test("FIX-01: MacroCalculator save contract updates stored plan, editor targets,
 
   await t.test("2. MacroCalculator payload updates stored calories from 1800 to 2032 across all consumers", async () => {
     const activeBefore = await callController(getActiveProgramByUserId, {
-      user: { id: user.id, role: "ADMIN" },
+      user: { id: coach.id, role: "ADMIN" },
       params: { user_id: CODE },
       query: {},
     });
@@ -106,7 +117,7 @@ test("FIX-01: MacroCalculator save contract updates stored plan, editor targets,
     };
 
     const saveRes = await callController(updateCustomProgram, {
-      user: { id: user.id, role: "ADMIN" },
+      user: { id: coach.id, role: "ADMIN" },
       body: {
         client_code: CODE,
         master_program: master,
@@ -115,7 +126,7 @@ test("FIX-01: MacroCalculator save contract updates stored plan, editor targets,
     assert.equal(saveRes.status, 200);
 
     const activeAfter = await callController(getActiveProgramByUserId, {
-      user: { id: user.id, role: "ADMIN" },
+      user: { id: coach.id, role: "ADMIN" },
       params: { user_id: CODE },
       query: {},
     });

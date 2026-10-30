@@ -43,9 +43,11 @@ async function cleanup() {
 test("publishing a plan for a kidney/liver client needs an explicit medical review confirmation", async (t) => {
   await cleanup();
   const user = await User.create({ client_code: CODE, phone_number: "01099000907", full_name: "Gate Test", role: "CLIENT" });
+  // S4-1: updateCustomProgram is coach-only, so the editor calls use a coach requester.
+  const coach = await User.create({ client_code: "TEST_GATE_COACH_907", phone_number: "01099000908", full_name: "Gate Coach", role: "COACH" });
   const publish = async (extra = {}) => {
     const r = mockRes();
-    await updateCustomProgram({ body: { client_code: CODE, program_data: { nutrition: {} }, publish: true, ...extra }, user: { id: user.id } }, r.res);
+    await updateCustomProgram({ body: { client_code: CODE, program_data: { nutrition: {} }, publish: true, ...extra }, user: { id: coach.id } }, r.res);
     return r.out;
   };
 
@@ -93,7 +95,7 @@ test("publishing a plan for a kidney/liver client needs an explicit medical revi
         }
         assert.equal(out.status, 200, JSON.stringify(out.body));
         assert.equal(out.body.master_program.medical_review_confirmation.confirmed, true);
-        assert.equal(out.body.master_program.medical_review_confirmation.confirmed_by_user_id, user.id);
+        assert.equal(out.body.master_program.medical_review_confirmation.confirmed_by_user_id, coach.id);
       });
     }
 
@@ -105,6 +107,7 @@ test("publishing a plan for a kidney/liver client needs an explicit medical revi
     });
   } finally {
     await cleanup();
+    await coach.destroy().catch(() => {});
     await sequelize.close().catch(() => {});
   }
 });

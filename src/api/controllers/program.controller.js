@@ -1536,6 +1536,15 @@ function syncProgramDataNutritionTargets(programData, previousData = null, prefe
 
 export const updateCustomProgram = async (req, res) => {
   try {
+    // S4-1: the editor save path is coach-only. Any authenticated account
+    // could previously overwrite and publish any client's program by
+    // passing that client's user_id/client_code in the body. The role is
+    // re-read from the database, same as setFastingOverride in this file:
+    // the JWT carries no role claim to trust.
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !["COACH", "ADMIN"].includes(requester.role)) {
+      return res.status(403).json({ error: "تعديل البرنامج متاح للكوتش فقط" });
+    }
     const { user_id, client_code, program_data: rawProgramData, master_program, coach_notes, is_published, publish } = req.body;
     const program_data = rawProgramData ?? master_program;
     const hasPublishAction = Boolean(is_published || publish);
