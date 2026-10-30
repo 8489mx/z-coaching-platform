@@ -1091,10 +1091,16 @@ export const prepareNextCycle = async (req, res) => {
       });
     }
 
-    const [progression, checkins, medicalReview] = await Promise.all([
+    // S3-1: the clinical lockout is a publish gate, not only a view-time one.
+    // getActiveClinicalLockout fails closed (locked:true on lookup error), so
+    // it is awaited without a fail-open fallback: an unchecked lockout must
+    // wait for the coach. runDueCycles and the daily scheduler both go
+    // through this handler, so this one check covers every publish path.
+    const [progression, checkins, medicalReview, clinicalLockout] = await Promise.all([
       loadProgressionState(user.id),
       CheckinSubmission.findAll({ where: { user_id: user.id }, order: [["id", "DESC"]], limit: 4, attributes: ["analysis_output", "createdAt"] }),
       resolveIntakeMedicalReview(user.id).catch(() => ({ required: false })),
+      getActiveClinicalLockout(user.id),
     ]);
 
     const { program_data, summary } = buildNextCycle({
@@ -1110,6 +1116,7 @@ export const prepareNextCycle = async (req, res) => {
       deload_active: progression?.deload?.status === "ACTIVE",
       subscription_active: user.subscription_status !== "DEACTIVATED"
         && (!user.subscription_end_date || new Date(user.subscription_end_date).getTime() >= Date.now()),
+      clinical_lockout: clinicalLockout,
     });
 
     const created = await Program.create({

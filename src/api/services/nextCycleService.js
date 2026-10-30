@@ -127,8 +127,13 @@ const AUTO_PUBLISH_MAX_CHECKIN_AGE_DAYS = 21;
  *
  * The system is meant to carry a client through a long subscription without the coach remembering
  * anything. It is not meant to decide for a client whose file says a doctor should look, who is in
- * pain, or who stopped reporting: in those cases the plan is ready and waiting, and the coach is
- * told exactly why.
+ * pain, who stopped reporting, or whose training is under an active clinical lockout: in those
+ * cases the plan is ready and waiting, and the coach is told exactly why.
+ *
+ * clinical_lockout is the result of getActiveClinicalLockout for the client. Callers MUST pass
+ * it: omitting it means the lockout was not checked. A locked result blocks publishing even when
+ * the lookup itself failed (getActiveClinicalLockout returns locked:true on error), because an
+ * unchecked lockout must wait for the coach, never publish.
  */
 export function evaluateAutoPublish({
   summary = {},
@@ -136,10 +141,16 @@ export function evaluateAutoPublish({
   last_checkin_at = null,
   deload_active = false,
   subscription_active = true,
+  clinical_lockout = null,
   now = new Date(),
 } = {}) {
   const reasons = [];
 
+  if (clinical_lockout === true || clinical_lockout?.locked === true) {
+    const directive = clinical_lockout.directive_ar || "إيقاف النشاط التدريبي فوراً والرجوع للطبيب المعالج.";
+    const week = clinical_lockout.week_number ? ` (متابعة الأسبوع ${clinical_lockout.week_number})` : "";
+    reasons.push(`قفل سريري نشط${week}: ${directive}`);
+  }
   if (medical_review_required) {
     reasons.push("ملف المتدرب يستوجب مراجعة طبية، فالنشر التلقائي موقوف لحالته.");
   }
