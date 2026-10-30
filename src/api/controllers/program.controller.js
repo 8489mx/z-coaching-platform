@@ -1476,10 +1476,12 @@ function syncProgramDataNutritionTargets(programData, previousData = null, prefe
   const stagesMacros = programData.nutrition_program?.stages?.macro_targets;
   const navTargets = programData.nutrition?.targets;
 
-  const prevStagesCal = Number(previousData?.nutrition_program?.stages?.energy_target?.target_calories_kcal || 0);
+  // S2-1 (A1): stage numbers exist in both key shapes; change detection must
+  // read either, preferring the flat shape the editor writes.
+  const prevStagesCal = Number(previousData?.nutrition_program?.stages?.energy_target?.target_calories_kcal || previousData?.nutrition_program?.stages?.energy_target?.calories_kcal || previousData?.nutrition_program?.stages?.energy_target?.target_calories || 0);
   const prevNavCal = Number(previousData?.nutrition?.targets?.calories || 0);
 
-  const stagesCal = Number(stagesEnergy?.target_calories_kcal || stagesEnergy?.calories_kcal || 0);
+  const stagesCal = Number(stagesEnergy?.target_calories_kcal || stagesEnergy?.calories_kcal || stagesEnergy?.target_calories || 0);
   const navCal = Number(navTargets?.calories || navTargets?.target_calories_kcal || 0);
 
   const stagesChanged = stagesCal > 0 && stagesCal !== prevStagesCal;
@@ -1545,18 +1547,56 @@ function syncProgramDataNutritionTargets(programData, previousData = null, prefe
   if (!programData.nutrition_program.stages || typeof programData.nutrition_program.stages !== "object") {
     programData.nutrition_program.stages = {};
   }
-  programData.nutrition_program.stages.energy_target = {
-    ...(programData.nutrition_program.stages.energy_target || {}),
-    target_calories_kcal: calories,
-  };
-  programData.nutrition_program.stages.macro_targets = {
-    ...(programData.nutrition_program.stages.macro_targets || {}),
-    protein_g: protein,
-    carbs_g: carbs,
-    carbohydrate_g: carbs,
-    fats_g: fats,
-    fat_g: fats,
-  };
+  // S2-1 (A1): the winning numbers are written into the stage keys in BOTH
+  // shapes, so the pipeline keys (target_calories, nested target_g) can never
+  // again carry stale pipeline numbers next to the edited ones. Stage
+  // metadata (status, reasons, pipeline diagnostics) is preserved, and a
+  // WITHHELD stage is left untouched.
+  const stageEnergy = programData.nutrition_program.stages.energy_target || {};
+  if (stageEnergy.status !== "WITHHELD") {
+    programData.nutrition_program.stages.energy_target = {
+      ...stageEnergy,
+      target_calories: calories,
+      target_calories_kcal: calories,
+      calories_kcal: calories,
+      target_source: "UNIVERSAL_TARGETS",
+    };
+  }
+  const stageMacros = programData.nutrition_program.stages.macro_targets || {};
+  if (stageMacros.status !== "WITHHELD") {
+    const macroCaloriesTotal = protein * 4 + carbs * 4 + fats * 9;
+    const round1 = (value) => Math.round(value * 10) / 10;
+    programData.nutrition_program.stages.macro_targets = {
+      ...stageMacros,
+      target_calories: calories,
+      protein: {
+        ...(stageMacros.protein || {}),
+        target_g: protein,
+        calories: protein * 4,
+        percent_of_calories: round1((protein * 4 / calories) * 100),
+      },
+      fat: {
+        ...(stageMacros.fat || {}),
+        target_g: fats,
+        calories: fats * 9,
+        percent_of_calories: round1((fats * 9 / calories) * 100),
+      },
+      carbohydrate: {
+        ...(stageMacros.carbohydrate || {}),
+        target_g: carbs,
+        calories: carbs * 4,
+        percent_of_calories: round1((carbs * 4 / calories) * 100),
+      },
+      protein_g: protein,
+      carbs_g: carbs,
+      carbohydrate_g: carbs,
+      fats_g: fats,
+      fat_g: fats,
+      macro_calories_total: macroCaloriesTotal,
+      calorie_difference: macroCaloriesTotal - calories,
+      target_source: "UNIVERSAL_TARGETS",
+    };
+  }
 
   return programData;
 }

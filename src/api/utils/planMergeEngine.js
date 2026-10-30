@@ -120,6 +120,58 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     merged.nutrition_program.macro_targets.carb_g = finalCarbs;
     merged.nutrition_program.macro_targets.fat_g = finalFats;
 
+    // B.3b (S2-1 A1): keep the pipeline stages' headline numbers in agreement
+    // with the merged targets, in both key shapes. A WITHHELD stage is left
+    // untouched; stage metadata and all other stages are preserved.
+    if (merged.nutrition_program.stages && typeof merged.nutrition_program.stages === "object") {
+      const macroCaloriesTotal = finalProtein * 4 + finalCarbs * 4 + finalFats * 9;
+      const round1 = (value) => Math.round(value * 10) / 10;
+      const stageEnergy = merged.nutrition_program.stages.energy_target;
+      if (stageEnergy && stageEnergy.status !== "WITHHELD") {
+        merged.nutrition_program.stages.energy_target = {
+          ...stageEnergy,
+          target_calories: finalCalories,
+          target_calories_kcal: finalCalories,
+          calories_kcal: finalCalories,
+          target_source: "UNIVERSAL_TARGETS",
+        };
+      }
+      const stageMacros = merged.nutrition_program.stages.macro_targets;
+      if (stageMacros && stageMacros.status !== "WITHHELD") {
+        merged.nutrition_program.stages.macro_targets = {
+          ...stageMacros,
+          target_calories: finalCalories,
+          protein: {
+            ...(stageMacros.protein || {}),
+            target_g: finalProtein,
+            calories: finalProtein * 4,
+            percent_of_calories: round1((finalProtein * 4 / finalCalories) * 100),
+          },
+          fat: {
+            ...(stageMacros.fat || {}),
+            target_g: finalFats,
+            calories: finalFats * 9,
+            percent_of_calories: round1((finalFats * 9 / finalCalories) * 100),
+          },
+          carbohydrate: {
+            ...(stageMacros.carbohydrate || {}),
+            target_g: finalCarbs,
+            calories: finalCarbs * 4,
+            percent_of_calories: round1((finalCarbs * 4 / finalCalories) * 100),
+          },
+          protein_g: finalProtein,
+          carbohydrate_g: finalCarbs,
+          carb_g: finalCarbs,
+          carbs_g: finalCarbs,
+          fat_g: finalFats,
+          fats_g: finalFats,
+          macro_calories_total: macroCaloriesTotal,
+          calorie_difference: macroCaloriesTotal - finalCalories,
+          target_source: "UNIVERSAL_TARGETS",
+        };
+      }
+    }
+
     // B.3: nutrition_program.quantized_plan.daily_totals
     if (merged.nutrition_program.quantized_plan && merged.nutrition_program.quantized_plan.daily_totals) {
       merged.nutrition_program.quantized_plan.daily_totals.calories_kcal = finalCalories;

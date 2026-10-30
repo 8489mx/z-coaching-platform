@@ -199,6 +199,92 @@ function calculateAge(dobString, assessmentDateString) {
 }
 
 /**
+ * S2-1 (Option A1): the universal targets are the plan of record. A generated
+ * program must not carry two headline prescriptions, so the pipeline stages'
+ * headline numbers are unified from the universal targets, in both the
+ * pipeline key shape (target_calories, nested target_g) and the flat key
+ * shape live consumers read (target_calories_kcal, protein_g, ...).
+ *
+ * Deliberately preserved, not overwritten:
+ * - The pipeline's own estimate stays as diagnostics: estimated_maintenance_kcal
+ *   and calculation_method still describe the NASEM EER computation, and the
+ *   protein factor/reference-weight fields still describe the pipeline's
+ *   derivation. The recomputed calories/percent fields describe the unified
+ *   numbers, so the stage stays arithmetically self-consistent.
+ * - A WITHHELD stage is returned untouched: withholding is the pipeline's
+ *   safety posture for medical-review/blocked intakes, and un-withholding it
+ *   here would publish numbers the pipeline deliberately withheld.
+ * - Every other stage (distribution, portion solver, swaps, preflight, ...)
+ *   is returned unchanged. Under A1 the portion solver still runs on pipeline
+ *   numbers; no live consumer reads its output.
+ *
+ * Pure: returns a new stages object, never mutates its input.
+ */
+export function unifyNutritionStageTargets(stages, universalTargets) {
+  if (!stages || typeof stages !== "object") return stages;
+  const calories = Number(universalTargets?.target_calories ?? universalTargets?.target_calories_kcal ?? 0);
+  const protein = Number(universalTargets?.protein_g ?? universalTargets?.total_protein_g ?? 0);
+  const carbs = Number(universalTargets?.carb_g ?? universalTargets?.carbohydrate_g ?? universalTargets?.total_carbs_g ?? 0);
+  const fat = Number(universalTargets?.fat_g ?? universalTargets?.total_fat_g ?? 0);
+  if (!(calories > 0)) return stages;
+
+  const energyTarget = stages.energy_target;
+  const macroTargets = stages.macro_targets;
+  const fiber = Number(universalTargets?.fiber_g);
+  const macroCaloriesTotal = protein * 4 + carbs * 4 + fat * 9;
+  const round1 = (value) => Math.round(value * 10) / 10;
+
+  return {
+    ...stages,
+    energy_target:
+      !energyTarget || energyTarget.status === "WITHHELD"
+        ? energyTarget
+        : {
+            ...energyTarget,
+            target_calories: calories,
+            target_calories_kcal: calories,
+            calories_kcal: calories,
+            target_source: "UNIVERSAL_TARGETS",
+          },
+    macro_targets:
+      !macroTargets || macroTargets.status === "WITHHELD"
+        ? macroTargets
+        : {
+            ...macroTargets,
+            target_calories: calories,
+            protein: {
+              ...(macroTargets.protein || {}),
+              target_g: protein,
+              calories: protein * 4,
+              percent_of_calories: round1((protein * 4 / calories) * 100),
+            },
+            fat: {
+              ...(macroTargets.fat || {}),
+              target_g: fat,
+              calories: fat * 9,
+              percent_of_calories: round1((fat * 9 / calories) * 100),
+            },
+            carbohydrate: {
+              ...(macroTargets.carbohydrate || {}),
+              target_g: carbs,
+              calories: carbs * 4,
+              percent_of_calories: round1((carbs * 4 / calories) * 100),
+            },
+            protein_g: protein,
+            carbohydrate_g: carbs,
+            carb_g: carbs,
+            carbs_g: carbs,
+            fat_g: fat,
+            fats_g: fat,
+            ...(Number.isFinite(fiber) && fiber > 0 ? { fiber_target_g: fiber } : {}),
+            macro_calories_total: macroCaloriesTotal,
+            calorie_difference: macroCaloriesTotal - calories,
+            target_source: "UNIVERSAL_TARGETS",
+          },
+  };
+}
+
+/**
  * Builds the comprehensive Master Program V2 with multi-week meso-cycles,
  * practical serving quantization, and Zone 2 cardiovascular heart-rate targets.
  *
@@ -1174,6 +1260,14 @@ export function buildMasterEngineV2(inputs) {
     nutritionFoodCatalog,
   });
 
+  // S2-1 (A1): one headline prescription. The stage numbers are unified from
+  // the universal targets; the portion solver below still runs on the
+  // pipeline stages, whose other stages are unchanged by the unification.
+  const unifiedNutritionStages = unifyNutritionStageTargets(
+    baseNutritionProgram.stages,
+    universalTargets,
+  );
+
   const portionSolverStage = baseNutritionProgram.stages?.portion_solver;
   const sanitizedMealPlan = portionSolverStage ? sanitizeMealPlan(portionSolverStage, canonicalIntake) : null;
   const quantizedNutrition = sanitizedMealPlan ? quantizeNutritionPlan(sanitizedMealPlan) : null;
@@ -1229,6 +1323,7 @@ export function buildMasterEngineV2(inputs) {
 
   const nutrition_program_v2 = Object.freeze({
     ...baseNutritionProgram,
+    stages: unifiedNutritionStages,
     targets: {
       ...universalTargets,
       meals: culinaryRecipeMeals,
