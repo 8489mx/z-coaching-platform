@@ -783,12 +783,24 @@ export async function approveCheckin(req, res) {
         console.warn("buildAdaptedPlan fallback in checkin.controller:", e.message);
       }
 
-      // Safe, Deterministic, and Idempotent Non-Destructive Deep Merge
-      const mergedProgramData = mergeAdaptedPlanIntoProgram(
-        progData,
-        alreadyAdaptedForThisCheckin ? {} : (adapted || checkin.analysis_output || {}),
-        custom_macros
-      );
+      // Safe, Deterministic, and Idempotent Non-Destructive Deep Merge.
+      // S3-2: out-of-range custom macros are a coach-facing 400, not a 500:
+      // nothing has been written yet at this point, so the coach fixes the
+      // numbers and re-approves. Any other merge failure still surfaces as a
+      // 500 through the outer handler catch.
+      let mergedProgramData;
+      try {
+        mergedProgramData = mergeAdaptedPlanIntoProgram(
+          progData,
+          alreadyAdaptedForThisCheckin ? {} : (adapted || checkin.analysis_output || {}),
+          custom_macros
+        );
+      } catch (err) {
+        if (err?.code === "CUSTOM_MACROS_OUT_OF_RANGE") {
+          return res.status(400).json({ success: false, error: err.message, code: err.code });
+        }
+        throw err;
+      }
 
       await latestProgram.update({
         program_data: mergedProgramData,

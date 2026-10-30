@@ -7,6 +7,104 @@
 
 import { calculateSessionDemand, auditWeeklyMuscleVolume } from './trainingNutritionCoupling.js';
 import { splitOversizedPortions, carbPortionLimit, flagHeavyOil, refreshActualMacros } from '../../nutrition-meal-context-v2/build-culinary-meals.js';
+import { CLINICAL_GUIDELINES } from '../../config/clinical-guidelines.js';
+
+const MAX_KCAL_PER_KG = 55;
+
+function customMacrosOutOfRange(message) {
+  const error = new Error(message);
+  error.code = "CUSTOM_MACROS_OUT_OF_RANGE";
+  return error;
+}
+
+/**
+ * S3-2: coach custom macros pass the same sanity bounds the adaptation engine
+ * applies to its own numbers. Out-of-range values are REJECTED, never silently
+ * clamped: the coach is the approving actor, so a typo must come back for
+ * correction, not become the client's plan under different numbers. The
+ * approval handler maps this error to 400. Bounds mirror buildAdaptedPlan:
+ * the sex-specific calorie floor, the 55 kcal/kg ceiling on the reference
+ * weight, the under-18 maintenance rule, and the diabetic carbohydrate
+ * share. A check that cannot be computed from the stored program (no usable
+ * weight for the ceiling, no base energy for the carb share) is skipped,
+ * never fatal. Only the custom-macros branch is guarded: adapted numbers
+ * were already guarded by buildAdaptedPlan.
+ */
+function validateCustomMacros(merged, finals) {
+  const { finalCalories, finalProtein, finalCarbs, finalFats } = finals;
+  for (const [name, value] of [["calories", finalCalories], ["protein", finalProtein], ["carbs", finalCarbs], ["fats", finalFats]]) {
+    if (!Number.isFinite(value) || value <= 0) {
+      throw customMacrosOutOfRange(
+        `الماكروز المخصصة غير صالحة: ${name} (${value}) يجب أن تكون رقماً موجباً. راجع الأرقام المدخلة وأعد الاعتماد.`
+      );
+    }
+  }
+
+  const planTargets = merged.nutrition_program?.targets || {};
+  const gender = merged.client_profile?.gender ?? merged.client?.gender;
+  const isFemale = ["female", "f", "أنثى"].includes(String(gender ?? "").trim().toLowerCase());
+  const calorieFloor = isFemale ? 1200 : 1500;
+  if (finalCalories < calorieFloor) {
+    throw customMacrosOutOfRange(
+      `السعرات المخصصة (${finalCalories}) أقل من الحد الأدنى (${calorieFloor} سعرة). راجع الرقم المدخل — غالباً رقم ناقص — وأعد الاعتماد.`
+    );
+  }
+
+  const baseEnergy = Number(
+    merged.nutrition_program?.macro_targets?.calories_kcal
+    || planTargets.target_calories_kcal
+    || planTargets.target_calories
+    || merged.nutrition?.targets?.calories
+    || 0
+  );
+  const currentWeightKg = Number(merged.client_profile?.weight_kg ?? merged.client?.weight_kg);
+  const planReferenceKg = Number(planTargets.protein_reference_weight_kg);
+  const usesReferenceWeight = Boolean(planTargets.protein_reference_basis)
+    && planTargets.protein_reference_basis !== "TOTAL_BODY_WEIGHT"
+    && Number.isFinite(planReferenceKg) && planReferenceKg > 30;
+  const ceilingWeightKg = usesReferenceWeight ? Math.min(currentWeightKg, planReferenceKg) : currentWeightKg;
+  if (Number.isFinite(ceilingWeightKg) && ceilingWeightKg > 30) {
+    const ceiling = Math.max(Math.round(ceilingWeightKg * MAX_KCAL_PER_KG), Math.round(baseEnergy));
+    if (finalCalories > ceiling) {
+      throw customMacrosOutOfRange(
+        `السعرات المخصصة (${finalCalories}) فوق السقف (${ceiling} سعرة = ${MAX_KCAL_PER_KG} سعرة لكل كجم). راجع الرقم المدخل وأعد الاعتماد.`
+      );
+    }
+  }
+
+  const guardrails = planTargets.clinical_guardrails || merged.clinical_guardrails || {};
+  if (guardrails.is_young_trainee === true) {
+    const maintenance = Number(planTargets.tdee);
+    if (Number.isFinite(maintenance) && maintenance > 0 && finalCalories < maintenance) {
+      throw customMacrosOutOfRange(
+        `متدرب تحت 18 سنة: السعرات المخصصة (${finalCalories}) أقل من احتياجه اليومي (${Math.round(maintenance)} سعرة). الجسم في مرحلة نمو ولا يوضع في عجز سعرات.`
+      );
+    }
+  }
+
+  if (guardrails.hypoglycemia_guard_active === true && finalCalories > 0 && baseEnergy > 0) {
+    const baseCarbs = Number(
+      merged.nutrition_program?.macro_targets?.carbohydrate_g
+      || planTargets.carbohydrate_g
+      || planTargets.carb_g
+      || 0
+    );
+    if (baseCarbs > 0) {
+      const refCarbShare = CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE
+        || CLINICAL_GUIDELINES.DIABETES.REFERENCE_CARB_ENERGY_SHARE || 0.45;
+      const baseCarbShare = (baseCarbs * 4) / baseEnergy;
+      const carbShare = guardrails.kidney_protein_capped === true
+        ? Math.max(refCarbShare, baseCarbShare)
+        : refCarbShare;
+      const maxCarbG = Math.floor((finalCalories * carbShare) / 4);
+      if (finalCarbs > maxCarbG) {
+        throw customMacrosOutOfRange(
+          `النشويات المخصصة (${finalCarbs} جم) تتجاوز سقف السكر (${maxCarbG} جم = ${Math.round(carbShare * 100)}% من السعرات). أعد توزيع الماكروز وأعد الاعتماد.`
+        );
+      }
+    }
+  }
+}
 
 /**
  * Deep merges adaptation recommendations into a master program while guaranteeing
@@ -65,6 +163,14 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
       || merged.nutrition_program?.targets?.fat_g
       || merged.nutrition?.targets?.fats 
       || 50;
+  }
+
+  // S3-2: guard coach custom macros before anything is written. The adapted
+  // path was already guarded by buildAdaptedPlan; only custom numbers need
+  // this check.
+  const customMacrosApplied = customMacros && typeof customMacros === "object" && Number(customMacros.calories) > 0;
+  if (customMacrosApplied && finalCalories !== null) {
+    validateCustomMacros(merged, { finalCalories, finalProtein, finalCarbs, finalFats });
   }
 
   // Clinical Preservation: If trainee has a capped protein guardrail (e.g. KIDNEY_CONDITION),
