@@ -739,7 +739,16 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       if (canonicalCode && !conditions.some(existing => existing.conditionCode === canonicalCode)) {
         conditions.push({
           conditionCode: canonicalCode,
-          stability: c.stability === "UNCONTROLLED_UNSTABLE" ? "UNSTABLE" : "STABLE",
+          // R2: never erase a safety-relevant stability. UNKNOWN and UNSTABLE
+          // are exactly the values the safety rules use to require medical
+          // review; collapsing them to STABLE silently cleared the gate.
+          // Only the legacy UNCONTROLLED_UNSTABLE spelling is folded, and
+          // anything outside the Stability enum still defaults to STABLE.
+          stability: c.stability === "UNCONTROLLED_UNSTABLE"
+            ? "UNSTABLE"
+            : ["STABLE", "UNSTABLE", "UNKNOWN"].includes(c.stability)
+              ? c.stability
+              : "STABLE",
           otherConditionText: null,
           physicianInstructions: Array.isArray(c.physicianInstructions) ? c.physicianInstructions : [],
         });
@@ -781,7 +790,10 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       : (["NONE", "PAST", "ACTIVE", "SUSPECTED", "UNKNOWN"].includes(intake.eating_disorder_history)
         ? intake.eating_disorder_history
         : "NONE"),
-    pregnancyStatus: ["NOT_PREGNANT", "PREGNANT", "POSTPARTUM", "BREASTFEEDING"].includes(medical.pregnancyStatus) ? medical.pregnancyStatus : "NOT_PREGNANT",
+    // R2: preserve every PregnancyStatus value. POSSIBLY_PREGNANT requires
+    // medical review and UNKNOWN blocks the intake in the safety rules;
+    // whitelisting them away to NOT_PREGNANT erased both gates.
+    pregnancyStatus: ["NOT_APPLICABLE", "NOT_PREGNANT", "PREGNANT", "POSSIBLY_PREGNANT", "POSTPARTUM", "BREASTFEEDING", "UNKNOWN"].includes(medical.pregnancyStatus) ? medical.pregnancyStatus : "NOT_PREGNANT",
     menstrualStatus: ["REGULAR", "IRREGULAR", "ABSENT", "NOT_APPLICABLE"].includes(medical.menstrualStatus) ? medical.menstrualStatus : (canonicalPersonal.sex === "FEMALE" ? "REGULAR" : "NOT_APPLICABLE"),
     unclassifiedText: unclassifiedConditions
   };
