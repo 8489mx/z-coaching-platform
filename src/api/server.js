@@ -32,6 +32,7 @@ import { csrfProtection, isTrustedOrigin } from "./middlewares/csrfProtection.js
 import { exportRateLimiter, uploadRateLimiter, engineCalculatorRateLimiter } from "./middlewares/rateLimiter.js";
 import { recordAuditEvent, readRecentAuditEvents } from "./services/auditLog.service.js";
 import { User } from "./models/index.js";
+import { createUploadFileHandler } from "./utils/uploadAccess.js";
 import { applyFreezeStart, applyFreezeResume } from "../execution-engines/subscription-freeze-engine.js";
 
 // Deterministic Clinical Execution Engines
@@ -611,12 +612,33 @@ app.get("/api/v1/admin/audit-logs", requireAuth, requireAdmin, (req, res) => {
 });
 
 // 4. Persistent Static Uploads Directory (Hostinger Local Storage - Protected)
+// S4-4: /uploads is NOT served with bare express.static anymore — any
+// authenticated account could fetch any client's progress photo by
+// guessing its URL. Files go through the ownership-checked handler in
+// utils/uploadAccess.js (owner or COACH/ADMIN only, same URLs as before).
 const uploadsPath = path.resolve(__dirname, "../../uploads");
 const progressPhotosPath = path.resolve(uploadsPath, "progress_photos");
 if (!fs.existsSync(progressPhotosPath)) {
   fs.mkdirSync(progressPhotosPath, { recursive: true });
 }
-app.use("/uploads", requireAuth, express.static(uploadsPath));
+const serveUploadFile = createUploadFileHandler({
+  uploadsRoot: uploadsPath,
+  resolveOwner: async (code) => {
+    let user = await User.findOne({ where: { client_code: code } });
+    if (!user && !isNaN(code)) {
+      user = await User.findByPk(parseInt(code, 10));
+    }
+    if (!user) {
+      user = await User.findOne({ where: { phone_number: code } });
+    }
+    return user;
+  },
+  isStaff: async (userId) => {
+    const requester = await User.findByPk(userId);
+    return !!(requester && (requester.role === "COACH" || requester.role === "ADMIN"));
+  },
+});
+app.use("/uploads", requireAuth, serveUploadFile);
 
 // 5. Production Static Frontend SPA Serving (Hostinger / All-in-One)
 if (fs.existsSync(frontendDistPath)) {
