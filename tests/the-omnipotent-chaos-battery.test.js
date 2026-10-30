@@ -41,6 +41,87 @@ describe('THE OMNIPOTENT CHAOS, CLINICAL & OPERATIONAL BATTERY', () => {
       expect(breakfastSwaps.some((f) => f.id === 'cottage_cheese')).toBe(true); // Normal state
     });
 
+  });
+
+  // =========================================================================
+  // 2. فحص محرك التغذية والمبادلات ومصفوفة المذاق (Culinary & Food Swap Engine)
+  // =========================================================================
+  describe('2. Culinary Engine, Mathematical Densities & Taste Profile Matrix', () => {
+
+    it('[Macro Equivalence Math]: Calculates exact mathematical grams between chicken and fish', () => {
+      // 200g Chicken (62g Pro) -> Tilapia (26g Pro/100g) -> 238.46g -> Rounded to 240g
+      const swap = calculateEquivalentSwap({
+        sourceFoodId: 'chicken_breast', sourceGrams: 200, targetFoodId: 'tilapia_fish',
+        foodCatalog: masterFoodCatalog
+      });
+      expect(swap.success).toBe(true);
+      expect(swap.target_food.calculated_grams).toBe(240);
+      expect(swap.macros.protein).toBeCloseTo(62.4, 0.5);
+    });
+
+    it('[Taste Matrix Barrier]: Blocks gastronomically absurd swaps (Chicken <-> Rolled Oats)', () => {
+      const badSwap = calculateEquivalentSwap({
+        sourceFoodId: 'chicken_breast', sourceGrams: 150, targetFoodId: 'rolled_oats',
+        foodCatalog: masterFoodCatalog, enforceTasteProfile: true
+      });
+      expect(badSwap.success).toBe(false);
+      expect(badSwap.error_code).toBe('INCOMPATIBLE_TASTE_PROFILE');
+    });
+
+    it('[Breakfast Carb Consistency]: Accurately calculates Baladi Bread to Oatmeal swap', () => {
+      // 100g Baladi Bread (50g Carb) -> Oats (66g Carb/100g) -> 75.7g -> Rounded to 75g
+      const swap = calculateEquivalentSwap({
+        sourceFoodId: 'egyptian_baladi_bread', sourceGrams: 100, targetFoodId: 'rolled_oats',
+        foodCatalog: masterFoodCatalog, enforceTasteProfile: false
+      });
+      expect(swap.success).toBe(true);
+      expect(swap.target_food.calculated_grams).toBe(75);
+    });
+  });
+
+  // =========================================================================
+  // 3. فحص محرك التأهيل المخصص وشدة التمرين (Biomechanics, RIR & Prehab)
+  // =========================================================================
+  describe('3. Biomechanical Prehab Injection & Session Targeting', () => {
+
+    it('[Prehab Isolation]: Injects Knee & Ankle drills strictly on Lower body workouts', () => {
+      const routine = getPrehabRoutine(['KNEE_DISCOMFORT', 'ANKLE_RESTRICTION'], 'LEGS', masterMobilityCatalog);
+      expect(routine.has_prehab).toBe(true);
+      expect(routine.exercises.length).toBe(2);
+      expect(routine.exercises.some((e) => e.name_ar === 'Wall Tibialis Raise')).toBe(true);
+      expect(routine.exercises.some((e) => e.name_ar === 'Knee to Wall')).toBe(true);
+    });
+
+    it('[Session Filter Guard]: Completely skips Upper Body prehab when the scheduled workout is Lower Body', () => {
+      const routine = getPrehabRoutine(['ROUNDED_SHOULDERS', 'SHOULDER_IMPINGEMENT'], 'LEGS', masterMobilityCatalog);
+      expect(routine.has_prehab).toBe(false);
+      expect(routine.exercises.length).toBe(0);
+    });
+
+    it('[Duration Ceiling]: Never exceeds 5 minutes total prehab duration to preserve lifting energy', () => {
+      const routine = getPrehabRoutine(['ROUNDED_SHOULDERS', 'SHOULDER_IMPINGEMENT', 'WRIST_STRAIN'], 'PUSH', masterMobilityCatalog);
+      expect(routine.total_duration_minutes).toBeLessThanOrEqual(5);
+      expect(routine.exercises.length).toBeLessThanOrEqual(3);
+    });
+  });
+
+  // =========================================================================
+  // 4. اختبارات الهجوم الحسابي وتدمير المدخلات (Chaos, Fuzzing & Boundary Assault)
+  // =========================================================================
+  describe('4. Chaos Fuzzing, Boundary Values & Zero-Division Assault', () => {
+
+    it('[Division by Zero Guard]: Throws safe error when target food primary macro density is 0', () => {
+      const corruptCatalog = [
+        { id: 'fat_src', primary_macro: 'FAT', taste_profile: 'FAT', fats_per_100g: 100 },
+        { id: 'zero_fat_target', primary_macro: 'FAT', taste_profile: 'FAT', fats_per_100g: 0 }
+      ];
+      expect(() => {
+        calculateEquivalentSwap({
+          sourceFoodId: 'fat_src', sourceGrams: 20, targetFoodId: 'zero_fat_target',
+          foodCatalog: corruptCatalog, enforceTasteProfile: false
+        });
+      }).toThrowError(/density is zero/);
+    });
 
   });
 

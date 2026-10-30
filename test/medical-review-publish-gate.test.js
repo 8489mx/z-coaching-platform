@@ -44,7 +44,7 @@ test("publishing a plan for a kidney/liver client needs an explicit medical revi
   await cleanup();
   const user = await User.create({ client_code: CODE, phone_number: "01099000907", full_name: "Gate Test", role: "CLIENT" });
   // S4-1: updateCustomProgram is coach-only, so the editor calls use a coach requester.
-  const coach = await User.create({ client_code: "TEST_GATE_COACH_907", phone_number: "01099000908", full_name: "Gate Coach", role: "COACH" });
+  const coach = await User.create({ client_code: "TEST_GATE_COACH_907", phone_number: "01099000908", full_name: "Gate Coach", role: "ADMIN" });
   const publish = async (extra = {}) => {
     const r = mockRes();
     await updateCustomProgram({ body: { client_code: CODE, program_data: { nutrition: {} }, publish: true, ...extra }, user: { id: coach.id } }, r.res);

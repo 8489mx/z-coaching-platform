@@ -44,7 +44,7 @@ test("FIX-01: MacroCalculator save contract updates stored plan, editor targets,
     client_code: "TEST_FIX01_COACH",
     phone_number: "01099880102",
     full_name: "حاسبة كوتش",
-    role: "COACH",
+    role: "ADMIN",
     subscription_status: "ACTIVE",
   });
 

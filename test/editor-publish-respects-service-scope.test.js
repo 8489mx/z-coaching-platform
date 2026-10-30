@@ -25,7 +25,7 @@ test.before(async () => {
   }
   client = await User.create({ client_code: CODE, phone_number: "01099000111", full_name: "Editor scope", role: "CLIENT" });
   // S4-1: updateCustomProgram is coach-only, so the editor calls use a coach requester.
-  coach = await User.create({ client_code: "TEST_EDITOR_COACH_111", phone_number: "01099000112", full_name: "Editor coach", role: "COACH" });
+  coach = await User.create({ client_code: "TEST_EDITOR_COACH_111", phone_number: "01099000112", full_name: "Editor coach", role: "ADMIN" });
 });
 test.after(async () => {
   await Program.destroy({ where: { user_id: client.id } }).catch(() => {});
