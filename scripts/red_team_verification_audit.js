@@ -78,30 +78,9 @@ assert.ok(caughtBiometrics, 'Impossible biometrics must throw INVALID_BIOMETRICS
 console.log('PASS: Item 3 verified - Impossible biometrics explicitly rejected with INVALID_BIOMETRICS.\n');
 passedCount++;
 
-// ----------------------------------------------------
-// ITEM 4: Physiologic Biometric Safety in Weekly Audit
-// ----------------------------------------------------
-console.log('>> [ITEM 4] Verifying prevention of zero/negative weight and NaN calories in weekly audit...');
-const { evaluateWeeklyCheckinAudit, evaluateWeeklyProgress } = await import('file:///d:/zcc/src/execution-engines/weekly-audit-engine.js');
-let caughtNegativeWeight = false;
-try {
-  evaluateWeeklyCheckinAudit({ current_weight_kg: -5, current_daily_calories: 2000 });
-} catch (e) {
-  caughtNegativeWeight = true;
-  assert.ok(e instanceof RangeError, 'Must throw RangeError on negative weight');
-}
-assert.ok(caughtNegativeWeight, 'Negative weight must throw RangeError');
+// ITEM 4 retired in S3-4/S4-5 with the weekly-audit engine; biometric
+// safety is pinned by test/weekly-audit-biometric-safety.test.js (master targets).
 
-let caughtZeroWeight = false;
-try {
-  evaluateWeeklyProgress({ currentWeightKg: 0, previousWeightKg: 80, currentCalories: 2200 });
-} catch (e) {
-  caughtZeroWeight = true;
-  assert.ok(e instanceof RangeError, 'Must throw RangeError on zero weight');
-}
-assert.ok(caughtZeroWeight, 'Zero weight must throw RangeError');
-console.log('PASS: Item 4 verified - Negative/zero weights and NaN calories are prevented at engine entry.\n');
-passedCount++;
 
 // ----------------------------------------------------
 // ITEM 5: Culinary Meals Ingredient Portion Rebalancing
@@ -193,6 +172,6 @@ console.log('PASS: Item 6 verified - Duplicate check-in rejected with 409 Confli
 passedCount++;
 
 console.log('====================================================');
-console.log(`RED TEAM AUDIT COMPLETE: ${passedCount}/6 ITEMS PASSED WITH 100% SUCCESS`);
+console.log(`RED TEAM AUDIT COMPLETE: ${passedCount}/5 ITEMS PASSED WITH 100% SUCCESS`);
 console.log('====================================================');
 process.exit(0);

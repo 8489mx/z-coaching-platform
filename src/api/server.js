@@ -37,7 +37,6 @@ import { applyFreezeStart, applyFreezeResume } from "../execution-engines/subscr
 // Deterministic Clinical Execution Engines
 import { getPrehabRoutine } from "../execution-engines/postural-prehab-engine.js";
 import { calculateEquivalentSwap } from "../execution-engines/food-swap-engine.js";
-import { evaluateWeeklyProgress } from "../execution-engines/weekly-checkin-engine.js";
 import { calculateSubscriptionStatus } from "../execution-engines/subscription-lifecycle-engine.js";
 import { generateInitialPlan } from "../execution-engines/onboarding-plan-generator-engine.js";
 import { evaluateExerciseProgression, evaluateDeloadNeed, compileDeloadSession } from "../execution-engines/progressive-overload-deload-engine.js";
@@ -178,14 +177,10 @@ app.post("/api/v1/food-swap/calculate", engineCalculatorRateLimiter, (req, res) 
   }
 });
 
-app.post("/api/v1/checkin/evaluate", engineCalculatorRateLimiter, (req, res) => {
-  try {
-    const result = evaluateWeeklyProgress(req.body);
-    res.json({ success: true, data: result });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
-  }
-});
+// S3-4/S4-5: the public check-in calculator endpoint was retired with the
+// parallel weekly-audit calculator. Check-in evaluation lives in the
+// canonical check-in engine (evaluateCheckin), reached via the check-in
+// submit route.
 
 app.post("/api/v1/pdf/export", engineCalculatorRateLimiter, (req, res) => {
   try {

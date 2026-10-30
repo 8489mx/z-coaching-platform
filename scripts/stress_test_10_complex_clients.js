@@ -4,7 +4,6 @@ import { fileURLToPath } from "url";
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
 import { evaluateIntake } from "../src/intake-decision-engine/index.js";
 import { evaluateCheckin } from "../src/checkin-engine/evaluate-checkin.js";
-import { evaluateWeeklyProgress } from "../src/execution-engines/weekly-audit-engine.js";
 import { applyEmergencyScenarioAdaptation } from "../src/execution-engines/emergency-scenario-engine.js";
 import { calculateEquivalentSwap, getEligibleSwaps, GOLD_FOOD_CATALOG, FOOD_DATABASE } from "../src/execution-engines/food-swap-engine.js";
 import { mergeAdaptedPlanIntoProgram } from "../src/api/utils/planMergeEngine.js";
@@ -148,14 +147,7 @@ async function runAll10StressTests() {
       occupation_type: "DESK_OFFICE"
     });
 
-    const checkin1_audit = evaluateWeeklyProgress({
-      currentWeightKg: 89.2,
-      previousWeightKg: 90.0,
-      currentCalories: c1_calories,
-      nutritionAdherencePct: 95,
-      workoutAdherencePct: 100,
-      occupationType: "DESK_OFFICE"
-    });
+
 
     results.push({
       clientId: 1,
@@ -176,7 +168,7 @@ async function runAll10StressTests() {
       workoutSummary: extractWorkoutSummary(program1),
       timelineEvents: {
         week2_coach_override: `محاولة الكابتن رفع البروتين إلى 160g: تم كبحها تلقائياً إلى ${enforcedProtein}g (السقف الآمن 1.0g/kg)، وقُبلت إلى ${overrideProtein}g عند التوثيق الصريح لكود التجاوز الواعي.`,
-        week4_checkin: `تقييم المتابعة: نقص الوزن 0.8 كجم بنجاح، حالة التقييم: ${checkin1_eval.status || checkin1_audit.decision_code}`
+        week4_checkin: `تقييم المتابعة: نقص الوزن 0.8 كجم بنجاح، حالة التقييم: ${checkin1_eval.analysis_status}`
       },
       errors: []
     });
@@ -290,16 +282,17 @@ async function runAll10StressTests() {
     const c3_decision = program3.intake_decision;
 
     // Check checkin behavior for pregnancy: weight gain should NEVER trigger calorie deficit
-    const checkin3_audit = evaluateWeeklyProgress({
-      currentWeightKg: 69.5, // Gained 1.5kg in pregnancy
-      previousWeightKg: 68.0,
-      currentCalories: c3_calories,
-      nutritionAdherencePct: 92,
-      workoutAdherencePct: 100,
-      lifestyleVariance: "NORMAL_WORK",
-      isFemale: true,
-      goalType: "MAINTENANCE"
+    const checkin3_eval = evaluateCheckin({
+      weight_kg: 69.5, // Gained 1.5kg in pregnancy
+      previous_weight_kg: 68.0,
+      primary_goal: "GENERAL_HEALTH",
+      nutrition_adherence_percent: 92,
+      workouts_completed: 4,
+      workouts_scheduled: 4,
+      is_female: true,
+      biofeedback: { energy_level: 4, hunger_level: 2, sleep_quality: 4, stress_level: 1 }
     });
+
 
     results.push({
       clientId: 3,
@@ -312,12 +305,12 @@ async function runAll10StressTests() {
         pregnancySafetyGateTriggered: Boolean(c3_decision?.plan_status === "MEDICAL_REVIEW_REQUIRED" || c3_decision?.review_flags?.length > 0),
         noCalorieDeficitAllowed: c3_calories >= 1800, // Pregnancy surplus maintained
         rirConservativeTarget: 3, // RIR 3-4 enforced for pregnancy safety
-        weightGainDoesNotTriggerCalorieCut: !checkin3_audit.suggested_calorie_delta || checkin3_audit.suggested_calorie_delta >= 0
+        weightGainDoesNotTriggerCalorieCut: !checkin3_eval.suggested_calorie_delta || checkin3_eval.suggested_calorie_delta >= 0
       },
       mealsSummary: extractMealsSummary(program3),
       workoutSummary: extractWorkoutSummary(program3),
       timelineEvents: {
-        week1_to_8_pregnancy_monitoring: `تم حظر العجز الحراري نهائياً، وزيادة الوزن الطبيعية للحمل (+1.5 كجم) لم تتسبب في أي خفض للسعرات (التعديل المقترح: ${checkin3_audit.suggested_calorie_delta || 0} Kcal).`
+        week1_to_8_pregnancy_monitoring: `تم حظر العجز الحراري نهائياً، وزيادة الوزن الطبيعية للحمل (+1.5 كجم) لم تتسبب في أي خفض للسعرات (التعديل المقترح: ${checkin3_eval.suggested_calorie_delta || 0} Kcal).`
       },
       errors: []
     });
@@ -683,23 +676,12 @@ async function runAll10StressTests() {
       biofeedback: { energy_level: 4, hunger_level: 2, sleep_quality: 4, stress_level: 1 }
     });
 
-    const checkin9_audit = evaluateWeeklyProgress({
-      currentWeightKg: 85.0,
-      previousWeightKg: 85.0,
-      currentCalories: c9_calories,
-      nutritionAdherencePct: 95,
-      workoutAdherencePct: 100,
-      lifestyleVariance: "HOME_VACATION",
-      occupationType: "FIELD_MOBILE"
-    });
+
 
     const neatLockActive = checkin9_eval.analysis_status === "OCCUPATIONAL_NEAT_LOCK" ||
-      checkin9_eval.analysis_status === "NEAT_DROP_LOCK" || 
-      checkin9_eval.analysis_status === "MAINTAIN" || 
-      checkin9_eval.suggested_calorie_delta === 0 ||
-      checkin9_audit.decision_code === "OCCUPATIONAL_NEAT_LOCK" ||
-      checkin9_audit.decision_code === "FALSE_PLATEAU_DETECTED" ||
-      checkin9_audit.suggested_calorie_delta === 0;
+      checkin9_eval.analysis_status === "NEAT_DROP_LOCK" ||
+      checkin9_eval.analysis_status === "MAINTAIN" ||
+      checkin9_eval.suggested_calorie_delta === 0;
 
     results.push({
       clientId: 9,
@@ -712,12 +694,12 @@ async function runAll10StressTests() {
         baselineHighNeatTDEECalculated: c9_calories >= 2100,
         neatDropRecognized: true,
         unjustifiedCalorieCutLocked: neatLockActive,
-        suggestedCalorieDelta: checkin9_eval.suggested_calorie_delta ?? checkin9_audit.suggested_calorie_delta ?? 0
+        suggestedCalorieDelta: checkin9_eval.suggested_calorie_delta ?? 0
       },
       mealsSummary: extractMealsSummary(program9),
       workoutSummary: extractWorkoutSummary(program9),
       timelineEvents: {
-        vacation_neat_defense: `أسبوع الإجازة وهبوط النشاط: اتخذ النظام قرار (${checkin9_audit.decision_code || checkin9_eval.analysis_status}) وقفل أي خفض سعرات جائر (الدلتا المقترحة: ${checkin9_eval.suggested_calorie_delta || 0} Kcal) لأن الثبات ناتج عن هبوط مؤقت في النشاط الحركي وليس ثباتاً فسيولوجياً حقيقياً.`
+        vacation_neat_defense: `أسبوع الإجازة وهبوط النشاط: اتخذ النظام قرار (${checkin9_eval.analysis_status}) وقفل أي خفض سعرات جائر (الدلتا المقترحة: ${checkin9_eval.suggested_calorie_delta || 0} Kcal) لأن الثبات ناتج عن هبوط مؤقت في النشاط الحركي وليس ثباتاً فسيولوجياً حقيقياً.`
       },
       errors: []
     });
