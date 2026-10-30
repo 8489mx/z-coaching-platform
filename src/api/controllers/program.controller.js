@@ -64,36 +64,47 @@ export const generateProgram = async (req, res) => {
       assessmentDate: (meta && meta.assessmentDate) || new Date().toISOString().split("T")[0]
     });
 
-    // 1. Evaluate Intake
-    const intakeDecision = evaluateIntake(intakePayload, evaluationContext);
+    // 1. Evaluate Intake on the adapted (canonical) intake, like the preview
+    // handler: the gate must see the same intake the master engine builds
+    // from, or flat-form safety values never reach it.
+    const canonicalIntake = adaptIntakePayloadToCanonicalEngine(intakePayload);
+    const intakeDecision = evaluateIntake(canonicalIntake, evaluationContext);
 
     if (intakeDecision.plan_status === "BLOCKED") {
-      return res.status(400).json({ 
-        error: "Intake rejected", 
-        reasons: intakeDecision.decision_reasons 
+      return res.status(400).json({
+        error: "Intake rejected",
+        reasons: intakeDecision.decision_reasons
       });
     }
+
+    // R1: a MEDICAL_REVIEW_REQUIRED plan is a draft for the coach, never an
+    // ACTIVE plan the client can follow. Only READY results create ACTIVE.
+    const requiresMedicalReview = intakeDecision.plan_status === "MEDICAL_REVIEW_REQUIRED";
 
     // 2. Load Catalog
     const catalog = await loadFoodCatalog();
 
     // 3. Build Master Engine V2
     const masterProgram = buildMasterEngineV2({
-      intake: intakePayload,
+      intake: canonicalIntake,
       evaluationContext,
       nutritionFoodCatalog: catalog,
       options: options || {}
     });
 
-    // 4. Save to Database
+    // 4. Save to Database with an explicit status: never the ACTIVE default.
     const savedProgram = await Program.create({
       user_id: req.user.id,
       program_data: masterProgram,
+      status: requiresMedicalReview ? "DRAFT" : "ACTIVE",
     });
 
     return res.status(201).json({
       message: "Program generated successfully (V2)",
       program_id: savedProgram.id,
+      plan_status: intakeDecision.plan_status,
+      medical_review_required: requiresMedicalReview,
+      program_status: savedProgram.status,
       master_program: masterProgram
     });
 
@@ -158,16 +169,23 @@ export const generateAndSaveProgram = async (req, res) => {
       assessmentDate: new Date().toISOString().split("T")[0]
     });
 
-    // 1. Evaluate Intake
-    const intakeDecision = evaluateIntake(intakePayload, evaluationContext);
+    // 1. Evaluate Intake on the adapted (canonical) intake, like the preview
+    // handler: the gate must see the same intake the master engine builds
+    // from, or flat-form safety values never reach it.
+    const canonicalIntake = adaptIntakePayloadToCanonicalEngine(intakePayload);
+    const intakeDecision = evaluateIntake(canonicalIntake, evaluationContext);
     if (intakeDecision.plan_status === "BLOCKED") {
       return res.status(400).json({ error: "Intake rejected", reasons: intakeDecision.decision_reasons });
     }
 
+    // R1: a MEDICAL_REVIEW_REQUIRED plan is a draft for the coach, never an
+    // ACTIVE plan the client can follow. Only READY results create ACTIVE.
+    const requiresMedicalReview = intakeDecision.plan_status === "MEDICAL_REVIEW_REQUIRED";
+
     // 2. Load Catalog & Build Master Engine V2
     const catalog = await loadFoodCatalog();
     const masterProgram = buildMasterEngineV2({
-      intake: intakePayload,
+      intake: canonicalIntake,
       evaluationContext,
       nutritionFoodCatalog: catalog,
       options: {}
@@ -210,15 +228,21 @@ export const generateAndSaveProgram = async (req, res) => {
       status: "PROCESSED"
     });
 
-    // 5. Save or Update Program
+    // 5. Save or Update Program with an explicit status: never the ACTIVE
+    // default, and never keep an existing ACTIVE status for a plan that
+    // now requires medical review.
     let program = await Program.findOne({ where: { user_id: user.id } });
     if (program) {
       program.program_data = masterProgram;
+      if (requiresMedicalReview) {
+        program.status = "DRAFT";
+      }
       await program.save();
     } else {
       program = await Program.create({
         user_id: user.id,
-        program_data: masterProgram
+        program_data: masterProgram,
+        status: requiresMedicalReview ? "DRAFT" : "ACTIVE"
       });
     }
 
@@ -233,6 +257,9 @@ export const generateAndSaveProgram = async (req, res) => {
       },
       submission_id: submission.id,
       program_id: program.id,
+      plan_status: intakeDecision.plan_status,
+      medical_review_required: requiresMedicalReview,
+      program_status: program.status,
       master_program: masterProgram
     });
 
