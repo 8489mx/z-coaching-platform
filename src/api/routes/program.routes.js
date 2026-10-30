@@ -4,8 +4,6 @@ import {
   getUserPrograms,
   generateProgramPreview,
   generateAndSaveProgram,
-  evaluateCheckinHandler,
-  submitWeeklyCheckin,
   getPendingCheckins,
   adaptProgramHandler,
   calculateSwapHandler,
@@ -41,9 +39,8 @@ router.get("/mobile/:code", requireAuth, getActiveProgramByUserId);
 router.put("/update-custom", requireAuth, updateCustomProgram);
 router.get("/exercises-catalog", getExercisesCatalog);
 
-// Check-in & Adaptation V2 endpoints
-router.post("/checkin/evaluate", requireAuth, evaluateCheckinHandler);
-router.post("/checkin/submit", requireAuth, submitWeeklyCheckin);
+// Check-in & Adaptation V2 endpoints. S3-4/S4-5: the duplicated submit and
+// calculator routes were retired; all check-ins go through POST /api/v1/checkin.
 router.get("/checkin/pending", requireAuth, getPendingCheckins);
 router.get("/checkin/history", requireAuth, getMyCheckinHistory);
 router.get("/checkin/history/:user_id", requireAuth, getCheckinHistory);

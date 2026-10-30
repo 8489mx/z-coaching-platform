@@ -742,6 +742,7 @@ export async function approveCheckin(req, res) {
         : JSON.parse(JSON.stringify(latestProgram.program_data));
 
       let adapted = null;
+      let adaptationFailed = false;
       try {
         const bio = checkin.biofeedback || {};
         const painReports = Array.isArray(checkin.pain_reports) ? checkin.pain_reports : [];
@@ -781,14 +782,43 @@ export async function approveCheckin(req, res) {
         });
       } catch (e) {
         console.warn("buildAdaptedPlan fallback in checkin.controller:", e.message);
+        adaptationFailed = true;
       }
 
-      // Safe, Deterministic, and Idempotent Non-Destructive Deep Merge
-      const mergedProgramData = mergeAdaptedPlanIntoProgram(
-        progData,
-        alreadyAdaptedForThisCheckin ? {} : (adapted || checkin.analysis_output || {}),
-        custom_macros
-      );
+      // S3-6: a failed adaptation engine fails the approval instead of
+      // silently merging the raw analysis_output as if it were an
+      // adaptation result (suggested deltas with no adapted_nutrition,
+      // no week discipline, no requires_coach_approval). Nothing has
+      // been written yet, so the check-in stays PENDING_REVIEW and the
+      // coach can retry. When this check-in was already adapted and only
+      // custom macros are being re-applied, the engine result is
+      // discarded by the merge below, so its failure does not block.
+      if ((adaptationFailed || adapted == null) && !alreadyAdaptedForThisCheckin) {
+        return res.status(500).json({
+          success: false,
+          error: "فشل حساب التكييف، لم يتم اعتماد المتابعة ولم يتغير البرنامج",
+          code: "ADAPTATION_ENGINE_FAILED",
+        });
+      }
+
+      // Safe, Deterministic, and Idempotent Non-Destructive Deep Merge.
+      // S3-2: out-of-range custom macros are a coach-facing 400, not a 500:
+      // nothing has been written yet at this point, so the coach fixes the
+      // numbers and re-approves. Any other merge failure still surfaces as a
+      // 500 through the outer handler catch.
+      let mergedProgramData;
+      try {
+        mergedProgramData = mergeAdaptedPlanIntoProgram(
+          progData,
+          alreadyAdaptedForThisCheckin ? {} : (adapted || checkin.analysis_output || {}),
+          custom_macros
+        );
+      } catch (err) {
+        if (err?.code === "CUSTOM_MACROS_OUT_OF_RANGE") {
+          return res.status(400).json({ success: false, error: err.message, code: err.code });
+        }
+        throw err;
+      }
 
       await latestProgram.update({
         program_data: mergedProgramData,

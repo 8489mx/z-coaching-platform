@@ -36,6 +36,5 @@ export * from './pdf-export-engine.js';
 export * from './coach-triage-engine.js';
 export * from './onboarding-plan-generator-engine.js';
 
-// 6. Offline Queue & Weekly Audit
+// 6. Offline Queue (the weekly-audit calculator was retired in S3-4/S4-5)
 export * from './offline-sync-engine.js';
-export * from './weekly-audit-engine.js';

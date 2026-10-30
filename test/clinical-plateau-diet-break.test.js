@@ -6,7 +6,6 @@ import { buildMasterEngineV2 } from '../src/master-engine-v2/index.js';
 import { completeIntake, ASSESSMENT_CONTEXT } from './fixtures/complete-intake.js';
 import { buildAdaptedPlan } from '../src/adaptation-engine/build-adapted-plan.js';
 import { mergeAdaptedPlanIntoProgram } from '../src/api/utils/planMergeEngine.js';
-import { evaluateWeeklyProgress } from '../src/execution-engines/weekly-audit-engine.js';
 import { AdaptationAction, AdaptationReasonCode } from '../src/adaptation-engine/domain/enums.js';
 
 const evaluationContext = Object.freeze({
@@ -115,25 +114,6 @@ test('Milestone 1: Clinical Plateau Breaker & Auto Diet-Break Engine Suite', asy
       r => r.code === AdaptationReasonCode.DIET_BREAK_PLATEAU_BREAKER_APPLIED
     );
     assert.ok(floorReason, 'DIET_BREAK_PLATEAU_BREAKER_APPLIED must be logged');
-  });
-
-  await suite.test('4. evaluateWeeklyProgress detects plateau after 6 weeks and outputs SCHEDULE_DIET_BREAK', () => {
-    const result = evaluateWeeklyProgress({
-      currentWeightKg: 85,
-      previousWeightKg: 85,
-      currentWaistCm: 90,
-      previousWaistCm: 90,
-      adherenceRatePct: 95,
-      currentCalories: 2000,
-      weeksOnCurrentCalories: 2,
-      consecutiveDeficitWeeks: 6,
-      goalType: 'FAT_LOSS',
-    });
-
-    assert.equal(result.decision, 'SCHEDULE_DIET_BREAK');
-    assert.equal(result.is_diet_break, true);
-    assert.equal(result.calorie_adjustment, 350);
-    assert.equal(result.new_calories, 2350);
   });
 
   await suite.test('5. planMergeEngine stamps is_diet_break and note on merged program data', () => {

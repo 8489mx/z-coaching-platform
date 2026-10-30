@@ -7,7 +7,6 @@ import {
   enqueueOfflineAction,
   flushPendingQueue,
   getQueueSyncStatus,
-  evaluateWeeklyCheckinAudit
 } from '../src/execution-engines/index.js';
 
 test('1. Persistent Action Queue - Enqueues Multiple In-Gym Offline Transactions', () => {
@@ -71,40 +70,5 @@ test('2. Deterministic Auto-Sync Dispatcher - Flushes Queue Idempotently on Reco
   assert.equal(mockSyncedServerIds.length, 2); // No extra calls made
 });
 
-test('3. 3-Input Frictionless Weekly Audit & 1-Click WhatsApp Dispatch', () => {
-  const clientProfile = {
-    id: 'c200',
-    name: 'مريم العتيبي',
-    phone_number: '01099887766',
-    is_female: true,
-    has_pcos: false,
-    goal: 'FAT_LOSS',
-    current_daily_calories: 1700
-  };
-
-  const previousWeekData = {
-    weight_kg: 70.0,
-    waist_cm: 75.0,
-    consecutive_training_weeks: 4
-  };
-
-  const currentCheckin = {
-    current_weight_kg: 70.8, // +0.8kg due to PMS water retention
-    waist_circumference_cm: 75.0,
-    overall_adherence_percent: 95,
-    is_pms_active: true
-  };
-
-  const auditResult = evaluateWeeklyCheckinAudit({
-    clientProfile,
-    previousWeekData,
-    currentCheckin
-  });
-
-  assert.equal(auditResult.client_id, 'c200');
-  assert.equal(auditResult.weight_delta_kg, 0.8);
-  assert.equal(auditResult.female_cycle_buffer.deficit_adjustment_locked, true);
-  assert.equal(auditResult.next_week_calories, 1700); // Calories protected from deficit drop
-  assert.ok(auditResult.whatsapp_dispatch.dispatch_url.includes('https://wa.me/201099887766'));
-  assert.ok(auditResult.whatsapp_dispatch.message_ar.includes('مريم العتيبي'));
-});
+/* S3-4/S4-5: test 3 (weekly-audit WhatsApp dispatch) retired with the parallel calculator. */
+test.skip('3. retired with the weekly-audit calculator (S3-4/S4-5)', () => {});

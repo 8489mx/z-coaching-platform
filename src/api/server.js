@@ -32,12 +32,12 @@ import { csrfProtection, isTrustedOrigin } from "./middlewares/csrfProtection.js
 import { exportRateLimiter, uploadRateLimiter, engineCalculatorRateLimiter } from "./middlewares/rateLimiter.js";
 import { recordAuditEvent, readRecentAuditEvents } from "./services/auditLog.service.js";
 import { User } from "./models/index.js";
+import { createUploadFileHandler } from "./utils/uploadAccess.js";
 import { applyFreezeStart, applyFreezeResume } from "../execution-engines/subscription-freeze-engine.js";
 
 // Deterministic Clinical Execution Engines
 import { getPrehabRoutine } from "../execution-engines/postural-prehab-engine.js";
 import { calculateEquivalentSwap } from "../execution-engines/food-swap-engine.js";
-import { evaluateWeeklyProgress } from "../execution-engines/weekly-checkin-engine.js";
 import { calculateSubscriptionStatus } from "../execution-engines/subscription-lifecycle-engine.js";
 import { generateInitialPlan } from "../execution-engines/onboarding-plan-generator-engine.js";
 import { evaluateExerciseProgression, evaluateDeloadNeed, compileDeloadSession } from "../execution-engines/progressive-overload-deload-engine.js";
@@ -178,14 +178,10 @@ app.post("/api/v1/food-swap/calculate", engineCalculatorRateLimiter, (req, res) 
   }
 });
 
-app.post("/api/v1/checkin/evaluate", engineCalculatorRateLimiter, (req, res) => {
-  try {
-    const result = evaluateWeeklyProgress(req.body);
-    res.json({ success: true, data: result });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
-  }
-});
+// S3-4/S4-5: the public check-in calculator endpoint was retired with the
+// parallel weekly-audit calculator. Check-in evaluation lives in the
+// canonical check-in engine (evaluateCheckin), reached via the check-in
+// submit route.
 
 app.post("/api/v1/pdf/export", engineCalculatorRateLimiter, (req, res) => {
   try {
@@ -616,12 +612,33 @@ app.get("/api/v1/admin/audit-logs", requireAuth, requireAdmin, (req, res) => {
 });
 
 // 4. Persistent Static Uploads Directory (Hostinger Local Storage - Protected)
+// S4-4: /uploads is NOT served with bare express.static anymore — any
+// authenticated account could fetch any client's progress photo by
+// guessing its URL. Files go through the ownership-checked handler in
+// utils/uploadAccess.js (owner or COACH/ADMIN only, same URLs as before).
 const uploadsPath = path.resolve(__dirname, "../../uploads");
 const progressPhotosPath = path.resolve(uploadsPath, "progress_photos");
 if (!fs.existsSync(progressPhotosPath)) {
   fs.mkdirSync(progressPhotosPath, { recursive: true });
 }
-app.use("/uploads", requireAuth, express.static(uploadsPath));
+const serveUploadFile = createUploadFileHandler({
+  uploadsRoot: uploadsPath,
+  resolveOwner: async (code) => {
+    let user = await User.findOne({ where: { client_code: code } });
+    if (!user && !isNaN(code)) {
+      user = await User.findByPk(parseInt(code, 10));
+    }
+    if (!user) {
+      user = await User.findOne({ where: { phone_number: code } });
+    }
+    return user;
+  },
+  isStaff: async (userId) => {
+    const requester = await User.findByPk(userId);
+    return !!(requester && (requester.role === "COACH" || requester.role === "ADMIN"));
+  },
+});
+app.use("/uploads", requireAuth, serveUploadFile);
 
 // 5. Production Static Frontend SPA Serving (Hostinger / All-in-One)
 if (fs.existsSync(frontendDistPath)) {

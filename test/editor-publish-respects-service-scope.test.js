@@ -14,6 +14,7 @@ const answers = (selected) => ({ answers: {
   training_logistics: { days_per_week: 3, experience_level: "beginner" },
 } });
 let client;
+let coach;
 
 test.before(async () => {
   const existing = await User.findOne({ where: { client_code: CODE } });
@@ -23,17 +24,20 @@ test.before(async () => {
     await existing.destroy();
   }
   client = await User.create({ client_code: CODE, phone_number: "01099000111", full_name: "Editor scope", role: "CLIENT" });
+  // S4-1: updateCustomProgram is coach-only, so the editor calls use a coach requester.
+  coach = await User.create({ client_code: "TEST_EDITOR_COACH_111", phone_number: "01099000112", full_name: "Editor coach", role: "ADMIN" });
 });
 test.after(async () => {
   await Program.destroy({ where: { user_id: client.id } }).catch(() => {});
   await IntakeSubmission.destroy({ where: { user_id: client.id } }).catch(() => {});
   await client?.destroy().catch(() => {});
+  await coach?.destroy().catch(() => {});
   await sequelize.close().catch(() => {});
 });
 
 const publish = async (extra = {}) => {
   const out = {};
-  await updateCustomProgram({ body: { client_code: CODE, program_data: { nutrition: {} }, publish: true, ...extra }, user: { id: client.id } },
+  await updateCustomProgram({ body: { client_code: CODE, program_data: { nutrition: {} }, publish: true, ...extra }, user: { id: coach.id } },
     { status(c) { out.status = c; return this; }, json(b) { out.body = b; return this; } });
   return out;
 };

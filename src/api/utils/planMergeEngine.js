@@ -7,6 +7,104 @@
 
 import { calculateSessionDemand, auditWeeklyMuscleVolume } from './trainingNutritionCoupling.js';
 import { splitOversizedPortions, carbPortionLimit, flagHeavyOil, refreshActualMacros } from '../../nutrition-meal-context-v2/build-culinary-meals.js';
+import { CLINICAL_GUIDELINES } from '../../config/clinical-guidelines.js';
+
+const MAX_KCAL_PER_KG = 55;
+
+function customMacrosOutOfRange(message) {
+  const error = new Error(message);
+  error.code = "CUSTOM_MACROS_OUT_OF_RANGE";
+  return error;
+}
+
+/**
+ * S3-2: coach custom macros pass the same sanity bounds the adaptation engine
+ * applies to its own numbers. Out-of-range values are REJECTED, never silently
+ * clamped: the coach is the approving actor, so a typo must come back for
+ * correction, not become the client's plan under different numbers. The
+ * approval handler maps this error to 400. Bounds mirror buildAdaptedPlan:
+ * the sex-specific calorie floor, the 55 kcal/kg ceiling on the reference
+ * weight, the under-18 maintenance rule, and the diabetic carbohydrate
+ * share. A check that cannot be computed from the stored program (no usable
+ * weight for the ceiling, no base energy for the carb share) is skipped,
+ * never fatal. Only the custom-macros branch is guarded: adapted numbers
+ * were already guarded by buildAdaptedPlan.
+ */
+function validateCustomMacros(merged, finals) {
+  const { finalCalories, finalProtein, finalCarbs, finalFats } = finals;
+  for (const [name, value] of [["calories", finalCalories], ["protein", finalProtein], ["carbs", finalCarbs], ["fats", finalFats]]) {
+    if (!Number.isFinite(value) || value <= 0) {
+      throw customMacrosOutOfRange(
+        `الماكروز المخصصة غير صالحة: ${name} (${value}) يجب أن تكون رقماً موجباً. راجع الأرقام المدخلة وأعد الاعتماد.`
+      );
+    }
+  }
+
+  const planTargets = merged.nutrition_program?.targets || {};
+  const gender = merged.client_profile?.gender ?? merged.client?.gender;
+  const isFemale = ["female", "f", "أنثى"].includes(String(gender ?? "").trim().toLowerCase());
+  const calorieFloor = isFemale ? 1200 : 1500;
+  if (finalCalories < calorieFloor) {
+    throw customMacrosOutOfRange(
+      `السعرات المخصصة (${finalCalories}) أقل من الحد الأدنى (${calorieFloor} سعرة). راجع الرقم المدخل — غالباً رقم ناقص — وأعد الاعتماد.`
+    );
+  }
+
+  const baseEnergy = Number(
+    merged.nutrition_program?.macro_targets?.calories_kcal
+    || planTargets.target_calories_kcal
+    || planTargets.target_calories
+    || merged.nutrition?.targets?.calories
+    || 0
+  );
+  const currentWeightKg = Number(merged.client_profile?.weight_kg ?? merged.client?.weight_kg);
+  const planReferenceKg = Number(planTargets.protein_reference_weight_kg);
+  const usesReferenceWeight = Boolean(planTargets.protein_reference_basis)
+    && planTargets.protein_reference_basis !== "TOTAL_BODY_WEIGHT"
+    && Number.isFinite(planReferenceKg) && planReferenceKg > 30;
+  const ceilingWeightKg = usesReferenceWeight ? Math.min(currentWeightKg, planReferenceKg) : currentWeightKg;
+  if (Number.isFinite(ceilingWeightKg) && ceilingWeightKg > 30) {
+    const ceiling = Math.max(Math.round(ceilingWeightKg * MAX_KCAL_PER_KG), Math.round(baseEnergy));
+    if (finalCalories > ceiling) {
+      throw customMacrosOutOfRange(
+        `السعرات المخصصة (${finalCalories}) فوق السقف (${ceiling} سعرة = ${MAX_KCAL_PER_KG} سعرة لكل كجم). راجع الرقم المدخل وأعد الاعتماد.`
+      );
+    }
+  }
+
+  const guardrails = planTargets.clinical_guardrails || merged.clinical_guardrails || {};
+  if (guardrails.is_young_trainee === true) {
+    const maintenance = Number(planTargets.tdee);
+    if (Number.isFinite(maintenance) && maintenance > 0 && finalCalories < maintenance) {
+      throw customMacrosOutOfRange(
+        `متدرب تحت 18 سنة: السعرات المخصصة (${finalCalories}) أقل من احتياجه اليومي (${Math.round(maintenance)} سعرة). الجسم في مرحلة نمو ولا يوضع في عجز سعرات.`
+      );
+    }
+  }
+
+  if (guardrails.hypoglycemia_guard_active === true && finalCalories > 0 && baseEnergy > 0) {
+    const baseCarbs = Number(
+      merged.nutrition_program?.macro_targets?.carbohydrate_g
+      || planTargets.carbohydrate_g
+      || planTargets.carb_g
+      || 0
+    );
+    if (baseCarbs > 0) {
+      const refCarbShare = CLINICAL_GUIDELINES.DIABETES.MAX_CARB_ENERGY_SHARE
+        || CLINICAL_GUIDELINES.DIABETES.REFERENCE_CARB_ENERGY_SHARE || 0.45;
+      const baseCarbShare = (baseCarbs * 4) / baseEnergy;
+      const carbShare = guardrails.kidney_protein_capped === true
+        ? Math.max(refCarbShare, baseCarbShare)
+        : refCarbShare;
+      const maxCarbG = Math.floor((finalCalories * carbShare) / 4);
+      if (finalCarbs > maxCarbG) {
+        throw customMacrosOutOfRange(
+          `النشويات المخصصة (${finalCarbs} جم) تتجاوز سقف السكر (${maxCarbG} جم = ${Math.round(carbShare * 100)}% من السعرات). أعد توزيع الماكروز وأعد الاعتماد.`
+        );
+      }
+    }
+  }
+}
 
 /**
  * Deep merges adaptation recommendations into a master program while guaranteeing
@@ -67,6 +165,14 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
       || 50;
   }
 
+  // S3-2: guard coach custom macros before anything is written. The adapted
+  // path was already guarded by buildAdaptedPlan; only custom numbers need
+  // this check.
+  const customMacrosApplied = customMacros && typeof customMacros === "object" && Number(customMacros.calories) > 0;
+  if (customMacrosApplied && finalCalories !== null) {
+    validateCustomMacros(merged, { finalCalories, finalProtein, finalCarbs, finalFats });
+  }
+
   // Clinical Preservation: If trainee has a capped protein guardrail (e.g. KIDNEY_CONDITION),
   // ensure the merged protein does not exceed the clinical threshold UNLESS the coach has an active documented override
   const clinicalGuardrails = merged.nutrition_program?.targets?.clinical_guardrails 
@@ -119,6 +225,58 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     merged.nutrition_program.macro_targets.carbohydrate_g = finalCarbs;
     merged.nutrition_program.macro_targets.carb_g = finalCarbs;
     merged.nutrition_program.macro_targets.fat_g = finalFats;
+
+    // B.3b (S2-1 A1): keep the pipeline stages' headline numbers in agreement
+    // with the merged targets, in both key shapes. A WITHHELD stage is left
+    // untouched; stage metadata and all other stages are preserved.
+    if (merged.nutrition_program.stages && typeof merged.nutrition_program.stages === "object") {
+      const macroCaloriesTotal = finalProtein * 4 + finalCarbs * 4 + finalFats * 9;
+      const round1 = (value) => Math.round(value * 10) / 10;
+      const stageEnergy = merged.nutrition_program.stages.energy_target;
+      if (stageEnergy && stageEnergy.status !== "WITHHELD") {
+        merged.nutrition_program.stages.energy_target = {
+          ...stageEnergy,
+          target_calories: finalCalories,
+          target_calories_kcal: finalCalories,
+          calories_kcal: finalCalories,
+          target_source: "UNIVERSAL_TARGETS",
+        };
+      }
+      const stageMacros = merged.nutrition_program.stages.macro_targets;
+      if (stageMacros && stageMacros.status !== "WITHHELD") {
+        merged.nutrition_program.stages.macro_targets = {
+          ...stageMacros,
+          target_calories: finalCalories,
+          protein: {
+            ...(stageMacros.protein || {}),
+            target_g: finalProtein,
+            calories: finalProtein * 4,
+            percent_of_calories: round1((finalProtein * 4 / finalCalories) * 100),
+          },
+          fat: {
+            ...(stageMacros.fat || {}),
+            target_g: finalFats,
+            calories: finalFats * 9,
+            percent_of_calories: round1((finalFats * 9 / finalCalories) * 100),
+          },
+          carbohydrate: {
+            ...(stageMacros.carbohydrate || {}),
+            target_g: finalCarbs,
+            calories: finalCarbs * 4,
+            percent_of_calories: round1((finalCarbs * 4 / finalCalories) * 100),
+          },
+          protein_g: finalProtein,
+          carbohydrate_g: finalCarbs,
+          carb_g: finalCarbs,
+          carbs_g: finalCarbs,
+          fat_g: finalFats,
+          fats_g: finalFats,
+          macro_calories_total: macroCaloriesTotal,
+          calorie_difference: macroCaloriesTotal - finalCalories,
+          target_source: "UNIVERSAL_TARGETS",
+        };
+      }
+    }
 
     // B.3: nutrition_program.quantized_plan.daily_totals
     if (merged.nutrition_program.quantized_plan && merged.nutrition_program.quantized_plan.daily_totals) {

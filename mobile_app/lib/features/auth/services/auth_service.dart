@@ -10,16 +10,20 @@ class AuthService {
 
   AuthService(this._apiClient, this._storage);
 
-  /// التحقق السريع باستخدام كود المشترك ورقم الهاتف
+  /// التحقق السريع باستخدام كود المشترك ورقم الهاتف وكلمة المرور.
+  /// كلمة المرور مطلوبة متى كان للحساب كلمة مرور؛ وحساب بلا كلمة مرور
+  /// يرد 403 ويدخل في مسار اختيار كلمة المرور (setPassword) بدلاً من ذلك.
   Future<ApiResponse<ClientUser>> loginFast({
     required String clientCode,
     required String phoneNumber,
+    String? password,
   }) async {
     final response = await _apiClient.post(
       ApiConstants.loginFast,
       body: {
         'client_code': clientCode.trim(),
         'phone_number': phoneNumber.trim(),
+        if (password != null && password.isNotEmpty) 'password': password,
       },
     );
 
@@ -37,7 +41,42 @@ class AuthService {
     }
 
     return ApiResponse.failure(
-      response.errorMessage ?? 'تعذر تسجيل الدخول، تحقق من الكود ورقم الهاتف',
+      response.errorMessage ?? 'تعذر تسجيل الدخول، تحقق من الكود ورقم الهاتف وكلمة المرور',
+      statusCode: response.statusCode,
+    );
+  }
+
+  /// اختيار كلمة المرور لأول مرة لحساب منشأ بدون كلمة مرور، ويثبتها
+  /// الخادم مرة واحدة فقط؛ ويسجل الدخول مباشرة مثل أي دخول ناجح.
+  Future<ApiResponse<ClientUser>> setPassword({
+    required String clientCode,
+    required String phoneNumber,
+    required String newPassword,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.setPassword,
+      body: {
+        'client_code': clientCode.trim(),
+        'phone_number': phoneNumber.trim(),
+        'new_password': newPassword,
+      },
+    );
+
+    if (response.isSuccess && response.data is Map) {
+      final data = response.data as Map<String, dynamic>;
+      final token = data['token']?.toString();
+      final userData = data['user'] as Map<String, dynamic>?;
+
+      if (token != null && userData != null) {
+        await _storage.saveToken(token);
+        await _storage.saveClientData(userData);
+        final user = ClientUser.fromJson(userData);
+        return ApiResponse.success(user, statusCode: response.statusCode);
+      }
+    }
+
+    return ApiResponse.failure(
+      response.errorMessage ?? 'تعذر حفظ كلمة المرور، حاول مرة أخرى',
       statusCode: response.statusCode,
     );
   }

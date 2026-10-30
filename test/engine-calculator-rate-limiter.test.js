@@ -17,7 +17,6 @@ const PUBLIC_CALCULATOR_ROUTES = [
   '/api/v1/engines/nutrition/diet-break-check',
   '/api/v1/engines/habits/evaluate-daily',
   '/api/v1/food-swap/calculate',
-  '/api/v1/checkin/evaluate',
   '/api/v1/pdf/export'
 ];
 

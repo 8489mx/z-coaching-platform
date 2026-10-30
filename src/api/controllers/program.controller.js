@@ -5,10 +5,8 @@ import { fileURLToPath } from "node:url";
 import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engine/adapters/intake-adapter.js";
 import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
-import { evaluateCheckin } from "../../../src/checkin-engine/index.js";
 import { buildAdaptedPlan } from "../../../src/adaptation-engine/index.js";
 import { User, Program, IntakeSubmission, CheckinSubmission, ProgressPhoto } from "../models/index.js";
-import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 import { Op } from "sequelize";
 import { decryptMedicalData } from "../../utils/crypto.js";
 import { MASTER_EXERCISE_DICTIONARY } from "../../../src/exercise-catalog-v2/index.js";
@@ -64,36 +62,47 @@ export const generateProgram = async (req, res) => {
       assessmentDate: (meta && meta.assessmentDate) || new Date().toISOString().split("T")[0]
     });
 
-    // 1. Evaluate Intake
-    const intakeDecision = evaluateIntake(intakePayload, evaluationContext);
+    // 1. Evaluate Intake on the adapted (canonical) intake, like the preview
+    // handler: the gate must see the same intake the master engine builds
+    // from, or flat-form safety values never reach it.
+    const canonicalIntake = adaptIntakePayloadToCanonicalEngine(intakePayload);
+    const intakeDecision = evaluateIntake(canonicalIntake, evaluationContext);
 
     if (intakeDecision.plan_status === "BLOCKED") {
-      return res.status(400).json({ 
-        error: "Intake rejected", 
-        reasons: intakeDecision.decision_reasons 
+      return res.status(400).json({
+        error: "Intake rejected",
+        reasons: intakeDecision.decision_reasons
       });
     }
+
+    // R1: a MEDICAL_REVIEW_REQUIRED plan is a draft for the coach, never an
+    // ACTIVE plan the client can follow. Only READY results create ACTIVE.
+    const requiresMedicalReview = intakeDecision.plan_status === "MEDICAL_REVIEW_REQUIRED";
 
     // 2. Load Catalog
     const catalog = await loadFoodCatalog();
 
     // 3. Build Master Engine V2
     const masterProgram = buildMasterEngineV2({
-      intake: intakePayload,
+      intake: canonicalIntake,
       evaluationContext,
       nutritionFoodCatalog: catalog,
       options: options || {}
     });
 
-    // 4. Save to Database
+    // 4. Save to Database with an explicit status: never the ACTIVE default.
     const savedProgram = await Program.create({
       user_id: req.user.id,
       program_data: masterProgram,
+      status: requiresMedicalReview ? "DRAFT" : "ACTIVE",
     });
 
     return res.status(201).json({
       message: "Program generated successfully (V2)",
       program_id: savedProgram.id,
+      plan_status: intakeDecision.plan_status,
+      medical_review_required: requiresMedicalReview,
+      program_status: savedProgram.status,
       master_program: masterProgram
     });
 
@@ -158,16 +167,23 @@ export const generateAndSaveProgram = async (req, res) => {
       assessmentDate: new Date().toISOString().split("T")[0]
     });
 
-    // 1. Evaluate Intake
-    const intakeDecision = evaluateIntake(intakePayload, evaluationContext);
+    // 1. Evaluate Intake on the adapted (canonical) intake, like the preview
+    // handler: the gate must see the same intake the master engine builds
+    // from, or flat-form safety values never reach it.
+    const canonicalIntake = adaptIntakePayloadToCanonicalEngine(intakePayload);
+    const intakeDecision = evaluateIntake(canonicalIntake, evaluationContext);
     if (intakeDecision.plan_status === "BLOCKED") {
       return res.status(400).json({ error: "Intake rejected", reasons: intakeDecision.decision_reasons });
     }
 
+    // R1: a MEDICAL_REVIEW_REQUIRED plan is a draft for the coach, never an
+    // ACTIVE plan the client can follow. Only READY results create ACTIVE.
+    const requiresMedicalReview = intakeDecision.plan_status === "MEDICAL_REVIEW_REQUIRED";
+
     // 2. Load Catalog & Build Master Engine V2
     const catalog = await loadFoodCatalog();
     const masterProgram = buildMasterEngineV2({
-      intake: intakePayload,
+      intake: canonicalIntake,
       evaluationContext,
       nutritionFoodCatalog: catalog,
       options: {}
@@ -210,15 +226,21 @@ export const generateAndSaveProgram = async (req, res) => {
       status: "PROCESSED"
     });
 
-    // 5. Save or Update Program
+    // 5. Save or Update Program with an explicit status: never the ACTIVE
+    // default, and never keep an existing ACTIVE status for a plan that
+    // now requires medical review.
     let program = await Program.findOne({ where: { user_id: user.id } });
     if (program) {
       program.program_data = masterProgram;
+      if (requiresMedicalReview) {
+        program.status = "DRAFT";
+      }
       await program.save();
     } else {
       program = await Program.create({
         user_id: user.id,
-        program_data: masterProgram
+        program_data: masterProgram,
+        status: requiresMedicalReview ? "DRAFT" : "ACTIVE"
       });
     }
 
@@ -233,6 +255,9 @@ export const generateAndSaveProgram = async (req, res) => {
       },
       submission_id: submission.id,
       program_id: program.id,
+      plan_status: intakeDecision.plan_status,
+      medical_review_required: requiresMedicalReview,
+      program_status: program.status,
       master_program: masterProgram
     });
 
@@ -253,176 +278,6 @@ export const getUserPrograms = async (req, res) => {
   } catch (err) {
     console.error("getUserPrograms error:", err);
     return res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-export const evaluateCheckinHandler = async (req, res) => {
-  try {
-    const submission = req.body;
-    if (!submission) {
-      return res.status(400).json({ error: "Missing check-in submission body" });
-    }
-    const analysis = evaluateCheckin(submission);
-    return res.status(200).json({ analysis });
-  } catch (err) {
-    console.error("evaluateCheckinHandler error:", err);
-    return res.status(400).json({ error: err.message });
-  }
-};
-
-export const submitWeeklyCheckin = async (req, res) => {
-  try {
-    const {
-      client_code,
-      user_id,
-      week_number = 1,
-      daily_weights_kg,
-      previous_average_weight_kg,
-      waist_circumference_cm,
-      nutrition_adherence_percent = 100,
-      workouts_completed = 4,
-      workouts_scheduled = 4,
-      biofeedback = {},
-      pain_reports = [],
-      photos = [],
-      // Deep check-in v3 fields
-      lifestyle_variance = "NORMAL_WORK",
-      bowel_regularity = "REGULAR",
-      sleep_stress_composite = 3,
-      menstrual_phase = "NOT_APPLICABLE",
-      next_week_travel = false,
-      next_week_gym_available = true,
-      next_week_realistic_days = null,
-      next_week_notes = null
-    } = req.body;
-
-    // Find User (Strict validation with Zero fallback)
-    let user = null;
-    const lookupId = user_id || client_code;
-    if (!lookupId) {
-      return res.status(400).json({ error: "يجب تقديم كود المشترك أو معرف المستخدم الصحيح لإرسال المتابعة" });
-    }
-
-    const cleanCode = String(lookupId).replace('#', '').trim();
-    user = await User.findOne({ where: { client_code: cleanCode } });
-    if (!user && !isNaN(cleanCode)) {
-      user = await User.findByPk(parseInt(cleanCode, 10));
-    }
-    if (!user) {
-      user = await User.findOne({ where: { phone_number: cleanCode } });
-    }
-
-    if (!user) {
-      return res.status(400).json({ error: "المستخدم غير موجود، يرجى التحقق من معرف المشترك" });
-    }
-
-    // Strict 7-Day Weights Validation: Require exactly 7 valid numbers > 20kg (Zero Injected Fake Weights)
-    if (
-      !Array.isArray(daily_weights_kg) ||
-      daily_weights_kg.length !== 7 ||
-      daily_weights_kg.some(w => typeof w !== 'number' || isNaN(w) || w <= 20 || w > 300)
-    ) {
-      return res.status(400).json({
-        error: "يجب تسجيل أوزان الأيام السبعة كاملة وحقيقية (7 أوزان يومية صالحة > 20 كجم) لإرسال المتابعة الأسبوعية"
-      });
-    }
-
-    const weights = daily_weights_kg.map(w => Number(w));
-
-    // Resolve real previous average weight without injecting fake 85.5 kg
-    let prevAvgWeight = null;
-    if (previous_average_weight_kg && !isNaN(Number(previous_average_weight_kg)) && Number(previous_average_weight_kg) > 20) {
-      prevAvgWeight = Number(previous_average_weight_kg);
-    } else {
-      const pastCheckin = await CheckinSubmission.findOne({
-        where: { user_id: user.id },
-        order: [["createdAt", "DESC"]]
-      });
-      prevAvgWeight = pastCheckin ? pastCheckin.average_weight_kg : null;
-    }
-
-    const analysis = evaluateCheckin({
-      primary_goal: await resolveClientPrimaryGoal(user.id),
-      daily_weights_kg: weights,
-      previous_week_average_weight_kg: prevAvgWeight,
-      waist_circumference_cm: Number(waist_circumference_cm) || null,
-      nutrition_adherence_percent: Number(nutrition_adherence_percent) || 95,
-      workouts_completed: Number(workouts_completed) || 4,
-      workouts_scheduled: Number(workouts_scheduled) || 4,
-      biofeedback: biofeedback || { hunger_level: 2, energy_in_gym: 4, sleep_quality: 4, stress_level: 2 },
-      pain_reports: pain_reports || [],
-      lifestyle_variance,
-      bowel_regularity,
-      sleep_stress_composite: Number(sleep_stress_composite) || 3,
-      menstrual_phase,
-      occupation_type: req.body.occupation_type || null,
-      next_week_travel: Boolean(next_week_travel),
-      next_week_gym_available: next_week_gym_available !== false,
-      next_week_realistic_days: next_week_realistic_days ? Number(next_week_realistic_days) : null,
-      next_week_notes
-    });
-
-    const avgWeight = Math.round((weights.reduce((a, b) => a + b, 0) / weights.length) * 100) / 100;
-    const weightChange = prevAvgWeight ? Math.round((avgWeight - prevAvgWeight) * 100) / 100 : null;
-
-    const checkin = await CheckinSubmission.create({
-      user_id: user.id,
-      week_number: Number(week_number) || 1,
-      daily_weights_kg: weights,
-      average_weight_kg: avgWeight,
-      weight_change_kg: weightChange,
-      waist_circumference_cm: Number(waist_circumference_cm) || null,
-      nutrition_adherence_percent: Number(nutrition_adherence_percent) || 100,
-      workouts_completed: Number(workouts_completed) || 4,
-      workouts_scheduled: Number(workouts_scheduled) || 4,
-      biofeedback: biofeedback,
-      pain_reports: pain_reports,
-      analysis_status: analysis.analysis_status || analysis.status || "ON_TRACK",
-      analysis_output: analysis,
-      status: "PENDING_REVIEW",
-      lifestyle_variance,
-      bowel_regularity,
-      sleep_stress_composite: Number(sleep_stress_composite) || 3,
-      menstrual_phase,
-      next_week_travel: Boolean(next_week_travel),
-      next_week_gym_available: next_week_gym_available !== false,
-      next_week_realistic_days: next_week_realistic_days ? Number(next_week_realistic_days) : null,
-      next_week_notes
-    });
-
-    // Save attached progress photos locally to Hostinger file storage
-    const savedPhotos = [];
-    if (Array.isArray(photos) && photos.length > 0) {
-      for (const p of photos) {
-        const pUrl = typeof p === 'string' ? p : (p.photo_url || p.data || p.url);
-        if (typeof pUrl === 'string' && pUrl.trim()) {
-          const pose = (p.pose || 'FRONT').toUpperCase();
-          const targetCode = user.client_code || String(user.id);
-          const savedUrl = saveProgressPhotoToDisk(targetCode, pUrl, Number(week_number) || 1, pose);
-          if (savedUrl) {
-            const photoRecord = await ProgressPhoto.create({
-              user_id: user.id,
-              week_number: Number(week_number) || 1,
-              pose,
-              photo_url: savedUrl,
-              notes: p.notes || null,
-            });
-            savedPhotos.push(photoRecord);
-          }
-        }
-      }
-    }
-
-    return res.status(201).json({
-      message: "تم إرسال المتابعة الأسبوعية بنجاح، وهي الآن معلقة في انتظار مراجعة الكابتن",
-      checkin_id: checkin.id,
-      analysis,
-      photos: savedPhotos,
-      checkin
-    });
-  } catch (err) {
-    console.error("submitWeeklyCheckin error:", err);
-    return res.status(500).json({ error: "فشل إرسال المتابعة", details: err.message });
   }
 };
 
@@ -1064,10 +919,16 @@ export const prepareNextCycle = async (req, res) => {
       });
     }
 
-    const [progression, checkins, medicalReview] = await Promise.all([
+    // S3-1: the clinical lockout is a publish gate, not only a view-time one.
+    // getActiveClinicalLockout fails closed (locked:true on lookup error), so
+    // it is awaited without a fail-open fallback: an unchecked lockout must
+    // wait for the coach. runDueCycles and the daily scheduler both go
+    // through this handler, so this one check covers every publish path.
+    const [progression, checkins, medicalReview, clinicalLockout] = await Promise.all([
       loadProgressionState(user.id),
       CheckinSubmission.findAll({ where: { user_id: user.id }, order: [["id", "DESC"]], limit: 4, attributes: ["analysis_output", "createdAt"] }),
       resolveIntakeMedicalReview(user.id).catch(() => ({ required: false })),
+      getActiveClinicalLockout(user.id),
     ]);
 
     const { program_data, summary } = buildNextCycle({
@@ -1083,6 +944,7 @@ export const prepareNextCycle = async (req, res) => {
       deload_active: progression?.deload?.status === "ACTIVE",
       subscription_active: user.subscription_status !== "DEACTIVATED"
         && (!user.subscription_end_date || new Date(user.subscription_end_date).getTime() >= Date.now()),
+      clinical_lockout: clinicalLockout,
     });
 
     const created = await Program.create({
@@ -1449,10 +1311,12 @@ function syncProgramDataNutritionTargets(programData, previousData = null, prefe
   const stagesMacros = programData.nutrition_program?.stages?.macro_targets;
   const navTargets = programData.nutrition?.targets;
 
-  const prevStagesCal = Number(previousData?.nutrition_program?.stages?.energy_target?.target_calories_kcal || 0);
+  // S2-1 (A1): stage numbers exist in both key shapes; change detection must
+  // read either, preferring the flat shape the editor writes.
+  const prevStagesCal = Number(previousData?.nutrition_program?.stages?.energy_target?.target_calories_kcal || previousData?.nutrition_program?.stages?.energy_target?.calories_kcal || previousData?.nutrition_program?.stages?.energy_target?.target_calories || 0);
   const prevNavCal = Number(previousData?.nutrition?.targets?.calories || 0);
 
-  const stagesCal = Number(stagesEnergy?.target_calories_kcal || stagesEnergy?.calories_kcal || 0);
+  const stagesCal = Number(stagesEnergy?.target_calories_kcal || stagesEnergy?.calories_kcal || stagesEnergy?.target_calories || 0);
   const navCal = Number(navTargets?.calories || navTargets?.target_calories_kcal || 0);
 
   const stagesChanged = stagesCal > 0 && stagesCal !== prevStagesCal;
@@ -1518,24 +1382,71 @@ function syncProgramDataNutritionTargets(programData, previousData = null, prefe
   if (!programData.nutrition_program.stages || typeof programData.nutrition_program.stages !== "object") {
     programData.nutrition_program.stages = {};
   }
-  programData.nutrition_program.stages.energy_target = {
-    ...(programData.nutrition_program.stages.energy_target || {}),
-    target_calories_kcal: calories,
-  };
-  programData.nutrition_program.stages.macro_targets = {
-    ...(programData.nutrition_program.stages.macro_targets || {}),
-    protein_g: protein,
-    carbs_g: carbs,
-    carbohydrate_g: carbs,
-    fats_g: fats,
-    fat_g: fats,
-  };
+  // S2-1 (A1): the winning numbers are written into the stage keys in BOTH
+  // shapes, so the pipeline keys (target_calories, nested target_g) can never
+  // again carry stale pipeline numbers next to the edited ones. Stage
+  // metadata (status, reasons, pipeline diagnostics) is preserved, and a
+  // WITHHELD stage is left untouched.
+  const stageEnergy = programData.nutrition_program.stages.energy_target || {};
+  if (stageEnergy.status !== "WITHHELD") {
+    programData.nutrition_program.stages.energy_target = {
+      ...stageEnergy,
+      target_calories: calories,
+      target_calories_kcal: calories,
+      calories_kcal: calories,
+      target_source: "UNIVERSAL_TARGETS",
+    };
+  }
+  const stageMacros = programData.nutrition_program.stages.macro_targets || {};
+  if (stageMacros.status !== "WITHHELD") {
+    const macroCaloriesTotal = protein * 4 + carbs * 4 + fats * 9;
+    const round1 = (value) => Math.round(value * 10) / 10;
+    programData.nutrition_program.stages.macro_targets = {
+      ...stageMacros,
+      target_calories: calories,
+      protein: {
+        ...(stageMacros.protein || {}),
+        target_g: protein,
+        calories: protein * 4,
+        percent_of_calories: round1((protein * 4 / calories) * 100),
+      },
+      fat: {
+        ...(stageMacros.fat || {}),
+        target_g: fats,
+        calories: fats * 9,
+        percent_of_calories: round1((fats * 9 / calories) * 100),
+      },
+      carbohydrate: {
+        ...(stageMacros.carbohydrate || {}),
+        target_g: carbs,
+        calories: carbs * 4,
+        percent_of_calories: round1((carbs * 4 / calories) * 100),
+      },
+      protein_g: protein,
+      carbs_g: carbs,
+      carbohydrate_g: carbs,
+      fats_g: fats,
+      fat_g: fats,
+      macro_calories_total: macroCaloriesTotal,
+      calorie_difference: macroCaloriesTotal - calories,
+      target_source: "UNIVERSAL_TARGETS",
+    };
+  }
 
   return programData;
 }
 
 export const updateCustomProgram = async (req, res) => {
   try {
+    // S4-1: the editor save path is coach-only. Any authenticated account
+    // could previously overwrite and publish any client's program by
+    // passing that client's user_id/client_code in the body. The role is
+    // re-read from the database, same as setFastingOverride in this file:
+    // the JWT carries no role claim to trust.
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !["COACH", "ADMIN"].includes(requester.role)) {
+      return res.status(403).json({ error: "تعديل البرنامج متاح للكوتش فقط" });
+    }
     const { user_id, client_code, program_data: rawProgramData, master_program, coach_notes, is_published, publish } = req.body;
     const program_data = rawProgramData ?? master_program;
     const hasPublishAction = Boolean(is_published || publish);

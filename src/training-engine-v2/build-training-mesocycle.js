@@ -697,9 +697,16 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         }
         if (hasKneeInjury) {
           const beforeKnee = finalCode;
-          if (AXIAL_SQUATS.has(finalCode) || finalCode === "HACK_SQUAT_MACHINE") {
-            finalCode = isHome ? "GOBLET_SQUAT" : "LEG_PRESS_MACHINE";
-          } else if (LUNGE_PATTERNS.has(finalCode)) {
+          // A knee-loaded substitute is not a safe substitute: axial squats, hack squats and
+          // the knee-dominant loaded pair (goblet squat / leg press, including the lower-back
+          // guard's substitutes above) all become hip-extension work, exactly like lunges.
+          // Goblet squats and leg presses stay in the plan only for clients without a knee injury.
+          if (
+            AXIAL_SQUATS.has(finalCode) ||
+            finalCode === "HACK_SQUAT_MACHINE" ||
+            KNEE_DOMINANT_LOADED.has(finalCode) ||
+            LUNGE_PATTERNS.has(finalCode)
+          ) {
             finalCode = isHome ? "GLUTE_BRIDGE" : "BARBELL_HIP_THRUST";
           }
           if (finalCode !== beforeKnee || KNEE_DOMINANT_LOADED.has(finalCode)) injuryCues.push(INJURY_CUES_AR.KNEE);

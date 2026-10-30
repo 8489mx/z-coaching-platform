@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getPrehabRoutine } from '../src/execution-engines/postural-prehab-engine.js';
 import { calculateEquivalentSwap, getEligibleSwaps } from '../src/execution-engines/food-swap-engine.js';
-import { evaluateWeeklyProgress } from '../src/execution-engines/weekly-checkin-engine.js';
 import { calculateSubscriptionStatus } from '../src/execution-engines/subscription-lifecycle-engine.js';
 import { generatePrintablePlanHTML } from '../src/utils/pdf-plan-exporter.js';
 
@@ -42,27 +41,6 @@ describe('THE OMNIPOTENT CHAOS, CLINICAL & OPERATIONAL BATTERY', () => {
       expect(breakfastSwaps.some((f) => f.id === 'cottage_cheese')).toBe(true); // Normal state
     });
 
-    it('[Female Menstrual Fluid Retention]: Locks calorie deficit cuts completely during active period', () => {
-      const res = evaluateWeeklyProgress({
-        currentWeightKg: 64.0, previousWeightKg: 64.0, currentWaistCm: 70, previousWaistCm: 70,
-        adherenceRatePct: 100, currentCalories: 1550, weeksOnCurrentCalories: 3,
-        goalType: 'FAT_LOSS', isFemale: true, isMenstrualPhase: true
-      });
-      expect(res.decision).toBe('MAINTAIN_CALORIES');
-      expect(res.status).toBe('MENSTRUAL_RETENTION_LOCK');
-      expect(res.calorie_adjustment).toBe(0);
-    });
-
-    it('[Absolute Caloric Safety Floor]: Under no circumstance drops calories below 1200 Kcal', () => {
-      const res = evaluateWeeklyProgress({
-        currentWeightKg: 46.0, previousWeightKg: 46.0, currentWaistCm: 61, previousWaistCm: 61,
-        adherenceRatePct: 100, currentCalories: 1220, weeksOnCurrentCalories: 3, goalType: 'FAT_LOSS'
-      });
-      // A further cut would breach the floor, so the engine schedules a maintenance diet break
-      // (Clinical Plateau Breaker, SYSTEM_CAPABILITIES pillar 1) instead of reducing calories.
-      expect(res.decision).toBe('SCHEDULE_DIET_BREAK');
-      expect(res.new_calories).toBeGreaterThanOrEqual(1200);
-    });
   });
 
   // =========================================================================
@@ -145,23 +123,6 @@ describe('THE OMNIPOTENT CHAOS, CLINICAL & OPERATIONAL BATTERY', () => {
       }).toThrowError(/density is zero/);
     });
 
-    it('[Zero & Negative Adherence Handling]: Safely rejects cut on 0% adherence and extreme waist numbers', () => {
-      const result = evaluateWeeklyProgress({
-        currentWeightKg: 180.5, previousWeightKg: 180.0, currentWaistCm: 140, previousWaistCm: 140,
-        adherenceRatePct: 0, currentCalories: 3000, goalType: 'FAT_LOSS'
-      });
-      expect(result.decision).toBe('MAINTAIN_CALORIES');
-      expect(result.status).toBe('ADHERENCE_WARNING');
-    });
-
-    it('[Extreme Weight Boundaries]: Evaluates massive weight loss without integer overflows', () => {
-      const result = evaluateWeeklyProgress({
-        currentWeightKg: 195.0, previousWeightKg: 200.0, currentWaistCm: 150, previousWaistCm: 155,
-        adherenceRatePct: 100, currentCalories: 3500, goalType: 'FAT_LOSS'
-      });
-      expect(result.status).toBe('EXCELLENT_PROGRESS');
-      expect(result.decision).toBe('MAINTAIN_CALORIES');
-    });
   });
 
   // =========================================================================

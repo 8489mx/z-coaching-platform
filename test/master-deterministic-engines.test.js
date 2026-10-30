@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 
 import { getPrehabRoutine } from '../src/execution-engines/postural-prehab-engine.js';
 import { calculateEquivalentSwap, getEligibleSwaps } from '../src/execution-engines/food-swap-engine.js';
-import { evaluateWeeklyProgress } from '../src/execution-engines/weekly-checkin-engine.js';
 import { calculateSubscriptionStatus } from '../src/execution-engines/subscription-lifecycle-engine.js';
 
 // Mock Databases for Deterministic Testing
@@ -100,59 +99,6 @@ test('Z Coaching Platform - Master Deterministic Engines Suite', async (t) => {
 
     assert.equal(result.success, false);
     assert.equal(result.error_code, 'INCOMPATIBLE_TASTE_PROFILE');
-  });
-
-  // 3. Weekly Check-in Engine Tests
-  await t.test('5. Weekly Check-in Engine: maintains calories when fat loss progress is steady (Weight drop >= 0.4kg)', () => {
-    const res = evaluateWeeklyProgress({
-      currentWeightKg: 84.5,
-      previousWeightKg: 85.0,
-      currentWaistCm: 89,
-      previousWaistCm: 89.5,
-      adherenceRatePct: 95,
-      currentCalories: 2000,
-      goalType: 'FAT_LOSS'
-    });
-
-    assert.equal(res.decision, 'MAINTAIN_CALORIES');
-    assert.equal(res.new_calories, 2000);
-    assert.equal(res.calorie_adjustment, 0);
-  });
-
-  await t.test('6. Weekly Check-in Engine: reduces calories only upon a confirmed 2-week plateau with >=90% adherence', () => {
-    const res = evaluateWeeklyProgress({
-      currentWeightKg: 85.0,
-      previousWeightKg: 85.0,
-      currentWaistCm: 90,
-      previousWaistCm: 90,
-      adherenceRatePct: 95,
-      currentCalories: 2000,
-      weeksOnCurrentCalories: 2,
-      goalType: 'FAT_LOSS'
-    });
-
-    assert.equal(res.status, 'CONFIRMED_PLATEAU');
-    assert.equal(res.decision, 'REDUCE_CALORIES');
-    assert.equal(res.calorie_adjustment, -125);
-    assert.equal(res.new_calories, 1875);
-  });
-
-  await t.test('7. Weekly Check-in Engine: locks adjustments during menstrual retention phase for females', () => {
-    const res = evaluateWeeklyProgress({
-      currentWeightKg: 65.5,
-      previousWeightKg: 65.0,
-      currentWaistCm: 72,
-      previousWaistCm: 72,
-      adherenceRatePct: 100,
-      currentCalories: 1600,
-      goalType: 'FAT_LOSS',
-      isFemale: true,
-      isMenstrualPhase: true
-    });
-
-    assert.equal(res.status, 'MENSTRUAL_RETENTION_LOCK');
-    assert.equal(res.decision, 'MAINTAIN_CALORIES');
-    assert.equal(res.calorie_adjustment, 0);
   });
 
   // 4. Subscription Lifecycle Engine Tests
