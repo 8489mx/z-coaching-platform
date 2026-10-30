@@ -1,9 +1,10 @@
 import express from "express";
-import { 
-  loginFast, 
-  loginEmail, 
-  registerFast, 
-  getProfile, 
+import {
+  loginFast,
+  loginEmail,
+  setClientPassword,
+  resetClientPassword,
+  getProfile,
   deleteAccount,
   changePassword,
   logoutAll,
@@ -16,7 +17,8 @@ import { authRateLimiter } from "../middlewares/rateLimiter.js";
 const router = express.Router();
 
 router.get("/csrf-token", getCsrfTokenController);
-router.post("/register-fast", authRateLimiter, registerFast);
+router.post("/set-password", authRateLimiter, setClientPassword);
+router.post("/reset-client-password", requireAuth, requireAdmin, authRateLimiter, resetClientPassword);
 router.post("/login-fast", authRateLimiter, loginFast);
 router.post("/login-email", authRateLimiter, loginEmail);
 router.get("/profile", requireAuth, getProfile);

@@ -9,6 +9,9 @@ export default function ClientLogin({ onLoginSuccess }) {
   const location = useLocation();
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [setPasswordMode, setSetPasswordMode] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState('simulator');
@@ -57,26 +60,49 @@ export default function ClientLogin({ onLoginSuccess }) {
     }
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
+  const normalizedCredentials = () => {
     const cleanCode = code.replace(/^#+/, '').replace(/^client[-_]?/i, '').trim();
-
-    if (phone.trim().length < 9 || code.trim().length < 1) {
-      setError('يرجى إدخال رقم الموبايل وكود الاشتراك بشكل صحيح.');
-      return;
-    }
-    
-    setIsLoading(true);
-    setError('');
-    
-    // Normalization: Remove non-numeric chars, remove leading +20 or 002
     let normalizedPhone = phone.replace(/\D/g, '');
     if (normalizedPhone.startsWith('20') && normalizedPhone.length > 10) normalizedPhone = normalizedPhone.substring(2);
     if (normalizedPhone.startsWith('0020')) normalizedPhone = normalizedPhone.substring(4);
     if (!normalizedPhone.startsWith('01') && normalizedPhone.startsWith('1')) {
       normalizedPhone = '0' + normalizedPhone;
     }
+    return { cleanCode, normalizedPhone };
+  };
+
+  const completeLogin = (data, cleanCode, normalizedPhone) => {
+    localStorage.setItem('kz_client_token', data.token);
+    localStorage.setItem('token', data.token);
+    if (data.user) {
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('kz_client_name', data.user.full_name || 'المشترك');
+    }
+    setIsLoading(false);
+    if (onLoginSuccess) {
+      onLoginSuccess();
+    } else {
+      // If accessing /intake, route to intake form, otherwise to client dashboard
+      if (location.pathname.includes('intake')) {
+        navigate(`/intake/form?code=${encodeURIComponent(cleanCode)}&phone=${encodeURIComponent(normalizedPhone)}`);
+      } else {
+        navigate('/client/today');
+      }
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    const { cleanCode, normalizedPhone } = normalizedCredentials();
+
+    if (phone.trim().length < 9 || code.trim().length < 1 || !password) {
+      setError('يرجى إدخال رقم الموبايل وكود الاشتراك وكلمة المرور بشكل صحيح.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
 
     try {
       // Save session credentials for intake & client app
@@ -88,35 +114,78 @@ export default function ClientLogin({ onLoginSuccess }) {
       const response = await fetch(`${API_BASE}/api/v1/auth/login-fast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_code: cleanCode, phone_number: normalizedPhone })
+        body: JSON.stringify({ client_code: cleanCode, phone_number: normalizedPhone, password })
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok && data.token) {
-        localStorage.setItem('kz_client_token', data.token);
-        localStorage.setItem('token', data.token);
-        if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-          localStorage.setItem('kz_client_name', data.user.full_name || 'المشترك');
-        }
+        completeLogin(data, cleanCode, normalizedPhone);
+      } else if (data.code === 'PASSWORD_NOT_SET') {
+        // First login for an account created without a password: the client
+        // chooses a password once (same code + phone proof), then logs in
+        // with it from then on. The session stays open afterwards.
         setIsLoading(false);
-        if (onLoginSuccess) {
-          onLoginSuccess();
-        } else {
-          // If accessing /intake, route to intake form, otherwise to client dashboard
-          if (location.pathname.includes('intake')) {
-            navigate(`/intake/form?code=${encodeURIComponent(cleanCode)}&phone=${encodeURIComponent(normalizedPhone)}`);
-          } else {
-            navigate('/client/today');
-          }
-        }
+        setPassword('');
+        setConfirmPassword('');
+        setSetPasswordMode(true);
+        setError('حسابك ليس له كلمة مرور بعد. اختر كلمة مرور (8 أحرف على الأقل) وسيتم تسجيل دخولك مباشرة، وستفضل مسجلاً بعدها.');
       } else {
         setIsLoading(false);
-        setError(data.error || 'بيانات الدخول غير صحيحة. يرجى التأكد من كتابة كود المشترك ورقم الهاتف المسجل بشكل دقيق.');
+        setError(data.error || 'بيانات الدخول غير صحيحة. يرجى التأكد من كتابة كود المشترك ورقم الهاتف وكلمة المرور بشكل دقيق.');
       }
     } catch (err) {
       console.error("Client login error:", err);
+      setIsLoading(false);
+      setError('تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.');
+    }
+  };
+
+  const handleSetPassword = async (e) => {
+    e.preventDefault();
+
+    const { cleanCode, normalizedPhone } = normalizedCredentials();
+
+    if (password.length < 8) {
+      setError('يجب ألا تقل كلمة المرور عن 8 أحرف.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('كلمتا المرور غير متطابقتين.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      sessionStorage.setItem('z_client_code', cleanCode);
+      sessionStorage.setItem('z_client_phone', normalizedPhone);
+      localStorage.setItem('kz_client_code', cleanCode);
+      localStorage.setItem('kz_client_phone', normalizedPhone);
+
+      const response = await fetch(`${API_BASE}/api/v1/auth/set-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_code: cleanCode, phone_number: normalizedPhone, new_password: password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        completeLogin(data, cleanCode, normalizedPhone);
+      } else if (data.code === 'PASSWORD_ALREADY_SET') {
+        setIsLoading(false);
+        setSetPasswordMode(false);
+        setPassword('');
+        setConfirmPassword('');
+        setError('هذا الحساب له كلمة مرور بالفعل. سجّل الدخول بكلمة المرور، أو اطلب من الكوتش إعادة تعيينها لو نسيتها.');
+      } else {
+        setIsLoading(false);
+        setError(data.error || 'تعذر حفظ كلمة المرور. حاول مرة أخرى.');
+      }
+    } catch (err) {
+      console.error("Client set-password error:", err);
       setIsLoading(false);
       setError('تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.');
     }
@@ -291,12 +360,14 @@ export default function ClientLogin({ onLoginSuccess }) {
             بوابة المشتركين المعتمدة
           </h2>
           <p style={{ fontSize: '12.5px', color: '#8E8E93', margin: 0, lineHeight: '1.5', fontWeight: 500 }}>
-            أدخل رقم هاتفك وكود الاشتراك للوصول إلى استمارتك وخطتك المخصصة
+            {setPasswordMode
+              ? 'اختر كلمة مرور لحسابك، وستدخل بها من أي جهاز بعد ذلك'
+              : 'أدخل رقم هاتفك وكود الاشتراك وكلمة المرور للوصول إلى استمارتك وخطتك المخصصة'}
           </p>
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <form onSubmit={setPasswordMode ? handleSetPassword : handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
           {/* Phone Field */}
           <div>
@@ -375,6 +446,124 @@ export default function ClientLogin({ onLoginSuccess }) {
             </div>
           </div>
 
+          {/* Password Field (login mode) / Choose-password fields (first-login mode) */}
+          {!setPasswordMode ? (
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#1C1C1E', marginBottom: '6px' }}>
+                كلمة المرور *
+              </label>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <span style={{ position: 'absolute', right: '14px', color: '#8E8E93', pointerEvents: 'none', display: 'flex' }}>
+                  <Lock size={17} />
+                </span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="كلمة المرور"
+                  autoComplete="current-password"
+                  dir="ltr"
+                  required
+                  style={{
+                    width: '100%',
+                    height: '46px',
+                    borderRadius: '12px',
+                    border: '1px solid #E5E5EA',
+                    background: '#F9F9FB',
+                    padding: '0 14px 0 40px',
+                    fontSize: '14.5px',
+                    fontWeight: 700,
+                    fontFamily: "'Inter', 'IBM Plex Sans Arabic', sans-serif",
+                    color: '#1C1C1E',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onFocus={(e) => { e.target.style.borderColor = '#007AFF'; e.target.style.background = '#FFFFFF'; }}
+                  onBlur={(e) => { e.target.style.borderColor = '#E5E5EA'; e.target.style.background = '#F9F9FB'; }}
+                />
+              </div>
+              <p style={{ fontSize: '11.5px', color: '#8E8E93', margin: '6px 0 0 0' }}>
+                نسيت كلمة المرور؟ تواصل مع الكوتش لإعادة تعيينها.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#1C1C1E', marginBottom: '6px' }}>
+                  اختر كلمة مرور (8 أحرف على الأقل) *
+                </label>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ position: 'absolute', right: '14px', color: '#8E8E93', pointerEvents: 'none', display: 'flex' }}>
+                    <Lock size={17} />
+                  </span>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="كلمة مرور جديدة"
+                    autoComplete="new-password"
+                    dir="ltr"
+                    required
+                    style={{
+                      width: '100%',
+                      height: '46px',
+                      borderRadius: '12px',
+                      border: '1px solid #E5E5EA',
+                      background: '#F9F9FB',
+                      padding: '0 14px 0 40px',
+                      fontSize: '14.5px',
+                      fontWeight: 700,
+                      fontFamily: "'Inter', 'IBM Plex Sans Arabic', sans-serif",
+                      color: '#1C1C1E',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = '#007AFF'; e.target.style.background = '#FFFFFF'; }}
+                    onBlur={(e) => { e.target.style.borderColor = '#E5E5EA'; e.target.style.background = '#F9F9FB'; }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#1C1C1E', marginBottom: '6px' }}>
+                  تأكيد كلمة المرور *
+                </label>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <span style={{ position: 'absolute', right: '14px', color: '#8E8E93', pointerEvents: 'none', display: 'flex' }}>
+                    <Lock size={17} />
+                  </span>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="أعد كتابة كلمة المرور"
+                    autoComplete="new-password"
+                    dir="ltr"
+                    required
+                    style={{
+                      width: '100%',
+                      height: '46px',
+                      borderRadius: '12px',
+                      border: '1px solid #E5E5EA',
+                      background: '#F9F9FB',
+                      padding: '0 14px 0 40px',
+                      fontSize: '14.5px',
+                      fontWeight: 700,
+                      fontFamily: "'Inter', 'IBM Plex Sans Arabic', sans-serif",
+                      color: '#1C1C1E',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = '#007AFF'; e.target.style.background = '#FFFFFF'; }}
+                    onBlur={(e) => { e.target.style.borderColor = '#E5E5EA'; e.target.style.background = '#F9F9FB'; }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           {/* Error Message */}
           {error && (
             <div 
@@ -427,6 +616,11 @@ export default function ClientLogin({ onLoginSuccess }) {
               <>
                 <Loader2 size={16} className="animate-spin" />
                 <span>جاري التحقق والدخول...</span>
+              </>
+            ) : setPasswordMode ? (
+              <>
+                <span>حفظ كلمة المرور والدخول</span>
+                <LogIn size={16} />
               </>
             ) : (
               <>

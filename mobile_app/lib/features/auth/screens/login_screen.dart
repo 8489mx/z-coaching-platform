@@ -20,8 +20,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   bool _isFastMode = true;
+  // حساب منشأ بدون كلمة مرور: أول دخول يختار كلمة مرور بدلاً من الدخول المباشر.
+  bool _isSetPasswordMode = false;
   bool _isLoading = false;
   bool _acceptedTermsAndAge = true;
   String? _errorMessage;
@@ -41,7 +44,68 @@ class _LoginScreenState extends State<LoginScreen> {
     _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSetPassword() async {
+    final code = _clientCodeController.text.trim();
+    final phone = _phoneController.text.trim();
+    final password = _passwordController.text;
+    final confirm = _confirmPasswordController.text;
+
+    if (code.isEmpty || phone.isEmpty) {
+      setState(() {
+        _errorMessage = 'يرجى إدخال كود المشترك ورقم الهاتف معاً';
+      });
+      return;
+    }
+    if (password.length < 8) {
+      setState(() {
+        _errorMessage = 'يجب ألا تقل كلمة المرور عن 8 أحرف';
+      });
+      return;
+    }
+    if (password != confirm) {
+      setState(() {
+        _errorMessage = 'كلمتا المرور غير متطابقتين';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final res = await _authService.setPassword(
+        clientCode: code,
+        phoneNumber: phone,
+        newPassword: password,
+      );
+      if (res.isSuccess && mounted) {
+        _navigateToHome();
+      } else {
+        setState(() {
+          // الحساب له كلمة مرور بالفعل: ارجع لمسار الدخول العادي.
+          if (res.statusCode == 403) {
+            _isSetPasswordMode = false;
+          }
+          _errorMessage = res.errorMessage ?? 'تعذر حفظ كلمة المرور';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'حدث خطأ غير متوقع: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _handleLogin() async {
@@ -49,6 +113,12 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _errorMessage = 'يجب تأكيد بلوغ سن 18 عاماً والموافقة على الشروط الطبية والخصوصية للمتابعة';
       });
+      return;
+    }
+
+    // مسار اختيار كلمة المرور لأول مرة له معالج مستقل.
+    if (_isFastMode && _isSetPasswordMode) {
+      await _handleSetPassword();
       return;
     }
 
@@ -61,20 +131,31 @@ class _LoginScreenState extends State<LoginScreen> {
       if (_isFastMode) {
         final code = _clientCodeController.text.trim();
         final phone = _phoneController.text.trim();
+        final password = _passwordController.text;
 
-        if (code.isEmpty || phone.isEmpty) {
+        if (code.isEmpty || phone.isEmpty || password.isEmpty) {
           setState(() {
-            _errorMessage = 'يرجى إدخال كود المشترك ورقم الهاتف معاً';
+            _errorMessage = 'يرجى إدخال كود المشترك ورقم الهاتف وكلمة المرور معاً';
             _isLoading = false;
           });
           return;
         }
 
-        final res = await _authService.loginFast(clientCode: code, phoneNumber: phone);
+        final res = await _authService.loginFast(
+          clientCode: code,
+          phoneNumber: phone,
+          password: password,
+        );
         if (res.isSuccess && mounted) {
           _navigateToHome();
         } else {
           setState(() {
+            // 403 يعني الحساب بلا كلمة مرور بعد: اعرض مسار اختيارها لأول مرة.
+            if (res.statusCode == 403) {
+              _isSetPasswordMode = true;
+              _passwordController.clear();
+              _confirmPasswordController.clear();
+            }
             _errorMessage = res.errorMessage ?? 'بيانات الدخول غير صحيحة';
           });
         }
@@ -273,7 +354,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => setState(() => _isFastMode = true),
+                          onTap: () => setState(() {
+                            _isFastMode = true;
+                            _isSetPasswordMode = false;
+                          }),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
@@ -294,7 +378,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => setState(() => _isFastMode = false),
+                          onTap: () => setState(() {
+                            _isFastMode = false;
+                            _isSetPasswordMode = false;
+                          }),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
@@ -351,6 +438,30 @@ class _LoginScreenState extends State<LoginScreen> {
                             prefixIcon: Icon(Icons.phone_android_outlined, color: AppColors.textMuted),
                           ),
                         ),
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          style: const TextStyle(color: AppColors.textPrimary),
+                          decoration: InputDecoration(
+                            labelText: _isSetPasswordMode
+                                ? 'اختر كلمة مرور (8 أحرف على الأقل)'
+                                : 'كلمة المرور',
+                            prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textMuted),
+                          ),
+                        ),
+                        if (_isSetPasswordMode) ...[
+                          const SizedBox(height: 14),
+                          TextField(
+                            controller: _confirmPasswordController,
+                            obscureText: true,
+                            style: const TextStyle(color: AppColors.textPrimary),
+                            decoration: const InputDecoration(
+                              labelText: 'تأكيد كلمة المرور',
+                              prefixIcon: Icon(Icons.lock_outline, color: AppColors.textMuted),
+                            ),
+                          ),
+                        ],
                       ] else ...[
                         TextField(
                           controller: _emailController,
@@ -476,8 +587,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : const Text('تسجيل الدخول ومزامنة الخطة'),
+                      : Text(_isSetPasswordMode
+                          ? 'حفظ كلمة المرور والدخول'
+                          : 'تسجيل الدخول ومزامنة الخطة'),
                 ),
+                if (_isSetPasswordMode) ...[
+                  const SizedBox(height: 8),
+                  Center(
+                    child: TextButton(
+                      onPressed: () => setState(() {
+                        _isSetPasswordMode = false;
+                        _errorMessage = null;
+                      }),
+                      child: const Text(
+                        'عندي كلمة مرور — عودة للدخول',
+                        style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 20),
 
                 // رابط تهيئة الخادم

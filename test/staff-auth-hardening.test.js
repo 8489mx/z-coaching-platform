@@ -1,10 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import bcrypt from "bcrypt";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loginFast } from "../src/api/controllers/auth.controller.js";
+import { loginFast, setClientPassword } from "../src/api/controllers/auth.controller.js";
 import { User } from "../src/api/models/index.js";
 import sequelize from "../src/api/config/database.js";
 
@@ -26,15 +27,25 @@ test("Staff authentication hardening", async (t) => {
   const staffPhone = "01099000901";
   const clientCode = "TEST_CLIENT_AUTH_902";
   const clientPhone = "01099000902";
+  const clientPassword = "ClientPass123";
+  const noPasswordCode = "TEST_CLIENT_AUTH_903";
+  const noPasswordPhone = "01099000903";
+  const chosenPassword = "ChosenPass123";
 
-  await User.destroy({ where: { client_code: [staffCode, clientCode] } }).catch(() => {});
+  await User.destroy({ where: { client_code: [staffCode, clientCode, noPasswordCode] } }).catch(() => {});
   const staff = await User.create({ client_code: staffCode, phone_number: staffPhone, full_name: "Staff Test", role: "ADMIN" });
   const client = await User.create({
     client_code: clientCode,
     phone_number: clientPhone,
     full_name: "Client Test",
     subscription_status: "ACTIVE",
-    password: "$2b$10$abcdefghijklmnopqrstuuFakeHashForSerializationTestOnly1"
+    password: await bcrypt.hash(clientPassword, 10)
+  });
+  const clientNoPassword = await User.create({
+    client_code: noPasswordCode,
+    phone_number: noPasswordPhone,
+    full_name: "Client No Password Test",
+    subscription_status: "ACTIVE"
   });
 
   try {
@@ -47,11 +58,53 @@ test("Staff authentication hardening", async (t) => {
 
     await t.test("login-fast still works for clients and never returns the password hash", async () => {
       const out = mockRes();
-      await loginFast({ body: { client_code: clientCode, phone_number: clientPhone }, clientIp: "10.77.0.2", headers: {} }, out.res);
+      await loginFast({ body: { client_code: clientCode, phone_number: clientPhone, password: clientPassword }, clientIp: "10.77.0.2", headers: {} }, out.res);
       assert.equal(out.status, 200);
       assert.ok(out.body.token);
       const serialized = JSON.parse(JSON.stringify(out.body));
       assert.equal("password" in serialized.user, false, "password hash must not be serialized");
+    });
+
+    await t.test("login-fast refuses a wrong or missing password with the generic 401", async () => {
+      for (const password of ["WrongPass123", undefined]) {
+        const out = mockRes();
+        const body = { client_code: clientCode, phone_number: clientPhone };
+        if (password !== undefined) body.password = password;
+        await loginFast({ body, clientIp: "10.77.0.3", headers: {} }, out.res);
+        assert.equal(out.status, 401);
+        assert.ok(!out.body.token, "no token may be issued without the right password");
+      }
+    });
+
+    await t.test("login-fast tells a password-less account to set a password, without a token", async () => {
+      const out = mockRes();
+      await loginFast({ body: { client_code: noPasswordCode, phone_number: noPasswordPhone }, clientIp: "10.77.0.4", headers: {} }, out.res);
+      assert.equal(out.status, 403);
+      assert.equal(out.body.code, "PASSWORD_NOT_SET");
+      assert.ok(!out.body.token);
+    });
+
+    await t.test("set-password refuses a weak password, then sets a strong one once", async () => {
+      const weak = mockRes();
+      await setClientPassword({ body: { client_code: noPasswordCode, phone_number: noPasswordPhone, new_password: "123456" }, clientIp: "10.77.0.5", headers: {} }, weak.res);
+      assert.equal(weak.status, 400);
+      assert.ok(!weak.body.token);
+
+      const ok = mockRes();
+      await setClientPassword({ body: { client_code: noPasswordCode, phone_number: noPasswordPhone, new_password: chosenPassword }, clientIp: "10.77.0.5", headers: {} }, ok.res);
+      assert.equal(ok.status, 200);
+      assert.ok(ok.body.token);
+
+      const again = mockRes();
+      await setClientPassword({ body: { client_code: noPasswordCode, phone_number: noPasswordPhone, new_password: "AnotherPass123" }, clientIp: "10.77.0.5", headers: {} }, again.res);
+      assert.equal(again.status, 403);
+      assert.equal(again.body.code, "PASSWORD_ALREADY_SET");
+      assert.ok(!again.body.token);
+
+      const login = mockRes();
+      await loginFast({ body: { client_code: noPasswordCode, phone_number: noPasswordPhone, password: chosenPassword }, clientIp: "10.77.0.6", headers: {} }, login.res);
+      assert.equal(login.status, 200);
+      assert.ok(login.body.token);
     });
 
     await t.test("raw queries (backups) still include the password column", async () => {
@@ -61,6 +114,7 @@ test("Staff authentication hardening", async (t) => {
   } finally {
     await staff.destroy().catch(() => {});
     await client.destroy().catch(() => {});
+    await clientNoPassword.destroy().catch(() => {});
     await sequelize.close().catch(() => {});
   }
 });

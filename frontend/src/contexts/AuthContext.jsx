@@ -85,11 +85,28 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
-  const clientLogin = async (clientCode, phoneNumber) => {
+  const clientLogin = async (clientCode, phoneNumber, password) => {
     const res = await fetch(`${API_BASE}/api/v1/auth/login-fast`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_code: clientCode, phone_number: phoneNumber })
+      body: JSON.stringify({ client_code: clientCode, phone_number: phoneNumber, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      login(data.token, data.user);
+      return data;
+    } else {
+      throw { response: { data } };
+    }
+  };
+
+  // One-time password setup for accounts created without one; logs the
+  // client in immediately, and the session then stays open like any login.
+  const setClientPassword = async (clientCode, phoneNumber, newPassword) => {
+    const res = await fetch(`${API_BASE}/api/v1/auth/set-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_code: clientCode, phone_number: phoneNumber, new_password: newPassword })
     });
     const data = await res.json();
     if (res.ok) {
@@ -106,7 +123,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, login, clientLogin, logout, programData, fetchProgram, loadingProgram }}>
+    <AuthContext.Provider value={{ token, user, login, clientLogin, setClientPassword, logout, programData, fetchProgram, loadingProgram }}>
       {children}
     </AuthContext.Provider>
   );

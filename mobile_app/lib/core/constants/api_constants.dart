@@ -9,6 +9,7 @@ class ApiConstants {
 
   // مسارات واجهات البرمجة (Endpoints)
   static const String loginFast = '/api/v1/auth/login-fast';
+  static const String setPassword = '/api/v1/auth/set-password';
   static const String loginEmail = '/api/v1/auth/login-email';
   static const String activeProgram = '/api/v1/programs/active';
   // نفس مسار استمارة المتابعة في الويب (وزن واحد، والخادم يحدد رقم الأسبوع تلقائياً)
