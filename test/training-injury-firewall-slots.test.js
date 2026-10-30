@@ -37,15 +37,15 @@ test('lower back injury: no axial squat or loaded hinge, and every squat slot st
   }
 });
 
-test('knee injury: no barbell squat or lunge pattern and the knee cue is attached', () => {
+test('knee injury: no barbell squat, lunge pattern or knee-loaded substitute, and the knee cue is attached', () => {
   const meso = mesocycle({ injuries: ['KNEE'] });
   for (const session of sessions(meso)) {
     for (const ex of session.exercises) {
-      assert.doesNotMatch(ex.exercise_code, /^BARBELL_(BACK|FRONT)_SQUAT$|LUNGE|SPLIT_SQUAT/, `${session.session_code}: ${ex.exercise_code}`);
+      assert.doesNotMatch(ex.exercise_code, /^BARBELL_(BACK|FRONT)_SQUAT$|LUNGE|SPLIT_SQUAT|LEG_PRESS_MACHINE|GOBLET_SQUAT|HACK_SQUAT/, `${session.session_code}: ${ex.exercise_code}`);
     }
   }
-  const legPress = sessions(meso).flatMap((s) => s.exercises).find((e) => e.exercise_code === 'LEG_PRESS_MACHINE');
-  assert.ok(legPress?.prescription.injury_safety_cues_ar?.length > 0);
+  const thrust = sessions(meso).flatMap((s) => s.exercises).find((e) => e.exercise_code === 'BARBELL_HIP_THRUST');
+  assert.ok(thrust?.prescription.injury_safety_cues_ar?.length > 0);
 });
 
 test('shoulder injury: no barbell bench, incline or overhead press; substitutes are dosed by their own class', () => {
