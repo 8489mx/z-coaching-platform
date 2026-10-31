@@ -59,10 +59,12 @@ test("FIX-03: Metabolic macro engine rejects missing or zero anthropometric inpu
     assert.equal(valid.target_calories_kcal, 2403);
   });
 
-  await t.test("3. MacroCalculator.jsx does not fall back to previous weight/height/age when importing a client and blocks saving invalid profile", () => {
+  await t.test("3. MacroCalculator.jsx does not fall back to previous weight/height/age when importing a client, calls the backend endpoint, and blocks saving without server-calculated targets", () => {
     const src = fs.readFileSync(new URL("../frontend/src/pages/MacroCalculator.jsx", import.meta.url), "utf8");
     assert.ok(!src.includes("Number(cl.weight_kg || cl.weight) || prev.weight"), "Must not fallback to prev.weight when client weight is missing");
     assert.ok(!src.includes("Number(cl.height_cm || cl.height) || prev.height"), "Must not fallback to prev.height when client height is missing");
-    assert.ok(src.includes("metabolic.is_valid === false"), "Must guard handleApplyToClient when metabolic.is_valid === false");
+    assert.ok(!src.includes("calculateMetabolicMacroProfile"), "Must not compute targets in the browser (S4-7)");
+    assert.ok(src.includes("/programs/calculate-targets"), "Must calculate through the backend endpoint (S4-7)");
+    assert.ok(src.includes("!calcResult"), "Must guard handleApplyToClient when no server result exists");
   });
 });
