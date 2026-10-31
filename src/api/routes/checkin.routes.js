@@ -3,6 +3,8 @@ import {
   submitCheckin,
   getClientCheckins,
   approveCheckin,
+  getCoachDigest,
+  bulkApproveCheckins,
   updateCheckinMeasurements,
   logWorkout,
   getWorkoutLogs,
@@ -16,6 +18,8 @@ import { checkinRateLimiter } from "../middlewares/rateLimiter.js";
 const router = express.Router();
 
 router.post("/", checkinRateLimiter, submitCheckin);
+router.get("/digest", requireAuth, getCoachDigest);
+router.post("/bulk-approve", requireAuth, bulkApproveCheckins);
 router.get("/schedule/:userId", requireAuth, getCheckinSchedule);
 router.get("/schedule", requireAuth, getCheckinSchedule);
 router.get("/user/:userId", requireAuth, getClientCheckins);
