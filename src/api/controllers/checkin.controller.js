@@ -1,3 +1,4 @@
+import sequelize from "../config/database.js";
 import { CheckinSubmission, Program, User, WorkoutLog, ProgressPhoto } from "../models/index.js";
 import { evaluateCheckin } from "../../checkin-engine/evaluate-checkin.js";
 import { estimateAdaptiveTdee } from "../../checkin-engine/adaptive-tdee.js";
@@ -13,6 +14,14 @@ import { mealCountNoteForCheckin } from "../../checkin-engine/meal-count-note.js
 import { evaluateClientCheckinSchedule } from "../services/checkinScheduleService.js";
 import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
 import { classifyFollowUp } from "../../execution-engines/coach-triage-engine.js";
+import {
+  baseTargetsFromProgram,
+  deriveEngineProposed,
+  decideFollowUpAutoApply,
+  buildBlockedTriage,
+  buildCoachDigest,
+  selectYellowForBulkApprove,
+} from "../../execution-engines/follow-up-auto-apply.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
 export { getActiveClinicalLockout };
 
@@ -461,6 +470,164 @@ export async function submitCheckin(req, res) {
       );
     }
     // END TRIAGE SHADOW MODE
+
+    // TRIAGE PHASE 2 AUTO-APPLY: GREEN only, and only after the adapted
+    // plan itself is built and re-checked. A shadow GREEN prediction is
+    // never applied on its own: buildAdaptedPlan runs, its flags feed
+    // classifyFollowUp again, and decideFollowUpAutoApply gates the merge.
+    // Any error here leaves the check-in PENDING_REVIEW and never touches
+    // the 201 response; the program is only updated after the gate passes,
+    // and the check-in is only marked AUTO_APPLIED after that update.
+    try {
+      if (analysisOutput.triage?.tier === "GREEN" && activeProgram && !checkin.adapted_program_id) {
+        const progData = typeof activeProgram.program_data === "string"
+          ? JSON.parse(activeProgram.program_data)
+          : JSON.parse(JSON.stringify(activeProgram.program_data || {}));
+        const cycle = resolveTrainingCycleStatus(activeProgram);
+        const cycleWeek = Math.min(cycle.current_week, Math.max(1, cycle.total_weeks - 1));
+        const bio = checkin.biofeedback || {};
+        const painReports = Array.isArray(checkin.pain_reports) ? checkin.pain_reports : [];
+        const firstPain = painReports[0] || {};
+        const jointLocation = firstPain.location || firstPain.joint || bio.joint_pain_location || bio.joint_location || analysisOutput.joint_pain_location;
+        const painScore = firstPain.score || firstPain.severity || bio.pain_score || analysisOutput.pain_score;
+        const fatigueScore = bio.fatigue_score || bio.fatigue || analysisOutput.fatigue_score;
+        const adapted = buildAdaptedPlan({
+          currentMasterProgram: progData,
+          checkinAnalysis: analysisOutput,
+          options: {
+            currentWeekNumber: cycleWeek,
+            joint_pain_location: jointLocation,
+            pain_score: painScore,
+            accumulated_fatigue_score: fatigueScore,
+            weeks_of_accumulated_training: cycle.current_week,
+            isFemale: Boolean(userObj && String(userObj.gender).toLowerCase() === "female"),
+            experience:
+              progData.training_program?.experience ||
+              progData.training_program?.experience_level ||
+              progData.training?.experience ||
+              progData.training?.experience_level ||
+              progData.client_profile?.experience ||
+              progData.client_profile?.experience_level ||
+              progData.client?.experience ||
+              progData.client?.experience_level ||
+              progData.intake_decision?.profile?.experience ||
+              undefined,
+          },
+        });
+        if (adapted) {
+          const baseTargets = baseTargetsFromProgram(progData);
+          const derived = deriveEngineProposed({
+            adapted,
+            baseCaloriesKcal: baseTargets.baseCaloriesKcal,
+            baseSteps: baseTargets.baseSteps,
+          });
+          const phase2Lockout = await getActiveClinicalLockout(targetUserId);
+          let phase2MedicalReview = null;
+          let phase2SafetyUnknown = false;
+          try {
+            phase2MedicalReview = await resolveIntakeMedicalReview(targetUserId);
+          } catch (phase2MedicalError) {
+            phase2SafetyUnknown = true;
+          }
+          const phase2Stages = [
+            progData.nutrition_program?.stages,
+            progData.nutrition?.stages,
+            progData.stages,
+          ];
+          const phase2Withheld = phase2Stages.some(
+            (stages) =>
+              stages &&
+              typeof stages === "object" &&
+              (stages.energy_target?.status === "WITHHELD" ||
+                stages.macro_targets?.status === "WITHHELD"),
+          );
+          const recheckedTriage = classifyFollowUp({
+            analysis_status: analysisOutput.analysis_status,
+            analysis: analysisOutput,
+            adherence_percent: Number(nutrition_adherence_percent),
+            weight_change_percent: analysisOutput.weight_change_percent,
+            max_pain_level: maxPainLevel,
+            flagged_pains: evalInput.pain_reports,
+            clinical_lockout: phase2Lockout,
+            medical_review_required: phase2MedicalReview
+              ? phase2MedicalReview.required === true
+              : null,
+            clinical_alert: analysisOutput.clinical_alert ?? null,
+            previous_analysis_status: previousCheckin?.analysis_status ?? null,
+            deficit_locked:
+              analysisOutput.female_cycle_buffer?.deficit_adjustment_locked === true,
+            safety_signals_unknown: phase2SafetyUnknown,
+            withheld_stage: phase2Withheld,
+            proposed: derived.proposed,
+          });
+          if (recheckedTriage.tier !== "GREEN") {
+            await checkin.update({ analysis_output: { ...analysisOutput, triage: recheckedTriage } });
+            analysisOutput.triage = recheckedTriage;
+          } else {
+            const gate = decideFollowUpAutoApply({
+              triage: recheckedTriage,
+              adapted,
+              baseCaloriesKcal: baseTargets.baseCaloriesKcal,
+              baseSteps: baseTargets.baseSteps,
+              alreadyApplied: false,
+              withheldStage: phase2Withheld,
+            });
+            if (gate.eligible) {
+              const mergedProgramData = mergeAdaptedPlanIntoProgram(progData, adapted, null);
+              const appliedTriage = {
+                ...recheckedTriage,
+                auto_apply: {
+                  applied_at: new Date().toISOString(),
+                  program_id: activeProgram.id,
+                  adapted_week: adapted.adapted_week_number,
+                  calorie_delta: gate.calorie_delta,
+                  steps_delta: gate.steps_delta,
+                },
+              };
+              // Atomic apply: program, waiting draft and check-in update in
+              // one transaction, so a failure in any step rolls all of them
+              // back instead of leaving a changed program behind a still
+              // pending check-in that a later coach approval would merge again.
+              await sequelize.transaction(async (t) => {
+                await activeProgram.update({ program_data: mergedProgramData }, { transaction: t });
+                const waitingDraft = await Program.findOne({ where: { user_id: targetUserId, status: "DRAFT" }, order: [["id", "DESC"]], transaction: t });
+                if (waitingDraft && waitingDraft.id !== activeProgram.id && Number(waitingDraft.id) > Number(activeProgram.id) && waitingDraft.program_data) {
+                  const draftData = JSON.parse(JSON.stringify(waitingDraft.program_data));
+                  if (mergedProgramData.nutrition) draftData.nutrition = mergedProgramData.nutrition;
+                  if (mergedProgramData.nutrition_program) draftData.nutrition_program = mergedProgramData.nutrition_program;
+                  await waitingDraft.update({ program_data: draftData }, { transaction: t });
+                }
+                await checkin.update({
+                  status: "AUTO_APPLIED",
+                  adapted_program_id: activeProgram.id,
+                  analysis_output: { ...analysisOutput, triage: appliedTriage },
+                }, { transaction: t });
+              });
+              checkin.status = "AUTO_APPLIED";
+              checkin.adapted_program_id = activeProgram.id;
+              analysisOutput.triage = appliedTriage;
+            } else {
+              // Gate refused an otherwise GREEN re-check (deload and refeed
+              // are engine-only flags the classifier does not carry): the
+              // stored triage must become YELLOW with the blocked reasons,
+              // never stay GREEN in the coach digest.
+              const blockedTriage = buildBlockedTriage({
+                triage: recheckedTriage,
+                blockedReasons: gate.blocked_reasons,
+              });
+              await checkin.update({ analysis_output: { ...analysisOutput, triage: blockedTriage } });
+              analysisOutput.triage = blockedTriage;
+            }
+          }
+        }
+      }
+    } catch (phase2Error) {
+      console.error(
+        "Triage Phase 2 auto-apply failed (check-in stays PENDING_REVIEW):",
+        phase2Error,
+      );
+    }
+    // END TRIAGE PHASE 2
 
     return res.status(201).json({
       success: true,
@@ -915,6 +1082,87 @@ export async function approveCheckin(req, res) {
     });
   } catch (error) {
     console.error("Error approving check-in:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
+
+/**
+ * Phase 2 coach digest: read-only grouping of pending and auto-applied
+ * check-ins by their stored triage tier. It sends nothing (no WhatsApp,
+ * no push): the coach reads it from the review screen. Coaches and
+ * admins only. A check-in with no stored triage is grouped as yellow
+ * pending by buildCoachDigest, never as green.
+ */
+export async function getCoachDigest(req, res) {
+  try {
+    const requester = req.user?.role
+      ? req.user
+      : (req.user?.id ? await User.findByPk(req.user.id) : null);
+    if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
+      return res.status(403).json({ success: false, error: "ملخص المتابعات متاح للكوتش فقط" });
+    }
+    const rows = await CheckinSubmission.findAll({
+      where: { status: ["PENDING_REVIEW", "AUTO_APPLIED"] },
+      order: [["week_number", "DESC"], ["id", "DESC"]],
+    });
+    const digest = buildCoachDigest(rows.map((row) => ({
+      id: row.id,
+      user_id: row.user_id,
+      week_number: row.week_number,
+      status: row.status,
+      adapted_program_id: row.adapted_program_id,
+      analysis_output: row.analysis_output || {},
+    })));
+    return res.status(200).json({ success: true, digest });
+  } catch (error) {
+    console.error("Error building coach digest:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
+
+/**
+ * Phase 2 bulk approve: coaches and admins only, yellow pending check-ins
+ * only, selected by selectYellowForBulkApprove. This is a review action
+ * only: it marks the selected check-ins APPROVED and saves an optional
+ * bulk note. It does not merge any adapted plan, exactly like a single
+ * approve without apply_program_adaptation. Skipped ids are reported
+ * explicitly, never silently approved, and one failed save does not
+ * hide the rest of the batch.
+ */
+export async function bulkApproveCheckins(req, res) {
+  try {
+    const requester = req.user?.role
+      ? req.user
+      : (req.user?.id ? await User.findByPk(req.user.id) : null);
+    if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
+      return res.status(403).json({ success: false, error: "الموافقة الجماعية متاحة للكوتش فقط" });
+    }
+    const requestedIds = Array.isArray(req.body?.checkin_ids) ? req.body.checkin_ids : [];
+    if (requestedIds.length === 0 || requestedIds.length > 100) {
+      return res.status(400).json({ success: false, error: "أرسل قائمة checkin_ids غير فارغة بحد أقصى 100" });
+    }
+    const rows = await CheckinSubmission.findAll({ where: { id: requestedIds } });
+    const selection = selectYellowForBulkApprove(rows, requestedIds);
+    const approved = [];
+    const skipped = [...selection.skipped];
+    for (const id of selection.selected_ids) {
+      try {
+        const checkin = rows.find((row) => row.id === id);
+        if (!checkin) {
+          skipped.push({ checkin_id: id, reason: "NOT_FOUND" });
+          continue;
+        }
+        if (req.body?.coach_notes) checkin.coach_notes = req.body.coach_notes;
+        checkin.status = "APPROVED";
+        await checkin.save();
+        approved.push(id);
+      } catch (saveError) {
+        skipped.push({ checkin_id: id, reason: "SAVE_FAILED" });
+      }
+    }
+    return res.status(200).json({ success: true, approved, skipped });
+  } catch (error) {
+    console.error("Error bulk-approving check-ins:", error);
     return res.status(500).json({ success: false, error: error.message });
   }
 }
