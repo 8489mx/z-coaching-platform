@@ -18,6 +18,7 @@ import {
   baseTargetsFromProgram,
   deriveEngineProposed,
   decideFollowUpAutoApply,
+  buildBlockedTriage,
   buildCoachDigest,
   selectYellowForBulkApprove,
 } from "../src/execution-engines/follow-up-auto-apply.js";
@@ -224,6 +225,28 @@ test("engine flags feed the classifier, so a flagged engine result re-classifies
   assert.ok(result.reasons.map((r) => r.code).includes("REQUIRES_COACH_APPROVAL"));
 });
 
+test("blocked triage: a gate-refused GREEN becomes YELLOW with blocked reasons, without mutating the original", () => {
+  const original = greenTriage();
+  const blocked = buildBlockedTriage({
+    triage: original,
+    blockedReasons: ["DELOAD_RECOMMENDED", "REFEED_CONFIGURED"],
+  });
+  assert.equal(blocked.tier, "YELLOW");
+  assert.equal(blocked.auto_apply_blocked, true);
+  assert.deepEqual(blocked.auto_apply_blocked_reasons, ["DELOAD_RECOMMENDED", "REFEED_CONFIGURED"]);
+  assert.ok(blocked.reasons.map((r) => r.code).includes("ON_TRACK"));
+  assert.ok(blocked.reasons.map((r) => r.code).includes("DELOAD_RECOMMENDED"));
+  assert.ok(blocked.reasons.map((r) => r.code).includes("REFEED_CONFIGURED"));
+  assert.equal(original.tier, "GREEN");
+  assert.deepEqual(original.reasons.map((r) => r.code), ["ON_TRACK"]);
+  // A blocked triage therefore lands in the yellow pending queue, not green.
+  const digest = buildCoachDigest([
+    { id: 9, user_id: 20, week_number: 4, status: "PENDING_REVIEW", analysis_output: { triage: blocked } },
+  ]);
+  assert.equal(digest.counts.yellow_pending, 1);
+  assert.equal(digest.counts.green_pending, 0);
+});
+
 test("coach digest groups pending and auto-applied check-ins and never invents a tier", () => {
   const digest = buildCoachDigest([
     { id: 1, user_id: 10, week_number: 3, status: "AUTO_APPLIED", analysis_output: { triage: { tier: "GREEN", reasons: [{ code: "ON_TRACK" }], auto_apply: { program_id: 7 } } } },
@@ -271,6 +294,13 @@ test("source guard: Phase 2 block re-checks the engine, gates on the decision, a
   assert.match(block, /mergeAdaptedPlanIntoProgram\s*\(/);
   assert.match(block, /AUTO_APPLIED/);
   assert.match(block, /catch/);
+  // Review fixes: one atomic transaction for program + draft + check-in,
+  // an explicit gate-else that stores a blocked YELLOW triage, and an
+  // explicit isFemale passed to the adaptation engine.
+  assert.match(block, /sequelize\.transaction/);
+  assert.match(block, /transaction:\s*t/);
+  assert.match(block, /buildBlockedTriage/);
+  assert.match(block, /isFemale/);
   // The shadow block itself must stay apply-free.
   const shadowStart = src.indexOf("TRIAGE SHADOW MODE (Phase 1)");
   const shadowEnd = src.indexOf("END TRIAGE SHADOW MODE", shadowStart);

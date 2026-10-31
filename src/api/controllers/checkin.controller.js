@@ -1,3 +1,4 @@
+import sequelize from "../config/database.js";
 import { CheckinSubmission, Program, User, WorkoutLog, ProgressPhoto } from "../models/index.js";
 import { evaluateCheckin } from "../../checkin-engine/evaluate-checkin.js";
 import { estimateAdaptiveTdee } from "../../checkin-engine/adaptive-tdee.js";
@@ -17,6 +18,7 @@ import {
   baseTargetsFromProgram,
   deriveEngineProposed,
   decideFollowUpAutoApply,
+  buildBlockedTriage,
   buildCoachDigest,
   selectYellowForBulkApprove,
 } from "../../execution-engines/follow-up-auto-apply.js";
@@ -498,6 +500,7 @@ export async function submitCheckin(req, res) {
             pain_score: painScore,
             accumulated_fatigue_score: fatigueScore,
             weeks_of_accumulated_training: cycle.current_week,
+            isFemale: Boolean(userObj && String(userObj.gender).toLowerCase() === "female"),
             experience:
               progData.training_program?.experience ||
               progData.training_program?.experience_level ||
@@ -571,14 +574,6 @@ export async function submitCheckin(req, res) {
             });
             if (gate.eligible) {
               const mergedProgramData = mergeAdaptedPlanIntoProgram(progData, adapted, null);
-              await activeProgram.update({ program_data: mergedProgramData });
-              const waitingDraft = await Program.findOne({ where: { user_id: targetUserId, status: "DRAFT" }, order: [["id", "DESC"]] });
-              if (waitingDraft && waitingDraft.id !== activeProgram.id && Number(waitingDraft.id) > Number(activeProgram.id) && waitingDraft.program_data) {
-                const draftData = JSON.parse(JSON.stringify(waitingDraft.program_data));
-                if (mergedProgramData.nutrition) draftData.nutrition = mergedProgramData.nutrition;
-                if (mergedProgramData.nutrition_program) draftData.nutrition_program = mergedProgramData.nutrition_program;
-                await waitingDraft.update({ program_data: draftData });
-              }
               const appliedTriage = {
                 ...recheckedTriage,
                 auto_apply: {
@@ -589,14 +584,39 @@ export async function submitCheckin(req, res) {
                   steps_delta: gate.steps_delta,
                 },
               };
-              await checkin.update({
-                status: "AUTO_APPLIED",
-                adapted_program_id: activeProgram.id,
-                analysis_output: { ...analysisOutput, triage: appliedTriage },
+              // Atomic apply: program, waiting draft and check-in update in
+              // one transaction, so a failure in any step rolls all of them
+              // back instead of leaving a changed program behind a still
+              // pending check-in that a later coach approval would merge again.
+              await sequelize.transaction(async (t) => {
+                await activeProgram.update({ program_data: mergedProgramData }, { transaction: t });
+                const waitingDraft = await Program.findOne({ where: { user_id: targetUserId, status: "DRAFT" }, order: [["id", "DESC"]], transaction: t });
+                if (waitingDraft && waitingDraft.id !== activeProgram.id && Number(waitingDraft.id) > Number(activeProgram.id) && waitingDraft.program_data) {
+                  const draftData = JSON.parse(JSON.stringify(waitingDraft.program_data));
+                  if (mergedProgramData.nutrition) draftData.nutrition = mergedProgramData.nutrition;
+                  if (mergedProgramData.nutrition_program) draftData.nutrition_program = mergedProgramData.nutrition_program;
+                  await waitingDraft.update({ program_data: draftData }, { transaction: t });
+                }
+                await checkin.update({
+                  status: "AUTO_APPLIED",
+                  adapted_program_id: activeProgram.id,
+                  analysis_output: { ...analysisOutput, triage: appliedTriage },
+                }, { transaction: t });
               });
               checkin.status = "AUTO_APPLIED";
               checkin.adapted_program_id = activeProgram.id;
               analysisOutput.triage = appliedTriage;
+            } else {
+              // Gate refused an otherwise GREEN re-check (deload and refeed
+              // are engine-only flags the classifier does not carry): the
+              // stored triage must become YELLOW with the blocked reasons,
+              // never stay GREEN in the coach digest.
+              const blockedTriage = buildBlockedTriage({
+                triage: recheckedTriage,
+                blockedReasons: gate.blocked_reasons,
+              });
+              await checkin.update({ analysis_output: { ...analysisOutput, triage: blockedTriage } });
+              analysisOutput.triage = blockedTriage;
             }
           }
         }

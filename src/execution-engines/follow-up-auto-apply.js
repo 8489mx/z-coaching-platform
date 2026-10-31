@@ -172,6 +172,49 @@ export function decideFollowUpAutoApply({
   });
 }
 
+const BLOCKED_REASON_MESSAGES_AR = Object.freeze({
+  NOT_GREEN: "التصنيف ليس أخضر؛ الحالة تحتاج مراجعة الكوتش.",
+  REQUIRES_COACH_APPROVAL: "محرك التكييف طلب مراجعة الكوتش لهذه المتابعة.",
+  MACRO_ALIGNMENT_CONFLICT: "تعارض في ميزانية الماكروز؛ إعادة الموازنة تحتاج مراجعة الكوتش.",
+  DIET_BREAK_ELIGIBLE: "أهلية استراحة دايت؛ رفع السعرات للصيانة قرار الكوتش.",
+  FLOOR_OR_CEILING_CLAMP: "التعديل المقترح اصطدم بالحد الأدنى أو السقف؛ لا تطبيق تلقائي عند الحدود.",
+  EXERCISE_SUBSTITUTION: "تغيير في قائمة التمارين يتجاوز تقدم الأحمال؛ استبدال التمارين قرار الكوتش.",
+  DELOAD_RECOMMENDED: "توصية بأسبوع استشفاء (تخفيف حمل)؛ قرار الكوتش قبل التطبيق.",
+  REFEED_CONFIGURED: "يوم إعادة شحن مقترح؛ قرار الكوتش قبل التطبيق.",
+  WITHHELD_STAGE: "مرحلة محجوبة في الخطة النشطة المخزنة؛ لا تطبيق تلقائي على خطة محجوبة.",
+  SAFETY_CORRECTION_PRESENT: "تصحيح سلامة مسجل؛ الحالة تحتاج مراجعة الكوتش.",
+  PROPOSED_CHANGE_EXCEEDS_GREEN_CAP: "حجم التغير المقترح فوق حد التطبيق التلقائي؛ يحتاج مراجعة الكوتش.",
+  ALREADY_APPLIED: "المتابعة مطبقة مسبقًا؛ لا تطبيق مكرر.",
+  ADAPTED_PLAN_MISSING: "لا توجد خطة معدلة من المحرك؛ لا تطبيق تلقائي بلا نتيجة محرك.",
+  TRIAGE_MISSING: "لا يوجد تصنيف للمتابعة؛ لا تطبيق تلقائي بلا تصنيف.",
+});
+
+/**
+ * Blocked triage: when the gate refuses an otherwise GREEN re-check
+ * (deload and refeed are engine-only flags the classifier does not carry,
+ * so a re-check can stay GREEN while the gate blocks), the stored triage
+ * must become YELLOW with the blocked reasons, never stay GREEN in the
+ * coach digest. The input triage is never mutated.
+ */
+export function buildBlockedTriage({ triage = null, blockedReasons = [] } = {}) {
+  const reasons = Array.isArray(triage?.reasons) ? [...triage.reasons] : [];
+  const codes = Array.isArray(blockedReasons) ? blockedReasons : [];
+  for (const code of codes) {
+    reasons.push({
+      code,
+      message_ar: BLOCKED_REASON_MESSAGES_AR[code] || "تم حظر التطبيق التلقائي لمراجعة الكوتش.",
+    });
+  }
+  return Object.freeze({
+    ...(triage && typeof triage === "object" ? triage : {}),
+    tier: "YELLOW",
+    reasons: Object.freeze(reasons),
+    habit_nudge: false,
+    auto_apply_blocked: true,
+    auto_apply_blocked_reasons: Object.freeze([...codes]),
+  });
+}
+
 function digestEntry(checkin) {
   const triage =
     checkin?.analysis_output && typeof checkin.analysis_output === "object"
