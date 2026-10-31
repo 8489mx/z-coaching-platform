@@ -3,7 +3,6 @@ import { Calculator, Flame, Droplet, Activity, Check, Save, RotateCw, MessageCir
 import { API_BASE } from '../config/api';
 import AdminLayout from '../components/layout/AdminLayout';
 import { copyToClipboard } from '../utils/clipboardUtils';
-import { calculateMetabolicMacroProfile, DAILY_ACTIVITY_FACTORS, WORKOUT_FREQUENCY_FACTORS, GOAL_CALORIE_MULTIPLIERS } from '../utils/metabolicMacroEngine';
 import { DEFAULT_FOOD_CATALOG } from '../data/defaultFoodsCatalog';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import CurvedSelect from '../components/common/CurvedSelect';
@@ -52,19 +51,27 @@ export default function MacroCalculator() {
   const [selectedClient, setSelectedClient] = useState('');
   const activeClient = clients.find(c => String(c.id) === String(selectedClient));
   const [calcForm, setCalcForm] = useState({
-    gender: 'MALE',
     age: 26,
     weight: 85,
     height: 178,
     bodyFat: 18,
-    dailyActivity: 'STANDING_WALKING',
-    workoutFrequency: 'DAYS_3_TO_5',
-    goal: 'FAT_LOSS_STANDARD',
-    proteinPerKg: 2.2,
-    isMuscular: false
+    dailySteps: ''
   });
   const [calcCopied, setCalcCopied] = useState(false);
   const [calcSaving, setCalcSaving] = useState(false);
+  // S4-7: the numbers come from the backend endpoint (same engine that builds
+  // programs). Nothing is computed in the browser anymore.
+  const [calcResult, setCalcResult] = useState(null);
+  const [calcCalculating, setCalcCalculating] = useState(false);
+  const [calcError, setCalcError] = useState(null);
+
+  // Any form change invalidates the last server calculation: the numbers on
+  // screen must always match the measurements shown.
+  const updateCalcForm = (patch) => {
+    setCalcForm((prev) => ({ ...prev, ...patch }));
+    setCalcResult(null);
+    setCalcError(null);
+  };
 
   // Fetch initial data on mount
   useEffect(() => {
@@ -238,39 +245,74 @@ export default function MacroCalculator() {
     FRUIT: foods.filter(f => f.macro_type === 'FRUIT').length
   };
 
-  // --- METABOLIC CALCULATOR CALCULATIONS ---
-  const metabolic = calculateMetabolicMacroProfile({
-    gender: calcForm.gender,
-    age: calcForm.age,
-    weight_kg: calcForm.weight,
-    height_cm: calcForm.height,
-    body_fat_percent: calcForm.bodyFat || null,
-    daily_activity: calcForm.dailyActivity,
-    workout_frequency: calcForm.workoutFrequency,
-    goal: calcForm.goal,
-    protein_per_kg: calcForm.proteinPerKg,
-    is_muscular: calcForm.isMuscular
-  });
-
-  const bmr = metabolic.bmr_kcal ?? 0;
-  const tdee = metabolic.tdee_kcal ?? 0;
-  const targetCalories = metabolic.target_calories_kcal ?? 0;
-  const targetProteinGrams = metabolic.macro_targets.protein_g ?? 0;
-  const targetFatGrams = metabolic.macro_targets.fat_g ?? 0;
-  const targetCarbGrams = metabolic.macro_targets.carbs_g ?? 0;
+  // --- BACKEND CALCULATOR RESULTS (S4-7) ---
+  // The numbers come from the backend endpoint, which runs the same engine
+  // that builds programs, with the client's intake (conditions, bloodwork,
+  // goal) as context. Nothing is computed in the browser anymore.
+  const targets = calcResult?.targets || null;
+  const bmr = targets?.bmr ?? 0;
+  const tdee = targets?.tdee ?? 0;
+  const targetCalories = targets?.target_calories_kcal ?? 0;
+  const targetProteinGrams = targets?.protein_g ?? 0;
+  const targetFatGrams = targets?.fat_g ?? 0;
+  const targetCarbGrams = targets?.carbohydrate_g ?? 0;
   const proteinCalories = targetProteinGrams * 4;
   const fatCalories = targetFatGrams * 9;
   const carbsCalories = targetCarbGrams * 4;
-  const waterTargetLiters = (metabolic.water_target_liters ?? 0).toFixed(1);
+  const waterTargetLiters = targets ? Number(targets.water_liters ?? 0).toFixed(1) : '0.0';
   const totalMacroCalories = (proteinCalories + carbsCalories + fatCalories) || targetCalories || 1;
   const proteinPct = Math.round((proteinCalories / totalMacroCalories) * 100);
   const carbsPct = Math.round((carbsCalories / totalMacroCalories) * 100);
   const fatPct = Math.max(0, 100 - (proteinPct + carbsPct));
   const calorieDiff = targetCalories - tdee;
+  const calcNotes = calcResult?.notes_ar || [];
+  const bmrFormulaLabel = {
+    MIFFLIN_ST_JEOR: 'معادلة Mifflin-St Jeor',
+    KATCH_MCARDLE: 'معادلة Katch-McArdle (LBM)',
+    SCHOFIELD_YOUTH: 'معادلة Schofield (تحت 18 سنة)'
+  }[targets?.bmr_formula] || 'معادلة البرنامج الموحدة';
+
+  const handleCalculateTargets = async () => {
+    if (!selectedClient) {
+      alert('يرجى اختيار متدرب أولاً');
+      return;
+    }
+    if (!calcForm.weight || !calcForm.height) {
+      alert('بيانات القياسات الأساسية غير مكتملة (الوزن والطول مطلوبة قبل الحساب)');
+      return;
+    }
+    try {
+      setCalcCalculating(true);
+      setCalcError(null);
+      const res = await fetch(`${API_BASE}/api/v1/programs/calculate-targets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_code: selectedClient,
+          weight_kg: calcForm.weight,
+          height_cm: calcForm.height,
+          age: calcForm.age,
+          body_fat_percent: calcForm.bodyFat || null,
+          average_daily_steps: calcForm.dailySteps || null
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const reasons = Array.isArray(data.reasons) && data.reasons.length ? ` (${data.reasons.join(', ')})` : '';
+        throw new Error((data.error || 'فشل حساب الأهداف في السيرفر') + reasons);
+      }
+      setCalcResult(data);
+    } catch (e) {
+      setCalcResult(null);
+      setCalcError(e.message);
+    } finally {
+      setCalcCalculating(false);
+    }
+  };
 
   const handleApplyToClient = async () => {
-    if (metabolic.is_valid === false || !targetCalories) {
-      alert(metabolic.error_ar || 'بيانات القياسات الأساسية غير مكتملة (الوزن والطول والعمر مطلوبة قبل تطبيق الخطة)');
+    if (!calcResult || !targetCalories) {
+      alert('احسب الأهداف من الباك إند أولاً قبل تطبيقها على الخطة');
       return;
     }
     if (!selectedClient) {
@@ -357,6 +399,10 @@ export default function MacroCalculator() {
   };
 
   const handleCopyCalcSummary = () => {
+    if (!calcResult || !targetCalories) {
+      alert('احسب الأهداف من الباك إند أولاً قبل نسخ الملخص');
+      return;
+    }
     const summary = `*خطة السعرات والماكروز المستهدفة*\n\n` +
       `*السعرات المستهدفة:* ${targetCalories} سعرة حرارية\n` +
       `*البروتين اليومي:* ${targetProteinGrams} جم (${proteinCalories} kcal)\n` +
@@ -846,14 +892,12 @@ export default function MacroCalculator() {
                           const cl = clients.find(c => String(c.id) === String(cId));
                           if (cl) {
                             setSelectedClient(cl.id);
-                            setCalcForm(prev => ({
-                              ...prev,
-                              gender: cl.gender === 'FEMALE' ? 'FEMALE' : 'MALE',
+                            updateCalcForm({
                               age: Number(cl.age) > 0 ? Number(cl.age) : '',
                               weight: Number(cl.weight_kg || cl.weight) > 0 ? Number(cl.weight_kg || cl.weight) : '',
                               height: Number(cl.height_cm || cl.height) > 0 ? Number(cl.height_cm || cl.height) : '',
                               bodyFat: Number(cl.body_fat_percent || cl.body_fat) > 0 ? Number(cl.body_fat_percent || cl.body_fat) : null
-                            }));
+                            });
                           }
                         }}
                         style={{
@@ -923,46 +967,8 @@ export default function MacroCalculator() {
                     1. القياسات الحيوية والشخصية
                   </div>
 
-                  {/* Row: Gender & Age */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px', marginBottom: '10px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
-                        النوع (الجنس)
-                      </label>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', height: '38px' }}>
-                        {[
-                          { id: 'MALE', label: 'ذكر' },
-                          { id: 'FEMALE', label: 'أنثى' }
-                        ].map((g) => {
-                          const isAct = calcForm.gender === g.id;
-                          return (
-                            <button
-                              key={g.id}
-                              type="button"
-                              onClick={() => setCalcForm({ ...calcForm, gender: g.id })}
-                              style={{
-                                border: isAct ? '1px solid #673DE6' : '1px solid #D0D5DD',
-                                borderRadius: '9999px',
-                                background: isAct ? '#673DE6' : '#FFFFFF',
-                                color: isAct ? '#FFFFFF' : '#344054',
-                                fontWeight: 700,
-                                fontSize: '12px',
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                textAlign: 'center',
-                                boxShadow: isAct ? '0 1px 3px rgba(103, 61, 230, 0.25)' : 'none',
-                                transition: 'all 0.15s ease'
-                              }}
-                            >
-                              {g.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
+                  {/* Row: Age (sex and goal come from the client's intake file) */}
+                  <div style={{ marginBottom: '10px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
                         العمر (سنة)
@@ -970,7 +976,7 @@ export default function MacroCalculator() {
                       <input
                         type="number"
                         value={calcForm.age}
-                        onChange={(e) => setCalcForm({ ...calcForm, age: Number(e.target.value) })}
+                        onChange={(e) => updateCalcForm({ age: Number(e.target.value) })}
                         style={{
                           width: '100%',
                           height: '38px',
@@ -998,7 +1004,7 @@ export default function MacroCalculator() {
                       <input
                         type="number"
                         value={calcForm.weight}
-                        onChange={(e) => setCalcForm({ ...calcForm, weight: Number(e.target.value) })}
+                        onChange={(e) => updateCalcForm({ weight: Number(e.target.value) })}
                         style={{
                           width: '100%',
                           height: '38px',
@@ -1023,7 +1029,7 @@ export default function MacroCalculator() {
                       <input
                         type="number"
                         value={calcForm.height}
-                        onChange={(e) => setCalcForm({ ...calcForm, height: Number(e.target.value) })}
+                        onChange={(e) => updateCalcForm({ height: Number(e.target.value) })}
                         style={{
                           width: '100%',
                           height: '38px',
@@ -1048,7 +1054,7 @@ export default function MacroCalculator() {
                       <input
                         type="number"
                         value={calcForm.bodyFat || ''}
-                        onChange={(e) => setCalcForm({ ...calcForm, bodyFat: e.target.value ? Number(e.target.value) : null })}
+                        onChange={(e) => updateCalcForm({ bodyFat: e.target.value ? Number(e.target.value) : null })}
                         placeholder="اختياري"
                         style={{
                           width: '100%',
@@ -1071,179 +1077,82 @@ export default function MacroCalculator() {
 
                 <div style={{ height: '1px', background: '#F2F4F7' }} />
 
-                {/* Section 2: Daily Activity & Training */}
+                {/* Section 2: Daily Steps (optional override; blank uses the intake's activity level) */}
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 800, color: '#344054', marginBottom: '8px' }}>
-                    2. النشاط الحركي والتمارين
+                    2. عدد الخطوات اليومية (اختياري)
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
-                        النشاط والحركة اليومية (NEAT)
-                      </label>
-                      <CurvedSelect
-                        value={calcForm.dailyActivity}
-                        onChange={(e) => setCalcForm({ ...calcForm, dailyActivity: e.target.value })}
-                        style={{
-                          width: '100%',
-                          height: '38px',
-                          borderRadius: '9999px',
-                          border: '1px solid #D0D5DD',
-                          padding: '0 10px',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          color: '#101828',
-                          outline: 'none',
-                          background: '#FFFFFF'
-                        }}
-                      >
-                        {Object.entries(DAILY_ACTIVITY_FACTORS).map(([k, v]) => (
-                          <option key={k} value={k}>{v.label_ar}</option>
-                        ))}
-                      </CurvedSelect>
-                    </div>
-
-                    <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
-                        تكرار تمارين المقاومة (EAT)
-                      </label>
-                      <CurvedSelect
-                        value={calcForm.workoutFrequency}
-                        onChange={(e) => setCalcForm({ ...calcForm, workoutFrequency: e.target.value })}
-                        style={{
-                          width: '100%',
-                          height: '38px',
-                          borderRadius: '9999px',
-                          border: '1px solid #D0D5DD',
-                          padding: '0 10px',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          color: '#101828',
-                          outline: 'none',
-                          background: '#FFFFFF'
-                        }}
-                      >
-                        {Object.entries(WORKOUT_FREQUENCY_FACTORS).map(([k, v]) => (
-                          <option key={k} value={k}>{v.label_ar}</option>
-                        ))}
-                      </CurvedSelect>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ height: '1px', background: '#F2F4F7' }} />
-
-                {/* Section 3: Goal & Protein Requirement */}
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#344054', marginBottom: '8px' }}>
-                    3. الهدف الغذائي وتوزيع البروتين
-                  </div>
-
-                  <div style={{ marginBottom: '12px' }}>
+                  <div>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '4px' }}>
-                      الهدف المستهدف
+                      متوسط الخطوات في اليوم
                     </label>
-                    <CurvedSelect
-                      value={calcForm.goal}
-                      onChange={(e) => setCalcForm({ ...calcForm, goal: e.target.value })}
+                    <input
+                      type="number"
+                      value={calcForm.dailySteps}
+                      onChange={(e) => updateCalcForm({ dailySteps: e.target.value ? Number(e.target.value) : '' })}
+                      placeholder="اتركه فارغاً لاستخدام مستوى النشاط من الاستمارة"
                       style={{
                         width: '100%',
                         height: '38px',
                         borderRadius: '9999px',
                         border: '1px solid #D0D5DD',
                         padding: '0 12px',
-                        fontSize: '12px',
-                        fontWeight: 700,
+                        fontSize: '13px',
+                        fontWeight: 800,
                         color: '#101828',
-                        background: '#FFFFFF',
-                        outline: 'none'
+                        textAlign: 'center',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        background: '#FFFFFF'
                       }}
-                    >
-                      {Object.entries(GOAL_CALORIE_MULTIPLIERS).map(([k, v]) => (
-                        <option key={k} value={k}>{v.label_ar}</option>
-                      ))}
-                    </CurvedSelect>
+                    />
                   </div>
-
-                  {/* Protein Requirement Control */}
-                  <div style={{ background: '#F9FAFB', padding: '12px 14px', borderRadius: '24px', border: '1px solid #EAECF0' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#344054' }}>
-                        معدل البروتين اليومي لكل كجم وزن
-                      </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#673DE6', background: '#F4F0FD', border: '1px solid #EDE8FA', padding: '2px 8px', borderRadius: '9999px' }}>
-                          {calcForm.proteinPerKg} جم / كجم
-                        </span>
-                        <span style={{ fontSize: '10.5px', color: '#667085', fontWeight: 600 }}>
-                          (= {targetProteinGrams} جم)
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Quick Preset Buttons */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '5px', marginBottom: '10px' }}>
-                      {[
-                        { val: 1.6, label: '1.6', note: 'محافظة' },
-                        { val: 1.8, label: '1.8', note: 'معتدل' },
-                        { val: 2.0, label: '2.0', note: 'بناء عضلي' },
-                        { val: 2.2, label: '2.2', note: 'تنشيف' },
-                        { val: 2.5, label: '2.5', note: 'متقدم' }
-                      ].map(p => {
-                        const isAct = calcForm.proteinPerKg === p.val;
-                        return (
-                          <button
-                            key={p.val}
-                            type="button"
-                            onClick={() => setCalcForm(prev => ({ ...prev, proteinPerKg: p.val }))}
-                            style={{
-                              padding: '5px 4px',
-                              borderRadius: '9999px',
-                              border: isAct ? '1px solid #673DE6' : '1px solid #D0D5DD',
-                              background: isAct ? '#673DE6' : '#FFFFFF',
-                              color: isAct ? '#FFFFFF' : '#344054',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '1px',
-                              boxShadow: isAct ? '0 1px 3px rgba(103, 61, 230, 0.25)' : 'none',
-                              transition: 'all 0.12s ease'
-                            }}
-                          >
-                            <span style={{ fontSize: '12px', fontWeight: 800 }}>{p.label}</span>
-                            <span style={{ fontSize: '9px', fontWeight: 600, opacity: isAct ? 0.9 : 0.7 }}>{p.note}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Range Slider in pure RTL matching preset buttons */}
-                    <div style={{ margin: '6px 0 2px 0' }}>
-                      <input
-                        type="range"
-                        min="1.4"
-                        max="3.0"
-                        step="0.1"
-                        value={calcForm.proteinPerKg}
-                        onChange={(e) => setCalcForm({ ...calcForm, proteinPerKg: parseFloat(e.target.value) })}
-                        style={{
-                          width: '100%',
-                          cursor: 'pointer',
-                          accentColor: '#673DE6',
-                          margin: '4px 0'
-                        }}
-                      />
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9.5px', color: '#98A2B3', fontWeight: 600 }}>
-                        <span>1.4 جم (الحد الأدنى)</span>
-                        <span>2.2 جم (الهدف المعياري)</span>
-                        <span>3.0 جم (الحد الرياضي)</span>
-                      </div>
-                    </div>
-                  </div>
+                  <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#667085', lineHeight: 1.6 }}>
+                    الهدف والحالة الصحية وقواعد الحماية الطبية تؤخذ من استمارة المتدرب، وليست اختيارات هنا.
+                    الحساب يتم في الباك إند بنفس معادلة البرنامج.
+                  </p>
                 </div>
 
+                <div style={{ height: '1px', background: '#F2F4F7' }} />
+
+                {/* Calculate action */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleCalculateTargets}
+                    disabled={calcCalculating || !selectedClient}
+                    style={{
+                      width: '100%',
+                      height: '40px',
+                      borderRadius: '9999px',
+                      border: 'none',
+                      background: '#673DE6',
+                      color: '#FFFFFF',
+                      fontSize: '13px',
+                      fontWeight: 800,
+                      cursor: calcCalculating || !selectedClient ? 'not-allowed' : 'pointer',
+                      opacity: calcCalculating || !selectedClient ? 0.6 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      boxShadow: '0 1px 3px rgba(103, 61, 230, 0.25)'
+                    }}
+                  >
+                    <Calculator size={15} />
+                    <span>{calcCalculating ? 'جاري الحساب...' : 'احسب الأهداف من ملف العميل'}</span>
+                  </button>
+                  {!selectedClient && (
+                    <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#667085', textAlign: 'center' }}>
+                      اختر متدرباً أولاً من القائمة أعلاه أو من قسم التطبيق.
+                    </p>
+                  )}
+                  {calcError && (
+                    <p style={{ margin: '8px 0 0 0', fontSize: '11.5px', color: '#B42318', background: '#FEF3F2', border: '1px solid #FECDCA', borderRadius: '10px', padding: '8px 12px', lineHeight: 1.6 }}>
+                      {calcError}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1297,7 +1206,7 @@ export default function MacroCalculator() {
                     padding: '3px 9px',
                     borderRadius: '9999px'
                   }}>
-                    {GOAL_CALORIE_MULTIPLIERS[calcForm.goal]?.label_ar || 'خطة التغذية'}
+                    {'أرقام موحدة من الباك إند'}
                   </span>
                 </div>
 
@@ -1314,13 +1223,13 @@ export default function MacroCalculator() {
                       <div style={{ fontSize: '12px', fontWeight: 700, color: '#673DE6', marginBottom: '2px' }}>
                         السعرات اليومية المستهدفة للخطة
                       </div>
-                      <div style={{ fontSize: metabolic.is_valid && targetCalories ? '28px' : '18px', fontWeight: 900, color: metabolic.is_valid && targetCalories ? '#101828' : '#64748B', lineHeight: 1.1 }}>
-                        {metabolic.is_valid && targetCalories ? (
+                      <div style={{ fontSize: targetCalories ? '28px' : '18px', fontWeight: 900, color: targetCalories ? '#101828' : '#64748B', lineHeight: 1.1 }}>
+                        {targetCalories ? (
                           <>
                             <bdi dir="ltr">{targetCalories}</bdi> <span style={{ fontSize: '13px', fontWeight: 700, color: '#475467' }}>سعرة حرارية / اليوم</span>
                           </>
                         ) : (
-                          <span>بيانات القياسات الأساسية غير مكتملة</span>
+                          <span>اختر متدرباً واضغط «احسب الأهداف» لعرض الأرقام الموحدة</span>
                         )}
                       </div>
                     </div>
@@ -1345,15 +1254,24 @@ export default function MacroCalculator() {
                   {/* Sub-strip with BMR, TDEE, and Methodology */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', borderTop: '1px solid #E4D9FB', paddingTop: '10px', fontSize: '11px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: '#475467', fontWeight: 600 }}>
-                      <span>الحرق الأساسي (BMR): <strong style={{ color: '#101828' }}>{metabolic.is_valid && bmr ? `${bmr} سعرة` : '--'}</strong></span>
+                      <span>الحرق الأساسي (BMR): <strong style={{ color: '#101828' }}>{bmr ? `${bmr} سعرة` : '--'}</strong></span>
                       <span style={{ color: '#D0D5DD', margin: '0 3px' }}>|</span>
-                      <span>الاستهلاك الكلي (TDEE): <strong style={{ color: '#101828' }}>{metabolic.is_valid && tdee ? `${tdee} سعرة` : '--'}</strong></span>
+                      <span>الاستهلاك الكلي (TDEE): <strong style={{ color: '#101828' }}>{tdee ? `${tdee} سعرة` : '--'}</strong></span>
                     </div>
                     <span style={{ background: '#FFFFFF', padding: '1px 8px', borderRadius: '9999px', border: '1px solid #D6BBFB', fontWeight: 700, color: '#673DE6', fontSize: '10px' }}>
-                      {calcForm.bodyFat ? 'معادلة Katch-McArdle السريرية (LBM)' : 'معادلة Mifflin-St Jeor السريرية'}
+                      {bmrFormulaLabel}
                     </span>
                   </div>
                 </div>
+
+                {/* Clinical notes from the backend calculation */}
+                {calcNotes.length > 0 && (
+                  <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '10px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {calcNotes.map((note, i) => (
+                      <span key={i} style={{ fontSize: '11.5px', color: '#344054', lineHeight: 1.6 }}>• {note}</span>
+                    ))}
+                  </div>
+                )}
 
                 {/* Macro Ratio Visual Bar */}
                 <div>
@@ -1413,7 +1331,7 @@ export default function MacroCalculator() {
                 <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '10px', fontSize: '11.5px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Droplet size={14} color="#0284C7" />
-                    <span style={{ color: '#475467' }}>احتياج الماء اليومي: <strong style={{ color: '#101828' }}>{waterTargetLiters} لتر / يوم</strong></span>
+                    <span style={{ color: '#475467' }}>احتياج الماء اليومي: <strong style={{ color: '#101828' }}>{targets ? `${waterTargetLiters} لتر / يوم` : '--'}</strong></span>
                   </div>
                   <span style={{ color: '#D0D5DD' }}>|</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1440,14 +1358,12 @@ export default function MacroCalculator() {
                         if (!cId) return;
                         const cl = clients.find(c => String(c.id) === String(cId));
                         if (cl) {
-                          setCalcForm(prev => ({
-                            ...prev,
-                            gender: cl.gender === 'FEMALE' ? 'FEMALE' : 'MALE',
+                          updateCalcForm({
                             age: Number(cl.age) > 0 ? Number(cl.age) : '',
                             weight: Number(cl.weight_kg || cl.weight) > 0 ? Number(cl.weight_kg || cl.weight) : '',
                             height: Number(cl.height_cm || cl.height) > 0 ? Number(cl.height_cm || cl.height) : '',
                             bodyFat: Number(cl.body_fat_percent || cl.body_fat) > 0 ? Number(cl.body_fat_percent || cl.body_fat) : null
-                          }));
+                          });
                         }
                       }}
                       style={{ flex: 1, height: '36px', borderRadius: '9999px', border: '1px solid #D0D5DD', padding: '0 12px', fontSize: '11.5px', fontWeight: 600, outline: 'none', background: '#FFFFFF' }}
@@ -1462,7 +1378,7 @@ export default function MacroCalculator() {
                     <button
                       type="button"
                       onClick={handleApplyToClient}
-                      disabled={calcSaving}
+                      disabled={calcSaving || !calcResult}
                       style={{
                         padding: '0 18px',
                         height: '36px',

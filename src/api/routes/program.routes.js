@@ -18,6 +18,7 @@ import {
   getCyclesNeedingAttention,
   prepareNextCycle,
   runDueCycles,
+  calculateTargetsHandler,
 } from "../controllers/program.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
@@ -37,6 +38,8 @@ router.get("/mobile/:code", requireAuth, getActiveProgramByUserId);
 
 // Custom Program Editing & Catalog
 router.put("/update-custom", requireAuth, updateCustomProgram);
+// S4-7: unified target calculation for the coach macro calculator (writes nothing).
+router.post("/calculate-targets", requireAuth, calculateTargetsHandler);
 router.get("/exercises-catalog", getExercisesCatalog);
 
 // Check-in & Adaptation V2 endpoints. S3-4/S4-5: the duplicated submit and

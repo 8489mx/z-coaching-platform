@@ -17,6 +17,7 @@ import { loadProgressionState } from "../services/progressionService.js";
 import { resolveFastingContext, FASTING_OVERRIDES, applyFastingToMeals, RAMADAN_CARDIO_GUIDANCE_AR } from "../../execution-engines/fasting-calendar-engine.js";
 import { getGulfHeatAdvisory, getPracticalCardioPrescription } from "../../execution-engines/cardio-zones-engine.js";
 import { calculateSessionDemand, auditWeeklyMuscleVolume, auditDeficitVolumeShield, evaluateProteinSparingRequirement } from "../utils/trainingNutritionCoupling.js";
+import { buildClientTargets } from "../utils/calculateClientTargets.js";
 import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/training-engine-v2/progression/index.js";
 import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention, startCycleOnPublish } from "../services/trainingCycleService.js";
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
@@ -1435,6 +1436,87 @@ function syncProgramDataNutritionTargets(programData, previousData = null, prefe
 
   return programData;
 }
+
+// S4-7: unified target calculation for the coach macro calculator. The page
+// used to compute its own numbers in the browser and save them into the
+// stored program; this endpoint runs the same engine program generation uses,
+// with the client's stored intake as the clinical context and only the
+// coach's fresh measurements overlaid. It writes nothing: the coach reviews
+// the numbers and applies them through update-custom as before. Coach-only,
+// with the role re-read from the database like updateCustomProgram. The
+// intake, service-scope, and medical-review gates all fail closed: no intake,
+// an out-of-scope case, or a medical-review flag means no numbers at all.
+export const calculateTargetsHandler = async (req, res) => {
+  try {
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !["COACH", "ADMIN"].includes(requester.role)) {
+      return res.status(403).json({ error: "حساب الأهداف متاح للكوتش فقط" });
+    }
+    const { user_id, client_code } = req.body || {};
+    const lookup = user_id || client_code;
+    if (!lookup) {
+      return res.status(400).json({ error: "user_id or client_code is required" });
+    }
+    let user = await User.findOne({ where: { client_code: lookup } });
+    if (!user && !isNaN(lookup)) {
+      user = await User.findByPk(parseInt(lookup, 10));
+    }
+    if (!user) {
+      user = await User.findOne({ where: { phone_number: lookup } });
+    }
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const answers = await loadLatestIntakeAnswers(user.id).catch(() => null);
+    if (!answers) {
+      return res.status(409).json({
+        code: "INTAKE_REQUIRED",
+        error: "لا توجد استمارة مكتملة لهذا المتدرب؛ لا يمكن حساب أهداف من غير الملف الصحي. اطلب منه إكمال الاستمارة أولاً.",
+      });
+    }
+    const scope = assessServiceScope(answers);
+    if (!scope.supported) {
+      return res.status(422).json(outsideScopeResponse(scope));
+    }
+    const medicalReview = await resolveIntakeMedicalReview(user.id);
+    if (medicalReview.required) {
+      return res.status(409).json({
+        code: "MEDICAL_REVIEW_REQUIRED",
+        error: "هذا المتدرب يحتاج مراجعة طبية قبل حساب أهداف جديدة. راجع الحالة مع الطبيب المعالج.",
+        reasons: medicalReview.reasons,
+      });
+    }
+
+    const result = buildClientTargets({
+      answers,
+      measurements: {
+        weight_kg: req.body?.weight_kg,
+        height_cm: req.body?.height_cm,
+        age: req.body?.age,
+        body_fat_percent: req.body?.body_fat_percent,
+        average_daily_steps: req.body?.average_daily_steps,
+      },
+    });
+    return res.status(200).json({
+      target_source: "UNIVERSAL_TARGETS",
+      client_code: user.client_code,
+      ...result,
+    });
+  } catch (err) {
+    if (err?.code === "INVALID_MEASUREMENTS") {
+      return res.status(400).json({ code: err.code, error: err.message });
+    }
+    if (err?.code === "MEDICAL_REVIEW_REQUIRED" || err?.code === "BLOCKED") {
+      return res.status(409).json({ code: err.code, error: err.message, reasons: err.reasons || [] });
+    }
+    if (err instanceof RangeError) {
+      return res.status(400).json({ code: "INVALID_MEASUREMENTS", error: err.message });
+    }
+    console.error("calculateTargetsHandler error:", err);
+    return res.status(500).json({ error: "فشل حساب الأهداف", details: err.message });
+  }
+};
 
 export const updateCustomProgram = async (req, res) => {
   try {
