@@ -170,11 +170,87 @@ test("S4-7: a blocked intake is refused before any number is computed", () => {
   );
 });
 
+test("S4-7 review fix: an explicit 0 never silently reuses the stored intake value", () => {
+  // The stored intake carries 15% body fat. An explicit 0 must not fall back
+  // to it: the engine rejects body fat below 3% as unreliable, so the result
+  // is the no-body-fat (Mifflin) answer, not the stored 15% (Katch-McArdle).
+  // Fail-first: the old optionalNumber turned 0 into "not sent" and the
+  // stored 15% was used (1876 kcal, KATCH_MCARDLE).
+  const withStoredFat = completeIntake();
+  withStoredFat.body = { ...(withStoredFat.body || {}), bodyFat: 15 };
+  const explicitZero = buildClientTargets({
+    answers: withStoredFat,
+    measurements: { weight_kg: 82, height_cm: 178, body_fat_percent: 0 },
+    assessmentDate: ASSESSMENT_CONTEXT.assessmentDate,
+  });
+  assert.equal(explicitZero.targets.bmr_formula, "MIFFLIN_ST_JEOR");
+  assert.equal(explicitZero.targets.body_fat_percentage, null);
+  assert.equal(explicitZero.targets.bmr, 1758);
+
+  // Steps 0 must not reuse the intake's 8000 steps either: it reaches the
+  // engine (which applies its own 6000 default), so the activity factor
+  // matches an explicit 6000 and differs from the 8000-step answer.
+  const base = buildClientTargets({
+    answers: completeIntake(),
+    measurements: { weight_kg: 82, height_cm: 178 },
+    assessmentDate: ASSESSMENT_CONTEXT.assessmentDate,
+  });
+  const stepsZero = buildClientTargets({
+    answers: completeIntake(),
+    measurements: { weight_kg: 82, height_cm: 178, average_daily_steps: 0 },
+    assessmentDate: ASSESSMENT_CONTEXT.assessmentDate,
+  });
+  const stepsSixThousand = buildClientTargets({
+    answers: completeIntake(),
+    measurements: { weight_kg: 82, height_cm: 178, average_daily_steps: 6000 },
+    assessmentDate: ASSESSMENT_CONTEXT.assessmentDate,
+  });
+  assert.equal(stepsZero.targets.activity_factor, stepsSixThousand.targets.activity_factor);
+  assert.notEqual(stepsZero.targets.activity_factor, base.targets.activity_factor);
+
+  // Age 0 is out of range (1-110) when no date of birth exists to win over
+  // it: it must be rejected, not treated as "no age supplied" and answered
+  // with the fabricated 28-year-old default.
+  const noDob = completeIntake();
+  delete noDob.personal.dateOfBirth;
+  assert.throws(
+    () => buildClientTargets({ answers: noDob, measurements: { weight_kg: 82, height_cm: 178, age: 0 }, assessmentDate: ASSESSMENT_CONTEXT.assessmentDate }),
+    (err) => err.code === "INVALID_MEASUREMENTS"
+  );
+});
+
+test("S4-7 review fix: a whitespace-only date of birth does not satisfy the age guard", () => {
+  // The adapter fabricates 1998-01-01 for any date of birth that is not an
+  // exact YYYY-MM-DD string. A whitespace-only (or space-padded) value must
+  // therefore count as absent here, so the helper refuses instead of letting
+  // the fabricated default through. Fail-first: Boolean("   ") counted as
+  // present and the calculation succeeded.
+  const blankDob = completeIntake();
+  blankDob.personal.dateOfBirth = "   ";
+  assert.throws(
+    () => buildClientTargets({ answers: blankDob, measurements: { weight_kg: 82, height_cm: 178 }, assessmentDate: ASSESSMENT_CONTEXT.assessmentDate }),
+    (err) => err.code === "INVALID_MEASUREMENTS"
+  );
+  const paddedDob = completeIntake();
+  paddedDob.personal.dateOfBirth = " 1990-01-15 ";
+  assert.throws(
+    () => buildClientTargets({ answers: paddedDob, measurements: { weight_kg: 82, height_cm: 178 }, assessmentDate: ASSESSMENT_CONTEXT.assessmentDate }),
+    (err) => err.code === "INVALID_MEASUREMENTS"
+  );
+});
+
 test("S4-7: the endpoint is wired coach-only and the page calls it, not the browser engine", () => {
   const routes = fs.readFileSync(path.join(root, "src/api/routes/program.routes.js"), "utf8");
   assert.ok(routes.includes('"/calculate-targets"'), "route must exist");
   assert.ok(routes.includes("calculateTargetsHandler"), "route must use the handler");
   assert.ok(routes.includes("requireAuth"), "route must require auth");
+  // S4-7 review fix: the endpoint decrypts an intake and runs the full
+  // engine on every call, so it is rate-limited like the sibling calculators.
+  assert.ok(routes.includes("engineCalculatorRateLimiter"), "route must be rate-limited");
+  assert.ok(
+    routes.includes('"/calculate-targets", requireAuth, engineCalculatorRateLimiter, calculateTargetsHandler'),
+    "rate limiter must sit on the calculate-targets route"
+  );
 
   const controller = fs.readFileSync(
     path.join(root, "src/api/controllers/program.controller.js"),
@@ -189,6 +265,11 @@ test("S4-7: the endpoint is wired coach-only and the page calls it, not the brow
   assert.ok(body.includes("loadLatestIntakeAnswers"), "handler must load the stored intake");
   assert.ok(body.includes("resolveIntakeMedicalReview"), "handler must run the medical-review gate");
   assert.ok(body.includes("assessServiceScope"), "handler must run the service-scope gate");
+  // S4-7 review fix: an unreadable intake must reach the 500 path, not be
+  // swallowed into INTAKE_REQUIRED, and the 500 response must not leak
+  // internal error text.
+  assert.ok(!body.includes(".catch(() => null)"), "handler must not swallow intake read failures");
+  assert.ok(!body.includes("details:"), "handler must not return internal error details");
 
   const page = fs.readFileSync(path.join(root, "frontend/src/pages/MacroCalculator.jsx"), "utf8");
   assert.ok(!page.includes("calculateMetabolicMacroProfile"), "page must not call the browser engine");
@@ -197,6 +278,22 @@ test("S4-7: the endpoint is wired coach-only and the page calls it, not the brow
   assert.ok(!page.includes("GOAL_CALORIE_MULTIPLIERS"), "page must not use the browser goal multipliers");
   assert.ok(page.includes("/programs/calculate-targets"), "page must call the backend endpoint");
   assert.ok(page.includes("/programs/update-custom"), "apply must still save through update-custom");
+  // S4-7 review fix: Apply must refuse a WITHHELD stage and preserve stage
+  // metadata by spreading the existing stage objects, must carry the fresh
+  // clinical guardrails with the new numbers, and must send an explicit 0
+  // instead of coercing it to null.
+  assert.ok(page.includes("WITHHELD"), "page must refuse to apply over a WITHHELD stage");
+  assert.ok(
+    page.includes("...(master.nutrition_program.stages.energy_target || {})"),
+    "apply must preserve the existing energy stage"
+  );
+  assert.ok(
+    page.includes("...(master.nutrition_program.stages.macro_targets || {})"),
+    "apply must preserve the existing macro stage"
+  );
+  assert.ok(page.includes("clinical_guardrails"), "apply must sync the fresh clinical guardrails");
+  assert.ok(!page.includes("calcForm.bodyFat || null"), "page must not coerce body fat 0 to null");
+  assert.ok(!page.includes("calcForm.dailySteps || null"), "page must not coerce steps 0 to null");
 
   // The engine itself stays: a tested pure function with a backend re-export.
   // Only its place on the save path is removed.

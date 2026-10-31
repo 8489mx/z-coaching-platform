@@ -1468,7 +1468,11 @@ export const calculateTargetsHandler = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const answers = await loadLatestIntakeAnswers(user.id).catch(() => null);
+    // S4-7 review fix: do not swallow intake read failures. loadLatestIntakeAnswers
+    // returns null only when there is no stored intake (409 INTAKE_REQUIRED
+    // below); a database, parse, or decrypt failure throws and must reach
+    // the 500 path so it is logged instead of masquerading as a missing form.
+    const answers = await loadLatestIntakeAnswers(user.id);
     if (!answers) {
       return res.status(409).json({
         code: "INTAKE_REQUIRED",
@@ -1513,8 +1517,10 @@ export const calculateTargetsHandler = async (req, res) => {
     if (err instanceof RangeError) {
       return res.status(400).json({ code: "INVALID_MEASUREMENTS", error: err.message });
     }
+    // S4-7 review fix: the detail stays in the server log above. Returning
+    // err.message to the client leaked internal error text.
     console.error("calculateTargetsHandler error:", err);
-    return res.status(500).json({ error: "فشل حساب الأهداف", details: err.message });
+    return res.status(500).json({ error: "فشل حساب الأهداف" });
   }
 };
 

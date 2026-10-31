@@ -52,7 +52,13 @@ function requiredNumber(value, name, min, max, labelAr) {
 }
 
 function optionalNumber(value, name, min, max, labelAr) {
-  if (value === undefined || value === null || value === "" || Number(value) === 0) return null;
+  // S4-7 review fix: absence is only undefined/null/blank. A supplied 0 is a
+  // real value and must be range-checked, not silently turned into "not
+  // sent" (which reused the intake's stored value). The engine itself
+  // applies its own physiological guards to a supplied 0 (body fat below
+  // 3% is treated as unreliable, steps of 0 fall to its 6000 default), so
+  // passing 0 through can never resurrect a stale intake value.
+  if (value === undefined || value === null || (typeof value === "string" && value.trim() === "")) return null;
   const num = Number(value);
   if (!Number.isFinite(num) || num < min || num > max) {
     throw invalid(`قيمة ${labelAr} غير صالحة (${value}). يجب أن تكون بين ${min} و ${max}.`);
@@ -86,13 +92,31 @@ export function buildClientTargets({ answers, measurements = {}, assessmentDate 
   // instead (see the fail-first contract above). The check must run on the
   // RAW answers: the adapted intake always carries a date of birth, real or
   // fabricated, so checking the canonical intake could never catch it.
-  const rawHasDob = Boolean(
-    rawForEngine.personal?.dateOfBirth ||
-      rawForEngine.personal?.date_of_birth ||
-      rawForEngine.dateOfBirth ||
-      rawForEngine.date_of_birth
+  // S4-7 review fix: a date of birth counts only when it is a non-blank
+  // YYYY-MM-DD string, the only shape the adapter accepts before it
+  // fabricates 1998-01-01. A whitespace-only string used to count as
+  // present (Boolean("   ") is true) and slip past this guard straight
+  // into the fabricated default. An age counts only when it parses to a
+  // positive number, so blank or non-numeric ages cannot count either.
+  const dobCandidates = [
+    rawForEngine.personal?.dateOfBirth,
+    rawForEngine.personal?.date_of_birth,
+    rawForEngine.dateOfBirth,
+    rawForEngine.date_of_birth,
+  ];
+  // No trimming: the adapter tests the raw string against the same pattern,
+  // so a padded date would be fabricated by the adapter too and must not
+  // count as present here either.
+  const rawHasDob = dobCandidates.some(
+    (candidate) => typeof candidate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(candidate)
   );
-  const rawHasAge = Boolean(rawForEngine.personal?.age || rawForEngine.age);
+  const ageCandidates = [rawForEngine.personal?.age, rawForEngine.age];
+  const rawHasAge = ageCandidates.some((candidate) => {
+    if (candidate === undefined || candidate === null) return false;
+    if (typeof candidate === "string" && candidate.trim() === "") return false;
+    const parsed = Number(candidate);
+    return Number.isFinite(parsed) && parsed > 0;
+  });
   if (!rawHasDob && ageInput === null && !rawHasAge) {
     throw invalid("العمر مطلوب لحساب الأهداف لأن استمارة المتدرب لا تحمل تاريخ ميلاد.");
   }

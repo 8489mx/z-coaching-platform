@@ -292,8 +292,12 @@ export default function MacroCalculator() {
           weight_kg: calcForm.weight,
           height_cm: calcForm.height,
           age: calcForm.age,
-          body_fat_percent: calcForm.bodyFat || null,
-          average_daily_steps: calcForm.dailySteps || null
+          // S4-7 review fix: send an explicit 0 instead of coercing it to
+          // null. The backend treats a supplied 0 as a real value; `|| null`
+          // used to turn it into "not sent" and silently reuse the intake's
+          // stored value.
+          body_fat_percent: calcForm.bodyFat === '' || calcForm.bodyFat === null || calcForm.bodyFat === undefined ? null : calcForm.bodyFat,
+          average_daily_steps: calcForm.dailySteps === '' || calcForm.dailySteps === null || calcForm.dailySteps === undefined ? null : calcForm.dailySteps
         })
       });
       const data = await res.json().catch(() => ({}));
@@ -326,9 +330,27 @@ export default function MacroCalculator() {
       const progData = await res.json();
       
       const master = progData.master_program || {};
+      // S4-7 review fix: never apply over a WITHHELD stage. The server sync
+      // guard can only see a status the payload carries, so replacing the
+      // stage object without it used to strip the clinical hold. Refuse the
+      // apply here instead of overwriting a held stage.
+      const currentEnergyStage = master.nutrition_program?.stages?.energy_target;
+      const currentMacroStage = master.nutrition_program?.stages?.macro_targets;
+      if (currentEnergyStage?.status === "WITHHELD" || currentMacroStage?.status === "WITHHELD") {
+        alert('لا يمكن تطبيق الأهداف: مرحلة التغذية محجوبة سريرياً (WITHHELD) في خطة هذا المتدرب.');
+        return;
+      }
+      // Fresh clinical guardrails travel with the new numbers. Copying only
+      // calories/macros left the old guardrails (e.g. a kidney protein cap)
+      // standing next to numbers computed under new ones.
+      const freshGuardrails = targets?.clinical_guardrails || null;
+      const freshCalorieFloorApplied = targets?.calorie_floor_applied;
       if (!master.nutrition) master.nutrition = {};
       master.nutrition.targets = {
         ...(master.nutrition.targets || {}),
+        ...(freshGuardrails ? { clinical_guardrails: freshGuardrails } : {}),
+        ...(freshCalorieFloorApplied !== undefined ? { calorie_floor_applied: freshCalorieFloorApplied } : {}),
+        target_source: "UNIVERSAL_TARGETS",
         calories: targetCalories,
         target_calories_kcal: targetCalories,
         protein: targetProteinGrams,
@@ -343,6 +365,9 @@ export default function MacroCalculator() {
       if (!master.nutrition_program) master.nutrition_program = {};
       master.nutrition_program.targets = {
         ...(master.nutrition_program.targets || {}),
+        ...(freshGuardrails ? { clinical_guardrails: freshGuardrails } : {}),
+        ...(freshCalorieFloorApplied !== undefined ? { calorie_floor_applied: freshCalorieFloorApplied } : {}),
+        target_source: "UNIVERSAL_TARGETS",
         calories_kcal: targetCalories,
         target_calories_kcal: targetCalories,
         protein_g: targetProteinGrams,
@@ -353,6 +378,8 @@ export default function MacroCalculator() {
       };
       master.nutrition_program.macro_targets = {
         ...(master.nutrition_program.macro_targets || {}),
+        ...(freshGuardrails ? { clinical_guardrails: freshGuardrails } : {}),
+        target_source: "UNIVERSAL_TARGETS",
         calories_kcal: targetCalories,
         target_calories_kcal: targetCalories,
         protein_g: targetProteinGrams,
@@ -364,14 +391,25 @@ export default function MacroCalculator() {
       };
       if (!master.nutrition_program) master.nutrition_program = {};
       if (!master.nutrition_program.stages) master.nutrition_program.stages = {};
+      // Guardrail readers also check the top-level master object; keep it in
+      // sync with the target objects above instead of leaving a stale copy.
+      if (freshGuardrails) {
+        master.clinical_guardrails = freshGuardrails;
+      }
 
+      // Spread the existing stage objects so stage metadata (status, reasons,
+      // constraints, calculation method) survives the update. Replacing them
+      // with fresh objects dropped the status and defeated the server's
+      // WITHHELD guard. A WITHHELD stage is already refused above.
       master.nutrition_program.stages.energy_target = {
+        ...(master.nutrition_program.stages.energy_target || {}),
         target_calories_kcal: targetCalories,
         bmr_kcal: bmr,
         tdee_kcal: tdee
       };
 
       master.nutrition_program.stages.macro_targets = {
+        ...(master.nutrition_program.stages.macro_targets || {}),
         protein_g: targetProteinGrams,
         carbs_g: targetCarbGrams,
         carbohydrate_g: targetCarbGrams,
