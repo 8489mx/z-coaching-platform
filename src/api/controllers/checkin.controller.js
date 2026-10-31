@@ -12,6 +12,7 @@ import { resolveTrainingCycleStatus } from "../services/trainingCycleService.js"
 import { mealCountNoteForCheckin } from "../../checkin-engine/meal-count-note.js";
 import { evaluateClientCheckinSchedule } from "../services/checkinScheduleService.js";
 import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
+import { classifyFollowUp } from "../../execution-engines/coach-triage-engine.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
 export { getActiveClinicalLockout };
 
@@ -398,6 +399,68 @@ export async function submitCheckin(req, res) {
         }
       }
     }
+
+    // TRIAGE SHADOW MODE (Phase 1): classify only, never apply. The result
+    // is stored on the same check-in row for measurement; the status stays
+    // PENDING_REVIEW, no adaptation runs, no notification is sent, and any
+    // error here is logged without touching the 201 response or the saved
+    // check-in. Phase 2 must re-check with the buildAdaptedPlan result
+    // before any auto-apply; this block deliberately never calls it.
+    try {
+      const shadowLockout = await getActiveClinicalLockout(targetUserId);
+      let shadowMedicalReview = null;
+      let shadowSafetyUnknown = false;
+      try {
+        shadowMedicalReview = await resolveIntakeMedicalReview(targetUserId);
+      } catch (shadowMedicalError) {
+        // An unreadable medical-review state is unknown, never clear:
+        // the classifier fails closed to YELLOW on unknown safety signals.
+        shadowSafetyUnknown = true;
+      }
+      const shadowStages = [
+        programData.nutrition_program?.stages,
+        programData.nutrition?.stages,
+        programData.stages,
+      ];
+      const shadowWithheld = shadowStages.some(
+        (stages) =>
+          stages &&
+          typeof stages === "object" &&
+          (stages.energy_target?.status === "WITHHELD" ||
+            stages.macro_targets?.status === "WITHHELD"),
+      );
+      const shadowTriage = classifyFollowUp({
+        analysis_status: analysisOutput.analysis_status,
+        analysis: analysisOutput,
+        adherence_percent: Number(nutrition_adherence_percent),
+        weight_change_percent: analysisOutput.weight_change_percent,
+        max_pain_level: maxPainLevel,
+        flagged_pains: evalInput.pain_reports,
+        clinical_lockout: shadowLockout,
+        medical_review_required: shadowMedicalReview
+          ? shadowMedicalReview.required === true
+          : null,
+        clinical_alert: analysisOutput.clinical_alert ?? null,
+        previous_analysis_status: previousCheckin?.analysis_status ?? null,
+        deficit_locked:
+          analysisOutput.female_cycle_buffer?.deficit_adjustment_locked === true,
+        safety_signals_unknown: shadowSafetyUnknown,
+        withheld_stage: shadowWithheld,
+        proposed: {
+          calorie_delta: analysisOutput.suggested_calorie_delta,
+          steps_delta: analysisOutput.suggested_steps_delta,
+        },
+      });
+      const shadowAnalysisOutput = { ...analysisOutput, triage: shadowTriage };
+      await checkin.update({ analysis_output: shadowAnalysisOutput });
+      analysisOutput.triage = shadowTriage;
+    } catch (shadowError) {
+      console.error(
+        "Triage shadow classification failed (check-in saved unchanged):",
+        shadowError,
+      );
+    }
+    // END TRIAGE SHADOW MODE
 
     return res.status(201).json({
       success: true,
