@@ -464,6 +464,38 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     timestamp: new Date().toISOString()
   };
 
+  // S3-3: carry the biomarker analysis and the clinical safety shield into
+  // the stored program. The adaptation engine already computes both, but
+  // until now the merge dropped them, so a shield earned in one check-in
+  // was lost from the stored program after approval. Copy from the top
+  // level first, falling back to adapted_nutrition, to both the top level
+  // and nutrition_program, because the adaptation engine reads both paths
+  // and the client list reads the top level. Copy only when the adaptation
+  // supplies a value: a missing value preserves the old stored shield and
+  // never clears it silently. Values are deep-cloned so the stored program
+  // never shares a frozen adaptation object. This is prospective only:
+  // it changes future merges, it does not rewrite already stored programs.
+  const newBiomarkerAnalysis = adaptationResult?.biomarker_analysis
+    ?? adaptationResult?.adapted_nutrition?.biomarker_analysis
+    ?? null;
+  const newClinicalShield = adaptationResult?.clinical_safety_shield
+    ?? adaptationResult?.adapted_nutrition?.clinical_safety_shield
+    ?? null;
+  if (newBiomarkerAnalysis && typeof newBiomarkerAnalysis === "object") {
+    merged.biomarker_analysis = JSON.parse(JSON.stringify(newBiomarkerAnalysis));
+    if (!merged.nutrition_program || typeof merged.nutrition_program !== "object") {
+      merged.nutrition_program = {};
+    }
+    merged.nutrition_program.biomarker_analysis = JSON.parse(JSON.stringify(newBiomarkerAnalysis));
+  }
+  if (newClinicalShield && typeof newClinicalShield === "object") {
+    merged.clinical_safety_shield = JSON.parse(JSON.stringify(newClinicalShield));
+    if (!merged.nutrition_program || typeof merged.nutrition_program !== "object") {
+      merged.nutrition_program = {};
+    }
+    merged.nutrition_program.clinical_safety_shield = JSON.parse(JSON.stringify(newClinicalShield));
+  }
+
   return merged;
 }
 
