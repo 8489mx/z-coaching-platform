@@ -41,6 +41,7 @@
  * @typedef {Object} CheckinAnalysisOutput
  * @property {string} engine_version
  * @property {string} analysis_status
+ * @property {boolean} is_rapid_loss
  * @property {number} current_average_weight_kg
  * @property {number|null} weight_change_kg
  * @property {number|null} weight_change_percent

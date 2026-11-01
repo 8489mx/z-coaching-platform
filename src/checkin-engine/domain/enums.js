@@ -34,6 +34,9 @@ export const BiofeedbackAlert = Object.freeze({
   LOW_RECOVERY_ENERGY: "LOW_RECOVERY_ENERGY",
   JOINT_DISCOMFORT: "JOINT_DISCOMFORT",
   CARDIAC_RED_FLAG: "CARDIAC_RED_FLAG",
+  // S3-7 Option C: rapid loss flagged independently of the analysis else-if
+  // chain position, so a low-adherence rapid loss is never hidden.
+  RAPID_LOSS_DETECTED: "RAPID_LOSS_DETECTED",
 });
 
 // Deep check-in v3: Lifestyle Variance classification

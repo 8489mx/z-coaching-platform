@@ -319,9 +319,15 @@ export async function submitCheckin(req, res) {
     // Rapid loss two check-ins running, in a client whose file needs medical review (nursing,
     // pregnancy, kidney or liver disease...), is more than a calorie question: the +150 kcal still
     // applies, and the coach is told to review the case now.
+    // S3-7 Option C: a rapid loss hidden under POOR_ADHERENCE must still
+    // trigger this alert, so the flag is read alongside the status. The
+    // status check covers check-ins stored before the flag existed.
     let clinicalAlert = null;
-    if (baseAnalysis.analysis_status === CheckinAnalysisStatus.RAPID_LOSS_WARNING
-      && previousCheckin?.analysis_status === CheckinAnalysisStatus.RAPID_LOSS_WARNING) {
+    const isCurrentRapid = baseAnalysis.analysis_status === CheckinAnalysisStatus.RAPID_LOSS_WARNING
+      || baseAnalysis.is_rapid_loss === true;
+    const isPreviousRapid = previousCheckin?.analysis_status === CheckinAnalysisStatus.RAPID_LOSS_WARNING
+      || previousCheckin?.analysis_output?.is_rapid_loss === true;
+    if (isCurrentRapid && isPreviousRapid) {
       const review = await resolveIntakeMedicalReview(targetUserId).catch(() => ({ required: false }));
       if (review.required) {
         clinicalAlert = {

@@ -94,6 +94,10 @@ export function evaluateCheckin(submission) {
     hipChangeCm = Math.round((hip_circumference_cm - previous_hip_circumference_cm) * 10) / 10;
   }
 
+  // S3-7 Option C: rapid loss is computed independently of where the
+  // analysis else-if chain stops, using the same < -1.5% rule as RULE D.
+  const isRapidLoss = Number.isFinite(weightChangePercent) && weightChangePercent < -1.5;
+
   // 3. Adherence Gate Rule (80% threshold)
   const adherenceTier = nutrition_adherence_percent >= 80 ? AdherenceTier.OPTIMAL : AdherenceTier.LOW;
 
@@ -103,6 +107,7 @@ export function evaluateCheckin(submission) {
   if (biofeedback.energy_in_gym <= 2 || biofeedback.energy_level <= 2) alerts.push(BiofeedbackAlert.LOW_RECOVERY_ENERGY);
   if (biofeedback.sleep_quality <= 2 || (biofeedback.sleep_hours !== undefined && biofeedback.sleep_hours < 6)) alerts.push(BiofeedbackAlert.POOR_SLEEP);
   if (biofeedback.stress_level >= 4) alerts.push(BiofeedbackAlert.HIGH_STRESS);
+  if (isRapidLoss) alerts.push(BiofeedbackAlert.RAPID_LOSS_DETECTED);
 
   // 5. Pain & Injuries
   const flaggedPains = (Array.isArray(pain_reports) ? pain_reports : []).filter(
@@ -391,9 +396,20 @@ export function evaluateCheckin(submission) {
     recommendationsEn.push("Progress is optimal and perfectly on track. Maintain current training and nutritional targets.");
   }
 
+  // S3-7 Option C: when the chain stopped before RULE D (for example at
+  // POOR_ADHERENCE), the rapid loss must still be visible in the
+  // recommendations. RULE D already writes its own message, so this only
+  // fires when the primary status is not RAPID_LOSS_WARNING. The calorie
+  // delta is deliberately NOT changed here: the lock stays.
+  if (isRapidLoss && analysisStatus !== CheckinAnalysisStatus.RAPID_LOSS_WARNING) {
+    recommendationsAr.push("تنبيه: معدل النزول سريع (أكثر من 1.5% في أسبوع واحد) رغم ضعف الالتزام؛ الحالة تستوجب مراجعة الكوتش الفورية لتقصي سبب الهبوط السريع، والسعرات تظل مجمدة حتى المراجعة.");
+    recommendationsEn.push("Alert: weight loss is rapid (>1.5% in one week) despite low adherence; this requires immediate coach review to find the cause, and calories stay locked until then.");
+  }
+
   return Object.freeze({
     engine_version: CHECKIN_ENGINE_VERSION,
     analysis_status: analysisStatus,
+    is_rapid_loss: isRapidLoss,
     current_average_weight_kg: currentWeight,
     weight_change_kg: weightChangeKg,
     weight_change_percent: weightChangePercent,

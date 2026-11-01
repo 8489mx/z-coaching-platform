@@ -2286,6 +2286,12 @@ export default function CheckinReviewDashboard() {
                       <span style={{ fontSize: '10.5px', background: '#E2E8F0', color: '#101828', padding: '2px 8px', borderRadius: '9999px', fontWeight: 800 }}>
                         {safeAi.status_badge}
                       </span>
+                      {/* S3-7 Option C: rapid loss hidden under POOR_ADHERENCE stays visible to the coach. */}
+                      {safeAi.is_rapid_loss ? (
+                        <span style={{ fontSize: '10.5px', background: '#FEE2E2', color: '#991B1B', padding: '2px 8px', borderRadius: '9999px', fontWeight: 800 }}>
+                          تنبيه: نزول حاد (&gt;1.5%)
+                        </span>
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => {
