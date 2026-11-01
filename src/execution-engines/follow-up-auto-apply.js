@@ -251,9 +251,14 @@ export function classifyStalePending(checkin = null, now = new Date()) {
   }
   const rawDate = checkin?.created_at ?? checkin?.createdAt ?? checkin?.submitted_at ?? null;
   const date = rawDate ? new Date(rawDate) : null;
-  const cadence = Number(checkin?.package_cadence_days);
+  // A missing cadence must stay missing: Number(null) is 0, and a zero-day
+  // threshold would falsely flag every pending row older than zero days.
+  // Null, undefined, non-numeric, and zero-or-negative cadences are all
+  // treated as "no cadence known", never as a threshold.
+  const rawCadence = checkin?.package_cadence_days;
+  const cadence = rawCadence === null || rawCadence === undefined ? NaN : Number(rawCadence);
   const nowDate = now instanceof Date ? now : new Date(now);
-  if (date && !Number.isNaN(date.getTime()) && Number.isFinite(cadence) && !Number.isNaN(nowDate.getTime())) {
+  if (date && !Number.isNaN(date.getTime()) && Number.isFinite(cadence) && cadence > 0 && !Number.isNaN(nowDate.getTime())) {
     const ageDays = Math.floor((nowDate.getTime() - date.getTime()) / (1000 * 3600 * 24));
     if (ageDays > cadence) reasons.push("STALE_AGE");
   }

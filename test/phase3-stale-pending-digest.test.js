@@ -53,6 +53,20 @@ test("ELITE pending is stale only after 14 days, not at exactly 14", () => {
   assert.ok(stale.stale_reasons.includes("STALE_AGE"));
 });
 
+test("a null or zero package cadence is treated as missing, never as a zero-day threshold", () => {
+  // Regression: Number(null) is 0, so a null cadence used to make every
+  // pending row older than zero days look stale. Null and zero must both
+  // mean "no cadence known", not "stale after zero days".
+  assert.equal(
+    classifyStalePending(pending({ created_at: daysAgo(30), package_cadence_days: null }), NOW).is_stale,
+    false,
+  );
+  assert.equal(
+    classifyStalePending(pending({ created_at: daysAgo(30), package_cadence_days: 0 }), NOW).is_stale,
+    false,
+  );
+});
+
 test("without a submission date or a package cadence, age is never invented", () => {
   assert.equal(classifyStalePending(pending({ created_at: daysAgo(30) }), NOW).is_stale, false);
   assert.equal(
