@@ -234,16 +234,55 @@ function digestEntry(checkin) {
 }
 
 /**
+ * Phase 3, read-only flagging only: a PENDING_REVIEW row is stale when its
+ * age exceeds the client's package cadence (MAX 7 days, ELITE 14 days, as
+ * agreed in scoping), or when it is a ghost record: an inactive client, a
+ * superseded program, or a duplicate week. Age is never invented: without
+ * a valid submission date and a package cadence, the row is not flagged
+ * stale by age. This function changes nothing: it only classifies.
+ * Note: the current schema has a unique (user_id, week_number) index, so
+ * a duplicate-week ghost cannot be produced as two rows today; the reason
+ * is kept as a defensive classification for any caller that reports one.
+ */
+export function classifyStalePending(checkin = null, now = new Date()) {
+  const reasons = [];
+  if (checkin?.status !== "PENDING_REVIEW") {
+    return Object.freeze({ is_stale: false, stale_reasons: Object.freeze([]) });
+  }
+  const rawDate = checkin?.created_at ?? checkin?.createdAt ?? checkin?.submitted_at ?? null;
+  const date = rawDate ? new Date(rawDate) : null;
+  const cadence = Number(checkin?.package_cadence_days);
+  const nowDate = now instanceof Date ? now : new Date(now);
+  if (date && !Number.isNaN(date.getTime()) && Number.isFinite(cadence) && !Number.isNaN(nowDate.getTime())) {
+    const ageDays = Math.floor((nowDate.getTime() - date.getTime()) / (1000 * 3600 * 24));
+    if (ageDays > cadence) reasons.push("STALE_AGE");
+  }
+  if (checkin?.client_active === false) reasons.push("GHOST_INACTIVE_CLIENT");
+  if (checkin?.program_superseded === true) reasons.push("GHOST_SUPERSEDED_PROGRAM");
+  if (checkin?.duplicate_week === true) reasons.push("GHOST_DUPLICATE_WEEK");
+  return Object.freeze({ is_stale: reasons.length > 0, stale_reasons: Object.freeze(reasons) });
+}
+
+/**
  * Coach digest: a read-only grouping, never a send. Unknown triage fails
  * closed into the yellow pending queue so an unclassified check-in is
- * never silently treated as green.
+ * never silently treated as green. Phase 3 adds a separate stale_pending
+ * section for flagged PENDING_REVIEW rows; flagging never removes a row
+ * from its normal tier list, never closes it, and never re-triages it.
+ * AUTO_APPLIED rows are never stale-flagged: the sweep scope is pending
+ * only. The AUTO_APPLIED 14-day dashboard window agreed in scoping is
+ * deliberately not applied here: dropping applied history from the digest
+ * is a display decision for the controller wiring stage, not for this
+ * pure function, which keeps its existing output when no `now` is given.
  */
-export function buildCoachDigest(checkins = []) {
+export function buildCoachDigest(checkins = [], options = {}) {
   const rows = Array.isArray(checkins) ? checkins : [];
+  const now = options?.now ?? new Date();
   const autoApplied = [];
   const yellowPending = [];
   const redPending = [];
   const greenPending = [];
+  const stalePending = [];
   for (const checkin of rows) {
     const entry = digestEntry(checkin);
     if (checkin?.status === "AUTO_APPLIED") {
@@ -255,6 +294,10 @@ export function buildCoachDigest(checkins = []) {
         if (entry.tier === null) entry.reason_codes = ["UNKNOWN_TRIAGE"];
         yellowPending.push(entry);
       }
+      const stale = classifyStalePending(checkin, now);
+      if (stale.is_stale) {
+        stalePending.push({ ...entry, stale_reasons: [...stale.stale_reasons] });
+      }
     }
   }
   return Object.freeze({
@@ -265,11 +308,13 @@ export function buildCoachDigest(checkins = []) {
       yellow_pending: yellowPending.length,
       red_pending: redPending.length,
       green_pending: greenPending.length,
+      stale_pending: stalePending.length,
     }),
     auto_applied: Object.freeze(autoApplied),
     yellow_pending: Object.freeze(yellowPending),
     red_pending: Object.freeze(redPending),
     green_pending: Object.freeze(greenPending),
+    stale_pending: Object.freeze(stalePending),
   });
 }
 
