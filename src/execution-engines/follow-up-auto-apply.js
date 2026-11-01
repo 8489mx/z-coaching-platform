@@ -264,6 +264,43 @@ export function classifyStalePending(checkin = null, now = new Date()) {
 }
 
 /**
+ * Phase 3 wiring helper: package cadence in days, from the package name
+ * the same way the overdue engine reads it (MAX weekly, ELITE fortnightly).
+ * An unknown or missing package returns null, never an invented cadence:
+ * the caller then cannot flag by age, which fails safe.
+ */
+export function packageCadenceDays(packageName = null) {
+  const raw = String(packageName ?? "").toUpperCase();
+  if (raw.includes("MAX")) return 7;
+  if (raw.includes("ELITE")) return 14;
+  return null;
+}
+
+/**
+ * Phase 3 wiring helper: the AUTO_APPLIED dashboard window. Only display
+ * is affected: AUTO_APPLIED rows older than windowDays are removed from
+ * the list handed to the digest, PENDING_REVIEW rows are never removed,
+ * and rows without a valid date are kept rather than hidden. Nothing is
+ * deleted from the database by this filter. Without a window, the list is
+ * returned unchanged.
+ */
+export function filterDigestRowsForAutoAppliedWindow(rows = [], options = {}) {
+  const list = Array.isArray(rows) ? rows : [];
+  const windowDays = Number(options?.windowDays);
+  if (!Number.isFinite(windowDays) || windowDays <= 0) return list;
+  const now = options?.now instanceof Date ? options.now : new Date(options?.now ?? Date.now());
+  if (Number.isNaN(now.getTime())) return list;
+  return list.filter((row) => {
+    if (row?.status !== "AUTO_APPLIED") return true;
+    const rawDate = row?.created_at ?? row?.createdAt ?? row?.submitted_at ?? null;
+    const date = rawDate ? new Date(rawDate) : null;
+    if (!date || Number.isNaN(date.getTime())) return true;
+    const ageDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 3600 * 24));
+    return ageDays <= windowDays;
+  });
+}
+
+/**
  * Coach digest: a read-only grouping, never a send. Unknown triage fails
  * closed into the yellow pending queue so an unclassified check-in is
  * never silently treated as green. Phase 3 adds a separate stale_pending

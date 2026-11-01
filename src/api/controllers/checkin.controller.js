@@ -20,6 +20,8 @@ import {
   decideFollowUpAutoApply,
   buildBlockedTriage,
   buildCoachDigest,
+  packageCadenceDays,
+  filterDigestRowsForAutoAppliedWindow,
   selectYellowForBulkApprove,
 } from "../../execution-engines/follow-up-auto-apply.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
@@ -1105,14 +1107,50 @@ export async function getCoachDigest(req, res) {
       where: { status: ["PENDING_REVIEW", "AUTO_APPLIED"] },
       order: [["week_number", "DESC"], ["id", "DESC"]],
     });
-    const digest = buildCoachDigest(rows.map((row) => ({
-      id: row.id,
-      user_id: row.user_id,
-      week_number: row.week_number,
-      status: row.status,
-      adapted_program_id: row.adapted_program_id,
-      analysis_output: row.analysis_output || {},
-    })));
+    // Phase 3 wiring, read-only: feed the pure stale classifier the fields
+    // it needs, without writing anything. A missing field fails safe in
+    // the classifier (no flag invented), and a failed lookup fails the
+    // whole digest with 500 rather than returning a misleading digest.
+    const userIds = [...new Set(rows.map((row) => row.user_id).filter((id) => id !== undefined && id !== null))];
+    const usersById = new Map();
+    const activeProgramIdByUser = new Map();
+    if (userIds.length > 0) {
+      const users = await User.findAll({ where: { id: userIds } });
+      for (const user of users) usersById.set(user.id, user);
+      const activePrograms = await Program.findAll({
+        where: { user_id: userIds, status: "ACTIVE" },
+        order: [["version", "DESC"], ["id", "DESC"]],
+      });
+      for (const program of activePrograms) {
+        if (!activeProgramIdByUser.has(program.user_id)) {
+          activeProgramIdByUser.set(program.user_id, program.id);
+        }
+      }
+    }
+    const now = new Date();
+    const mapped = rows.map((row) => {
+      const user = usersById.get(row.user_id) || null;
+      const activeProgramId = activeProgramIdByUser.get(row.user_id) || null;
+      return {
+        id: row.id,
+        user_id: row.user_id,
+        week_number: row.week_number,
+        status: row.status,
+        adapted_program_id: row.adapted_program_id,
+        analysis_output: row.analysis_output || {},
+        created_at: row.createdAt || null,
+        package_cadence_days: packageCadenceDays(user?.package_tier || user?.subscription_package || null),
+        client_active: user ? ["ACTIVE", "EXPIRING_SOON", "ACTIVE_VIP"].includes(user.subscription_status) : null,
+        program_superseded: Boolean(
+          row.adapted_program_id && activeProgramId && row.adapted_program_id !== activeProgramId,
+        ),
+      };
+    });
+    // Display window only: AUTO_APPLIED rows older than 14 days are not
+    // shown in the dashboard digest. They are not deleted, and pending
+    // rows are never filtered by this window.
+    const displayed = filterDigestRowsForAutoAppliedWindow(mapped, { now, windowDays: 14 });
+    const digest = buildCoachDigest(displayed, { now });
     return res.status(200).json({ success: true, digest });
   } catch (error) {
     console.error("Error building coach digest:", error);
