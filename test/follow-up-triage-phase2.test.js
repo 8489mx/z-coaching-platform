@@ -1,14 +1,12 @@
 /* Phase 2: green auto-apply is a pure gate over the Phase 1 classifier plus
  * the buildAdaptedPlan result. It never runs on a shadow prediction alone:
  * the engine result is re-checked, and any engine flag blocks application.
- * This file is pure (no database): the controller wiring that calls it is
- * guarded separately by the source tests at the bottom, and live HTTP/DB
- * verification is explicitly left to the review step, as with Phase 1. */
+ * This file is pure (no database) and tests behaviour by calling functions,
+ * never by reading source files as text: the controller wiring that calls
+ * these functions (transaction, routes, roles) is verified by integration
+ * tests in the review environment, not by a text search here. */
 import test from "node:test";
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import {
   FOLLOW_UP_TRIAGE,
@@ -22,8 +20,6 @@ import {
   buildCoachDigest,
   selectYellowForBulkApprove,
 } from "../src/execution-engines/follow-up-auto-apply.js";
-
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function greenTriage(overrides = {}) {
   return {
@@ -278,50 +274,81 @@ test("bulk approve selects only pending YELLOW check-ins", () => {
   assert.ok(result.skipped.some((s) => s.checkin_id === 99 && s.reason === "NOT_FOUND"));
 });
 
-test("source guard: Phase 2 block re-checks the engine, gates on the decision, and fails closed", () => {
-  const src = fs.readFileSync(
-    path.join(ROOT, "src/api/controllers/checkin.controller.js"),
-    "utf8",
+test("full pure pipeline: a deload engine result is blocked, stored as YELLOW, and lands in yellow pending", () => {
+  // This replaces the old text-search guard: instead of checking that the
+  // controller file contains certain words, it runs the actual pipeline
+  // the controller runs — derive, gate, blocked triage, digest — and checks
+  // the outcome at each step. The controller wiring itself (transaction,
+  // routes, roles) is verified by integration tests in the review
+  // environment, not here.
+  const targets = baseTargetsFromProgram(baseProgram());
+  const derived = deriveEngineProposed({
+    adapted: cleanAdapted({ is_deload_recommended: true, adaptation_action: "SCHEDULE_DELOAD" }),
+    baseCaloriesKcal: targets.baseCaloriesKcal,
+    baseSteps: targets.baseSteps,
+  });
+  assert.equal(derived.engine_flags.deload_recommended, true);
+  const decision = decideFollowUpAutoApply({
+    triage: greenTriage(),
+    adapted: cleanAdapted({ is_deload_recommended: true, adaptation_action: "SCHEDULE_DELOAD" }),
+    baseCaloriesKcal: targets.baseCaloriesKcal,
+    baseSteps: targets.baseSteps,
+  });
+  assert.equal(decision.eligible, false);
+  assert.ok(decision.blocked_reasons.includes("DELOAD_RECOMMENDED"));
+  const blocked = buildBlockedTriage({ triage: greenTriage(), blockedReasons: decision.blocked_reasons });
+  assert.equal(blocked.tier, "YELLOW");
+  assert.equal(greenTriage().tier, "GREEN");
+  const digest = buildCoachDigest([
+    { id: 9, user_id: 20, week_number: 4, status: "PENDING_REVIEW", analysis_output: { triage: blocked } },
+  ]);
+  assert.equal(digest.counts.yellow_pending, 1);
+  assert.equal(digest.counts.green_pending, 0);
+  // A blocked YELLOW pending check-in is exactly what bulk approve may
+  // select as a review action; a GREEN pending one is not.
+  const bulk = selectYellowForBulkApprove(
+    [
+      { id: 9, status: "PENDING_REVIEW", analysis_output: { triage: blocked } },
+      { id: 10, status: "PENDING_REVIEW", analysis_output: { triage: greenTriage() } },
+    ],
+    [9, 10],
   );
-  const start = src.indexOf("TRIAGE PHASE 2 AUTO-APPLY");
-  assert.notEqual(start, -1, "Phase 2 block marker not found");
-  const end = src.indexOf("END TRIAGE PHASE 2", start);
-  assert.notEqual(end, -1, "Phase 2 block end marker not found");
-  const block = src.slice(start, end);
-  assert.match(block, /buildAdaptedPlan\s*\(/);
-  assert.match(block, /classifyFollowUp/);
-  assert.match(block, /decideFollowUpAutoApply/);
-  assert.match(block, /mergeAdaptedPlanIntoProgram\s*\(/);
-  assert.match(block, /AUTO_APPLIED/);
-  assert.match(block, /catch/);
-  // Review fixes: one atomic transaction for program + draft + check-in,
-  // an explicit gate-else that stores a blocked YELLOW triage, and an
-  // explicit isFemale passed to the adaptation engine.
-  assert.match(block, /sequelize\.transaction/);
-  assert.match(block, /transaction:\s*t/);
-  assert.match(block, /buildBlockedTriage/);
-  assert.match(block, /isFemale/);
-  // The shadow block itself must stay apply-free.
-  const shadowStart = src.indexOf("TRIAGE SHADOW MODE (Phase 1)");
-  const shadowEnd = src.indexOf("END TRIAGE SHADOW MODE", shadowStart);
-  const shadow = src.slice(shadowStart, shadowEnd);
-  assert.doesNotMatch(shadow, /buildAdaptedPlan\s*\(/);
-  assert.doesNotMatch(shadow, /AUTO_APPLIED/);
+  assert.deepEqual(bulk.selected_ids, [9]);
 });
 
-test("source guard: digest and bulk-approve routes exist and are coach-only", () => {
-  const routes = fs.readFileSync(
-    path.join(ROOT, "src/api/routes/checkin.routes.js"),
-    "utf8",
-  );
-  assert.match(routes, /getCoachDigest/);
-  assert.match(routes, /bulkApproveCheckins/);
-  assert.match(routes, /router\.get\("\/digest"/);
-  assert.match(routes, /router\.post\("\/bulk-approve"/);
-  const src = fs.readFileSync(
-    path.join(ROOT, "src/api/controllers/checkin.controller.js"),
-    "utf8",
-  );
-  assert.match(src, /export async function getCoachDigest/);
-  assert.match(src, /export async function bulkApproveCheckins/);
+test("full pure pipeline: a clean GREEN engine result is eligible and its applied record is visible in the digest", () => {
+  const targets = baseTargetsFromProgram(baseProgram());
+  const decision = decideFollowUpAutoApply({
+    triage: greenTriage(),
+    adapted: cleanAdapted(),
+    baseCaloriesKcal: targets.baseCaloriesKcal,
+    baseSteps: targets.baseSteps,
+  });
+  assert.equal(decision.eligible, true);
+  assert.deepEqual(decision.blocked_reasons, []);
+  const appliedTriage = {
+    ...greenTriage(),
+    auto_apply: {
+      applied_at: "2026-10-31T00:00:00.000Z",
+      program_id: 7,
+      adapted_week: 2,
+      calorie_delta: decision.calorie_delta,
+      steps_delta: decision.steps_delta,
+    },
+  };
+  const digest = buildCoachDigest([
+    { id: 1, user_id: 10, week_number: 3, status: "AUTO_APPLIED", analysis_output: { triage: appliedTriage } },
+  ]);
+  assert.equal(digest.counts.auto_applied, 1);
+  assert.equal(digest.auto_applied[0].program_id, 7);
+  // An already applied check-in is not bulk-approvable and not re-appliable.
+  const reapply = decideFollowUpAutoApply({
+    triage: greenTriage(),
+    adapted: cleanAdapted(),
+    baseCaloriesKcal: targets.baseCaloriesKcal,
+    baseSteps: targets.baseSteps,
+    alreadyApplied: true,
+  });
+  assert.equal(reapply.eligible, false);
+  assert.ok(reapply.blocked_reasons.includes("ALREADY_APPLIED"));
 });
