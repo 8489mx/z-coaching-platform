@@ -25,9 +25,8 @@ export function createRateLimiter({
 
   const limiter = async (req, res, next) => {
     try {
-      const ip = req.headers['x-forwarded-for'] 
+      const ip = req.ip 
         || req.socket?.remoteAddress 
-        || req.ip 
         || '127.0.0.1';
       
       const identifier = typeof keyGenerator === 'function' ? keyGenerator(req, ip) : ip;

@@ -33,6 +33,95 @@ for (const dir of [backupsDir, dbBackupsDir, photosBackupsDir]) {
 }
 
 /**
+ * مفتاح تشفير النسخ الاحتياطي (S4-6)
+ */
+export function getBackupEncryptionKey() {
+  const rawKey = process.env.BACKUP_ENCRYPTION_KEY || process.env.MEDICAL_ENCRYPTION_KEY;
+  if (!rawKey) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error("FATAL: BACKUP_ENCRYPTION_KEY or MEDICAL_ENCRYPTION_KEY must be defined in production");
+    }
+    return crypto.createHash('sha256').update('dev_backup_ephemeral_key_fallback').digest();
+  }
+  return crypto.createHash('sha256').update(String(rawKey)).digest();
+}
+
+/**
+ * تشفير مصفوفة البايتات بخوارزمية AES-256-GCM
+ */
+export function encryptBackupPayload(buffer) {
+  const key = getBackupEncryptionKey();
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const encrypted = Buffer.concat([cipher.update(buffer), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return Buffer.concat([iv, tag, encrypted]);
+}
+
+/**
+ * فك تشفير مصفوفة البايتات بخوارزمية AES-256-GCM
+ */
+export function decryptBackupPayload(encryptedBuffer) {
+  const key = getBackupEncryptionKey();
+  const iv = encryptedBuffer.subarray(0, 12);
+  const tag = encryptedBuffer.subarray(12, 28);
+  const data = encryptedBuffer.subarray(28);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(tag);
+  return Buffer.concat([decipher.update(data), decipher.final()]);
+}
+
+/**
+ * تنظيف ملفات النسخ الاحتياطي الأقدم من فترة الاحتفاظ المحددة (12 شهراً = 365 يوماً)
+ * @param {number} retentionDays - عدد الأيام (افتراضياً 365 يوماً وفق قرار صاحب المشروع)
+ * @returns {number} عدد الملفات المحذوفة
+ */
+export function cleanOldBackupsFromDisk(retentionDays = 365) {
+  const cutoffTime = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+  let deletedCount = 0;
+
+  for (const dir of [dbBackupsDir, photosBackupsDir]) {
+    if (!fs.existsSync(dir)) continue;
+    try {
+      const files = fs.readdirSync(dir);
+      for (const file of files) {
+        const filePath = path.join(dir, file);
+        try {
+          const stat = fs.statSync(filePath);
+          if (stat.isFile() && stat.mtimeMs < cutoffTime) {
+            fs.unlinkSync(filePath);
+            deletedCount++;
+          }
+        } catch (e) {
+          console.warn(`Could not stat/delete backup file ${filePath}:`, e.message);
+        }
+      }
+    } catch (e) {
+      console.warn(`Could not read dir ${dir}:`, e.message);
+    }
+  }
+
+  try {
+    const manifest = getBackupManifest();
+    if (Array.isArray(manifest.backups)) {
+      const beforeCount = manifest.backups.length;
+      manifest.backups = manifest.backups.filter((b) => {
+        if (!b.timestamp) return true;
+        const ts = new Date(b.timestamp).getTime();
+        return ts >= cutoffTime;
+      });
+      if (manifest.backups.length !== beforeCount) {
+        saveBackupManifest(manifest);
+      }
+    }
+  } catch (e) {
+    console.warn("Could not prune manifest:", e.message);
+  }
+
+  return deletedCount;
+}
+
+/**
  * قراءة سجل النسخ الاحتياطية (Manifest)
  */
 export const getBackupManifest = () => {
@@ -80,7 +169,7 @@ export const performDatabaseBackup = async () => {
       workoutPlans,
       rateLimits
     ] = await Promise.all([
-      User.findAll({ raw: true }).catch(() => []),
+      User.findAll({ attributes: { exclude: ['password_hash'] }, raw: true }).catch(() => []),
       Program.findAll({ raw: true }).catch(() => []),
       IntakeSubmission.findAll({ raw: true }).catch(() => []),
       CheckinSubmission.findAll({ raw: true }).catch(() => []),
@@ -92,13 +181,20 @@ export const performDatabaseBackup = async () => {
       RateLimitLog.findAll({ raw: true }).catch(() => []),
     ]);
 
+    // تطهير إضافي صارم لضمان استبعاد أي حقول حساسة (S4-6)
+    const sanitizedUsers = (users || []).map((u) => {
+      if (!u || typeof u !== 'object') return u;
+      const { password_hash, ...safe } = u;
+      return safe;
+    });
+
     const backupPayload = {
       version: "2.0.0",
       created_at: new Date().toISOString(),
       backup_id: backupId,
       server_timezone: process.env.TZ || "Africa/Cairo",
       statistics: {
-        total_users: users.length,
+        total_users: sanitizedUsers.length,
         total_programs: programs.length,
         total_intake_submissions: intakes.length,
         total_checkins: checkins.length,
@@ -107,7 +203,7 @@ export const performDatabaseBackup = async () => {
         total_orders: orders.length,
       },
       data: {
-        users,
+        users: sanitizedUsers,
         programs,
         intakes,
         checkins,
@@ -122,21 +218,26 @@ export const performDatabaseBackup = async () => {
 
     const jsonString = JSON.stringify(backupPayload, null, 2);
     
-    // ضغط البيانات بنظام Gzip لتوفير مساحة السيرفر بنسبة تفوق 80%
+    // ضغط البيانات بنظام Gzip لتوفير مساحة السيرفر
     const compressedBuffer = zlib.gzipSync(Buffer.from(jsonString, "utf-8"));
-    fs.writeFileSync(gzPath, compressedBuffer);
+    
+    // تشفير الملف المضغوط بالكامل بخوارزمية AES-256-GCM لحماية البيانات الحساسة (S4-6)
+    const encryptedBuffer = encryptBackupPayload(compressedBuffer);
+    fs.writeFileSync(gzPath, encryptedBuffer);
 
     // حساب الـ Hash للتحقق من سلامة النسخة وعدم تلفها
-    const sha256Hash = crypto.createHash("sha256").update(compressedBuffer).digest("hex");
+    const sha256Hash = crypto.createHash("sha256").update(encryptedBuffer).digest("hex");
 
     return {
       success: true,
       backupId,
       filePath: gzPath,
       fileName: `${backupId}.json.gz`,
-      sizeBytes: compressedBuffer.length,
+      sizeBytes: encryptedBuffer.length,
       uncompressedSizeBytes: Buffer.byteLength(jsonString),
       sha256: sha256Hash,
+      is_encrypted: true,
+      encryption_algorithm: "AES-256-GCM",
       statistics: backupPayload.statistics
     };
   } catch (err) {

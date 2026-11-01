@@ -46,6 +46,21 @@ export const SMART_GUIDELINES_MATRIX = Object.freeze([
 ]);
 
 /**
+ * Escapes unsafe characters for secure HTML injection (S4-8)
+ * @param {*} unsafe 
+ * @returns {string}
+ */
+export function escapeHtml(unsafe) {
+  if (unsafe === null || unsafe === undefined) return '';
+  return String(unsafe)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
  * Sanitizes coach notes intended for client-facing views and PDF exports.
  * Purges internal developer tags, clinical warnings, and medical review prompt codes.
  */
@@ -196,7 +211,7 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>خطة التدريب والتغذية - ${client.name || 'المشترك'}</title>
+  <title>خطة التدريب والتغذية - ${escapeHtml(client.name || 'المشترك')}</title>
   <style>
     @page { size: A4 portrait; margin: 12mm; }
     body { font-family: system-ui, -apple-system, sans-serif; color: #0f172a; margin: 0; padding: 0; font-size: 11px; line-height: 1.4; }
@@ -225,17 +240,17 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
   <div class="header">
     <div>
       <h1>برنامج التدريب والتغذية الإكلينيكي</h1>
-      <p>المشترك: <strong>${client.name || 'المتدرب'}</strong> | الهدف: <strong>${client.goal_title || 'خسارة دهون وتطوير القوة'}</strong> | التاريخ: ${date}</p>
+      <p>المشترك: <strong>${escapeHtml(client.name || 'المتدرب')}</strong> | الهدف: <strong>${escapeHtml(client.goal_title || 'خسارة دهون وتطوير القوة')}</strong> | التاريخ: ${escapeHtml(date)}</p>
     </div>
     <div style="text-align: left; font-size: 9px; color: #64748b;">Z COACHING PLATFORM</div>
   </div>
 
   <!-- Macro Overview -->
   <div class="macro-bar">
-    <div class="macro-box">السعرات اليومية<div class="macro-val">${client.target_calories || 1900} Kcal</div></div>
-    <div class="macro-box">البروتين<div class="macro-val">${client.target_protein || 150}g</div></div>
-    <div class="macro-box">الكاربوهيدرات<div class="macro-val">${client.target_carbs || 190}g</div></div>
-    <div class="macro-box">الدهون الصحية<div class="macro-val">${client.target_fats || 60}g</div></div>
+    <div class="macro-box">السعرات اليومية<div class="macro-val">${escapeHtml(client.target_calories || 1900)} Kcal</div></div>
+    <div class="macro-box">البروتين<div class="macro-val">${escapeHtml(client.target_protein || 150)}g</div></div>
+    <div class="macro-box">الكاربوهيدرات<div class="macro-val">${escapeHtml(client.target_carbs || 190)}g</div></div>
+    <div class="macro-box">الدهون الصحية<div class="macro-val">${escapeHtml(client.target_fats || 60)}g</div></div>
   </div>
 
   <!-- Coach Notes if present -->
@@ -245,14 +260,14 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
       <span class="badge">توصيات مخصصة</span>
     </div>
     <div class="guide-item" style="margin-bottom: 10px; font-size: 10px; line-height: 1.5; color: #1e293b; background: #f0f9ff; border: 1px solid #bae6fd;">
-      ${cleanCoachNotes.replace(/\n/g, '<br>')}
+      ${escapeHtml(cleanCoachNotes).replace(/\n/g, '<br>')}
     </div>
   ` : ''}
 
   <!-- Prehab Protocol if exists -->
   ${prehab && prehab.has_prehab ? `
     <div class="section-title">
-      <span>روتين تجهيز المفاصل وتصحيح القوام (${prehab.total_duration_minutes} دقائق قبل التمرين)</span>
+      <span>روتين تجهيز المفاصل وتصحيح القوام (${escapeHtml(prehab.total_duration_minutes)} دقائق قبل التمرين)</span>
       <span class="badge badge-prehab">Prehab Warmup</span>
     </div>
     <table class="table">
@@ -267,10 +282,10 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
       <tbody>
         ${(prehab.exercises || []).map((ex) => `
           <tr>
-            <td><strong>${ex.name_ar}</strong></td>
-            <td>${ex.sets}</td>
-            <td>${ex.reps || `${ex.hold_seconds} ثانية`}</td>
-            <td>${ex.cue || ex.cue_ar || '-'}</td>
+            <td><strong>${escapeHtml(ex.name_ar)}</strong></td>
+            <td>${escapeHtml(ex.sets)}</td>
+            <td>${escapeHtml(ex.reps || `${ex.hold_seconds} ثانية`)}</td>
+            <td>${escapeHtml(ex.cue || ex.cue_ar || '-')}</td>
           </tr>
         `).join('')}
       </tbody>
@@ -279,8 +294,8 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
 
   <!-- Workout Routine -->
   <div class="section-title">
-    <span>جدول تمرين اليوم: ${workout.title_ar || 'تمارين المقاومة'}</span>
-    <span class="badge">${workout.environment || 'GYM'}</span>
+    <span>جدول تمرين اليوم: ${escapeHtml(workout.title_ar || 'تمارين المقاومة')}</span>
+    <span class="badge">${escapeHtml(workout.environment || 'GYM')}</span>
   </div>
   <table class="table">
     <thead>
@@ -300,12 +315,12 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
         return `
         <tr>
           <td>${idx + 1}</td>
-          <td><strong style="direction:ltr; text-align:right; display:block;">${nameEn}</strong><span style="color:#64748b; font-size:9px;">${nameAr}</span></td>
-          <td>${ex.sets}</td>
-          <td>${ex.reps}</td>
-          <td><span class="badge badge-rir">RIR ${ex.target_rir ?? 2}</span></td>
-          <td>${ex.rest_minutes || 2} دقيقة</td>
-          <td>${ex.cue || ex.cues?.[0] || 'أداء بمدى حركي كامل وتحكم بالنزول.'}</td>
+          <td><strong style="direction:ltr; text-align:right; display:block;">${escapeHtml(nameEn)}</strong><span style="color:#64748b; font-size:9px;">${escapeHtml(nameAr)}</span></td>
+          <td>${escapeHtml(ex.sets)}</td>
+          <td>${escapeHtml(ex.reps)}</td>
+          <td><span class="badge badge-rir">RIR ${escapeHtml(ex.target_rir ?? 2)}</span></td>
+          <td>${escapeHtml(ex.rest_minutes || 2)} دقيقة</td>
+          <td>${escapeHtml(ex.cue || ex.cues?.[0] || 'أداء بمدى حركي كامل وتحكم بالنزول.')}</td>
         </tr>
       `;}).join('')}
     </tbody>
@@ -328,17 +343,17 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
     <tbody>
       ${meals.map((meal) => `
         <tr>
-          <td><strong>${meal.title_ar}</strong></td>
+          <td><strong>${escapeHtml(meal.title_ar)}</strong></td>
           <td>
             ${(meal.items || []).map((i) => {
               const meta = getItemPortionMeta(i);
-              return `• ${meta.name || i.name_ar || i.name}: <strong>${meta.badge_text}</strong>`;
+              return `• ${escapeHtml(meta.name || i.name_ar || i.name)}: <strong>${escapeHtml(meta.badge_text)}</strong>`;
             }).join('<br>')}
           </td>
           <td>
-            ${(meal.items || []).map((i) => `${i.hand_portion || '-'}`).join('<br>')}
+            ${(meal.items || []).map((i) => `${escapeHtml(i.hand_portion || '-')}`).join('<br>')}
           </td>
-          <td><strong>${meal.calories}</strong> Kcal</td>
+          <td><strong>${escapeHtml(meal.calories)}</strong> Kcal</td>
         </tr>
       `).join('')}
     </tbody>
@@ -365,11 +380,11 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
       ${supplements.map((s, sIdx) => `
         <tr>
           <td>${sIdx + 1}</td>
-          <td><strong>${s.name || 'مكمل غذائي'}</strong></td>
-          <td>${s.dose || '-'}</td>
-          <td>${s.timing || '-'}</td>
-          <td>${(s.cal || s.calories) ? `${s.cal || s.calories} Kcal (P:${s.p || s.protein || 0}g C:${s.c || s.carbs || 0}g F:${s.f || s.fats || 0}g)` : 'صفرية السعرات'}</td>
-          <td>${s.notes || 'الالتزام بالجرعة والتوقيت الموصى به.'}</td>
+          <td><strong>${escapeHtml(s.name || 'مكمل غذائي')}</strong></td>
+          <td>${escapeHtml(s.dose || '-')}</td>
+          <td>${escapeHtml(s.timing || '-')}</td>
+          <td>${(s.cal || s.calories) ? `${escapeHtml(s.cal || s.calories)} Kcal (P:${escapeHtml(s.p || s.protein || 0)}g C:${escapeHtml(s.c || s.carbs || 0)}g F:${escapeHtml(s.f || s.fats || 0)}g)` : 'صفرية السعرات'}</td>
+          <td>${escapeHtml(s.notes || 'الالتزام بالجرعة والتوقيت الموصى به.')}</td>
         </tr>
       `).join('')}
     </tbody>
@@ -380,7 +395,7 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
   ${(cardio && (cardio.protocol_title || cardio.prescription || cardio.modality || cardio.sessions_per_week)) ? `
   <div class="section-title">
     <span>بروتوكول اللياقة الهوائية والكارديو (Cardio Conditioning)</span>
-    <span class="badge">${cardio.modality || 'LISS'}</span>
+    <span class="badge">${escapeHtml(cardio.modality || 'LISS')}</span>
   </div>
   <table class="table">
     <thead>
@@ -394,11 +409,11 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
     </thead>
     <tbody>
       <tr>
-        <td><strong>${cardio.protocol_title || 'كارديو معتدل الشدة'}</strong></td>
-        <td>${cardio.prescription || `${cardio.sessions_per_week || 3} جلسات أسبوعياً`}</td>
-        <td>${cardio.session_duration_min ? `${cardio.session_duration_min} دقيقة` : (cardio.duration || '25-30 دقيقة')}</td>
-        <td><strong>${cardio.target_heart_rate_zone || cardio.heart_rate_target?.range_display || 'Zone 2 (مجهود هوائي معتدل)'}</strong></td>
-        <td>${cardio.talk_test_cue || 'سرعة منتظمة تسمح بالحديث المتقطع دون انقطاع النفس الحاد.'}</td>
+        <td><strong>${escapeHtml(cardio.protocol_title || 'كارديو معتدل الشدة')}</strong></td>
+        <td>${escapeHtml(cardio.prescription || `${cardio.sessions_per_week || 3} جلسات أسبوعياً`)}</td>
+        <td>${escapeHtml(cardio.session_duration_min ? `${cardio.session_duration_min} دقيقة` : (cardio.duration || '25-30 دقيقة'))}</td>
+        <td><strong>${escapeHtml(cardio.target_heart_rate_zone || cardio.heart_rate_target?.range_display || 'Zone 2 (مجهود هوائي معتدل)')}</strong></td>
+        <td>${escapeHtml(cardio.talk_test_cue || 'سرعة منتظمة تسمح بالحديث المتقطع دون انقطاع النفس الحاد.')}</td>
       </tr>
     </tbody>
   </table>
@@ -424,10 +439,10 @@ export function generatePrintablePlanHTML({ client = {}, plan = {}, date = new D
       ${((workout?.sessions ? workout.sessions.flatMap(s => s.pre_workout_mobility || []) : []) || workout?.pre_workout_mobility || []).slice(0, 6).map((m, mIdx) => `
         <tr>
           <td>${mIdx + 1}</td>
-          <td><strong>${m.name_ar || m.name || m.name_en}</strong></td>
-          <td>${m.dose || m.reps || '8-10 تكرارات'}</td>
-          <td>${m.target_joints_ar || m.target_muscle_ar || 'تهيئة المفاصل'}</td>
-          <td>${m.cues_ar || 'أداء حركي سلس مع التنفس العميق'}</td>
+          <td><strong>${escapeHtml(m.name_ar || m.name || m.name_en)}</strong></td>
+          <td>${escapeHtml(m.dose || m.reps || '8-10 تكرارات')}</td>
+          <td>${escapeHtml(m.target_joints_ar || m.target_muscle_ar || 'تهيئة المفاصل')}</td>
+          <td>${escapeHtml(m.cues_ar || 'أداء حركي سلس مع التنفس العميق')}</td>
         </tr>
       `).join('')}
     </tbody>
