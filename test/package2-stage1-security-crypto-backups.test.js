@@ -8,6 +8,7 @@ import { escapeHtml, generatePrintablePlanHTML } from "../frontend/src/utils/pdf
 import { encryptMedicalData, decryptMedicalData } from "../src/utils/crypto.js";
 import { requireAuth } from "../src/api/middlewares/auth.middleware.js";
 import { performDatabaseBackup, cleanOldBackupsFromDisk } from "../src/api/services/backup.service.js";
+import sequelize from "../src/api/config/database.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -123,4 +124,8 @@ test("Stage 1 - S4-6: Database backups exclude password_hash and support 12-mont
   assert.ok(fs.existsSync(dummyOldFile), "Dummy old file should exist before cleanup");
   cleanOldBackupsFromDisk(365);
   assert.equal(fs.existsSync(dummyOldFile), false, "Dummy old file must be purged by 365-day retention cleanup");
+});
+
+test.after(async () => {
+  await sequelize.close().catch(() => {});
 });
