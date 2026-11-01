@@ -20,6 +20,7 @@ import {
   decideFollowUpAutoApply,
   buildBlockedTriage,
   buildCoachDigest,
+  classifyStalePending,
   packageCadenceDays,
   filterDigestRowsForAutoAppliedWindow,
   selectYellowForBulkApprove,
@@ -964,9 +965,50 @@ export async function approveCheckin(req, res) {
     // أو عند إرسال تعديل ماكروز صريح ما لم يحدد المدرب عدم التعديل صراحة (apply_program_adaptation === false)
     const hasCustomMacros = Boolean(custom_macros && typeof custom_macros === "object" && Object.keys(custom_macros).length > 0);
     const alreadyAdaptedForThisCheckin = Boolean(checkin.adapted_program_id);
-    const shouldAdaptProgram =
+    const requestedAdaptation =
       (apply_program_adaptation === true && (!alreadyAdaptedForThisCheckin || hasCustomMacros)) ||
       (hasCustomMacros && apply_program_adaptation !== false);
+
+    // Phase 3 safety rule, zero stale adaptation merge: a stale check-in
+    // is approved as review-and-note only, never merged into the current
+    // program, because its analysis is old and its deltas no longer
+    // describe the client's current state. The check-in itself is still
+    // approved and the coach notes are still saved; only the program
+    // merge is blocked. A missing user or missing cadence fails safe in
+    // the classifier (no stale flag), so it does not block here.
+    let staleApproval = null;
+    try {
+      const approvalUser = await User.findByPk(checkin.user_id);
+      const stale = classifyStalePending(
+        {
+          status: checkin.status,
+          created_at: checkin.createdAt || null,
+          package_cadence_days: packageCadenceDays(
+            approvalUser?.package_tier || approvalUser?.subscription_package || null,
+          ),
+          client_active: approvalUser
+            ? ["ACTIVE", "EXPIRING_SOON", "ACTIVE_VIP"].includes(approvalUser.subscription_status)
+            : null,
+          program_superseded: Boolean(
+            checkin.adapted_program_id && latestProgram && checkin.adapted_program_id !== latestProgram.id,
+          ),
+        },
+        new Date(),
+      );
+      if (stale.is_stale) staleApproval = stale;
+    } catch (staleCheckError) {
+      // A failed stale check must not silently allow a stale merge, and
+      // must not silently block a fresh approval either: fail the whole
+      // approval so the coach can retry, exactly like a failed adaptation.
+      console.error("Stale check failed in approveCheckin:", staleCheckError.message);
+      return res.status(500).json({
+        success: false,
+        error: "فشل فحص حداثة المتابعة، لم يتم اعتماد المتابعة ولم يتغير البرنامج",
+        code: "STALE_CHECK_FAILED",
+      });
+    }
+    const blockedStaleAdaptation = Boolean(staleApproval && requestedAdaptation);
+    const shouldAdaptProgram = requestedAdaptation && !blockedStaleAdaptation;
 
     if (shouldAdaptProgram && latestProgram && latestProgram.program_data) {
       const progData = typeof latestProgram.program_data === "string"
@@ -1075,12 +1117,20 @@ export async function approveCheckin(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: shouldAdaptProgram
-        ? "تم اعتماد المتابعة وتحديث البرنامج التدريبي والغذائي بنجاح"
-        : "تم اعتماد المتابعة وحفظ الملاحظات بنجاح دون تعديل البرنامج",
+      message: blockedStaleAdaptation
+        ? "تم اعتماد المتابعة كمراجعة وملاحظات فقط دون تعديل البرنامج لأن المتابعة راكدة"
+        : shouldAdaptProgram
+          ? "تم اعتماد المتابعة وتحديث البرنامج التدريبي والغذائي بنجاح"
+          : "تم اعتماد المتابعة وحفظ الملاحظات بنجاح دون تعديل البرنامج",
       checkin,
       program: latestProgram,
       program_adapted: shouldAdaptProgram,
+      ...(blockedStaleAdaptation
+        ? {
+            stale_approval_review_only: true,
+            stale_reasons: [...staleApproval.stale_reasons],
+          }
+        : {}),
     });
   } catch (error) {
     console.error("Error approving check-in:", error);
