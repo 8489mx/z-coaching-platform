@@ -26,6 +26,7 @@ export function createRateLimiter({
   const limiter = async (req, res, next) => {
     try {
       const ip = req.ip 
+        || req.headers?.['x-forwarded-for']
         || req.socket?.remoteAddress 
         || '127.0.0.1';
       

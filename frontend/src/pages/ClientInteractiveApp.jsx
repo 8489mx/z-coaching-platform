@@ -19,6 +19,21 @@ import {
 } from './ClientInteractiveApp/components';
 import { useClientInteractiveData } from './ClientInteractiveApp/hooks/useClientInteractiveData';
 
+function PendingPlanNotice({ badge, badgeBg, badgeColor, title, desc, onNavigate }) {
+  return (
+    <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '32px 20px', textAlign: 'center', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)', margin: '12px 0' }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px 14px', borderRadius: '9999px', background: badgeBg, color: badgeColor, fontSize: '12px', fontWeight: 700, marginBottom: '14px' }}>
+        {badge}
+      </div>
+      <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>{title}</h3>
+      <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.6, marginBottom: '20px' }}>{desc}</p>
+      <button type="button" onClick={onNavigate} style={{ padding: '10px 22px', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', fontWeight: 700, fontSize: '13px', border: 'none', cursor: 'pointer' }}>
+        استعراض وتعديل استمارة التقييم
+      </button>
+    </div>
+  );
+}
+
 export default function ClientInteractiveApp() {
   const [searchParams, setSearchParams] = useSearchParams();
   const _navigate = useNavigate();
@@ -134,52 +149,14 @@ export default function ClientInteractiveApp() {
                 setSwapMealId={setSwapMealId}
               />
             ) : (
-              <div style={{
-                background: '#FFFFFF',
-                borderRadius: '16px',
-                padding: '32px 20px',
-                textAlign: 'center',
-                border: '1px solid #E2E8F0',
-                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)',
-                margin: '12px 0'
-              }}>
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '6px 14px',
-                  borderRadius: '9999px',
-                  background: '#F0F9FF',
-                  color: '#0284C7',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  marginBottom: '14px'
-                }}>
-                  خطة التغذية قيد المراجعة
-                </div>
-                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
-                  جاري إعداد جدول الوجبات والماكروز
-                </h3>
-                <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.6, marginBottom: '20px' }}>
-                  يقوم الكوتش بمراجعة احتياجك الأيضي وتصميم توزيع الوجبات والبدائل الذكية. ستظهر وجباتك اليومية كاملة فور اعتماد الخطة ونشرها.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => _navigate('/intake/form')}
-                  style={{
-                    padding: '10px 22px',
-                    borderRadius: '8px',
-                    background: '#0F172A',
-                    color: '#FFFFFF',
-                    fontWeight: 700,
-                    fontSize: '13px',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  استعراض وتعديل استمارة التقييم
-                </button>
-              </div>
+              <PendingPlanNotice
+                badge="خطة التغذية قيد المراجعة"
+                badgeBg="#F0F9FF"
+                badgeColor="#0284C7"
+                title="جاري إعداد جدول الوجبات والماكروز"
+                desc="يقوم الكوتش بمراجعة احتياجك الأيضي وتصميم توزيع الوجبات والبدائل الذكية. ستظهر وجباتك اليومية كاملة فور اعتماد الخطة ونشرها."
+                onNavigate={() => _navigate('/intake/form')}
+              />
             )
           )}
 
@@ -213,52 +190,14 @@ export default function ClientInteractiveApp() {
                 submitSessionLog={submitSessionLog}
               />
             ) : (
-              <div style={{
-                background: '#FFFFFF',
-                borderRadius: '16px',
-                padding: '32px 20px',
-                textAlign: 'center',
-                border: '1px solid #E2E8F0',
-                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)',
-                margin: '12px 0'
-              }}>
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '6px 14px',
-                  borderRadius: '9999px',
-                  background: '#F0FDF4',
-                  color: '#16A34A',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  marginBottom: '14px'
-                }}>
-                  جدول التمارين قيد الإعداد
-                </div>
-                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
-                  جاري تصميم البرنامج التدريبي الإكلينيكي
-                </h3>
-                <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.6, marginBottom: '20px' }}>
-                  يتم الآن بناء الميزوسيكل التدريبي وتحديد المجموعات والأوزان المستهدفة ومحاذير الإصابات. ستظهر الجداول والتمارين فور اعتماد الخطة.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => _navigate('/intake/form')}
-                  style={{
-                    padding: '10px 22px',
-                    borderRadius: '8px',
-                    background: '#0F172A',
-                    color: '#FFFFFF',
-                    fontWeight: 700,
-                    fontSize: '13px',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  استعراض وتعديل استمارة التقييم
-                </button>
-              </div>
+              <PendingPlanNotice
+                badge="جدول التمارين قيد الإعداد"
+                badgeBg="#F0FDF4"
+                badgeColor="#16A34A"
+                title="جاري تصميم البرنامج التدريبي الإكلينيكي"
+                desc="يتم الآن بناء الميزوسيكل التدريبي وتحديد المجموعات والأوزان المستهدفة ومحاذير الإصابات. ستظهر الجداول والتمارين فور اعتماد الخطة."
+                onNavigate={() => _navigate('/intake/form')}
+              />
             )
           )}
 
