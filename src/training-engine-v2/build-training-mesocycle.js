@@ -240,10 +240,10 @@ const DEFAULT_MESOCYCLE_CONFIG = Object.freeze([
     week_number: 4,
     phase: MesoCyclePhase.PEAK_OVERLOAD,
     phase_ar: "الأسبوع 4 (القمة والأوفرلود الأقصى)",
-    target_rir: 0,
+    target_rir: 1,
     volume_modifier: 1.25,
     set_delta: 1,
-    focus_note: "الأسبوع 4 (القمة والأوفرلود الأقصى): RIR 0-1 — الوصول لأقصى أداء وتحدي عضلي كامل.",
+    focus_note: "الأسبوع 4 (القمة والأوفرلود الأقصى): RIR 1 — الوصول لأقصى أداء وتحدي عضلي كامل بتكنيك محكم.",
   },
   {
     week_number: 5,

@@ -216,6 +216,7 @@ export function buildClientTargets({ answers, measurements = {}, assessmentDate 
     notes_ar,
     plan_status: decision.plan_status,
     decision_reasons: decision.decision_reasons || [],
+    hard_constraints: decision.hard_constraints || [],
     inputs_used: {
       weight_kg: weight,
       height_cm: height,

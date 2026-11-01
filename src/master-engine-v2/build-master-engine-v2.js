@@ -720,6 +720,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   let resolvedFrameworkObj = resolveOptimalDietFramework(canonicalIntake, effectiveRaw);
   let dietFramework = resolvedFrameworkObj.framework;
 
+  let dietFrameworkConflict = null;
+
   if (
     rawDietChoice !== "AUTO_COACH_MATCH" &&
     rawDietChoice !== "AUTO" &&
@@ -727,7 +729,51 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     rawDietChoice !== "BALANCED_HIGH_PROTEIN" &&
     rawDietChoice !== ""
   ) {
-    dietFramework = rawDietChoice;
+    // S2-5: Safety gates for explicit manual diet framework choice against hard clinical constraints
+    const isDiabeticContraindication =
+      (isType1Diabetic || isInsulinDependent) &&
+      (rawDietChoice === "INTERMITTENT_FASTING" ||
+       rawDietChoice === "KETOGENIC" ||
+       rawDietChoice === "VERY_LOW_CARB");
+
+    const hasKidneyContraindication =
+      (kidneyProteinCapped || conditionsList.some(c => c.includes("KIDNEY") || c.includes("RENAL"))) &&
+      (rawDietChoice === "HIGH_PROTEIN" || rawDietChoice === "CARB_CYCLING");
+
+    const isBariatricContraindication =
+      isPostBariatric(effectiveRaw) &&
+      rawDietChoice === "INTERMITTENT_FASTING";
+
+    if (isDiabeticContraindication) {
+      dietFrameworkConflict = {
+        rejected_choice: rawDietChoice,
+        safe_fallback: resolvedFrameworkObj.framework,
+        coach_review_required: true,
+        reason: "CLINICAL_CONTRAINDICATION_DIABETES",
+        reason_ar: `المتدرب اختار نظام (${rawDietChoice}) يدوياً، وهو يتعارض مع أمان السكري من النوع الأول أو المعتمد على الإنسولين لمنع نوبات هبوط السكر الحادة. تم اعتماد النظام الآمن (${resolvedFrameworkObj.framework}) وتنبيه الكوتش للمراجعة.`,
+      };
+      dietFramework = resolvedFrameworkObj.framework;
+    } else if (hasKidneyContraindication) {
+      dietFrameworkConflict = {
+        rejected_choice: rawDietChoice,
+        safe_fallback: resolvedFrameworkObj.framework,
+        coach_review_required: true,
+        reason: "CLINICAL_CONTRAINDICATION_KIDNEY",
+        reason_ar: `المتدرب اختار نظام (${rawDietChoice}) يدوياً، وهو يتعارض مع قيود وظائف الكلى وسقف البروتين. تم اعتماد النظام الآمن (${resolvedFrameworkObj.framework}) وتنبيه الكوتش للمراجعة.`,
+      };
+      dietFramework = resolvedFrameworkObj.framework;
+    } else if (isBariatricContraindication) {
+      dietFrameworkConflict = {
+        rejected_choice: rawDietChoice,
+        safe_fallback: resolvedFrameworkObj.framework,
+        coach_review_required: true,
+        reason: "CLINICAL_CONTRAINDICATION_BARIATRIC",
+        reason_ar: `المتدرب اختار نظام الصيام المتقطع (${rawDietChoice}) يدوياً، وهو يتعارض مع جراحات السمنة (تكميم/تحويل مسار). تم اعتماد النظام الآمن (${resolvedFrameworkObj.framework}) وتنبيه الكوتش للمراجعة.`,
+      };
+      dietFramework = resolvedFrameworkObj.framework;
+    } else {
+      dietFramework = rawDietChoice;
+    }
   }
 
 
@@ -987,6 +1033,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
         : null,
         meal_distribution: mealDistribution,
     diet_framework: dietFramework,
+    diet_framework_conflict: dietFrameworkConflict,
     methodology_policy: {
       engine_id: "MASTER_ENGINE_V2",
       bmr_formula: bmrFormula,
@@ -1048,6 +1095,8 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       withhold_creatine: Boolean(biomarkerAnalysis?.dietary_modifications?.withhold_creatine),
       purine_restriction: Boolean(biomarkerAnalysis?.dietary_modifications?.purine_restriction),
       saturated_fat_cap_percent: biomarkerAnalysis?.dietary_modifications?.saturated_fat_cap_percent || null,
+      diet_framework_conflict: dietFrameworkConflict,
+      coach_review_diet_conflict: Boolean(dietFrameworkConflict),
     },
   };
 
@@ -1144,9 +1193,47 @@ export function buildMasterEngineV2(inputs) {
 
 
   // 3. Cardio Engine V2 with Zone 2 Target Heart Rates
-  const clientAge = canonicalIntake.personal?.dateOfBirth
-    ? calculateAge(canonicalIntake.personal.dateOfBirth, evaluationContext.assessmentDate)
-    : (Number(canonicalIntake.personal?.age) || Number(effectiveIntake?.personal?.age) || 30);
+  // S2-6: Check if date of birth or age was actually provided by the client,
+  // because the intake adapter silently defaults missing dateOfBirth to "1998-01-01".
+  const rawDobCandidates = [
+    effectiveIntake?.personal?.dateOfBirth,
+    effectiveIntake?.personal?.date_of_birth,
+    effectiveIntake?.dateOfBirth,
+    effectiveIntake?.date_of_birth,
+  ];
+  const validDob = rawDobCandidates.find(
+    (candidate) => typeof candidate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(candidate)
+  );
+  const rawAgeCandidates = [
+    effectiveIntake?.personal?.age,
+    effectiveIntake?.age,
+    canonicalIntake?.personal?.age,
+  ];
+  const validAgeCandidate = rawAgeCandidates.find((candidate) => {
+    if (candidate === undefined || candidate === null) return false;
+    if (typeof candidate === "string" && candidate.trim() === "") return false;
+    const parsed = Number(candidate);
+    return Number.isFinite(parsed) && parsed > 0;
+  });
+
+  let clientAge;
+  let isAgeEstimated;
+  let ageSource;
+
+  if (validDob) {
+    clientAge = calculateAge(validDob, evaluationContext.assessmentDate);
+    isAgeEstimated = false;
+    ageSource = "CLIENT_PROVIDED";
+  } else if (validAgeCandidate !== undefined) {
+    clientAge = Math.max(16, Math.min(100, Math.round(Number(validAgeCandidate))));
+    isAgeEstimated = false;
+    ageSource = "CLIENT_PROVIDED";
+  } else {
+    clientAge = 30;
+    isAgeEstimated = true;
+    ageSource = "DEFAULT_FALLBACK";
+  }
+
   const estimatedMaxHr = Math.round(208 - 0.7 * clientAge);
   const zone2LowBpm = Math.round(0.6 * estimatedMaxHr);
   const zone2HighBpm = Math.round(0.7 * estimatedMaxHr);
@@ -1194,9 +1281,15 @@ export function buildMasterEngineV2(inputs) {
           target_range_bpm: `${zone2LowBpm} - ${zone2HighBpm} BPM`,
           target_low_bpm: zone2LowBpm,
           target_high_bpm: zone2HighBpm,
-          guidance_ar: noHighIntensity
-            ? `${HIGH_INTENSITY_NOTE_AR} معدل نبضات القلب المستهدف: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة.`
-            : `معدل نبضات القلب المستهدف أثناء جلسة الكارديو: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة لحرق الدهون بكفاءة.`,
+          is_age_estimated: isAgeEstimated,
+          age_source: ageSource,
+          guidance_ar: isAgeEstimated
+            ? (noHighIntensity
+                ? `${HIGH_INTENSITY_NOTE_AR} معدل نبضات القلب المستهدف تقريبي (بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة) لعدم تحديد العمر بدقة.`
+                : `معدل نبضات القلب المستهدف تقريبي (بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة) لعدم تحديد العمر بدقة، وذلك لحرق الدهون بكفاءة.`)
+            : (noHighIntensity
+                ? `${HIGH_INTENSITY_NOTE_AR} معدل نبضات القلب المستهدف: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة.`
+                : `معدل نبضات القلب المستهدف أثناء جلسة الكارديو: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة لحرق الدهون بكفاءة.`),
         },
       });
     },

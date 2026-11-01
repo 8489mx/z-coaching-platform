@@ -24,7 +24,7 @@ function normalizeList(items) {
 
 function constraintsForScope(constraints, scope) {
   return normalizeList(
-    constraints.filter((item) => item.scope === scope || (item.scope === Scope.GLOBAL && scope !== Scope.NUTRITION)),
+    constraints.filter((item) => item.scope === scope || item.scope === Scope.GLOBAL),
   );
 }
 

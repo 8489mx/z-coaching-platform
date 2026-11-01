@@ -12,12 +12,17 @@ function requireObject(value, name) {
 }
 
 /**
- * Builds the complete Master Program from intake to all subsystem engines.
+ * @deprecated Legacy Master Engine V1 (R6). Zero production routes use this engine;
+ * all live workflows use buildMasterEngineV2 (src/master-engine-v2/index.js).
+ * Preserved strictly for historical test compatibility.
  *
  * @param {import("./domain/contracts.js").MasterEngineInput} inputs
  * @returns {import("./domain/contracts.js").MasterProgramResult}
  */
 export function buildMasterEngine(inputs) {
+  if (typeof process !== "undefined" && process.env?.NODE_ENV !== "test") {
+    console.warn("[DEPRECATED] buildMasterEngine (v1) is deprecated. Use buildMasterEngineV2 instead.");
+  }
   requireObject(inputs, "inputs");
   
   const { intake, evaluationContext, nutritionFoodCatalog } = inputs;
@@ -54,6 +59,7 @@ export function buildMasterEngine(inputs) {
 
   return {
     engine_version: MASTER_ENGINE_VERSION,
+    is_deprecated: true,
     intake_decision,
     training_program,
     cardio_program,
