@@ -466,6 +466,34 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - **Guard Testing**: Updated `test/one-address-per-page.test.js` to assert the direct 5-desk + 2-group order. 8/8 navigation and screen tests pass.
   - Verification: lint 0 warnings/0 errors, frontend production build clean (3.43s).
 
+## 3al. Thirty-eighth round (2026-11-01) — Package 2: Security Hardening, Sessions, Lifecycles & Calorie Floor Invariance — merged + pushed
+
+- **Stage 1: Security, Crypto & Backups Hardening (`c9e1e80`, `7a0b002`)**:
+  - **S4-8 PDF Sanitization**: HTML output in `frontend/src/utils/pdfExportEngine.js` rigorously sanitized via `escapeHtml` across 39 insertion points to prevent script injection in generated plans.
+  - **S4-9 Authenticated Medical Crypto**: Upgraded `src/utils/crypto.js` to authenticated `AES-256-GCM` with authentication tags, maintaining seamless backward-compatible decryption for legacy ciphertexts.
+  - **S4-9 Auth Token Security**: `src/api/middlewares/auth.middleware.js` strictly rejects tokens passed in `req.query.token`.
+  - **S4-6 Database Backups & Retention**: `src/api/services/backup.service.js` excludes `password_hash` from backups, encrypts backup dumps with AES-256-GCM, and enforces 365-day retention purge.
+- **Stage 2: Auth, Sessions & Deletion Lifecycle (`e9441ab`)**:
+  - **S4-3 Option B & Session Revocation**: Enforced mandatory `token_version` verification in `requireAuth`; password changes and `logoutAll` increment `token_version` for instant session revocation across all devices.
+  - **S4-8 Coach/Admin Cookie & Logout**: `loginEmail` issues secure `httpOnly` cookie (`coach_token`), and `POST /api/v1/auth/logout` clears it.
+  - **S4-3 Plan Approval Gating**: Workouts and culinary meal tabs in `ClientInteractiveApp.jsx` are strictly gated behind `APPROVED` or `PUBLISHED` status, preventing early access to unapproved drafts.
+  - **Deletion Lifecycle (`src/api/services/deletionLifecycle.service.js`)**: 90-day grace period for client deletion requests (`DEACTIVATED`), restoration strictly restricted to coaches upon client verification, and automated permanent PII purge after 90 days (`PERMANENTLY_PURGED`) while preserving ledger order records (`orders`).
+- **Stage 3: Calorie Floor Invariance & Flat-Form Validation (`fa58b71`)**:
+  - **S3-1 Absolute Calorie Floors**: 1200 kcal female / 1500 kcal male floors are absolute and unbreakable across `src/checkin-engine/adaptive-tdee.js` and `src/api/utils/planMergeEngine.js`.
+  - **No Coach Sub-Floor Bypass**: Coach overrides in `planMergeEngine` are strictly restricted to `coach_override_protein_g`; attempts to set custom calories below floors return `CUSTOM_MACROS_OUT_OF_RANGE`.
+  - **Numeric Validation Bounds**: Added strict numeric boundaries (350 / 10000) for checkin inputs in `frontend/src/pages/WeeklyCheckinForm.jsx`.
+- **Stage 4: Integration Alignments & Final Verification (`3e37813`)**:
+  - **ClientInteractiveApp Lines Invariance**: Extracted reusable `PendingPlanNotice` card, reducing file size to 315 lines (well within the `<=` 350 lines architectural guard).
+  - **Rate Limiter Mock IP Fallback**: Enhanced IP extraction to prioritize `req.ip` while gracefully falling back to `req.headers['x-forwarded-for']` for test environments.
+  - **Route Armor Alignment**: Whitelisted `auth:POST:/logout` in `test/security-audit-hardening.test.js`.
+- **Verification Evidence**:
+  - Package 2 test suite: 12/12 pass (`node --env-file=.env --test test/package2-stage1-security-crypto-backups.test.js test/package2-stage2-auth-sessions.test.js test/package2-stage3-invariants.test.js`).
+  - Lint: 0 warnings, 0 errors across frontend and backend (`npm.cmd run lint:errors`).
+  - Production build: Clean in 3.20s (`npm.cmd --prefix frontend run build`).
+  - Stress testing: 306 random clients, 0 crashes, 0 violations (`node scripts/stress-random-clients.mjs`).
+  - Multi-horizon journeys: 10/10 long client journeys (4–18 months) completed with zero issues (`node --env-file=.env scripts/simulate-long-journeys.mjs`).
+  - Vitest: 43/43 tests passing (`npx.cmd vitest run`).
+
 ## 4. Open work (in priority order)
 
 
