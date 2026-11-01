@@ -147,8 +147,74 @@ export default function WeeklyCheckinForm() {
         return;
       }
 
-      if (!formData.weight_kg) {
-        setError('يرجى إدخال وزنك الحالي قبل إرسال التقييم');
+      // Numeric validation for weight (Kg)
+      const cleanWeight = cleanArabicNumStr(formData.weight_kg);
+      const parsedWeight = parseFloat(cleanWeight);
+      if (!cleanWeight || isNaN(parsedWeight)) {
+        setError('يرجى إدخال وزنك الحالي بالكيلوجرام قبل إرسال التقييم');
+        setIsSubmitting(false);
+        return;
+      }
+      if (parsedWeight < 30 || parsedWeight > 350) {
+        setError('قيمة الوزن غير صالحة. يرجى إدخال وزن حقيقي بالكيلوجرام بين 30 و 350 كجم');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Numeric validation for optional waist circumference (Cm)
+      if (formData.waist_circumference_cm) {
+        const cleanWaist = cleanArabicNumStr(formData.waist_circumference_cm);
+        const parsedWaist = parseFloat(cleanWaist);
+        if (isNaN(parsedWaist) || parsedWaist < 40 || parsedWaist > 220) {
+          setError('قيمة محيط الخصر غير صالحة. يرجى إدخال قياس بالسنتيمتر بين 40 و 220 سم أو إبقاء الحقل فارغاً');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Numeric validation for optional average daily calories (Kcal)
+      if (formData.average_daily_calories) {
+        const cleanCal = cleanArabicNumStr(formData.average_daily_calories);
+        const parsedCal = parseFloat(cleanCal);
+        if (isNaN(parsedCal) || parsedCal < 800 || parsedCal > 10000) {
+          setError('قيمة متوسط السعرات اليومية غير صالحة. يرجى إدخال رقم سعرات منطقي بين 800 و 10,000 سعرة أو إبقاء الحقل فارغاً');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Daily morning weights validation if any provided
+      const enteredDaily = formData.daily_weights.filter(w => String(w).trim() !== '');
+      if (enteredDaily.length > 0) {
+        for (const w of enteredDaily) {
+          const nw = parseFloat(cleanArabicNumStr(w));
+          if (isNaN(nw) || nw < 30 || nw > 350) {
+            setError('أحد أوزان الأيام السبعة غير صالح. يرجى التأكد من أن الأوزان المدخلة تقع بين 30 و 350 كجم');
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      }
+
+      // Workouts completed validation
+      const parsedWorkouts = Number(formData.workouts_completed);
+      if (isNaN(parsedWorkouts) || parsedWorkouts < 0 || parsedWorkouts > 14) {
+        setError('عدد التمارين المكتملة يجب أن يكون بين 0 و 14 تمريناً في الأسبوع');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Nutrition adherence validation
+      const parsedAdherence = Number(formData.nutrition_adherence_percent);
+      if (isNaN(parsedAdherence) || parsedAdherence < 0 || parsedAdherence > 100) {
+        setError('نسبة الالتزام بالدايت يجب أن تكون بين 0% و 100%');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Joint pain area validation
+      if (formData.has_joint_pain && !formData.pain_area) {
+        setError('يرجى تحديد موضع ألم المفصل لاقتراح البدائل البيوميكانيكية المناسبة');
         setIsSubmitting(false);
         return;
       }

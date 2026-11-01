@@ -125,12 +125,12 @@ export function estimateAdaptiveTdee({ weeks = [], formula_tdee_kcal, current_ta
   const factor = GOAL_ENERGY_FACTOR[goal] ?? GOAL_ENERGY_FACTOR.FAT_LOSS;
   const floor = is_female ? 1200 : 1500;
   let ideal = observed * factor;
-  if (ideal < floor) ideal = Math.min(observed, floor);
+  if (ideal < floor) ideal = floor;
 
   // Move at most MAX_WEEKLY_TARGET_STEP_KCAL per check-in so one noisy week cannot swing the plan.
   const anchor = Number.isFinite(currentTarget) ? currentTarget : ideal;
   const step = Math.max(-MAX_WEEKLY_TARGET_STEP_KCAL, Math.min(MAX_WEEKLY_TARGET_STEP_KCAL, ideal - anchor));
-  const recommended = Math.round(anchor + step);
+  const recommended = Math.max(floor, Math.round(anchor + step));
 
   return Object.freeze({
     ...base,

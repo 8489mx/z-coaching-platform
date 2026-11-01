@@ -139,7 +139,7 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     finalProtein = Number(adaptationResult.adapted_nutrition.protein_g);
     finalCarbs = Number(adaptationResult.adapted_nutrition.carbohydrate_g);
     finalFats = Number(adaptationResult.adapted_nutrition.fat_g);
-  } else if (adaptationResult?.suggested_calorie_delta) {
+  } else if (adaptationResult?.suggested_calorie_delta !== undefined && adaptationResult?.suggested_calorie_delta !== null) {
     const baseCal = merged.nutrition_program?.macro_targets?.calories_kcal 
       || merged.nutrition_program?.targets?.target_calories_kcal
       || merged.nutrition_program?.targets?.calories_kcal

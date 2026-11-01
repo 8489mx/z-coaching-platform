@@ -330,7 +330,9 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const age = personal.dateOfBirth
     ? calculateAge(personal.dateOfBirth, evaluationContext.assessmentDate)
     : Number(personal.age) || 28;
-  const isMale = personal.sex !== "FEMALE";
+  const isMale = personal.sex
+    ? personal.sex !== "FEMALE"
+    : (String(personal.gender || personal.client_gender || "").trim().toUpperCase() !== "FEMALE");
   // The canonical body contract carries only height/weight/waist (and fills a missing waist with an
   // estimate), so body fat and the tape measurements are read from the submitted answers.
   const rawBody = effectiveRaw?.body || {};
@@ -511,14 +513,14 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     calorieAdjustmentDesc = "سعرات الاحتياج اليومي كاملة (متدرب تحت 18 سنة: ممنوع أي عجز حراري على جسم في مرحلة نمو)";
   }
 
-  // Minimum intake without medical supervision (AHA/ACC/TOS 2013 obesity guideline: 1200 kcal women,
-  // 1500 kcal men). When maintenance itself is below the floor, the plan stays at maintenance.
+  // Calorie floor invariance (Stage 3, Option A): floor absolute and unbreakable —
+  // 1200 kcal female / 1500 kcal male. No sub-floor calorie override exists.
   const calorieFloor = isMale ? 1500 : 1200;
   let calorieFloorApplied = false;
-  if (targetCalories < calorieFloor && targetCalories < tdee) {
-    targetCalories = Math.min(tdee, calorieFloor);
+  if (targetCalories < calorieFloor) {
+    targetCalories = calorieFloor;
     calorieFloorApplied = true;
-    calorieAdjustmentDesc += ` (تم رفع السعرات للحد الأدنى الآمن ${targetCalories} سعرة بدون إشراف طبي)`;
+    calorieAdjustmentDesc += ` (تم رفع السعرات للحد الأدنى الفسيولوجي المطلق ${targetCalories} سعرة)`;
   }
 
   // Protein reference weight: grams per kg of total weight overshoot in people carrying a lot of fat
