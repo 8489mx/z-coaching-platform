@@ -71,12 +71,18 @@ export function useClientInteractiveData() {
 
   // 2. Client Profile State
   const [clientData, setClientData] = useState(() => {
-    const storedCode = localStorage.getItem('kz_client_code') || sessionStorage.getItem('z_client_code') || '#1';
-    const storedName = localStorage.getItem('kz_client_name') || 'المشترك';
+    let parsedUser = null;
+    try {
+      const u = typeof localStorage !== 'undefined' ? localStorage.getItem('user') : null;
+      parsedUser = u ? JSON.parse(u) : null;
+    } catch {}
+    const storedCode = parsedUser?.client_code || (typeof localStorage !== 'undefined' ? (localStorage.getItem('kz_client_code') || sessionStorage.getItem('z_client_code')) : '') || '';
+    const storedName = parsedUser?.full_name || (typeof localStorage !== 'undefined' ? (localStorage.getItem('kz_client_name') || 'المشترك') : 'المشترك');
     return {
       name: storedName,
-      code: storedCode.startsWith('#') ? storedCode : `#${storedCode}`,
-      package: 'الخطة المخصصة',
+      code: storedCode ? (storedCode.startsWith('#') ? storedCode : `#${storedCode}`) : '',
+      package: parsedUser?.subscription_package || 'الخطة المخصصة',
+      plan_approval_status: parsedUser?.plan_approval_status || 'PENDING_COACH_REVIEW',
       enable_rest_timer: false,
       enable_weight_logging: false,
       streak: 1,
@@ -324,6 +330,7 @@ export function useClientInteractiveData() {
         name: sanitizeClientDisplayName(data.user.full_name || prev.name),
         package: data.user.subscription_package || prev.package,
         tier: data.user.subscription_package || prev.tier,
+        plan_approval_status: data.user.plan_approval_status || prev.plan_approval_status,
         enable_rest_timer: false,
         enable_weight_logging: false,
         fastingProfile: extractedFasting,

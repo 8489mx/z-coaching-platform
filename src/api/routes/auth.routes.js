@@ -6,8 +6,10 @@ import {
   resetClientPassword,
   getProfile,
   deleteAccount,
+  restoreClientAccount,
   changePassword,
   logoutAll,
+  logout,
   getCsrfTokenController,
   updatePreferences
 } from "../controllers/auth.controller.js";
@@ -25,6 +27,8 @@ router.get("/profile", requireAuth, getProfile);
 router.patch("/preferences", requireAuth, updatePreferences);
 router.post("/change-password", requireAuth, authRateLimiter, changePassword);
 router.post("/logout-all", requireAuth, logoutAll);
+router.post("/logout", logout);
+router.post("/restore-client-account", requireAuth, requireAdmin, restoreClientAccount);
 router.delete("/delete-account", requireAuth, deleteAccount);
 router.post("/delete-account", requireAuth, deleteAccount);
 

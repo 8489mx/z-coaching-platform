@@ -119,11 +119,50 @@ function RedirectKeepingQuery({ to }) {
 }
 
 function RootRouteHandler() {
-  const isCoach = typeof window !== 'undefined' && Boolean(localStorage.getItem('token') && localStorage.getItem('z_coach_user'));
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+  let user = null;
+  try {
+    user = userStr ? JSON.parse(userStr) : null;
+  } catch {}
+
+  if (!token && !user) {
+    return <ClientLogin />;
+  }
+
+  const isCoach = user?.role === 'ADMIN' || user?.role === 'COACH' || Boolean(localStorage.getItem('z_coach_user'));
   if (isCoach) {
     return <CoachCommandCenter />;
   }
-  return <ClientLogin />;
+  return <Navigate to="/client/today" replace />;
+}
+
+/**
+ * Route protection guard enforcing login on all application surfaces (S4-3, Option B)
+ */
+function RequireAuth({ children, allowedRoles }) {
+  const location = useLocation();
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+  let user = null;
+  try {
+    user = userStr ? JSON.parse(userStr) : null;
+  } catch {}
+
+  if (!token && !user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (allowedRoles && allowedRoles.length > 0 && user?.role) {
+    if (!allowedRoles.includes(user.role)) {
+      if (user.role === 'CLIENT') {
+        return <Navigate to="/client/today" replace />;
+      }
+      return <Navigate to="/" replace />;
+    }
+  }
+
+  return children;
 }
 
 function App() {
@@ -143,7 +182,7 @@ function App() {
           <Route path="/dashboard" element={<Navigate to="/" replace />} />
 
           {/* Client Unified Interactive Hub */}
-          <Route path="/client/today" element={<ClientInteractiveApp />} />
+          <Route path="/client/today" element={<RequireAuth><ClientInteractiveApp /></RequireAuth>} />
           <Route path="/client/meals" element={<Navigate to="/client/today?tab=meals" replace />} />
           <Route path="/client/workout" element={<Navigate to="/client/today?tab=workout" replace />} />
           <Route path="/client/grocery" element={<Navigate to="/client/today" replace />} />
@@ -156,7 +195,7 @@ function App() {
           {/* Client Onboarding, Pricing, Renewal & Check-in */}
           <Route path="/join" element={<PublicPricingJoin />} />
           <Route path="/pricing" element={<RedirectKeepingQuery to="/join" />} />
-          <Route path="/renew" element={<ClientOnlineRenewal />} />
+          <Route path="/renew" element={<RequireAuth><ClientOnlineRenewal /></RequireAuth>} />
           <Route path="/client/renew" element={<RedirectKeepingQuery to="/renew" />} />
           <Route path="/onboarding" element={<Navigate to="/intake/form" replace />} />
           <Route path="/onboarding/multi" element={<Navigate to="/intake/form" replace />} />
@@ -164,41 +203,41 @@ function App() {
           <Route path="/intake" element={<ClientLogin />} />
           <Route path="/client/login" element={<RedirectKeepingQuery to="/login" />} />
           <Route path="/login" element={<ClientLogin />} />
-          <Route path="/intake/form" element={<FullIntakeForm />} />
-          <Route path="/intake/submissions" element={<IntakeSubmissions />} />
-          <Route path="/check-in" element={<WeeklyCheckinForm />} />
+          <Route path="/intake/form" element={<RequireAuth><FullIntakeForm /></RequireAuth>} />
+          <Route path="/intake/submissions" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><IntakeSubmissions /></RequireAuth>} />
+          <Route path="/check-in" element={<RequireAuth><WeeklyCheckinForm /></RequireAuth>} />
           <Route path="/client/check-in" element={<RedirectKeepingQuery to="/check-in" />} />
           <Route path="/progress" element={<Navigate to="/coach/checkin-review" replace />} />
           <Route path="/progress.html" element={<Navigate to="/coach/checkin-review" replace />} />
           <Route path="/check-ins" element={<Navigate to="/coach/checkin-review" replace />} />
 
           {/* Coach Management Tools */}
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/exercises" element={<ExerciseLibrary />} />
-          <Route path="/calculator" element={<MacroCalculator />} />
+          <Route path="/customers" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><Customers /></RequireAuth>} />
+          <Route path="/exercises" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><ExerciseLibrary /></RequireAuth>} />
+          <Route path="/calculator" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><MacroCalculator /></RequireAuth>} />
           <Route path="/mobility" element={<Navigate to="/coach/mobility" replace />} />
-          <Route path="/coach/mobility" element={<MobilityLibrary />} />
+          <Route path="/coach/mobility" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><MobilityLibrary /></RequireAuth>} />
           <Route path="/subscriptions" element={<Navigate to="/coach/financials" replace />} />
-          <Route path="/master-settings" element={<MasterSettingsHub />} />
+          <Route path="/master-settings" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><MasterSettingsHub /></RequireAuth>} />
           <Route path="/settings" element={<Navigate to="/master-settings" replace />} />
-          <Route path="/coach/editor" element={<CoachEditor />} />
-          <Route path="/coach/editor/:userId" element={<CoachEditor />} />
+          <Route path="/coach/editor" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><CoachEditor /></RequireAuth>} />
+          <Route path="/coach/editor/:userId" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><CoachEditor /></RequireAuth>} />
           <Route path="/coach/analytics" element={<Navigate to="/coach/financials" replace />} />
-          <Route path="/coach/checkin-review" element={<CheckinReviewDashboard />} />
+          <Route path="/coach/checkin-review" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><CheckinReviewDashboard /></RequireAuth>} />
           <Route path="/checkins/review" element={<Navigate to="/coach/checkin-review" replace />} />
           <Route path="/checkin/review" element={<Navigate to="/coach/checkin-review" replace />} />
           <Route path="/coach/checkin" element={<Navigate to="/coach/checkin-review" replace />} />
           <Route path="/coach/checkins" element={<Navigate to="/coach/checkin-review" replace />} />
-          <Route path="/coach/financials" element={<FinancialsRenewalsDashboard />} />
+          <Route path="/coach/financials" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><FinancialsRenewalsDashboard /></RequireAuth>} />
           <Route path="/financials" element={<Navigate to="/coach/financials" replace />} />
-          <Route path="/coach/reminders" element={<WhatsAppRemindersHub />} />
+          <Route path="/coach/reminders" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><WhatsAppRemindersHub /></RequireAuth>} />
           <Route path="/reminders" element={<Navigate to="/coach/reminders" replace />} />
-          <Route path="/customers/:id" element={<ClientTimelineProfile />} />
+          <Route path="/customers/:id" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><ClientTimelineProfile /></RequireAuth>} />
           <Route path="/profile" element={<Navigate to="/master-settings" replace />} />
-          <Route path="/pdf" element={<ProgramPdfView />} />
+          <Route path="/pdf" element={<RequireAuth><ProgramPdfView /></RequireAuth>} />
           <Route path="/program-pdf" element={<RedirectKeepingQuery to="/pdf" />} />
-          <Route path="/coach/mesocycle-debrief/:clientId" element={<MesocycleDebriefPdfView />} />
-          <Route path="/coach/mesocycle-debrief" element={<MesocycleDebriefPdfView />} />
+          <Route path="/coach/mesocycle-debrief/:clientId" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><MesocycleDebriefPdfView /></RequireAuth>} />
+          <Route path="/coach/mesocycle-debrief" element={<RequireAuth allowedRoles={['ADMIN', 'COACH']}><MesocycleDebriefPdfView /></RequireAuth>} />
           <Route path="/mesocycle-debrief" element={<RedirectKeepingQuery to="/coach/mesocycle-debrief" />} />
           <Route path="/test-engine" element={<Navigate to="/" replace />} />
 

@@ -7,6 +7,7 @@ import { recordFailedAttempt, resetAttempts } from "../middlewares/rateLimiter.j
 import { recordAuditEvent } from "../services/auditLog.service.js";
 import { generateCsrfToken } from "../middlewares/csrfProtection.js";
 import { serializeUserUnitPreferences, parseUserUnitPreferences } from "../../../frontend/src/utils/unitConverter.js";
+import { restoreClientAccountService } from "../services/deletionLifecycle.service.js";
 
 const generateToken = (userOrId, tokenVersion = 1) => {
   const secret = process.env.JWT_SECRET;
@@ -269,6 +270,19 @@ export const loginEmail = async (req, res) => {
     }
 
     const token = generateToken(user);
+
+    // S4-8 (Option A): Set httpOnly cookie for coach/admin sessions
+    if (user.role === 'ADMIN' || user.role === 'COACH') {
+      const isProduction = process.env.NODE_ENV === 'production';
+      res.cookie('coach_token', token, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      });
+    }
+
     return res.status(200).json({ user, token });
   } catch (err) {
     console.error("loginEmail error:", err);
@@ -310,12 +324,14 @@ export const deleteAccount = async (req, res) => {
       return res.status(404).json({ error: "المستخدم غير موجود" });
     }
 
-    // تعطيل الحساب صلب المنظومة دون حذف أي سجلات أو مجلدات صور
-    const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    // تعطيل الحساب صلب المنظومة دون حذف أي سجلات أو مجلدات صور مع إلغاء كافة الجلسات النشطة
+    const nowIso = new Date().toISOString();
     const existingNotes = user.notes ? `${user.notes}\n` : '';
+    const nextVersion = (user.token_version || 1) + 1;
     await user.update({
       subscription_status: 'DEACTIVATED',
-      notes: `${existingNotes}[تم طلب حذف الحساب من تطبيق الهاتف الذكي في ${dateStr} - الحساب معطل مع الحفاظ على الأرشيف]`
+      token_version: nextVersion,
+      notes: `${existingNotes}[تم طلب حذف الحساب][DELETION_REQUESTED:${nowIso}]`
     });
 
     recordAuditEvent({
@@ -324,17 +340,62 @@ export const deleteAccount = async (req, res) => {
       status: 'SUCCESS',
       details: {
         userId: user.id,
-        clientCode: user.client_code
+        clientCode: user.client_code,
+        deletion_requested_at: nowIso
       }
     });
 
     return res.status(200).json({
       success: true,
-      message: "تم حذف الحساب وإلغاء تسجيل الدخول بنجاح وفق سياسة الخصوصية المعتمدة."
+      message: "تم حذف الحساب وإلغاء تسجيل الدخول وأرشفة البيانات بأمان وفق سياسة الخصوصية. يحق لك طلب استعادة الحساب عبر الكوتش خلال مهلة 90 يوماً من تاريخ الطلب."
     });
   } catch (err) {
     console.error("deleteAccount error:", err);
     return res.status(500).json({ error: "فشل تنفيذ العملية: " + err.message });
+  }
+};
+
+/**
+ * استعادة حساب متدرب معطل خلال مهلة الـ 90 يوماً (Coach-Only Restoration)
+ */
+export const restoreClientAccount = async (req, res) => {
+  try {
+    const { user_id, client_code, confirmation_channel } = req.body || {};
+    const coachId = req.user?.id || req.adminUser?.id;
+
+    const result = await restoreClientAccountService({
+      user_id,
+      client_code,
+      coach_id: coachId,
+      confirmation_channel: confirmation_channel || "REGISTERED_PHONE",
+      req
+    });
+
+    return res.status(result.statusCode).json(
+      result.success ? { success: true, message: result.message, user: result.user } : { error: result.error }
+    );
+  } catch (err) {
+    console.error("restoreClientAccount error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * تسجيل خروج الكوتش/الإدارة ومسح كوكيز الجلسة المحمية
+ */
+export const logout = async (req, res) => {
+  try {
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.clearCookie('coach_token', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      path: '/'
+    });
+    return res.status(200).json({ success: true, message: "تم تسجيل الخروج بنجاح." });
+  } catch (err) {
+    console.error("logout error:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
