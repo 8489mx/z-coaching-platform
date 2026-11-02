@@ -361,6 +361,49 @@ export function decideCardioStrategy(input, safetyContext, conservativeRecoveryS
             "A beginner, recovery concern, restriction, or competing sport load requires a low-intensity start.",
           ),
     );
+  } else if (input.goals.primary === PrimaryGoal.FAT_LOSS && hasFormalCardioCapacity) {
+    // A fat-loss goal with stated cardio capacity gets formal cardio sessions.
+    // This branch sits after the low-steps and unknown-steps branches, so a
+    // client who barely moves still builds walking first, and after the
+    // movement-restriction and safety branches, so it never overrides a block.
+    // Capacity only caps the prescription; it never exceeds it.
+    strategy = CardioStrategy.CARDIO_SESSIONS;
+    maxSessions = input.cardio.maxSessionsPerWeek;
+    maxDurationMinutes = input.cardio.maxDurationMinutes;
+    decisionReasons.push(
+      reason(
+        "CARDIO_SESSIONS_FAT_LOSS_GOAL",
+        Scope.CARDIO,
+        "A fat-loss goal with stated cardio capacity gets formal cardio sessions to support the deficit.",
+      ),
+      reason(
+        "CARDIO_CAPACITY_APPLIED_AS_LIMIT",
+        Scope.CARDIO,
+        "Session and duration capacity limit the prescription; capacity alone did not create it.",
+      ),
+    );
+    const moderateStartAllowed =
+      input.cardio.walkingAbility === WalkingAbility.EASY &&
+      !conservativeRecoveryStart &&
+      input.training.experience !== TrainingExperience.NEVER_TRAINED &&
+      input.training.experience !== TrainingExperience.BEGINNER &&
+      input.training.experience !== TrainingExperience.UNKNOWN &&
+      !hasAnyMovementRestriction &&
+      !hasModerateOrHighSport;
+    intensityStart = moderateStartAllowed ? CardioIntensity.MODERATE : CardioIntensity.LOW;
+    decisionReasons.push(
+      moderateStartAllowed
+        ? reason(
+            "CARDIO_MODERATE_INTENSITY_SAFE_START",
+            Scope.CARDIO,
+            "Easy walking, acceptable recovery, no restrictions, and no competing sport load allow a moderate start.",
+          )
+        : reason(
+            "CARDIO_LOW_INTENSITY_CONSERVATIVE_START",
+            Scope.CARDIO,
+            "A beginner, recovery concern, restriction, or competing sport load requires a low-intensity start.",
+          ),
+    );
   } else if (highSteps || adequateDailyActivity) {
     strategy = CardioStrategy.NO_ADDITIONAL_CARDIO;
     decisionReasons.push(

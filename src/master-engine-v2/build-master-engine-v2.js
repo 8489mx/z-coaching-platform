@@ -1349,10 +1349,13 @@ export function buildMasterEngineV2(inputs) {
       : `الأكل اللي في الأطباق ${Math.round(servedCalories)} سعرة مقابل هدف ${universalTargets.target_calories} سعرة: الأطباق زيادة عن الهدف، راجع الكميات.`;
   }
 
+  // The canonical targets go INTO the pipeline so its own stages (and the
+  // meals built from them) follow the same number as the headline below.
   const baseNutritionProgram = buildNutritionEngine({
     intake: canonicalIntake,
     evaluationContext,
     nutritionFoodCatalog,
+    universalTargets,
   });
 
   // S2-1 (A1): one headline prescription. The stage numbers are unified from

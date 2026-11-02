@@ -33,6 +33,10 @@ const ALLOWED_LOCATIONS_BY_EQUIPMENT = Object.freeze({
     TrainingLocation.GYM,
     TrainingLocation.MIXED,
   ]),
+  [EquipmentCode.BARBELL_AND_PLATES]: Object.freeze([
+    TrainingLocation.GYM,
+    TrainingLocation.MIXED,
+  ]),
 });
 
 function createExercise({
@@ -61,13 +65,19 @@ function createExercise({
 }
 
 const EXERCISES = Object.freeze([
+  // Catalog order inside a slot is the selection preference order: the first
+  // eligible exercise wins. Barbell compounds lead their slots so a client
+  // with a barbell gets barbell work instead of a dumbbell substitute; the
+  // dumbbell and bodyweight entries remain as fallbacks when no barbell is
+  // available. Barbell compounds are not beginner-friendly: an intro week
+  // still falls back to the beginner-friendly entries.
   createExercise({
-    exerciseCode: "BODYWEIGHT_SQUAT",
-    nameEn: "Bodyweight Squat",
+    exerciseCode: "BARBELL_SQUAT",
+    nameEn: "Barbell Squat",
     slotCode: MovementSlotCode.KNEE_DOMINANT,
-    equipmentCode: EquipmentCode.BODYWEIGHT,
-    minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
-    beginnerFriendly: true,
+    equipmentCode: EquipmentCode.BARBELL_AND_PLATES,
+    minimumLoadCapacity: EquipmentLoadCapacity.MODERATE,
+    beginnerFriendly: false,
     prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
@@ -76,6 +86,15 @@ const EXERCISES = Object.freeze([
     slotCode: MovementSlotCode.KNEE_DOMINANT,
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
+    beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
+  }),
+  createExercise({
+    exerciseCode: "BODYWEIGHT_SQUAT",
+    nameEn: "Bodyweight Squat",
+    slotCode: MovementSlotCode.KNEE_DOMINANT,
+    equipmentCode: EquipmentCode.BODYWEIGHT,
+    minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
     prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
@@ -175,12 +194,12 @@ const EXERCISES = Object.freeze([
     prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
-    exerciseCode: "PUSH_UP",
-    nameEn: "Push-Up",
+    exerciseCode: "BARBELL_BENCH_PRESS",
+    nameEn: "Barbell Bench Press",
     slotCode: MovementSlotCode.HORIZONTAL_PUSH,
-    equipmentCode: EquipmentCode.BODYWEIGHT,
-    minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
-    beginnerFriendly: true,
+    equipmentCode: EquipmentCode.BARBELL_AND_PLATES,
+    minimumLoadCapacity: EquipmentLoadCapacity.MODERATE,
+    beginnerFriendly: false,
     prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),
   createExercise({
@@ -189,6 +208,15 @@ const EXERCISES = Object.freeze([
     slotCode: MovementSlotCode.HORIZONTAL_PUSH,
     equipmentCode: EquipmentCode.DUMBBELLS,
     minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
+    beginnerFriendly: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS,
+  }),
+  createExercise({
+    exerciseCode: "PUSH_UP",
+    nameEn: "Push-Up",
+    slotCode: MovementSlotCode.HORIZONTAL_PUSH,
+    equipmentCode: EquipmentCode.BODYWEIGHT,
+    minimumLoadCapacity: EquipmentLoadCapacity.BODYWEIGHT_ONLY,
     beginnerFriendly: true,
     prescriptionUnit: ExercisePrescriptionUnit.REPS,
   }),

@@ -37,6 +37,10 @@ for (const neat of ["moderate", "very_active"]) {
   });
 }
 
-test("a lean client reporting adequate activity is not given cardio she does not need", () => {
-  assert.equal(cardioFor({ weight: 58, neat: "very_active" }), "NO_ADDITIONAL_CARDIO");
+test("a lean fat-loss client with cardio capacity gets formal sessions", () => {
+  // Stage 3 rule change: a fat-loss goal with stated cardio capacity gets
+  // formal sessions even when daily activity is already adequate. The old
+  // "very active needs no cardio" expectation is intentionally overridden;
+  // a reviewer may refine it later with a high-activity exception.
+  assert.equal(cardioFor({ weight: 58, neat: "very_active" }), "CARDIO_SESSIONS");
 });

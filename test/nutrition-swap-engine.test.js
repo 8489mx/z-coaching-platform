@@ -1147,65 +1147,65 @@ test("real pipeline reaches Swap Engine with the Core Global catalog", () => {
 
 test("real closed meals expose only the approved safe Core swaps", () => {
   const result = buildNutritionSwapEngine(buildRealPipelineInputs());
+  // Stage 4: rice moved out of the old breakfast (Stage 2 breakfast fix)
+  // into the main meal; its only approved swap is still pasta, with the
+  // totals recomputed for the new main-meal context.
   const riceAlternative = findItem(result,
-    "RICE_WHITE_LONG_GRAIN_COOKED").alternatives[0];
+    "RICE_WHITE_LONG_GRAIN_COOKED", 1).alternatives[0];
   assert.deepEqual(findItem(result,
-    "RICE_WHITE_LONG_GRAIN_COOKED").alternatives.map((alternative) => [
+    "RICE_WHITE_LONG_GRAIN_COOKED", 1).alternatives.map((alternative) => [
       alternative.food_code,
       alternative.grams,
       alternative.objective_score,
-    ]), [["PASTA_SPAGHETTI_COOKED", 200, 4.46]]);
+    ]), [["PASTA_SPAGHETTI_COOKED", 175, 3.15]]);
   assert.deepEqual(riceAlternative.projected_meal_totals, {
-    calories_kcal: 698.77,
-    protein_g: 43.79,
-    fat_g: 19.59,
-    carbohydrate_g: 85.57,
-    fiber_g: 9.74,
+    calories_kcal: 704.31,
+    protein_g: 47.29,
+    fat_g: 21.49,
+    carbohydrate_g: 79.97,
+    fiber_g: 10.79,
   });
   assert.deepEqual(riceAlternative.projected_meal_residual, {
-    calories_kcal: -8.23,
-    protein_g: 4.79,
-    fat_g: 0.59,
-    carbohydrate_g: -9.43,
-    fiber_g: 2.74,
+    calories_kcal: -12.69,
+    protein_g: 4.29,
+    fat_g: 0.49,
+    carbohydrate_g: -9.03,
+    fiber_g: 1.79,
   });
-  assert.deepEqual(findItem(result, "CARROT_RAW").alternatives.map(
-    (alternative) => [alternative.food_code, alternative.grams]), [
-    ["CUCUMBER_WITH_PEEL_RAW", 400],
-  ]);
-  assert.deepEqual(findItem(result, "TOMATO_RED_RAW").alternatives.map(
-    (alternative) => [alternative.food_code, alternative.grams]), [
-    ["CUCUMBER_WITH_PEEL_RAW", 150],
-  ]);
+  // The fixed breakfast (egg, oats, salad) exposes no swaps.
+  assert.deepEqual(findItem(result, "TOMATO_RED_RAW").alternatives, []);
+  assert.deepEqual(findItem(result, "CUCUMBER_WITH_PEEL_RAW").alternatives, []);
 
   assert.deepEqual(findItem(result,
     "CHICKEN_BREAST_ROASTED_SKINLESS", 1).alternatives, []);
   assert.deepEqual(findItem(result,
-    "POTATO_BOILED_WITHOUT_SKIN", 1).alternatives, []);
-  assert.deepEqual(findItem(result,
-    "CUCUMBER_WITH_PEEL_RAW", 1).alternatives.map((alternative) => [
-      alternative.food_code,
-      alternative.grams,
-    ]), [
-    ["TOMATO_RED_RAW", 175],
-    ["CARROT_RAW", 75],
-  ]);
+    "CUCUMBER_WITH_PEEL_RAW", 1).alternatives, []);
   assert.deepEqual(findItem(result, "OLIVE_OIL", 1).alternatives.map(
     (alternative) => [alternative.food_code, alternative.grams]), [
-    ["SUNFLOWER_OIL", 20],
+    ["SUNFLOWER_OIL", 15],
   ]);
+  // Evening potato carries the same safe starch-for-starch swap.
+  assert.deepEqual(findItem(result,
+    "POTATO_BOILED_WITHOUT_SKIN", 2).alternatives.map((alternative) => [
+      alternative.food_code,
+      alternative.grams,
+      alternative.objective_score,
+    ]), [["PASTA_SPAGHETTI_COOKED", 225, 4.62]]);
 });
 
-test("real unclosed evening meal retains its Portion issue and has no swaps", () => {
+// The real evening meal used to be unclosed (egg whites with dry oats,
+// fiber outside tolerance) so swaps were withheld for it. The meal-quality
+// fix now closes that meal (chicken with potato and salad, all targets
+// within tolerance), so swaps are evaluated instead of withheld; the
+// withheld-swaps logic itself is still covered synthetically by
+// "an unclosed meal preserves upstream issues and withholds all swaps".
+test("real evening meal now closes and evaluates swaps instead of withholding them", () => {
   const result = buildNutritionSwapEngine(buildRealPipelineInputs());
-  assert.deepEqual(issueCodes(result.meals[2]), [
-    "PORTION_TARGET_OUTSIDE_TOLERANCE",
-    "SWAPS_WITHHELD_FOR_UNCLOSED_MEAL",
-  ]);
+  assert.deepEqual(issueCodes(result.meals[2]), []);
+  assert.equal(result.meals[2].items.some((item) =>
+    item.alternatives.length > 0), true);
   assert.equal(result.meals[2].items.every((item) =>
-    item.alternatives.length === 0), true);
-  assert.equal(result.meals[2].items.every((item) =>
-    item.issues.length === 0), true);
+    !issueCodes(item).includes("SWAPS_WITHHELD_FOR_UNCLOSED_MEAL")), true);
 });
 
 test("real alternatives stay in their slot candidates and swap group", () => {

@@ -703,11 +703,12 @@ test("medical safety wins a conflict with a blocked minor while both findings re
   assert.ok(hasCode(result.hard_constraints, "FOOD_ALLERGY_EXCLUSION"));
 });
 
-test("fat-loss goal alone does not automatically create a deficit", () => {
+test("fat-loss goal sets a deficit direction from day 1", () => {
   const input = completeIntake({ goals: { primary: PrimaryGoal.FAT_LOSS } });
   const result = evaluate(input);
-  assert.equal(result.nutrition_decision.calorie_direction, "MAINTENANCE");
-  assert.ok(hasCode(result.nutrition_decision.reasons, "GOAL_RECORDED_NOT_AUTO_APPLIED"));
+  assert.equal(result.nutrition_decision.calorie_direction, "DEFICIT");
+  assert.ok(hasCode(result.nutrition_decision.reasons, "GOAL_APPLIED_TO_CALORIE_DIRECTION"));
+  assert.equal(hasCode(result.nutrition_decision.reasons, "GOAL_RECORDED_NOT_AUTO_APPLIED"), false);
 });
 
 test("eating-disorder history prevents automatic deficit or surplus", () => {

@@ -200,10 +200,10 @@ test("actual intake flows end to end into the expected energy target", () => {
     weighted_sport_minutes: 0,
   });
   assert.equal(target.estimated_maintenance_kcal, 2310);
-  assert.equal(target.calorie_direction, CalorieDirection.MAINTENANCE);
-  assert.equal(target.adjustment_percent, 0);
-  assert.equal(target.adjustment_kcal, 0);
-  assert.equal(target.target_calories, 2310);
+  assert.equal(target.calorie_direction, CalorieDirection.DEFICIT);
+  assert.equal(target.adjustment_percent, 10);
+  assert.equal(target.adjustment_kcal, -230);
+  assert.equal(target.target_calories, 2080);
   assert.equal(target.calibration_required, true);
   assert.deepEqual(
     target.constraints,
@@ -211,7 +211,6 @@ test("actual intake flows end to end into the expected energy target", () => {
   );
   assert.deepEqual(reasonCodes(target), [
     "NASEM_DRI_2023_EER_APPLIED",
-    "MAINTENANCE_DIRECTION_APPLIED",
     "CALIBRATION_REQUIRED",
   ]);
   assert.equal(

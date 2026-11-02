@@ -91,7 +91,7 @@ test("actual example intake and decision produce the complete snapshot contract"
     },
     goal: {
       primary: "FAT_LOSS",
-      calorie_direction: "MAINTENANCE",
+      calorie_direction: "DEFICIT",
       decision_confidence: "HIGH",
     },
     body: {

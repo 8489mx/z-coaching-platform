@@ -1393,11 +1393,18 @@ test("real Intake through Food Selection completes Portion Solver with Core data
     "MAIN_CLASSIC",
     "EVENING_CLASSIC",
   ]);
-  assert.deepEqual(result.meals[2].issues, [{
+  // The meal-quality fix closed the old evening fiber miss (egg whites with
+  // dry oats, fiber 13.01 g vs a 9 g target). The single remaining
+  // out-of-tolerance meal in this real pipeline is now breakfast, whose
+  // low 7 g fiber target is marginally overshot (10.73 g) by the oats-based
+  // breakfast; the meal itself is coherent and the solver still flags the
+  // plan PROVISIONAL_REVIEW_REQUIRED with exactly one such reason.
+  assert.deepEqual(result.meals[0].issues, [{
     code: "PORTION_TARGET_OUTSIDE_TOLERANCE",
     fields: ["fiber_g"],
     message: "One or more meal nutrition targets remain outside tolerance.",
   }]);
+  assert.deepEqual(result.meals[2].issues, []);
   assert.equal(reasonCodes(result).filter((code) =>
     code === "PORTION_SOLVER_MEAL_TARGET_OUTSIDE_TOLERANCE").length, 1);
 });

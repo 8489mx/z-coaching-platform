@@ -171,6 +171,17 @@ function requiredSlot(sequence, slot, maxItems, allowedFoodClasses) {
   };
 }
 
+function requiredVegSlot(sequence, maxItems) {
+  return {
+    sequence,
+    slot: NutritionMealComponentSlot.VEGETABLE,
+    requirement: NutritionComponentRequirement.REQUIRED,
+    min_items: 2,
+    max_items: maxItems,
+    allowed_food_classes: [NutritionFoodClass.NON_STARCH_VEGETABLE],
+  };
+}
+
 function optionalSlot(sequence, slot, allowedFoodClasses) {
   return {
     sequence,
@@ -219,17 +230,12 @@ function classicSlots() {
       1,
       [NutritionFoodClass.STARCH],
     ),
-    requiredSlot(
-      3,
-      NutritionMealComponentSlot.VEGETABLE,
-      2,
-      [NutritionFoodClass.NON_STARCH_VEGETABLE],
-    ),
+    requiredVegSlot(3, 3),
     fatSlot(4),
   ];
 }
 
-function legumeSlots() {
+function legumeSlots(vegetableMaxItems = 2) {
   return [
     requiredSlot(
       1,
@@ -243,12 +249,7 @@ function legumeSlots() {
       1,
       [NutritionFoodClass.STARCH],
     ),
-    requiredSlot(
-      3,
-      NutritionMealComponentSlot.VEGETABLE,
-      2,
-      [NutritionFoodClass.NON_STARCH_VEGETABLE],
-    ),
+    requiredVegSlot(3, vegetableMaxItems),
     optionalSlot(
       4,
       NutritionMealComponentSlot.DAIRY_SUPPORT,
@@ -280,12 +281,7 @@ const EXPECTED_PATTERNS = Object.freeze({
         1,
         [NutritionFoodClass.STARCH],
       ),
-      requiredSlot(
-        3,
-        NutritionMealComponentSlot.VEGETABLE,
-        2,
-        [NutritionFoodClass.NON_STARCH_VEGETABLE],
-      ),
+      requiredVegSlot(3, 2),
       fatSlot(4),
     ],
   ),
@@ -327,7 +323,7 @@ const EXPECTED_PATTERNS = Object.freeze({
   [NutritionMealPatternCode.MAIN_LEGUME]: expectedPattern(
     NutritionMealPatternCode.MAIN_LEGUME,
     NutritionMealRole.MAIN_MEAL,
-    legumeSlots(),
+    legumeSlots(3),
   ),
   [NutritionMealPatternCode.EVENING_CLASSIC]: expectedPattern(
     NutritionMealPatternCode.EVENING_CLASSIC,
@@ -354,12 +350,7 @@ const EXPECTED_PATTERNS = Object.freeze({
         1,
         [NutritionFoodClass.STARCH],
       ),
-      requiredSlot(
-        3,
-        NutritionMealComponentSlot.VEGETABLE,
-        2,
-        [NutritionFoodClass.NON_STARCH_VEGETABLE],
-      ),
+      requiredVegSlot(3, 3),
       fatSlot(4),
     ],
   ),
@@ -678,11 +669,13 @@ test("actual example flows end to end into the exact assembly blueprint", () => 
   assert.ok(blueprint.food_restrictions.allergies.some(
     (allergy) => allergy.substance === "SESAME"));
   assert.ok(blueprint.food_restrictions.disliked_foods.includes("TUNA"));
+  // Stage 1: the example intake is a fat-loss client, so the distribution now
+  // carries the deficit target (was the maintenance-based 707 kcal golden).
   assert.deepEqual(blueprint.meals[0].target, {
-    planned_calories: 707,
-    protein_g: 39,
-    fat_g: 19,
-    carbohydrate_g: 95,
+    planned_calories: 646,
+    protein_g: 44,
+    fat_g: 18,
+    carbohydrate_g: 77,
     fiber_g: 7,
   });
   assert.deepEqual(patternCodes(blueprint.meals[0].allowed_patterns), [
@@ -701,7 +694,6 @@ test("actual example flows end to end into the exact assembly blueprint", () => 
   assert.deepEqual(blueprint.constraints, distribution.constraints);
   assert.deepEqual(reasonCodes(blueprint), [
     "NASEM_DRI_2023_EER_APPLIED",
-    "MAINTENANCE_DIRECTION_APPLIED",
     "CALIBRATION_REQUIRED",
     "MACRO_POLICY_APPLIED",
     "MEAL_DISTRIBUTION_POLICY_APPLIED",

@@ -398,12 +398,30 @@ test("no additional sports preserve the existing low-load classification", () =>
   assert.equal(isHighCardioSportLoad([]), false);
 });
 
-test("12000 steps and a fat-loss goal do not create additional cardio", () => {
+test("12000 steps and a fat-loss goal with capacity create cardio sessions", () => {
   const result = decideCardio({
     goals: { primary: PrimaryGoal.FAT_LOSS },
     cardio: { averageDailySteps: 12000, additionalSports: [] },
   });
-  assert.equal(result.decision.strategy, CardioStrategy.NO_ADDITIONAL_CARDIO);
+  assert.equal(result.decision.strategy, CardioStrategy.CARDIO_SESSIONS);
+  assert.equal(result.decision.max_sessions, 2);
+  assert.equal(result.decision.max_duration_minutes, 30);
+  assert.ok(
+    result.decision.reasons.some((item) => item.code === "CARDIO_SESSIONS_FAT_LOSS_GOAL"),
+  );
+});
+
+test("a fat-loss goal without cardio capacity still gets no formal sessions", () => {
+  const result = decideCardio({
+    goals: { primary: PrimaryGoal.FAT_LOSS },
+    cardio: {
+      averageDailySteps: 12000,
+      additionalSports: [],
+      maxSessionsPerWeek: 0,
+      maxDurationMinutes: 30,
+    },
+  });
+  assert.notEqual(result.decision.strategy, CardioStrategy.CARDIO_SESSIONS);
   assert.equal(result.decision.max_sessions, 0);
   assert.equal(result.decision.max_duration_minutes, 0);
 });
@@ -555,7 +573,7 @@ test("formal cardio starts low for a beginner, recovery risk, or existing modera
   }
 });
 
-test("a fat-loss goal at 6000 steps does not by itself justify sessions", () => {
+test("a fat-loss goal at 6000 steps with capacity justifies sessions", () => {
   const result = decideCardio({
     goals: { primary: PrimaryGoal.FAT_LOSS },
     cardio: {
@@ -564,9 +582,9 @@ test("a fat-loss goal at 6000 steps does not by itself justify sessions", () => 
       additionalSports: [],
     },
   });
-  assert.notEqual(result.decision.strategy, CardioStrategy.CARDIO_SESSIONS);
-  assert.equal(result.decision.max_sessions, 0);
-  assert.equal(result.decision.max_duration_minutes, 0);
+  assert.equal(result.decision.strategy, CardioStrategy.CARDIO_SESSIONS);
+  assert.equal(result.decision.max_sessions, 2);
+  assert.equal(result.decision.max_duration_minutes, 30);
 });
 
 test("zero session or duration capacity prevents formal cardio", () => {

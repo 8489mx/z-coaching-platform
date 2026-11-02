@@ -39,6 +39,23 @@ function requiredSlot(sequence, componentSlot, maxItems, foodClasses) {
   );
 }
 
+// A plate always carries at least two vegetables: selection picks the two
+// lowest-priority salad items deterministically (tomato, then cucumber)
+// instead of leaving the second vegetable to the solver, which greedily
+// added the highest-fiber vegetable and could overshoot a fiber target with
+// no way back. The solver may still add a third vegetable on main and
+// evening plates where the slot allows it.
+function requiredVegSlot(sequence, maxItems) {
+  return slot(
+    sequence,
+    NutritionMealComponentSlot.VEGETABLE,
+    NutritionComponentRequirement.REQUIRED,
+    2,
+    maxItems,
+    [NutritionFoodClass.NON_STARCH_VEGETABLE],
+  );
+}
+
 function optionalSlot(sequence, componentSlot, foodClasses) {
   return slot(
     sequence,
@@ -67,6 +84,10 @@ function pattern(code, mealRole, slots) {
   };
 }
 
+// Main and evening plates allow a third vegetable so the portion solver can
+// close a high fiber target (for example a rice-based plate) with an extra
+// salad item instead of overshooting a single vegetable portion. Breakfast
+// plates keep two vegetables so a breakfast salad stays reasonable.
 function classicPlateSlots() {
   return [
     requiredSlot(
@@ -86,17 +107,12 @@ function classicPlateSlots() {
       1,
       [NutritionFoodClass.STARCH],
     ),
-    requiredSlot(
-      3,
-      NutritionMealComponentSlot.VEGETABLE,
-      2,
-      [NutritionFoodClass.NON_STARCH_VEGETABLE],
-    ),
+    requiredVegSlot(3, 3),
     addedFatSlot(4),
   ];
 }
 
-function legumePlateSlots() {
+function legumePlateSlots(vegetableMaxItems = 2) {
   return [
     requiredSlot(
       1,
@@ -110,12 +126,7 @@ function legumePlateSlots() {
       1,
       [NutritionFoodClass.STARCH],
     ),
-    requiredSlot(
-      3,
-      NutritionMealComponentSlot.VEGETABLE,
-      2,
-      [NutritionFoodClass.NON_STARCH_VEGETABLE],
-    ),
+    requiredVegSlot(3, vegetableMaxItems),
     optionalSlot(
       4,
       NutritionMealComponentSlot.DAIRY_SUPPORT,
@@ -158,12 +169,7 @@ const PATTERN_CATALOG = deepFreeze([
         1,
         [NutritionFoodClass.STARCH],
       ),
-      requiredSlot(
-        3,
-        NutritionMealComponentSlot.VEGETABLE,
-        2,
-        [NutritionFoodClass.NON_STARCH_VEGETABLE],
-      ),
+      requiredVegSlot(3, 2),
       addedFatSlot(4),
     ],
   ),
@@ -205,7 +211,7 @@ const PATTERN_CATALOG = deepFreeze([
   pattern(
     NutritionMealPatternCode.MAIN_LEGUME,
     NutritionMealRole.MAIN_MEAL,
-    legumePlateSlots(),
+    legumePlateSlots(3),
   ),
   pattern(
     NutritionMealPatternCode.EVENING_CLASSIC,
@@ -232,12 +238,7 @@ const PATTERN_CATALOG = deepFreeze([
         1,
         [NutritionFoodClass.STARCH],
       ),
-      requiredSlot(
-        3,
-        NutritionMealComponentSlot.VEGETABLE,
-        2,
-        [NutritionFoodClass.NON_STARCH_VEGETABLE],
-      ),
+      requiredVegSlot(3, 3),
       addedFatSlot(4),
     ],
   ),

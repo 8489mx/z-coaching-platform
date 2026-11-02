@@ -6,6 +6,7 @@ import {
   MeasurementQuality,
   MenstrualStatus,
   PlanStatus,
+  PrimaryGoal,
   ReviewLevel,
   Scope,
   Severity,
@@ -296,9 +297,21 @@ export function decideNutrition(input, safetyContext) {
     });
   }
 
+  // The client's goal sets the calorie direction from day 1. A fat-loss
+  // goal starts in a deficit and a muscle-gain goal starts in a surplus;
+  // anything else starts at maintenance. Safety and eating-history gates
+  // still withhold the direction entirely (REVIEW_REQUIRED) when they fire.
+  const goalDirection =
+    input.goals.primary === PrimaryGoal.FAT_LOSS
+      ? CalorieDirection.DEFICIT
+      : input.goals.primary === PrimaryGoal.MUSCLE_GAIN
+        ? CalorieDirection.SURPLUS
+        : CalorieDirection.MAINTENANCE;
   const calorieDirection = reviewRequired
     ? CalorieDirection.REVIEW_REQUIRED
-    : CalorieDirection.MAINTENANCE;
+    : goalDirection;
+  const goalApplied =
+    !reviewRequired && goalDirection !== CalorieDirection.MAINTENANCE;
   const confidence = determineCalorieConfidence(input, reviewRequired);
   const mealCountStrategy = reviewRequired
     ? MealCountStrategy.COACH_TO_CONFIRM
@@ -308,16 +321,26 @@ export function decideNutrition(input, safetyContext) {
 
   const decisionReasons = [
     reason(
-      reviewRequired ? "NUTRITION_WITHHELD_PENDING_REVIEW" : "MAINTENANCE_CALIBRATION_BASELINE",
+      reviewRequired
+        ? "NUTRITION_WITHHELD_PENDING_REVIEW"
+        : goalApplied
+          ? "GOAL_APPLIED_TO_CALORIE_DIRECTION"
+          : "MAINTENANCE_CALIBRATION_BASELINE",
       Scope.NUTRITION,
       reviewRequired
         ? "A safety or eating-history gate prevents an automatic calorie direction."
-        : "V1 starts from a neutral maintenance calibration; the selected goal alone never forces deficit or surplus.",
+        : goalApplied
+          ? "The client's goal sets the calorie direction from day 1 instead of starting at maintenance."
+          : "The client's goal maintains weight, so the maintenance calorie direction was applied.",
     ),
     reason(
-      "GOAL_RECORDED_NOT_AUTO_APPLIED",
+      goalApplied
+        ? "GOAL_SETS_ENERGY_DIRECTION"
+        : "GOAL_RECORDED_NOT_AUTO_APPLIED",
       Scope.NUTRITION,
-      "The client's goal is retained for coach context but is not an automatic energy prescription.",
+      goalApplied
+        ? "The client's goal is an energy prescription from day 1, not context for later calibration."
+        : "The client's goal is retained for coach context but is not an automatic energy prescription.",
     ),
     reason(
       `CALORIE_CONFIDENCE_${confidence}`,

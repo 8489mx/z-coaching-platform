@@ -1019,7 +1019,11 @@ test("inputs remain mutable and unchanged while output is independent and deep f
   }, TypeError);
 });
 
-test("Core Global integration identifies evening and daily fiber review", () => {
+// The meal-quality fix closed the old evening fiber miss (egg whites with
+// dry oats) and, with it, the daily fiber miss: daily closure now PASSES.
+// The single remaining fiber miss in this real pipeline is breakfast
+// (oats-based, low 7 g fiber target), so meal closure still requires review.
+test("Core Global integration identifies breakfast fiber review with passing daily closure", () => {
   const result = evaluateNutritionPlanPreflight(buildRealInputs());
   assert.equal(result.status, NutritionPlanPreflightStatus.REVIEW_REQUIRED);
   assert.equal(result.ready_for_coach_review, true);
@@ -1030,7 +1034,7 @@ test("Core Global integration identifies evening and daily fiber review", () => 
     ["PORTION_LEGALITY", "PASSED"],
     ["PORTION_CALCULATION_INTEGRITY", "PASSED"],
     ["MEAL_TARGET_CLOSURE", "REVIEW_REQUIRED"],
-    ["DAILY_TARGET_CLOSURE", "REVIEW_REQUIRED"],
+    ["DAILY_TARGET_CLOSURE", "PASSED"],
     ["SWAP_SAFETY", "PASSED"],
   ]);
   assert.deepEqual(result.issues.map((issue) => ({
@@ -1042,13 +1046,7 @@ test("Core Global integration identifies evening and daily fiber review", () => 
     {
       code: "PREFLIGHT_MEAL_TARGET_OUTSIDE_TOLERANCE",
       source_stage: "PORTION_SOLVER",
-      meal_sequence: 3,
-      fields: ["fiber_g"],
-    },
-    {
-      code: "PREFLIGHT_DAILY_TARGET_OUTSIDE_TOLERANCE",
-      source_stage: "PLAN_PREFLIGHT",
-      meal_sequence: null,
+      meal_sequence: 1,
       fields: ["fiber_g"],
     },
   ]);

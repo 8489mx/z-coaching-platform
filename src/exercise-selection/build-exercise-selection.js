@@ -187,7 +187,12 @@ function equipmentSourceForExercise(exercise, equipmentSources) {
   return EquipmentAvailabilitySource.BODYWEIGHT;
 }
 
-function selectPreferredCandidate(candidates, introWeekRequired, equipmentSources) {
+function selectPreferredCandidate(
+  candidates,
+  introWeekRequired,
+  equipmentSources,
+  excludeExerciseCodes = new Set(),
+) {
   let preferredCandidates = candidates;
   if (introWeekRequired) {
     const beginnerFriendlyCandidates = candidates.filter(
@@ -198,18 +203,28 @@ function selectPreferredCandidate(candidates, introWeekRequired, equipmentSource
     }
   }
 
+  // A repeated slot in one session (e.g. the second chest movement on UPPER_B)
+  // must become a DIFFERENT exercise, never the same one twice. Exclude what
+  // this session already uses; only if every candidate is already used does
+  // the fallback keep the first candidate rather than leaving the slot empty.
+  const unusedCandidates = preferredCandidates.filter(
+    (exercise) => !excludeExerciseCodes.has(exercise.exercise_code),
+  );
+  const selectableCandidates =
+    unusedCandidates.length > 0 ? unusedCandidates : preferredCandidates;
+
   return (
-    preferredCandidates.find(
+    selectableCandidates.find(
       (exercise) =>
         equipmentSourceForExercise(exercise, equipmentSources) ===
         EquipmentAvailabilitySource.EXPLICIT,
     ) ??
-    preferredCandidates.find(
+    selectableCandidates.find(
       (exercise) =>
         equipmentSourceForExercise(exercise, equipmentSources) ===
         EquipmentAvailabilitySource.STANDARD_GYM,
     ) ??
-    preferredCandidates[0]
+    selectableCandidates[0]
   );
 }
 
@@ -257,6 +272,7 @@ function selectExerciseForSlot({
   equipmentSources,
   introWeekRequired,
   movementConstraintSources,
+  usedExerciseCodes = new Set(),
 }) {
   const sourceCodes = movementConstraintSources.get(slot.slot_code);
   if (sourceCodes !== undefined) {
@@ -282,6 +298,7 @@ function selectExerciseForSlot({
     eligibleCandidates,
     introWeekRequired,
     equipmentSources,
+    usedExerciseCodes,
   );
   const equipmentSource = equipmentSourceForExercise(selectedExercise, equipmentSources);
   return {
@@ -337,25 +354,33 @@ export function buildExerciseSelection({ trainingSessionBlueprint, hardConstrain
   );
   const movementConstraintSources = buildMovementConstraintSources(hardConstraints);
   let hasReviewRequiredSlot = false;
-  const sessions = trainingSessionBlueprint.sessions.map((session) => ({
-    sequence: session.sequence,
-    session_code: session.session_code,
-    focus: session.focus,
-    exercises: session.movement_slots.map((slot) => {
-      const selection = selectExerciseForSlot({
-        slot,
-        location,
-        availableEquipment,
-        equipmentSources,
-        introWeekRequired: trainingSessionBlueprint.intro_week_required,
-        movementConstraintSources,
-      });
-      if (selection.selection_status === ExerciseSlotSelectionStatus.REVIEW_REQUIRED) {
-        hasReviewRequiredSlot = true;
-      }
-      return selection;
-    }),
-  }));
+  const sessions = trainingSessionBlueprint.sessions.map((session) => {
+    // Dedup is per session only: the same exercise on different days of the
+    // week is normal programming, but twice in one session is a bug.
+    const usedExerciseCodes = new Set();
+    return {
+      sequence: session.sequence,
+      session_code: session.session_code,
+      focus: session.focus,
+      exercises: session.movement_slots.map((slot) => {
+        const selection = selectExerciseForSlot({
+          slot,
+          location,
+          availableEquipment,
+          equipmentSources,
+          introWeekRequired: trainingSessionBlueprint.intro_week_required,
+          movementConstraintSources,
+          usedExerciseCodes,
+        });
+        if (selection.selection_status === ExerciseSlotSelectionStatus.REVIEW_REQUIRED) {
+          hasReviewRequiredSlot = true;
+        } else if (selection.exercise_code) {
+          usedExerciseCodes.add(selection.exercise_code);
+        }
+        return selection;
+      }),
+    };
+  });
   const status =
     trainingSessionBlueprint.status === TrainingPlanStatus.READY && hasReviewRequiredSlot
       ? TrainingPlanStatus.PROVISIONAL_REVIEW_REQUIRED

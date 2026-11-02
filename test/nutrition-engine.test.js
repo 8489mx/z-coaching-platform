@@ -359,15 +359,12 @@ test("Core Global integration retains REVIEW_REQUIRED for fiber_g", () => {
     })),
     [
       {
+        // The meal-quality fix closed the old evening fiber miss (egg whites
+        // with dry oats); the single remaining fiber miss in this real
+        // pipeline is now breakfast (oats-based, low 7 g fiber target).
         code: "PREFLIGHT_MEAL_TARGET_OUTSIDE_TOLERANCE",
         source_stage: "PORTION_SOLVER",
-        meal_sequence: 3,
-        fields: ["fiber_g"],
-      },
-      {
-        code: "PREFLIGHT_DAILY_TARGET_OUTSIDE_TOLERANCE",
-        source_stage: "PLAN_PREFLIGHT",
-        meal_sequence: null,
+        meal_sequence: 1,
         fields: ["fiber_g"],
       },
     ],

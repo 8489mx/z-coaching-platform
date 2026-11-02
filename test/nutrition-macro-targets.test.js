@@ -220,37 +220,36 @@ test("actual intake flows end to end into the complete macro targets contract", 
     targets.calculation_policy,
     NutritionMacroCalculationPolicy.Z_COACHING_MACRO_POLICY_V1,
   );
-  assert.equal(targets.target_calories, 2310);
+  assert.equal(targets.target_calories, 2080);
   assert.deepEqual(targets.protein, {
-    target_g: 115,
-    factor_g_per_kg: 1.6,
+    target_g: 130,
+    factor_g_per_kg: 1.8,
     reference_weight_kg: 72,
     reference_weight_basis: "ACTUAL_WEIGHT",
-    energy_cap_g: 170,
+    energy_cap_g: 155,
     capped_by_energy_budget: false,
-    calories: 460,
-    percent_of_calories: 19.9,
+    calories: 520,
+    percent_of_calories: 25,
   });
   assert.deepEqual(targets.fat, {
-    target_g: 65,
-    calories: 585,
-    percent_of_calories: 25.3,
+    target_g: 60,
+    calories: 540,
+    percent_of_calories: 26,
   });
   assert.deepEqual(targets.carbohydrate, {
-    target_g: 316,
-    calories: 1264,
-    percent_of_calories: 54.7,
+    target_g: 255,
+    calories: 1020,
+    percent_of_calories: 49,
   });
   assert.equal(targets.fiber_target_g, 25);
-  assert.equal(targets.macro_calories_total, 2309);
-  assert.equal(targets.calorie_difference, -1);
+  assert.equal(targets.macro_calories_total, 2080);
+  assert.equal(targets.calorie_difference, 0);
   assert.deepEqual(
     targets.constraints,
     nutritionEnergyTarget.constraints,
   );
   assert.deepEqual(reasonCodes(targets), [
     "NASEM_DRI_2023_EER_APPLIED",
-    "MAINTENANCE_DIRECTION_APPLIED",
     "CALIBRATION_REQUIRED",
     "MACRO_POLICY_APPLIED",
   ]);

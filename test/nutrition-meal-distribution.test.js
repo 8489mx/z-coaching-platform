@@ -240,11 +240,11 @@ test("actual example flows end to end into the exact meal distribution", () => {
     { start: "09:00", end: "12:00" },
   ]);
   assert.deepEqual(distribution.daily_targets, {
-    target_calories: 2310,
-    macro_calories_total: 2309,
-    protein_g: 115,
-    fat_g: 65,
-    carbohydrate_g: 316,
+    target_calories: 2080,
+    macro_calories_total: 2080,
+    protein_g: 130,
+    fat_g: 60,
+    carbohydrate_g: 255,
     fiber_g: 25,
   });
   assert.deepEqual(distribution.meals, [
@@ -252,40 +252,39 @@ test("actual example flows end to end into the exact meal distribution", () => {
       sequence: 1,
       role: NutritionMealRole.BREAKFAST,
       policy_calorie_weight_percent: 30,
-      protein_g: 39,
-      fat_g: 19,
-      carbohydrate_g: 95,
+      protein_g: 44,
+      fat_g: 18,
+      carbohydrate_g: 77,
       fiber_g: 7,
-      planned_calories: 707,
-      actual_calorie_percent: 30.6,
+      planned_calories: 646,
+      actual_calorie_percent: 31.1,
     },
     {
       sequence: 2,
       role: NutritionMealRole.MAIN_MEAL,
       policy_calorie_weight_percent: 35,
-      protein_g: 38,
-      fat_g: 23,
-      carbohydrate_g: 111,
+      protein_g: 43,
+      fat_g: 21,
+      carbohydrate_g: 89,
       fiber_g: 9,
-      planned_calories: 803,
-      actual_calorie_percent: 34.8,
+      planned_calories: 717,
+      actual_calorie_percent: 34.5,
     },
     {
       sequence: 3,
       role: NutritionMealRole.EVENING_MEAL,
       policy_calorie_weight_percent: 35,
-      protein_g: 38,
-      fat_g: 23,
-      carbohydrate_g: 110,
+      protein_g: 43,
+      fat_g: 21,
+      carbohydrate_g: 89,
       fiber_g: 9,
-      planned_calories: 799,
-      actual_calorie_percent: 34.6,
+      planned_calories: 717,
+      actual_calorie_percent: 34.5,
     },
   ]);
   assert.deepEqual(distribution.constraints, nutritionMacroTargets.constraints);
   assert.deepEqual(reasonCodes(distribution), [
     "NASEM_DRI_2023_EER_APPLIED",
-    "MAINTENANCE_DIRECTION_APPLIED",
     "CALIBRATION_REQUIRED",
     "MACRO_POLICY_APPLIED",
     "MEAL_DISTRIBUTION_POLICY_APPLIED",
@@ -293,7 +292,7 @@ test("actual example flows end to end into the exact meal distribution", () => {
   ]);
   assert.deepEqual(
     distribution.meals.map((meal) => meal.planned_calories),
-    [707, 803, 799],
+    [646, 717, 717],
   );
 });
 

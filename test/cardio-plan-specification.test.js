@@ -860,29 +860,53 @@ test("top-level data issues are closed and require three non-empty strings", () 
   }
 });
 
-test("general-health and fat-loss goals retain Intake no-cardio decisions", () => {
-  for (const primary of [
-    PrimaryGoal.GENERAL_HEALTH,
-    PrimaryGoal.FAT_LOSS,
-  ]) {
-    const { intakeDecision, specification } = buildFromIntake({
-      goals: { primary },
-      cardio: { averageDailySteps: 8000 },
-    });
-    assert.equal(
-      intakeDecision.cardio_decision.strategy,
-      CardioStrategy.NO_ADDITIONAL_CARDIO,
-    );
-    assert.equal(specification.status, CardioPlanStatus.READY);
-    assert.equal(
-      specification.formal_session_state,
-      CardioFormalSessionState.NOT_INDICATED,
-    );
-    assert.deepEqual(
-      specification.reasons,
-      intakeDecision.cardio_decision.reasons,
-    );
-  }
+test("general-health goal retains Intake no-cardio decision", () => {
+  const { intakeDecision, specification } = buildFromIntake({
+    goals: { primary: PrimaryGoal.GENERAL_HEALTH },
+    cardio: { averageDailySteps: 8000 },
+  });
+  assert.equal(
+    intakeDecision.cardio_decision.strategy,
+    CardioStrategy.NO_ADDITIONAL_CARDIO,
+  );
+  assert.equal(specification.status, CardioPlanStatus.READY);
+  assert.equal(
+    specification.formal_session_state,
+    CardioFormalSessionState.NOT_INDICATED,
+  );
+  assert.deepEqual(
+    specification.reasons,
+    intakeDecision.cardio_decision.reasons,
+  );
+});
+
+test("fat-loss goal with cardio capacity gets formal cardio sessions", () => {
+  const { intakeDecision, specification } = buildFromIntake({
+    goals: { primary: PrimaryGoal.FAT_LOSS },
+    cardio: { averageDailySteps: 8000 },
+  });
+  assert.equal(
+    intakeDecision.cardio_decision.strategy,
+    CardioStrategy.CARDIO_SESSIONS,
+  );
+  assert.equal(intakeDecision.cardio_decision.max_sessions, 2);
+  assert.equal(intakeDecision.cardio_decision.max_duration_minutes, 30);
+  assert.equal(
+    intakeDecision.cardio_decision.intensity_start,
+    CardioIntensity.MODERATE,
+  );
+  assert.equal(specification.status, CardioPlanStatus.READY);
+  assert.equal(
+    specification.formal_session_state,
+    CardioFormalSessionState.PRESCRIPTION_REQUIRED,
+  );
+  assert.equal(specification.limits.max_sessions_per_week, 2);
+  assert.equal(specification.limits.max_duration_minutes_per_session, 30);
+  assert.ok(
+    specification.reasons.some(
+      (reason) => reason.code === "CARDIO_SESSIONS_FAT_LOSS_GOAL",
+    ),
+  );
 });
 
 test("low daily movement remains STEPS_ONLY even for a performance goal", () => {

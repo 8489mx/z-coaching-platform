@@ -550,6 +550,115 @@ function compareFoodsByPriority(left, right, patternCode) {
     compareCode(left.food_code, right.food_code);
 }
 
+// Swap group that holds the starches suited to breakfast (and light snacks).
+// Cooked lunch/dinner starches (rice, potato, pasta) belong to
+// COOKED_STARCHES and must never fill a breakfast or snack carbohydrate slot.
+const BREAKFAST_STARCH_GROUP = "BREAKFAST_STARCHES";
+
+/**
+ * Meal-slot food suitability: a carbohydrate slot in a breakfast or snack
+ * pattern accepts only breakfast starches. Other slots, other patterns, and
+ * foods without swap-group data are unrestricted (fail-open), so synthetic
+ * catalog items in tests keep their existing behavior.
+ */
+function isSlotSuitable(food, slot, patternCode) {
+  if (slot.slot !== NutritionMealComponentSlot.CARBOHYDRATE_BASE) {
+    return true;
+  }
+  if (!patternCode.startsWith("BREAKFAST") &&
+      !patternCode.startsWith("SNACK")) {
+    return true;
+  }
+  if (food.food_class !== NutritionFoodClass.STARCH) {
+    return true;
+  }
+  const group = food.swap ? food.swap.group_code : null;
+  if (group === undefined || group === null) {
+    return true;
+  }
+  return group === BREAKFAST_STARCH_GROUP;
+}
+
+/**
+ * Rank for a protein-anchor candidate's food class, by meal pattern.
+ * Breakfast anchors prefer breakfast staples (egg, dairy, legume); main and
+ * evening anchors prefer animal protein, so dinner is chicken or tuna rather
+ * than egg white or lentils. Snack and other patterns do not rank classes.
+ */
+function anchorGroupRank(foodClass, patternCode) {
+  if (patternCode.startsWith("BREAKFAST")) {
+    if (["EGG", "DAIRY_PROTEIN", "LEGUME"].includes(foodClass)) {
+      return 0;
+    }
+    if (foodClass === "ANIMAL_PROTEIN") {
+      return 1;
+    }
+    return 2;
+  }
+  if (patternCode.startsWith("MAIN") || patternCode.startsWith("EVENING")) {
+    if (foodClass === "ANIMAL_PROTEIN") {
+      return 0;
+    }
+    if (foodClass === "EGG") {
+      return 1;
+    }
+    if (foodClass === "DAIRY_PROTEIN" || foodClass === "LEGUME") {
+      return 2;
+    }
+    return 3;
+  }
+  return 0;
+}
+
+// Protein per kilocalorie, used only to rank dairy anchors against each
+// other (Greek yogurt carries far more protein than plain yogurt). Returns
+// null when the food has no usable nutrition data, in which case the caller
+// falls back to selection priority.
+function dairyProteinDensity(food) {
+  const nutrition = food.nutrition_per_100g;
+  if (!nutrition ||
+      !Number.isFinite(nutrition.protein_g) ||
+      !Number.isFinite(nutrition.calories_kcal) ||
+      nutrition.calories_kcal <= 0) {
+    return null;
+  }
+  return nutrition.protein_g / nutrition.calories_kcal;
+}
+
+/**
+ * Sort for eligible foods in one slot. Anchor slots rank their food class
+ * first (so the anchor can actually carry the meal's protein), then least
+ * used, then — for dairy anchors — most protein-dense, then priority and
+ * food code. Every other slot keeps the historical least-used-first order.
+ */
+function compareSlotFoods(left, right, slot, patternCode, usageCounts) {
+  if (slot.slot === NutritionMealComponentSlot.PROTEIN_ANCHOR) {
+    const groupDiff =
+      anchorGroupRank(left.food_class, patternCode) -
+      anchorGroupRank(right.food_class, patternCode);
+    if (groupDiff !== 0) {
+      return groupDiff;
+    }
+  }
+  const usageDiff =
+    (usageCounts.get(left.food_code) ?? 0) -
+    (usageCounts.get(right.food_code) ?? 0);
+  if (usageDiff !== 0) {
+    return usageDiff;
+  }
+  if (slot.slot === NutritionMealComponentSlot.PROTEIN_ANCHOR &&
+      left.food_class === NutritionFoodClass.DAIRY_PROTEIN &&
+      right.food_class === NutritionFoodClass.DAIRY_PROTEIN) {
+    const leftDensity = dairyProteinDensity(left);
+    const rightDensity = dairyProteinDensity(right);
+    if (leftDensity !== null && rightDensity !== null &&
+        leftDensity !== rightDensity) {
+      return rightDensity - leftDensity;
+    }
+  }
+  return compareFoodsByPriority(left, right, patternCode);
+}
+
 function makeRestrictionSets(foodRestrictions) {
   return {
     allergies: new Set(
@@ -636,6 +745,7 @@ function evaluateSlot({
     (food) =>
       slot.allowed_food_classes.includes(food.food_class) &&
       food.compatible_pattern_codes.includes(patternCode) &&
+      isSlotSuitable(food, slot, patternCode) &&
       !localSelected.has(food.food_code),
   );
   const eligibleFoods = [];
@@ -660,6 +770,7 @@ function evaluateSlot({
     const fallbackUniverse = catalogItems.filter(
       (food) =>
         slot.allowed_food_classes.includes(food.food_class) &&
+        isSlotSuitable(food, slot, patternCode) &&
         !localSelected.has(food.food_code) &&
         !candidateCodes.has(food.food_code),
     );
@@ -672,9 +783,7 @@ function evaluateSlot({
   }
 
   eligibleFoods.sort((left, right) =>
-    (usageCounts.get(left.food_code) ?? 0) -
-      (usageCounts.get(right.food_code) ?? 0) ||
-    compareFoodsByPriority(left, right, patternCode));
+    compareSlotFoods(left, right, slot, patternCode, usageCounts));
   rejectedFoods.sort((left, right) =>
     compareFoodsByPriority(left.food, right.food, patternCode));
 

@@ -16,8 +16,9 @@ import {
 } from "../src/exercise-catalog/index.js";
 
 const EXPECTED_EXERCISES = [
-  ["BODYWEIGHT_SQUAT", "Bodyweight Squat", "KNEE_DOMINANT", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
+  ["BARBELL_SQUAT", "Barbell Squat", "KNEE_DOMINANT", "BARBELL_AND_PLATES", "MODERATE", false],
   ["GOBLET_SQUAT", "Goblet Squat", "KNEE_DOMINANT", "DUMBBELLS", "LIGHT", true],
+  ["BODYWEIGHT_SQUAT", "Bodyweight Squat", "KNEE_DOMINANT", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
   ["GLUTE_BRIDGE", "Glute Bridge", "HIP_EXTENSION", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
   ["HIP_THRUST", "Hip Thrust", "HIP_EXTENSION", "SELECTORIZED_MACHINES", "MODERATE", true],
   ["SINGLE_LEG_RDL_BODYWEIGHT", "Single-Leg Romanian Deadlift (Bodyweight)", "HIP_HINGE", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
@@ -28,8 +29,9 @@ const EXPECTED_EXERCISES = [
   ["LYING_LEG_CURL_MACHINE", "Lying Leg Curl Machine", "KNEE_FLEXION", "SELECTORIZED_MACHINES", "LIGHT", true],
   ["STANDING_CALF_RAISE", "Standing Calf Raise", "CALF_RAISE", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
   ["DUMBBELL_CALF_RAISE", "Dumbbell Calf Raise", "CALF_RAISE", "DUMBBELLS", "LIGHT", true],
-  ["PUSH_UP", "Push-Up", "HORIZONTAL_PUSH", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
+  ["BARBELL_BENCH_PRESS", "Barbell Bench Press", "HORIZONTAL_PUSH", "BARBELL_AND_PLATES", "MODERATE", false],
   ["DUMBBELL_FLOOR_PRESS", "Dumbbell Floor Press", "HORIZONTAL_PUSH", "DUMBBELLS", "LIGHT", true],
+  ["PUSH_UP", "Push-Up", "HORIZONTAL_PUSH", "BODYWEIGHT", "BODYWEIGHT_ONLY", true],
   ["RESISTANCE_BAND_ROW", "Resistance Band Row", "HORIZONTAL_PULL", "RESISTANCE_BANDS", "LIGHT", true],
   ["ONE_ARM_DUMBBELL_ROW", "One-Arm Dumbbell Row", "HORIZONTAL_PULL", "DUMBBELLS", "LIGHT", true],
   ["PIKE_PUSH_UP", "Pike Push-Up", "VERTICAL_PUSH", "BODYWEIGHT", "BODYWEIGHT_ONLY", false],
@@ -58,14 +60,14 @@ const EXPECTED_EXERCISES = [
 );
 
 const EXPECTED_CODES_BY_SLOT = {
-  KNEE_DOMINANT: ["BODYWEIGHT_SQUAT", "GOBLET_SQUAT"],
+  KNEE_DOMINANT: ["BARBELL_SQUAT", "GOBLET_SQUAT", "BODYWEIGHT_SQUAT"],
   // The glutes have their own movement now; the hinge keeps a pair of its own.
   HIP_EXTENSION: ["GLUTE_BRIDGE", "HIP_THRUST"],
   HIP_HINGE: ["SINGLE_LEG_RDL_BODYWEIGHT", "DUMBBELL_ROMANIAN_DEADLIFT"],
   UNILATERAL_LOWER: ["SPLIT_SQUAT", "DUMBBELL_REVERSE_LUNGE"],
   KNEE_FLEXION: ["HAMSTRING_WALKOUT", "LYING_LEG_CURL_MACHINE"],
   CALF_RAISE: ["STANDING_CALF_RAISE", "DUMBBELL_CALF_RAISE"],
-  HORIZONTAL_PUSH: ["PUSH_UP", "DUMBBELL_FLOOR_PRESS"],
+  HORIZONTAL_PUSH: ["BARBELL_BENCH_PRESS", "DUMBBELL_FLOOR_PRESS", "PUSH_UP"],
   HORIZONTAL_PULL: ["RESISTANCE_BAND_ROW", "ONE_ARM_DUMBBELL_ROW"],
   VERTICAL_PUSH: ["PIKE_PUSH_UP", "STANDING_DUMBBELL_SHOULDER_PRESS"],
   VERTICAL_PULL: ["BAND_LAT_PULLDOWN", "LAT_PULLDOWN"],
@@ -78,8 +80,9 @@ const EXPECTED_CODES_BY_SLOT = {
 
 const EXPECTED_CODES_BY_PRESCRIPTION_UNIT = {
   [ExercisePrescriptionUnit.REPS]: [
-    "BODYWEIGHT_SQUAT",
+    "BARBELL_SQUAT",
     "GOBLET_SQUAT",
+    "BODYWEIGHT_SQUAT",
     "GLUTE_BRIDGE",
     "HIP_THRUST",
     "DUMBBELL_ROMANIAN_DEADLIFT",
@@ -87,8 +90,9 @@ const EXPECTED_CODES_BY_PRESCRIPTION_UNIT = {
     "LYING_LEG_CURL_MACHINE",
     "STANDING_CALF_RAISE",
     "DUMBBELL_CALF_RAISE",
-    "PUSH_UP",
+    "BARBELL_BENCH_PRESS",
     "DUMBBELL_FLOOR_PRESS",
+    "PUSH_UP",
     "RESISTANCE_BAND_ROW",
     "PIKE_PUSH_UP",
     "STANDING_DUMBBELL_SHOULDER_PRESS",
@@ -126,6 +130,7 @@ const EXPECTED_LOCATIONS_BY_EQUIPMENT = {
   RESISTANCE_BANDS: ["HOME", "GYM", "MIXED"],
   CABLE_STATION: ["GYM", "MIXED"],
   SELECTORIZED_MACHINES: ["GYM", "MIXED"],
+  BARBELL_AND_PLATES: ["GYM", "MIXED"],
 };
 
 test("exercise catalog version is stable", () => {
@@ -138,8 +143,8 @@ test("ExercisePrescriptionUnit exposes only the three approved units", () => {
   assert.deepEqual(Object.values(ExercisePrescriptionUnit), ["REPS", "REPS_PER_SIDE", "SECONDS"]);
 });
 
-test("catalog contains exactly 30 exercise records with the required shape", () => {
-  assert.equal(EXERCISE_CATALOG.exercises.length, 30);
+test("catalog contains exactly 32 exercise records with the required shape", () => {
+  assert.equal(EXERCISE_CATALOG.exercises.length, 32);
   assert.deepEqual(
     EXERCISE_CATALOG.exercises.map(({ exercise_code: exerciseCode }) => exerciseCode),
     EXPECTED_EXERCISES.map(({ exerciseCode }) => exerciseCode),
@@ -164,9 +169,9 @@ test("catalog contains exactly 30 exercise records with the required shape", () 
   }
 });
 
-test("all 30 exercises use the exact approved prescription-unit distribution", () => {
+test("all 32 exercises use the exact approved prescription-unit distribution", () => {
   const knownUnits = new Set(Object.values(ExercisePrescriptionUnit));
-  assert.equal(EXPECTED_PRESCRIPTION_UNIT_BY_CODE.size, 30);
+  assert.equal(EXPECTED_PRESCRIPTION_UNIT_BY_CODE.size, 32);
   assert.ok(
     EXERCISE_CATALOG.exercises.every(({ prescription_unit: unit }) => knownUnits.has(unit)),
   );
@@ -190,7 +195,7 @@ test("exercise codes are unique upper-snake-case identifiers", () => {
   assert.ok(codes.every((code) => /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/.test(code)));
 });
 
-test("every movement slot contains exactly two exercises", () => {
+test("every movement slot contains its approved exercise count", () => {
   const countsBySlot = new Map();
   for (const { slot_code: slotCode } of EXERCISE_CATALOG.exercises) {
     countsBySlot.set(slotCode, (countsBySlot.get(slotCode) ?? 0) + 1);
@@ -198,7 +203,14 @@ test("every movement slot contains exactly two exercises", () => {
 
   assert.equal(countsBySlot.size, Object.values(MovementSlotCode).length);
   for (const slotCode of Object.values(MovementSlotCode)) {
-    assert.equal(countsBySlot.get(slotCode), 2);
+    // The two main compound slots carry a barbell lead plus dumbbell and
+    // bodyweight fallbacks; every other slot keeps its pair.
+    const expectedCount =
+      slotCode === MovementSlotCode.KNEE_DOMINANT ||
+      slotCode === MovementSlotCode.HORIZONTAL_PUSH
+        ? 3
+        : 2;
+    assert.equal(countsBySlot.get(slotCode), expectedCount);
   }
 });
 
@@ -303,7 +315,7 @@ test("getExerciseByCode returns the matching record or null", () => {
   assert.equal(getExerciseByCode("UNKNOWN_EXERCISE"), null);
 });
 
-test("listExercisesForSlot returns the approved pair for every slot", () => {
+test("listExercisesForSlot returns the approved entries for every slot", () => {
   for (const [slotCode, expectedCodes] of Object.entries(EXPECTED_CODES_BY_SLOT)) {
     const exercises = listExercisesForSlot(slotCode);
     assert.deepEqual(
@@ -325,12 +337,12 @@ test("modifying a returned slot list does not modify the catalog", () => {
   firstResult.pop();
   firstResult.push({ exercise_code: "LOCAL_ONLY" });
 
-  assert.equal(secondResult.length, 2);
+  assert.equal(secondResult.length, 3);
   assert.deepEqual(
     listExercisesForSlot(MovementSlotCode.KNEE_DOMINANT).map(
       ({ exercise_code: exerciseCode }) => exerciseCode,
     ),
     EXPECTED_CODES_BY_SLOT.KNEE_DOMINANT,
   );
-  assert.equal(EXERCISE_CATALOG.exercises.length, 30);
+  assert.equal(EXERCISE_CATALOG.exercises.length, 32);
 });
