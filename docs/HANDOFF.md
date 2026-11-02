@@ -517,6 +517,22 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - Sequelize training-cycle suites: 53/53 pass across `next-training-cycle`, `training-cycle-continuity`, `cycle-starts-when-published`, `checkin-approval-stays-inside-the-cycle`, and `phase3-training-engine`.
   - Sample client verified end-to-end: exactly 2263 kcal deficit, 0 gap, 4 coherent meals, barbell bench/squat, no duplicate exercises in session, 2x30 min cardio.
 
+## 3an. Fortieth round (2026-11-02) — Package 3: Matrix-Validation Fixes — merged + pushed
+
+- **Commit (`75f1431`)**:
+  - **Stage A — Exclusion mapping (`disliked-foods.js`, `build-culinary-meals.js`, `build-nutrition-food-selection.js`, `build-master-engine-v2.js`)**: Added `FOOD_CODE_IDENTITIES` and `expandFoodExclusionCodes()` to bridge form labels, canonical codes, and identity tags. Medical exclusions now read in `buildAllergenContext` (setting `isPoultryExcluded` / `isFishExcluded`). Vegetarian and meat-refuser lunches use eggs omelette instead of unconditional chicken fallthrough. Swap offers respect exclusion sets.
+  - **Stage B — Home no-equipment adapter (`intake-adapter.js`)**: Added `home_bodyweight` to `locMap` (mapping to `HOME`) and `homeSetups` (mapping to `[{ BODYWEIGHT, BODYWEIGHT_ONLY, NONE }]`), resolving 35 equipment violations for no-equipment home clients.
+  - **Stage C — V2 wrapper rebalancing (`build-master-engine-v2.js`)**: Added `rebalanceMacrosToTarget()` call inside `unifyNutritionStageTargets()` before updating stored stages, guaranteeing stored stages match canonical targets within `[-2, 2]` kcal.
+  - **Stage D — Portion dominance split (`build-nutrition-portion-solver.js`, `build-culinary-meals.js`)**: Added `splitDominantSingleFoods()` post-solver to split oversized non-vegetable items (>400g) and dry oats (>100g / >75% carb share) across safe alternatives.
+- **Verification Evidence**:
+  - Node test suites: 430/430 targeted unit and integration tests passing.
+  - Vitest: 43/43 passing (`npm.cmd run test:vitest`).
+  - Lint: 0 warnings, 0 errors across frontend and backend (`npm.cmd run lint:errors`).
+  - Production build: Clean in 2.79s (`npm.cmd --prefix frontend run build`).
+  - Stress testing: 306 random clients, 0 collapses, 0 violations (`node scripts/stress-random-clients.mjs`).
+  - Multi-horizon journeys: 6/6 long client journeys completed with `مشاكل: لا شيء` (`node --env-file=.env scripts/simulate-long-journeys.mjs`).
+  - Food catalog core data: 38/38 pass (`node --test test/nutrition-food-catalog-core-data.test.js`).
+
 ## 4. Open work (in priority order)
 
 
