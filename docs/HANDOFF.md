@@ -494,6 +494,29 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - Multi-horizon journeys: 10/10 long client journeys (4–18 months) completed with zero issues (`node --env-file=.env scripts/simulate-long-journeys.mjs`).
   - Vitest: 43/43 tests passing (`npx.cmd vitest run`).
 
+## 3am. Thirty-ninth round (2026-11-02) — Nutrition + Training Fixes Package — merged + pushed
+
+- **Commits (`b6c0c79`, `518df0c`)**:
+  - **Goal deficit from day 1 (`src/intake-decision-engine/rules/nutrition-rules.js`)**: `FAT_LOSS` maps to `DEFICIT`, `MUSCLE_GAIN` to `SURPLUS`, else `MAINTENANCE`; safety and eating-disorder gates still withhold calorie direction (`REVIEW_REQUIRED`).
+  - **Universal targets pipeline unification (`src/master-engine-v2/build-master-engine-v2.js`, `src/nutrition-engine/build-nutrition-engine.js`)**: `universalTargets` passed into `buildNutritionEngine`; stages unified onto canonical targets prior to meal distribution with zero headline-to-served gap on production wiring.
+  - **Macro rebalancing to target (`src/nutrition-engine/build-nutrition-engine.js`)**: `rebalanceMacrosToTarget` reconciles rounding differences before distribution; protein is invariant, carbs never increase, calories invariant, search prioritizes smallest gram movements so `calorie_difference` stays strictly within `[-2, 2]`.
+  - **Meal-slot suitability and anchor ranking (`src/nutrition-food-selection/build-nutrition-food-selection.js`)**: Breakfast and snack carbohydrate slots accept only breakfast starches (`BREAKFAST_STARCHES`: bread, oats; cooked lunch starches like rice/potato/pasta prohibited). Main and evening anchors prioritize animal protein; snack dairy anchor chooses highest protein density (Greek yogurt).
+  - **Vegetable slot bounds (`src/nutrition-meal-assembly-blueprint/pattern-catalog.js`)**: Plates require at least two vegetables (`requiredVegSlot`, `min_items = 2`) preventing single-vegetable fiber overshoots.
+  - **Barbell compounds and per-session dedup (`src/exercise-catalog/exercise-catalog.js`, `src/exercise-selection/build-exercise-selection.js`)**: Added `BARBELL_BENCH_PRESS` and `BARBELL_SQUAT` in priority positions for gym clients. Per-session deduplication (`usedExerciseCodes`) guarantees no exercise repeats twice within the same session.
+  - **Fat-loss cardio sessions rule (`src/intake-decision-engine/rules/cardio-rules.js`)**: Fat-loss goal with stated cardio capacity receives formal cardio sessions capped by declared capacity, placed safely after movement restriction and low-steps branches.
+  - **Guard test alignment (`test/a-week-trains-every-muscle-enough.test.js`)**: Slot exercise count assertion updated to `>= 2` to accommodate barbell additions.
+- **Verification Evidence**:
+  - Full Node test suites passing across all changed and regression-sensitive suites (cardio, catalog, intake decision, nutrition engines, swap engine, macro targets, portion solver, preflight, rules).
+  - Vitest: 43/43 pass (`npm.cmd run test:vitest`).
+  - Lint: 0 warnings, 0 errors (`npm.cmd run lint:errors`).
+  - Production build: Clean in 3.92s (`npm.cmd --prefix frontend run build`).
+  - Stress testing: 306 random clients, 0 crashes, 0 violations (`node scripts/stress-random-clients.mjs`).
+  - Multi-horizon journeys: 6/6 long client journeys (4–18 months) completed with `مشاكل: لا شيء` (`node --env-file=.env scripts/simulate-long-journeys.mjs`).
+  - 10-Client simulation: 100% pass (`node --env-file=.env scripts/simulate-clients.mjs`).
+  - Food catalog core data: 38/38 pass (`node --test test/nutrition-food-catalog-core-data.test.js`).
+  - Sequelize training-cycle suites: 53/53 pass across `next-training-cycle`, `training-cycle-continuity`, `cycle-starts-when-published`, `checkin-approval-stays-inside-the-cycle`, and `phase3-training-engine`.
+  - Sample client verified end-to-end: exactly 2263 kcal deficit, 0 gap, 4 coherent meals, barbell bench/squat, no duplicate exercises in session, 2x30 min cardio.
+
 ## 4. Open work (in priority order)
 
 
