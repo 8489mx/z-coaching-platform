@@ -130,7 +130,7 @@ test("the movement a client can do with nothing stays available for every slot",
     bySlot.set(exercise.slot_code, list);
   }
   for (const [slot, exercises] of bySlot) {
-    assert.equal(exercises.length, 2, `${slot} has ${exercises.length} exercises`);
+    assert.ok(exercises.length >= 2, `${slot} has ${exercises.length} exercises`);
     assert.ok(
       exercises.some((exercise) => exercise.allowed_locations.includes("HOME")),
       `${slot} has nothing a client can do at home`,

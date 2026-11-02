@@ -65,25 +65,88 @@ function finalize(value) {
  * @param {Object} universalTargets
  * @returns {{ energyTarget: Object, macroTargets: Object }}
  */
+/**
+ * Reconciles a canonical macro split to its calorie target so the pipeline's
+ * strict distribution validator (calorie_difference must be null or an
+ * integer in -2..2) never sees rounding drift from the canonical calculator.
+ *
+ * Why the drift exists: the canonical calculator rounds each macro
+ * independently (protein per kg, fat share, carb remainder) and then
+ * rebalances clinically (diabetic carb ceiling, PCOS lower-carb, fat-share
+ * ceiling) with lossy 4/9 conversions, without reconciling the final gram
+ * sum to target_calories. The drift is rounding-scale (e.g. +6 kcal) but
+ * the validator rejects anything outside -2..2, which crashed diabetic,
+ * PCOS, and rounding-edge clients.
+ *
+ * Priority rule (this is the whole safety contract of the rebalance):
+ *   1. Protein never changes (the muscle-sparing target is sacred).
+ *   2. Carbohydrates never increase: this funnel cannot see a clinical
+ *      carb ceiling in grams, so raising carbs could breach a diabetic cap.
+ *   3. The calorie target never changes: the difference is fixed in the
+ *      gram split, never hidden by moving the target.
+ *   4. Prefer the smallest total gram movement (fat moves at most 4 g,
+ *      carbs down at most 8 g in the balanced search).
+ *   5. Fallback is carbs-only downward (the nearest multiple of 4 is
+ *      always within 2), which is safe for carb ceilings at any magnitude.
+ */
+function rebalanceMacrosToTarget(calories, protein, carbs, fat) {
+  const difference = protein * 4 + carbs * 4 + fat * 9 - calories;
+  if (difference >= -2 && difference <= 2) {
+    return { carbs, fat, difference };
+  }
+  let best = null;
+  for (let fatDelta = -4; fatDelta <= 4; fatDelta += 1) {
+    for (let carbDelta = -8; carbDelta <= 0; carbDelta += 1) {
+      const nextFat = fat + fatDelta;
+      if (nextFat < 0) continue;
+      const nextDifference = difference + carbDelta * 4 + fatDelta * 9;
+      if (nextDifference < -2 || nextDifference > 2) continue;
+      // Any difference inside -2..2 is equally valid, so movement wins over
+      // closeness to zero: a 1 g fix must beat an 8 g fix that lands on 0.
+      const score = (Math.abs(carbDelta) + Math.abs(fatDelta)) * 100 + Math.abs(nextDifference);
+      if (!best || score < best.score) {
+        best = { carbs: carbs + carbDelta, fat: nextFat, difference: nextDifference, score };
+      }
+    }
+  }
+  if (best) return best;
+  const carbDelta = -Math.round(difference / 4);
+  return {
+    carbs: carbs + carbDelta,
+    fat,
+    difference: difference + carbDelta * 4,
+  };
+}
+
 function unifyStageTargets(energyTarget, macroTargets, universalTargets) {
-  const calories = Number(
+  const rawCalories = Number(
     universalTargets?.target_calories ?? universalTargets?.target_calories_kcal ?? 0,
   );
-  const protein = Number(
+  const rawProtein = Number(
     universalTargets?.protein_g ?? universalTargets?.total_protein_g ?? 0,
   );
-  const carbs = Number(
+  const rawCarbs = Number(
     universalTargets?.carb_g ??
       universalTargets?.carbohydrate_g ??
       universalTargets?.total_carbs_g ??
       0,
   );
-  const fat = Number(
+  const rawFat = Number(
     universalTargets?.fat_g ?? universalTargets?.total_fat_g ?? 0,
   );
-  if (!(calories > 0)) {
+  if (!(rawCalories > 0)) {
     return { energyTarget, macroTargets };
   }
+  // Integer normalization: the distribution validator requires an integer
+  // calorie_difference. Canonical targets are already integers, so this is
+  // a no-op for them; it only guards against fractional grams from other
+  // producers. Protein rounds UP, never down: normalization never lowers
+  // the protein target.
+  const calories = Number.isInteger(rawCalories) ? rawCalories : Math.round(rawCalories);
+  const protein = Number.isInteger(rawProtein) ? rawProtein : Math.ceil(rawProtein);
+  const carbsIn = Number.isInteger(rawCarbs) ? rawCarbs : Math.round(rawCarbs);
+  const fatIn = Number.isInteger(rawFat) ? rawFat : Math.round(rawFat);
+  const { carbs, fat } = rebalanceMacrosToTarget(calories, protein, carbsIn, fatIn);
   const fiber = Number(universalTargets?.fiber_g);
   const macroCaloriesTotal = protein * 4 + carbs * 4 + fat * 9;
   const round1 = (value) => Math.round(value * 10) / 10;
