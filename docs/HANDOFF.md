@@ -533,6 +533,24 @@ That session did not update this file or `AI_RULES.md` at all; this section was 
   - Multi-horizon journeys: 6/6 long client journeys completed with `مشاكل: لا شيء` (`node --env-file=.env scripts/simulate-long-journeys.mjs`).
   - Food catalog core data: 38/38 pass (`node --test test/nutrition-food-catalog-core-data.test.js`).
 
+## 3ao. Forty-first round (2026-11-02) — Package 4: Protein Adequacy Fixes — merged + pushed
+
+- **Commit (`4dcf299`)**:
+  - **Stage A — Culinary protein anchor guarantee (`build-culinary-meals.js`)**: Extended CASE D dinner protein chain with extra-lean camel, lean beef, and eggs when chicken/tuna/dairy are excluded, ensuring every dinner receives a protein anchor.
+  - **Stage B — Culinary omelette cap, redistribution & breakfast top-up (`build-culinary-meals.js`)**: Sized lunch omelettes to fat budget and redistributed protein excess to camel/beef (with 250g cap); added camel/beef last-resort top-up for breakfast when chicken and tuna are both unavailable. True vegetarians and meat-excluded clients remain protected.
+  - **Stage C — Pipeline protein adequacy for constrained clients (`build-nutrition-food-selection.js`)**: Constrained-anchor budget fallback admits animal proteins rejected only for `BUDGET_LEVEL_EXCEEDED` when no animal protein survived for `PROTEIN_ANCHOR` slots, allowing medium-budget clients with poultry/fish exclusions to reach protein targets.
+  - **Stage D — Verification & Matrix consistency**: Verified max client (P158g pipeline, P164g culinary) and sample client (byte-identical); 31-profile matrix verified.
+  - **Stage E — Silent exclusion leak fix (`intake-adapter.js`, `disliked-foods.js`, `build-culinary-meals.js`)**: Form `disliked_foods` always translated even if `intake.nutrition` exists; mapped clinician plural `EGGS` to `["EGG"]` in `FOOD_CODE_IDENTITIES`; topped up capped 150g cottage cheese dinner with camel/beef when deficit > 6g.
+- **Verification Evidence**:
+  - Node test suites: 283/283 targeted tests passing.
+  - Vitest: 43/43 passing (`npm.cmd run test:vitest`).
+  - Lint: 0 warnings, 0 errors across frontend and backend (`npm.cmd run lint:errors`).
+  - Production build: Clean in 4.04s (`npm.cmd --prefix frontend run build`).
+  - Stress testing: 306 random clients, 0 collapses, 0 violations (`node scripts/stress-random-clients.mjs`).
+  - Multi-horizon journeys: 9/9 long client journeys completed with `مشاكل: لا شيء` (`node --env-file=.env scripts/simulate-long-journeys.mjs`).
+  - 10-Client simulation: 100% pass (`node --env-file=.env scripts/simulate-clients.mjs`).
+  - Food catalog core data: 38/38 pass (`node --test test/nutrition-food-catalog-core-data.test.js`).
+
 ## 4. Open work (in priority order)
 
 
