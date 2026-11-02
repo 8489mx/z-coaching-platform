@@ -76,6 +76,9 @@ export const FOOD_CODE_IDENTITIES = Object.freeze({
   LEAN_BEEF: ["BEEF", "RED_MEAT"],
   CAMEL_MEAT_LEAN: ["CAMEL", "RED_MEAT"],
   // Eggs
+  // Clinician plural form: a medical exclusion written as "EGGS" must match the
+  // pipeline identity tag "EGG" carried by every egg catalog item.
+  EGGS: ["EGG"],
   EGGS_OMELETTE: ["EGG"],
   SHAKSHOUKA_EGGS: ["EGG"],
   // Grains / starches

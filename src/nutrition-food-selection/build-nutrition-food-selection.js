@@ -771,6 +771,44 @@ function evaluateSlot({
     }
   }
 
+  // Constrained-anchor budget fallback: when exclusions leave a protein-anchor
+  // slot with no animal protein at all, the only remaining animal protein is
+  // unreachable behind its HIGH budget tag even though it is otherwise
+  // allowed. Admit animal proteins rejected ONLY for budget (every other
+  // rejection — allergy, medical exclusion, intolerance, dislike, market,
+  // storage, reheating — still blocks them), so the solver can reach the
+  // meal's protein target. This triggers only when no animal protein
+  // survived, so ordinary clients (chicken/tuna available) are untouched,
+  // and a vegetarian or red-meat-excluded client is untouched too (their
+  // beef carries a medical/dislike code, not budget alone). Proven case:
+  // a MEDIUM-budget client refusing chicken and fish with a milk allergy
+  // had beef rejected with BUDGET_LEVEL_EXCEEDED in every anchor slot,
+  // leaving eggs alone capped at 250 g to carry 41 g protein targets.
+  if (
+    slot.slot === NutritionMealComponentSlot.PROTEIN_ANCHOR &&
+    !eligibleFoods.some(
+      (food) => food.food_class === NutritionFoodClass.ANIMAL_PROTEIN,
+    )
+  ) {
+    const admittedCodes = new Set();
+    for (const { food, reasonCodes } of rejectedFoods) {
+      if (
+        food.food_class === NutritionFoodClass.ANIMAL_PROTEIN &&
+        reasonCodes.length === 1 &&
+        reasonCodes[0] ===
+          NutritionFoodCandidateRejectionCode.BUDGET_LEVEL_EXCEEDED
+      ) {
+        eligibleFoods.push(food);
+        admittedCodes.add(food.food_code);
+      }
+    }
+    for (let i = rejectedFoods.length - 1; i >= 0; i -= 1) {
+      if (admittedCodes.has(rejectedFoods[i].food.food_code)) {
+        rejectedFoods.splice(i, 1);
+      }
+    }
+  }
+
   // Intelligent fallback for heavy exclusion cases (e.g. eggs+dairy+legumes excluded for breakfast)
   if (
     eligibleFoods.length < slot.min_items &&

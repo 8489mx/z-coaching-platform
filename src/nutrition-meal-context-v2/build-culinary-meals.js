@@ -3627,6 +3627,49 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
               swaps: [],
             });
             currentF += tunaF;
+          } else if (isFoodClinicallySafe("CAMEL_MEAT_LEAN", allergenContext)) {
+            // Last-resort breakfast top-up, firing ONLY when chicken and tuna
+            // are both unavailable, so ordinary breakfasts are untouched:
+            // extra-lean camel (28% P, 3% F, ~0 carbs, so the diabetes carb
+            // ceiling is unaffected). Gout, red-meat exclusion, vegan routing
+            // and dislikes are all enforced by isFoodClinicallySafe, exactly
+            // as in the Stage A dinner fallback. The fat step below shrinks
+            // the oil to absorb the meat's fat, so the meal still lands.
+            const camelGrams = Math.round(finalRemP / 0.28);
+            const camelF = Math.round(camelGrams * 0.03);
+            items.push({
+              food_code: "CAMEL_MEAT_LEAN",
+              name_ar: "لحم حاشي (إبل) هبرة خالي الشحم متبل بالبهارات العربية",
+              name_en: "Extra Lean Camel Meat (Hashi)",
+              category: "PROTEIN",
+              portion_g: camelGrams,
+              household_measurement: `${camelGrams} جم مطبوخ (قطع هبرة بدون شحم)`,
+              protein_g: finalRemP,
+              carb_g: 0,
+              fat_g: camelF,
+              calories_kcal: Math.round(camelGrams * 1.40),
+              swaps: generateSmartSwaps("PROTEIN", camelGrams, "CAMEL_MEAT_LEAN", "BREAKFAST", 5, allergenContext),
+            });
+            currentF += camelF;
+          } else if (isFoodClinicallySafe("LEAN_BEEF", allergenContext)) {
+            // Same fallback for a client who dislikes camel specifically:
+            // lean beef (26.3% P, 6.8% F). The fat step below absorbs it.
+            const beefGrams = Math.round(finalRemP / 0.263);
+            const beefF = Math.round(beefGrams * 0.068);
+            items.push({
+              food_code: "LEAN_BEEF",
+              name_ar: "لحم بقري مفروم/ستيك قليل الدسم (95/5)",
+              name_en: "Lean Beef (95/5)",
+              category: "PROTEIN",
+              portion_g: beefGrams,
+              household_measurement: `${beefGrams} جم مطبوخ (حجم كف اليد)`,
+              protein_g: finalRemP,
+              carb_g: 0,
+              fat_g: beefF,
+              calories_kcal: Math.round(beefGrams * 1.74),
+              swaps: generateSmartSwaps("PROTEIN", beefGrams, "LEAN_BEEF", "BREAKFAST", 5, allergenContext),
+            });
+            currentF += beefF;
           }
         }
 
@@ -3735,25 +3778,85 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         } else if (!isEggsExcluded) {
           // A poultry-refuser must never fall through to chicken: an eggs
           // omelette is the vegetarian main protein here (10.6% P, 11% F).
-          // The fat step below absorbs the extra fat by shrinking the oil,
-          // so the meal still lands on its targets. If eggs are refused too,
-          // no protein is forced — the file's existing convention (as in the
-          // breakfast top-up) is to serve none rather than a wrong food.
-          const eggGrams = Math.round(remP / 0.106);
-          protF = Math.round(eggGrams * 0.11);
-          items.push({
-            food_code: "EGGS_OMELETTE",
-            name_ar: "بيض كامل مسلوق أو أومليت بالخضار",
-            name_en: "Whole Eggs (Boiled / Omelette)",
-            category: "PROTEIN",
-            portion_g: eggGrams,
-            household_measurement: `${eggGrams} جم (حوالي ${Math.max(1, Math.round(eggGrams / 50))} بيضة)`,
-            protein_g: remP,
-            carb_g: Math.round(eggGrams * 0.006),
-            fat_g: protF,
-            calories_kcal: Math.round(eggGrams * 1.44),
-            swaps: generateSmartSwaps("PROTEIN", eggGrams, "EGGS_OMELETTE", "LUNCH", 10, allergenContext),
-          });
+          // BUT eggs alone cannot carry a full meal's protein inside its fat
+          // budget: at remP = 35 g the uncapped omelette is 330 g = 36 g fat
+          // against a 16 g target, and the fat step below can only shrink the
+          // oil to zero, never below it — so the meal landed at 695 kcal
+          // (+209) and 37 g fat (+21). Capping at 250 g alone does NOT fix
+          // it either: 250 g eggs + camel remainder still lands at 622 kcal
+          // (+136) and 29 g fat (+13), both outside solver tolerance.
+          // So when a lean meat passes the clinical-safety gate, the protein
+          // is SPLIT: eggs are capped at 250 g AND trimmed to the fat budget
+          // (solving 0.11*E + meatFat*(remP - 0.106*E)/meatProt <= targetF - riceF
+          // for E), and the remainder goes to camel (28% P, 3% F) or beef
+          // (26.3% P, 6.8% F). When NO meat passes the gate (vegetarian /
+          // red-meat exclusion / gout), the original omelette is kept exactly
+          // as-is: never invent a protein, never trade a fat overshoot for a
+          // protein shortfall. If eggs are refused too, no protein is forced
+          // — the file's existing convention (as in the breakfast top-up) is
+          // to serve none rather than a wrong food.
+          const lunchMeat = isFoodClinicallySafe("CAMEL_MEAT_LEAN", allergenContext)
+            ? { code: "CAMEL_MEAT_LEAN", name_ar: "لحم حاشي (إبل) هبرة خالي الشحم متبل بالبهارات العربية", name_en: "Extra Lean Camel Meat (Hashi)", protD: 0.28, fatD: 0.03, kcalD: 1.40 }
+            : isFoodClinicallySafe("LEAN_BEEF", allergenContext)
+              ? { code: "LEAN_BEEF", name_ar: "لحم بقري مفروم/ستيك قليل الدسم (95/5)", name_en: "Lean Beef (95/5)", protD: 0.263, fatD: 0.068, kcalD: 1.74 }
+              : null;
+          if (!lunchMeat) {
+            const eggGrams = Math.round(remP / 0.106);
+            protF = Math.round(eggGrams * 0.11);
+            items.push({
+              food_code: "EGGS_OMELETTE",
+              name_ar: "بيض كامل مسلوق أو أومليت بالخضار",
+              name_en: "Whole Eggs (Boiled / Omelette)",
+              category: "PROTEIN",
+              portion_g: eggGrams,
+              household_measurement: `${eggGrams} جم (حوالي ${Math.max(1, Math.round(eggGrams / 50))} بيضة)`,
+              protein_g: remP,
+              carb_g: Math.round(eggGrams * 0.006),
+              fat_g: protF,
+              calories_kcal: Math.round(eggGrams * 1.44),
+              swaps: generateSmartSwaps("PROTEIN", eggGrams, "EGGS_OMELETTE", "LUNCH", 10, allergenContext),
+            });
+          } else {
+            const fatBudget = targetF - riceF;
+            const denom = 0.11 - (lunchMeat.fatD * 0.106) / lunchMeat.protD;
+            let splitEggGrams = Math.floor((fatBudget - (lunchMeat.fatD * remP) / lunchMeat.protD) / denom);
+            splitEggGrams = Math.max(0, Math.min(250, splitEggGrams));
+            if (splitEggGrams < 55) splitEggGrams = 0; // less than one egg: meat-only is cleaner than a token egg
+            const splitEggP = Math.round(splitEggGrams * 0.106);
+            const splitEggF = Math.round(splitEggGrams * 0.11);
+            const meatP = remP - splitEggP;
+            const meatGrams = Math.round(meatP / lunchMeat.protD);
+            const meatF = Math.round(meatGrams * lunchMeat.fatD);
+            protF = splitEggF + meatF;
+            if (splitEggGrams > 0) {
+              items.push({
+                food_code: "EGGS_OMELETTE",
+                name_ar: "بيض كامل مسلوق أو أومليت بالخضار",
+                name_en: "Whole Eggs (Boiled / Omelette)",
+                category: "PROTEIN",
+                portion_g: splitEggGrams,
+                household_measurement: `${splitEggGrams} جم (حوالي ${Math.max(1, Math.round(splitEggGrams / 50))} بيضة)`,
+                protein_g: splitEggP,
+                carb_g: Math.round(splitEggGrams * 0.006),
+                fat_g: splitEggF,
+                calories_kcal: Math.round(splitEggGrams * 1.44),
+                swaps: generateSmartSwaps("PROTEIN", splitEggGrams, "EGGS_OMELETTE", "LUNCH", 10, allergenContext),
+              });
+            }
+            items.push({
+              food_code: lunchMeat.code,
+              name_ar: lunchMeat.name_ar,
+              name_en: lunchMeat.name_en,
+              category: "PROTEIN",
+              portion_g: meatGrams,
+              household_measurement: `${meatGrams} جم مطبوخ (قطع هبرة بدون شحم)`,
+              protein_g: meatP,
+              carb_g: 0,
+              fat_g: meatF,
+              calories_kcal: Math.round(meatGrams * lunchMeat.kcalD),
+              swaps: generateSmartSwaps("PROTEIN", meatGrams, lunchMeat.code, "LUNCH", 10, allergenContext),
+            });
+          }
         }
 
         // Fat Source: Olive Oil
@@ -3909,6 +4012,113 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             fat_g: protF,
             calories_kcal: 112,
             swaps: [],
+          });
+          // The 150 g cheese cap cannot carry a large dinner target on its own
+          // (cheese gives at most 18 g): when the remaining protein is still
+          // more than 6 g short, top up with the same camel/beef fallbacks the
+          // branches below use, gated by isFoodClinicallySafe. The fat step
+          // below shrinks the oil to absorb the added fat (protF updated), and
+          // a client for whom both are unsafe keeps the cheese-only meal —
+          // nothing is forced.
+          const cheeseP = Math.min(18, remP);
+          const topUpP = remP - cheeseP;
+          if (topUpP > 6) {
+            if (isFoodClinicallySafe("CAMEL_MEAT_LEAN", allergenContext)) {
+              const camelGrams = Math.round(topUpP / 0.28);
+              protF += Math.round(camelGrams * 0.03);
+              items.push({
+                food_code: "CAMEL_MEAT_LEAN",
+                name_ar: "لحم حاشي (إبل) هبرة خالي الشحم متبل بالبهارات العربية",
+                name_en: "Extra Lean Camel Meat (Hashi)",
+                category: "PROTEIN",
+                portion_g: camelGrams,
+                household_measurement: `${camelGrams} جم مطبوخ (قطع هبرة بدون شحم)`,
+                protein_g: topUpP,
+                carb_g: 0,
+                fat_g: Math.round(camelGrams * 0.03),
+                calories_kcal: Math.round(camelGrams * 1.40),
+                swaps: generateSmartSwaps("PROTEIN", camelGrams, "CAMEL_MEAT_LEAN", "DINNER", 10, allergenContext),
+              });
+            } else if (isFoodClinicallySafe("LEAN_BEEF", allergenContext)) {
+              const beefGrams = Math.round(topUpP / 0.263);
+              protF += Math.round(beefGrams * 0.068);
+              items.push({
+                food_code: "LEAN_BEEF",
+                name_ar: "لحم بقري مفروم/ستيك قليل الدسم (95/5)",
+                name_en: "Lean Beef (95/5)",
+                category: "PROTEIN",
+                portion_g: beefGrams,
+                household_measurement: `${beefGrams} جم مطبوخ (حجم كف اليد)`,
+                protein_g: topUpP,
+                carb_g: 0,
+                fat_g: Math.round(beefGrams * 0.068),
+                calories_kcal: Math.round(beefGrams * 1.74),
+                swaps: generateSmartSwaps("PROTEIN", beefGrams, "LEAN_BEEF", "DINNER", 10, allergenContext),
+              });
+            }
+          }
+        } else if (isFoodClinicallySafe("CAMEL_MEAT_LEAN", allergenContext)) {
+          // A client who refuses poultry and cannot eat dairy must still get a
+          // dinner protein: extra-lean camel (28% P, 3% F, DINNER-suitable) is
+          // the first fallback because a ~115 g portion carries the meal's
+          // protein without creating another oversized omelette (Stage B
+          // owns omelette size). Gout, red-meat exclusion, vegan routing and
+          // dislikes are all enforced by isFoodClinicallySafe, so no new
+          // eligibility logic is invented here. The fat step below shrinks
+          // the oil to absorb the meat's fat, so the meal still lands.
+          const camelGrams = Math.round(remP / 0.28);
+          protF = Math.round(camelGrams * 0.03);
+          items.push({
+            food_code: "CAMEL_MEAT_LEAN",
+            name_ar: "لحم حاشي (إبل) هبرة خالي الشحم متبل بالبهارات العربية",
+            name_en: "Extra Lean Camel Meat (Hashi)",
+            category: "PROTEIN",
+            portion_g: camelGrams,
+            household_measurement: `${camelGrams} جم مطبوخ (قطع هبرة بدون شحم)`,
+            protein_g: remP,
+            carb_g: 0,
+            fat_g: protF,
+            calories_kcal: Math.round(camelGrams * 1.40),
+            swaps: generateSmartSwaps("PROTEIN", camelGrams, "CAMEL_MEAT_LEAN", "DINNER", 10, allergenContext),
+          });
+        } else if (isFoodClinicallySafe("LEAN_BEEF", allergenContext)) {
+          // Same fallback for a client who dislikes camel specifically:
+          // lean beef (26.3% P, 6.8% F). The fat step below absorbs it.
+          const beefGrams = Math.round(remP / 0.263);
+          protF = Math.round(beefGrams * 0.068);
+          items.push({
+            food_code: "LEAN_BEEF",
+            name_ar: "لحم بقري مفروم/ستيك قليل الدسم (95/5)",
+            name_en: "Lean Beef (95/5)",
+            category: "PROTEIN",
+            portion_g: beefGrams,
+            household_measurement: `${beefGrams} جم مطبوخ (حجم كف اليد)`,
+            protein_g: remP,
+            carb_g: 0,
+            fat_g: protF,
+            calories_kcal: Math.round(beefGrams * 1.74),
+            swaps: generateSmartSwaps("PROTEIN", beefGrams, "LEAN_BEEF", "DINNER", 10, allergenContext),
+          });
+        } else if (!isEggsExcluded) {
+          // Last resort, mirroring the lunch fix: an eggs omelette
+          // (10.6% P, 11% F). The fat step below absorbs the extra fat by
+          // shrinking the oil. If eggs are refused too, no protein is
+          // forced — the file's existing convention is to serve none
+          // rather than a wrong food.
+          const eggGrams = Math.round(remP / 0.106);
+          protF = Math.round(eggGrams * 0.11);
+          items.push({
+            food_code: "EGGS_OMELETTE",
+            name_ar: "بيض كامل مسلوق أو أومليت بالخضار",
+            name_en: "Whole Eggs (Boiled / Omelette)",
+            category: "PROTEIN",
+            portion_g: eggGrams,
+            household_measurement: `${eggGrams} جم (حوالي ${Math.max(1, Math.round(eggGrams / 50))} بيضة)`,
+            protein_g: remP,
+            carb_g: Math.round(eggGrams * 0.006),
+            fat_g: protF,
+            calories_kcal: Math.round(eggGrams * 1.44),
+            swaps: generateSmartSwaps("PROTEIN", eggGrams, "EGGS_OMELETTE", "DINNER", 10, allergenContext),
           });
         }
 

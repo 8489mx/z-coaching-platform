@@ -476,6 +476,23 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     };
   }
 
+  // Arabic dislikes must be translated even when a nutrition object was already
+  // supplied (e.g. preferredMealCount only): the block above is skipped in that
+  // case, and raw Arabic labels would otherwise reach the pipeline filter as
+  // unknown codes and match nothing — a silent exclusion failure. Merging into
+  // any existing dislikedFoods keeps code-based dislikes already present, and
+  // re-running after the block above is idempotent (same codes, deduped).
+  {
+    const rawDislikes = Array.isArray(intake.disliked_foods)
+      ? intake.disliked_foods
+      : (Array.isArray(intake.allergies_and_dislikes) ? intake.allergies_and_dislikes.filter(v => v !== 'NONE') : []);
+    const translated = dislikedFoodCodes(rawDislikes);
+    if (translated.length > 0 && intake.nutrition) {
+      const existing = Array.isArray(intake.nutrition.dislikedFoods) ? intake.nutrition.dislikedFoods : [];
+      intake.nutrition.dislikedFoods = [...new Set([...existing, ...translated])];
+    }
+  }
+
   if (!intake.cardio && (intake.training_logistics || intake.additional_sports)) {
     const sports = [];
     // Deep intake form v2: additional_sports comes as a direct code
