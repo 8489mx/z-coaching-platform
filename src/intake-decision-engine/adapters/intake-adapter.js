@@ -388,6 +388,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       home_gym: 'HOME',
       minimal_equipment: 'HOME',
       calisthenics_bands: 'HOME',
+      home_bodyweight: 'HOME',
       GYM: 'GYM',
       HOME: 'HOME',
       HOME_DUMBBELLS: 'HOME',
@@ -1119,6 +1120,13 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     // "Home" is three different rooms. A client who answered "bodyweight only" owns no dumbbells,
     // and prescribing them a dumbbell press is prescribing a session they cannot do.
     const homeSetups = {
+      // The form's "no equipment" choice lowercases to home_bodyweight. It used to be
+      // missing here, so the lookup below fell through to the dumbbell default and a
+      // client who owns no dumbbells was prescribed dumbbell presses. Bodyweight only,
+      // exactly the equipment the explicit canonical path uses for the same client.
+      home_bodyweight: [
+        { equipmentCode: "BODYWEIGHT", otherEquipmentText: null, loadCapacity: "BODYWEIGHT_ONLY" },
+      ],
       calisthenics_bands: [
         { equipmentCode: "BODYWEIGHT", otherEquipmentText: null, loadCapacity: "BODYWEIGHT_ONLY" },
         { equipmentCode: "RESISTANCE_BANDS", otherEquipmentText: null, loadCapacity: "LIGHT" },

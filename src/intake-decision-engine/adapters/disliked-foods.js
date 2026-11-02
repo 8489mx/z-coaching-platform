@@ -50,6 +50,73 @@ export const DISLIKED_FOOD_LABEL_CODES = Object.freeze({
 const CANONICAL_ID = /^[A-Za-z0-9_:-]+$/;
 
 /**
+ * Family identities for food codes that match neither a pipeline catalog code nor a catalog
+ * identity tag. The intake form's labels map to culinary (swap-database) codes, and a client can
+ * also name a culinary code directly — but the pipeline filter only understands catalog codes
+ * and identity tags. Without this translation, "صدور دجاج" -> CHICKEN_BREAST matched nothing in
+ * the pipeline, so a chicken-refuser was still served catalog chicken (and "تونة" ->
+ * CANNED_TUNA likewise leaked tuna). Every code below also keeps matching itself, so existing
+ * exact-code behavior is unchanged; the tags only ADD family matches.
+ *
+ * Keys are culinary/canonical codes; values are the pipeline catalog identity tags for that
+ * food's family. Codes already present as catalog codes or identity tags need no entry.
+ */
+export const FOOD_CODE_IDENTITIES = Object.freeze({
+  // Poultry
+  CHICKEN_BREAST: ["CHICKEN", "POULTRY"],
+  SMOKED_TURKEY: ["TURKEY", "POULTRY"],
+  // Fish / seafood (culinary template codes)
+  CANNED_TUNA: ["TUNA", "FISH"],
+  SALMON_FISH: ["SALMON", "FISH"],
+  TILAPIA_FISH: ["TILAPIA", "FISH"],
+  HAMOUR_FISH: ["HAMOUR", "FISH"],
+  KANAAD_KINGFISH: ["KANAAD", "FISH"],
+  BOURI_FISH: ["BOURI", "FISH"],
+  // Red meat
+  LEAN_BEEF: ["BEEF", "RED_MEAT"],
+  CAMEL_MEAT_LEAN: ["CAMEL", "RED_MEAT"],
+  // Eggs
+  EGGS_OMELETTE: ["EGG"],
+  SHAKSHOUKA_EGGS: ["EGG"],
+  // Grains / starches
+  BASMATI_RICE: ["RICE"],
+  EGYPTIAN_RICE: ["RICE"],
+  KABSA_SPICED_RICE: ["RICE"],
+  ROLLED_OATS: ["OATS"],
+  ROASTED_POTATOES: ["POTATO"],
+  SWEET_POTATO: ["SWEET_POTATO"],
+  WHOLE_WHEAT_PASTA: ["PASTA", "WHEAT"],
+  BALADI_BREAD: ["BREAD", "WHEAT"],
+  // Legumes
+  MIXED_LEGUMES_STEW: ["LEGUME"],
+  FOUL_MUDAMMAS: ["FAVA_BEANS"],
+  LUPINI_BEANS: ["LUPINI"],
+  // Nuts / seeds / fats
+  PEANUT_BUTTER: ["PEANUT", "NUTS"],
+  RAW_ALMONDS: ["ALMOND", "NUTS"],
+  RAW_TAHINI: ["SESAME", "TAHINI"],
+  FRESH_AVOCADO: ["AVOCADO"],
+});
+
+/**
+ * Expand exclusion codes to every name the food carries: the code itself plus its family
+ * identity tags. Used by BOTH the pipeline filter (which matches catalog codes and identity
+ * tags) and the culinary allergen context (whose family flags — poultry, fish, red meat —
+ * derive from these tags), so one refusal is honored identically on both meal layers and in
+ * swap offers. Unknown codes pass through unchanged.
+ */
+export function expandFoodExclusionCodes(codes = []) {
+  const out = new Set();
+  for (const entry of Array.isArray(codes) ? codes : []) {
+    const code = String(entry || "").trim().toUpperCase();
+    if (!code) continue;
+    out.add(code);
+    for (const tag of FOOD_CODE_IDENTITIES[code] || []) out.add(tag);
+  }
+  return [...out];
+}
+
+/**
  * Food codes for a disliked-foods list: Arabic form labels become their codes, codes already in
  * canonical form pass through, anything else (free text with no food behind it) is dropped.
  */

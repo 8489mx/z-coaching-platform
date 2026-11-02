@@ -20,6 +20,7 @@ import {
   NutritionFoodCatalogPolicy,
   NutritionMarketCode,
 } from "../nutrition-food-catalog/index.js";
+import { expandFoodExclusionCodes } from "../intake-decision-engine/adapters/disliked-foods.js";
 import { NUTRITION_FOOD_SELECTION_VERSION } from "./domain/contracts.js";
 import {
   NutritionFoodCandidateRejectionCode,
@@ -664,15 +665,25 @@ function makeRestrictionSets(foodRestrictions) {
     allergies: new Set(
       foodRestrictions.allergies.map((allergy) => allergy.substance),
     ),
+    // A refusal must match under every name the food carries: a culinary code
+    // (CHICKEN_BREAST) also excludes its family identities (CHICKEN, POULTRY),
+    // or the identity-tag check below can never see it. Same for clinician
+    // exclusions expressed as culinary codes.
     medicalExclusions: new Set(
-      foodRestrictions.medical_exclusions.map((exclusion) => exclusion.food),
+      foodRestrictions.medical_exclusions.flatMap((exclusion) =>
+        expandFoodExclusionCodes([exclusion.food]),
+      ),
     ),
     intolerances: new Set(
       foodRestrictions.intolerances.map(
         (intolerance) => intolerance.substance,
       ),
     ),
-    dislikedFoods: new Set(foodRestrictions.disliked_foods),
+    dislikedFoods: new Set(
+      foodRestrictions.disliked_foods.flatMap((code) =>
+        expandFoodExclusionCodes([code]),
+      ),
+    ),
   };
 }
 

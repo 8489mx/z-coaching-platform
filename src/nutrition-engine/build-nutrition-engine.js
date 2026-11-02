@@ -89,7 +89,7 @@ function finalize(value) {
  *   5. Fallback is carbs-only downward (the nearest multiple of 4 is
  *      always within 2), which is safe for carb ceilings at any magnitude.
  */
-function rebalanceMacrosToTarget(calories, protein, carbs, fat) {
+export function rebalanceMacrosToTarget(calories, protein, carbs, fat) {
   const difference = protein * 4 + carbs * 4 + fat * 9 - calories;
   if (difference >= -2 && difference <= 2) {
     return { carbs, fat, difference };

@@ -1,6 +1,6 @@
 import { getFoodClinicalProperties } from "../execution-engines/food-swap-engine.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
-import { dislikedFoodCodes, applyDislikedNames } from "../intake-decision-engine/adapters/disliked-foods.js";
+import { dislikedFoodCodes, applyDislikedNames, expandFoodExclusionCodes } from "../intake-decision-engine/adapters/disliked-foods.js";
 import { isEquivalentSwap, sharesSwapFamily, isNoSwapFood, NO_SWAP_NOTE_AR } from "../../frontend/src/utils/swapExchangeRules.js";
 
 /**
@@ -2142,6 +2142,27 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
     }).filter(Boolean),
   );
 
+  // Clinician exclusions were never read here, so a vegetarian's EXCLUDE list
+  // (CHICKEN/POULTRY/FISH/TUNA/BEEF/RED_MEAT) set no family flag and the
+  // client-facing meals kept serving chicken — while the pipeline, which does
+  // read them, stayed vegetarian. The clinician-sourced design itself is
+  // unchanged: only EXCLUDE instructions enter, and only their food names.
+  for (const excl of (nutrition.medicalExclusions || [])) {
+    const food = typeof excl === "string"
+      ? excl
+      : (excl && excl.instruction === "EXCLUDE" ? excl.food : null);
+    if (food) excludedFoods.add(String(food).toUpperCase());
+  }
+
+  // A refusal must be refused under every name the food carries, on this layer
+  // too: a culinary code (CHICKEN_BREAST) also excludes its family identities
+  // (CHICKEN, POULTRY), which is what the poultry/fish/red-meat flags below
+  // derive from. Without this, a client who refuses one named fish could still
+  // be offered other fish, and a chicken-refuser's poultry flag stayed off.
+  for (const code of [...excludedFoods]) {
+    for (const tag of expandFoodExclusionCodes([code])) excludedFoods.add(tag);
+  }
+
   const isGlutenExcluded =
     excludedFoods.has("GLUTEN") ||
     excludedFoods.has("WHEAT") ||
@@ -3673,7 +3694,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           swaps: generateSmartSwaps("CARBS", riceGrams, "BASMATI_RICE", "LUNCH", 10, allergenContext),
         });
 
-        // Protein Source: Chicken Breast / Tilapia Fillet (NO BEEF LIVER DAILY)
+        // Protein Source: Chicken Breast / Tilapia Fillet / Eggs Omelette (NO BEEF LIVER DAILY)
         const remP = Math.max(15, targetP - 2 - riceP);
         let protF = 0;
 
@@ -3694,7 +3715,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             calories_kcal: Math.round(fishGrams * 1.25),
             swaps: generateSmartSwaps("PROTEIN", fishGrams, "TILAPIA_FISH", "LUNCH", 10, allergenContext),
           });
-        } else {
+        } else if (!isPoultryExcluded) {
           // Chicken Breast (31% P, 3% F)
           const chickenGrams = Math.round(remP / 0.31);
           protF = Math.round(chickenGrams * 0.03);
@@ -3710,6 +3731,28 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             fat_g: protF,
             calories_kcal: Math.round(chickenGrams * 1.65),
             swaps: generateSmartSwaps("PROTEIN", chickenGrams, "CHICKEN_BREAST", "LUNCH", 10, allergenContext),
+          });
+        } else if (!isEggsExcluded) {
+          // A poultry-refuser must never fall through to chicken: an eggs
+          // omelette is the vegetarian main protein here (10.6% P, 11% F).
+          // The fat step below absorbs the extra fat by shrinking the oil,
+          // so the meal still lands on its targets. If eggs are refused too,
+          // no protein is forced — the file's existing convention (as in the
+          // breakfast top-up) is to serve none rather than a wrong food.
+          const eggGrams = Math.round(remP / 0.106);
+          protF = Math.round(eggGrams * 0.11);
+          items.push({
+            food_code: "EGGS_OMELETTE",
+            name_ar: "بيض كامل مسلوق أو أومليت بالخضار",
+            name_en: "Whole Eggs (Boiled / Omelette)",
+            category: "PROTEIN",
+            portion_g: eggGrams,
+            household_measurement: `${eggGrams} جم (حوالي ${Math.max(1, Math.round(eggGrams / 50))} بيضة)`,
+            protein_g: remP,
+            carb_g: Math.round(eggGrams * 0.006),
+            fat_g: protF,
+            calories_kcal: Math.round(eggGrams * 1.44),
+            swaps: generateSmartSwaps("PROTEIN", eggGrams, "EGGS_OMELETTE", "LUNCH", 10, allergenContext),
           });
         }
 

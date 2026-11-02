@@ -806,6 +806,145 @@ function unavailableMealOutput(meal) {
   };
 }
 
+// --- Single-food dominance split (Package 3, Stage D) ---
+// A meal where one food carries the whole plate is not a meal a client will
+// eat: 500 g of potato in one sitting, or 130 g of dry oats in one breakfast
+// bowl. The optimizer cannot see this: it only minimizes nutrient error, and
+// with a single-food slot (CARBOHYDRATE_BASE max_items = 1) the only way to
+// reach a high carbohydrate target is one huge portion. This post-pass splits
+// a dominant food with a second food from the SAME slot's own candidate list
+// (foods already vetted for this client, meal, and pattern), and only when the
+// split keeps every within-tolerance nutrient within tolerance — otherwise the
+// original portion stands, because a large-but-whole meal is never traded for
+// a broken one.
+// Thresholds, and why they do not break the golden READY fixture:
+// - Non-vegetable foods: over 400 g splits. Salads (NON_STARCH_VEGETABLE) are
+//   exempt — a 400 g cucumber/tomato salad is normal. The fixture's largest
+//   non-vegetable items are oats 150 g and rice 300 g, both under 400 g.
+// - Dry grains: over 100 g dry splits ONLY when the grain also carries more
+//   than 75% of the meal's carbohydrate target. The fixture's 150 g oats carry
+//   ~103 g of a ~148 g carb target (~70%), so the genuine-need exception keeps
+//   it whole; the problem breakfast's 130 g oats carry ~82% and split.
+// - The partner search tries every same-slot candidate at every legal portion
+//   and keeps the lowest objective score within tolerance (minus a 0.05 display
+//   margin, so display rounding can never push a split meal outside tolerance).
+// - A split adds a second item to a max_items = 1 slot. That is deliberate:
+//   the slot shape is what forced the single huge portion. Nothing downstream
+//   validates slot item counts (max_items is referenced only by the solver,
+//   the pattern catalog, and food selection — never by preflight, the swap
+//   engine, or any consumer of solver meals), so the split meal stays valid.
+// - This is NOT a catalog cap: portion rules are untouched, so a genuinely
+//   large meal (the fixture) still solves exactly as before.
+const DOMINANCE_MAX_NON_VEGETABLE_G = 400;
+const DOMINANCE_MAX_DRY_GRAIN_G = 100;
+const DOMINANCE_MAX_CARB_SHARE = 0.75;
+const DOMINANCE_TOLERANCE_MARGIN = 0.05;
+// The only uncooked/dry starch in the catalog; cooked starches are wet weight,
+// so a 100 g dry cap would be meaningless for them.
+const DRY_GRAIN_CODES = new Set(["OATS_ROLLED_DRY"]);
+
+function splitDominantSingleFoods(items, selectionMeal, itemsByCode, target, tolerance) {
+  const inMeal = new Set(items.map((item) => item.food_code));
+  let result = items;
+  for (const original of items) {
+    const food = itemsByCode.get(original.food_code)?.item;
+    if (!food || food.food_class === "NON_STARCH_VEGETABLE") {
+      continue;
+    }
+    const isDryGrain = DRY_GRAIN_CODES.has(original.food_code);
+    const cap = isDryGrain
+      ? DOMINANCE_MAX_DRY_GRAIN_G
+      : DOMINANCE_MAX_NON_VEGETABLE_G;
+    if (original.grams <= cap) {
+      continue;
+    }
+    if (isDryGrain && target.carbohydrate_g > 0) {
+      const carbShare = original.nutrition.carbohydrate_g / target.carbohydrate_g;
+      if (carbShare <= DOMINANCE_MAX_CARB_SHARE) {
+        continue;
+      }
+    }
+    const slot = (selectionMeal.slots || [])
+      .find((candidate) => candidate.sequence === original.slot_sequence);
+    const partners = (slot?.candidate_food_codes || [])
+      .filter((code) => code !== original.food_code && !inMeal.has(code))
+      .map((code) => itemsByCode.get(code)?.item)
+      .filter((candidate) =>
+        candidate &&
+        candidate.food_class === food.food_class &&
+        candidate.is_active !== false);
+    if (partners.length === 0) {
+      continue;
+    }
+    const current = result.find((item) => item.food_code === original.food_code);
+    if (!current || current.grams <= cap) {
+      continue;
+    }
+    // Gate: the split must never turn a within-tolerance nutrient into an
+    // outside-tolerance one (minus a 0.05 display margin, so display rounding
+    // can never push a split meal outside tolerance). Nutrients already
+    // outside tolerance before the split (a meal already flagged for review,
+    // e.g. a breakfast whose fiber target no breakfast starch can meet) are
+    // not gated: the split does not change that meal's review status. Among
+    // the splits that pass the gate, the lowest objective score wins.
+    const beforeTotals = zeroNutrients();
+    for (const item of result) {
+      addNutrients(
+        beforeTotals,
+        nutritionAtGrams(itemsByCode.get(item.food_code)?.item, item.grams),
+      );
+    }
+    const beforeWithin = withinTolerance(beforeTotals, target, tolerance);
+    let best = null;
+    for (const partner of partners) {
+      for (const partnerGrams of legalGramValues(partner.portion_rule_g)) {
+        const totals = zeroNutrients();
+        for (const item of result) {
+          if (item.food_code === original.food_code) {
+            addNutrients(totals, nutritionAtGrams(food, cap));
+          } else {
+            addNutrients(
+              totals,
+              nutritionAtGrams(itemsByCode.get(item.food_code)?.item, item.grams),
+            );
+          }
+        }
+        addNutrients(totals, nutritionAtGrams(partner, partnerGrams));
+        const preservesWithin = NUTRIENTS.every(({ key }) =>
+          !beforeWithin[key] ||
+          Math.abs(totals[key] - target[key]) <=
+            tolerance[key] - DOMINANCE_TOLERANCE_MARGIN);
+        if (!preservesWithin) {
+          continue;
+        }
+        const score = objectiveScore(totals, target, tolerance);
+        if (best === null || score < best.score - SCORE_EPSILON) {
+          best = { partner, partnerGrams, score };
+        }
+      }
+    }
+    if (best === null) {
+      continue;
+    }
+    const partnerItem = solvedItemOutput(
+      {
+        food: best.partner,
+        foodCode: best.partner.food_code,
+        slotSequence: original.slot_sequence,
+        slot: original.slot,
+        selectionSource: SELECTION_SOURCE.PORTION_SOLVER_ADDITION,
+      },
+      best.partnerGrams,
+    );
+    result = result.flatMap((item) =>
+      item.food_code === original.food_code
+        ? [{ ...item, grams: cap, nutrition: displayNutrients(nutritionAtGrams(food, cap)) }, partnerItem]
+        : [item]);
+    inMeal.add(best.partner.food_code);
+  }
+  return result;
+}
+
 function solveMeal(meal, itemsByCode) {
   if (meal.selected_pattern_code === null) {
     return unavailableMealOutput(meal);
@@ -814,7 +953,25 @@ function solveMeal(meal, itemsByCode) {
   const solution = solveWithCandidateAdditions(meal, itemsByCode);
   const target = targetNutrients(meal.target);
   const tolerance = toleranceForTarget(meal.target);
-  const within = withinTolerance(solution.totals, target, tolerance);
+  const items = splitDominantSingleFoods(
+    solution.assignments.map((assignment) =>
+      solvedItemOutput(
+        assignment,
+        solution.gramsByCode.get(assignment.foodCode),
+      )),
+    meal,
+    itemsByCode,
+    target,
+    tolerance,
+  );
+  const totals = zeroNutrients();
+  for (const item of items) {
+    addNutrients(
+      totals,
+      nutritionAtGrams(itemsByCode.get(item.food_code)?.item, item.grams),
+    );
+  }
+  const within = withinTolerance(totals, target, tolerance);
   const outsideFields = NUTRIENTS
     .map(({ key }) => key)
     .filter((key) => !within[key]);
@@ -832,19 +989,17 @@ function solveMeal(meal, itemsByCode) {
       role: meal.role,
       selected_pattern_code: meal.selected_pattern_code,
       target: structuredClone(meal.target),
-      items: solution.assignments.map((assignment) =>
-        solvedItemOutput(
-          assignment,
-          solution.gramsByCode.get(assignment.foodCode),
-        )),
-      totals: displayNutrients(solution.totals),
+      items,
+      totals: displayNutrients(totals),
       residual: displayNutrients(
-        residualNutrients(solution.totals, target),
+        residualNutrients(totals, target),
       ),
       tolerance: displayNutrients(tolerance),
       within_tolerance: within,
       all_targets_within_tolerance: outsideFields.length === 0,
-      objective_score: roundForDisplay(solution.objectiveScore),
+      objective_score: roundForDisplay(
+        objectiveScore(totals, target, tolerance),
+      ),
       issues,
     },
     solved: true,

@@ -137,7 +137,8 @@ import { buildCardioEngine } from "../cardio-engine/index.js";
 import { buildMobilityEngine } from "../mobility-engine/index.js";
 import { buildSessionMobilityProtocol } from "../mobility-warmup-engine-v2/index.js";
 import { buildNutritionEngine } from "../nutrition-engine/index.js";
-import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, trimMealsToTarget, refreshActualMacros } from "../nutrition-meal-context-v2/index.js";
+import { rebalanceMacrosToTarget } from "../nutrition-engine/build-nutrition-engine.js";
+import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, enforceClinicalSafety, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, trimMealsToTarget, refreshActualMacros } from "../nutrition-meal-context-v2/index.js";
 import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
@@ -217,6 +218,11 @@ function calculateAge(dobString, assessmentDateString) {
  * - Every other stage (distribution, portion solver, swaps, preflight, ...)
  *   is returned unchanged. Under A1 the portion solver still runs on pipeline
  *   numbers; no live consumer reads its output.
+ * - Stage C: the grams are rebalanced with the pipeline's
+ *   rebalanceMacrosToTarget before they are written, so calorie_difference
+ *   always lands inside -2..2 (protein unchanged, carbs never raised,
+ *   target unchanged). Without this, the wrapper copied raw universal
+ *   targets verbatim and a diabetic profile stored +3.
  *
  * Pure: returns a new stages object, never mutates its input.
  */
@@ -231,7 +237,20 @@ export function unifyNutritionStageTargets(stages, universalTargets) {
   const energyTarget = stages.energy_target;
   const macroTargets = stages.macro_targets;
   const fiber = Number(universalTargets?.fiber_g);
-  const macroCaloriesTotal = protein * 4 + carbs * 4 + fat * 9;
+  // Stage C: rebalance identically to the pipeline's unifyStageTargets, so
+  // the stored stage never carries a calorie_difference outside -2..2.
+  // Same hard rules: protein never changes, carbs never increase (this
+  // funnel cannot see a clinical carb ceiling in grams), target never
+  // changes. Canonical targets are already integers, so normalization is
+  // a no-op for them; it only guards fractional grams from other producers.
+  const normCalories = Number.isInteger(calories) ? calories : Math.round(calories);
+  const normProtein = Number.isInteger(protein) ? protein : Math.ceil(protein);
+  const normCarbsIn = Number.isInteger(carbs) ? carbs : Math.round(carbs);
+  const normFatIn = Number.isInteger(fat) ? fat : Math.round(fat);
+  const { carbs: balancedCarbs, fat: balancedFat } = rebalanceMacrosToTarget(
+    normCalories, normProtein, normCarbsIn, normFatIn,
+  );
+  const macroCaloriesTotal = normProtein * 4 + balancedCarbs * 4 + balancedFat * 9;
   const round1 = (value) => Math.round(value * 10) / 10;
 
   return {
@@ -241,9 +260,9 @@ export function unifyNutritionStageTargets(stages, universalTargets) {
         ? energyTarget
         : {
             ...energyTarget,
-            target_calories: calories,
-            target_calories_kcal: calories,
-            calories_kcal: calories,
+            target_calories: normCalories,
+            target_calories_kcal: normCalories,
+            calories_kcal: normCalories,
             target_source: "UNIVERSAL_TARGETS",
           },
     macro_targets:
@@ -251,31 +270,31 @@ export function unifyNutritionStageTargets(stages, universalTargets) {
         ? macroTargets
         : {
             ...macroTargets,
-            target_calories: calories,
+            target_calories: normCalories,
             protein: {
               ...(macroTargets.protein || {}),
-              target_g: protein,
-              calories: protein * 4,
-              percent_of_calories: round1((protein * 4 / calories) * 100),
+              target_g: normProtein,
+              calories: normProtein * 4,
+              percent_of_calories: round1((normProtein * 4 / normCalories) * 100),
             },
             fat: {
               ...(macroTargets.fat || {}),
-              target_g: fat,
-              calories: fat * 9,
-              percent_of_calories: round1((fat * 9 / calories) * 100),
+              target_g: balancedFat,
+              calories: balancedFat * 9,
+              percent_of_calories: round1((balancedFat * 9 / normCalories) * 100),
             },
             carbohydrate: {
               ...(macroTargets.carbohydrate || {}),
-              target_g: carbs,
-              calories: carbs * 4,
-              percent_of_calories: round1((carbs * 4 / calories) * 100),
+              target_g: balancedCarbs,
+              calories: balancedCarbs * 4,
+              percent_of_calories: round1((balancedCarbs * 4 / normCalories) * 100),
             },
-            protein_g: protein,
-            carbohydrate_g: carbs,
-            carb_g: carbs,
-            carbs_g: carbs,
-            fat_g: fat,
-            fats_g: fat,
+            protein_g: normProtein,
+            carbohydrate_g: balancedCarbs,
+            carb_g: balancedCarbs,
+            carbs_g: balancedCarbs,
+            fat_g: balancedFat,
+            fats_g: balancedFat,
             ...(Number.isFinite(fiber) && fiber > 0 ? { fiber_target_g: fiber } : {}),
             macro_calories_total: macroCaloriesTotal,
             calorie_difference: macroCaloriesTotal - calories,
@@ -1321,16 +1340,22 @@ export function buildMasterEngineV2(inputs) {
   // split runs again on the final meals.
   const isDiabeticClient = isDiabeticIntake(canonicalIntake, effectiveIntake);
   // Stored meal totals are recomputed from the items once every step has run.
-  const culinaryRecipeMeals = refreshActualMacros(trimMealsToTarget(diversifyFatSources(
+  // The allergen context is built once and shared: diversifyFatSources reads
+  // it, and the clinical-safety gate below enforces it on the final plates.
+  const culinaryAllergenContext = buildAllergenContext(canonicalIntake, effectiveIntake);
+  // The safety gate runs last (before totals are recomputed) because templates
+  // emit some items unconditionally: without it, a refused food the flags
+  // forbid could still reach the plate, and its swaps would still offer it.
+  const culinaryRecipeMeals = refreshActualMacros(enforceClinicalSafety(trimMealsToTarget(diversifyFatSources(
     splitOversizedPortions(enforceDiabeticCarbChoice(
       buildCulinaryRecipeMeals(universalTargets, canonicalIntake, effectiveIntake),
       isDiabeticClient,
     ), carbPortionLimit({ diabetic: isDiabeticClient })),
-    buildAllergenContext(canonicalIntake, effectiveIntake),
+    culinaryAllergenContext,
     {
       kidneyProteinCapped: universalTargets.clinical_guardrails?.kidney_protein_capped === true,
     },
-  )));
+  )), culinaryAllergenContext));
 
   // What the plates actually carry against what the plan asks for. They part company when the food
   // a client can have cannot hold the day: an operated stomach on small fixed plates, or a client
