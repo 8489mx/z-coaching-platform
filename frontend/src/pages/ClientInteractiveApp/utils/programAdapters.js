@@ -83,7 +83,10 @@ export function adaptProgramToInteractiveMeals(masterProgram) {
           // P0-A8: allergy content flags carried from the served payload
           // (server-annotated); missing on older cached meals, never invented.
           allergy_flags: Array.isArray(it.allergy_flags) ? it.allergy_flags : [],
-          low_lactose: it.low_lactose === true
+          low_lactose: it.low_lactose === true,
+          // Logistics: carried from the served payload (server-annotated);
+          // null on older cached meals and on items with no known values.
+          logistics: it.logistics && typeof it.logistics === 'object' ? it.logistics : null
         }))
       };
     });

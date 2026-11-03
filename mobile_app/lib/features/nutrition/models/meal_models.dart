@@ -49,6 +49,34 @@ const Map<String, String> allergyFlagLabelsAr = {
   'TROPICAL': 'فواكه استوائية',
 };
 
+// Logistics: true when at least one value is actually known. Unknown
+// logistics render nothing, never a placeholder instruction.
+bool hasLogisticsInfo(Map<String, dynamic>? logistics) {
+  if (logistics == null) return false;
+  if (logistics['requires_storage'] is bool) return true;
+  if (logistics['requires_reheating'] is bool) return true;
+  final foodState = logistics['food_state']?.toString() ?? '';
+  if (foodState.trim().isNotEmpty) return true;
+  final prepNotes = logistics['prep_notes']?.toString() ?? '';
+  if (prepNotes.trim().isNotEmpty) return true;
+  return false;
+}
+
+// Display parts for a logistics map, in Arabic, only for known values.
+List<String> formatLogisticsAr(Map<String, dynamic>? logistics) {
+  if (!hasLogisticsInfo(logistics)) return [];
+  final parts = <String>[];
+  if (logistics!['requires_storage'] == true) parts.add('يحفظ في الثلاجة');
+  if (logistics['requires_storage'] == false) parts.add('لا يحتاج تبريد');
+  if (logistics['requires_reheating'] == true) parts.add('يسخن قبل الأكل');
+  if (logistics['requires_reheating'] == false) parts.add('يؤكل كما هو');
+  final foodState = logistics['food_state']?.toString() ?? '';
+  if (foodState.trim().isNotEmpty) parts.add(foodState.trim());
+  final prepNotes = logistics['prep_notes']?.toString() ?? '';
+  if (prepNotes.trim().isNotEmpty) parts.add(prepNotes.trim());
+  return parts;
+}
+
 class FoodItem {
   final String id;
   final String code;
@@ -68,6 +96,10 @@ class FoodItem {
   // P0-A8: allergen content flags carried from the served payload
   // (server-annotated allergy_flags); empty on older cached items.
   final List<String> allergyFlags;
+  // Logistics carried from the served payload (server-annotated
+  // logistics); null on older cached items and on items with no known
+  // values. Display layers render nothing when every value is null.
+  final Map<String, dynamic>? logistics;
 
   FoodItem({
     required this.id,
@@ -86,6 +118,7 @@ class FoodItem {
     this.lockReason,
     this.isCompleted = false,
     this.allergyFlags = const [],
+    this.logistics,
   });
 
   String get imageAsset {
@@ -137,6 +170,8 @@ class FoodItem {
               ?.map((e) => e.toString())
               .toList() ??
           const [],
+      logistics: (json['logistics'] as Map?)
+          ?.map((k, v) => MapEntry(k.toString(), v)),
     );
   }
 

@@ -31,6 +31,7 @@ import { evaluateCulinaryPreflight, evaluateCulinaryMeal } from "../../../src/nu
 import { buildSessionMobilityProtocol } from "../../../src/mobility-warmup-engine-v2/index.js";
 import { buildAllergenContext } from "../../../src/nutrition-meal-context-v2/build-culinary-meals.js";
 import { annotateServedMeals, plateAllergyViolations, ALLERGY_FLAG_LABELS_AR } from "../../../src/nutrition-plate-flags/derive-plate-flags.js";
+import { annotateServedMealsLogistics } from "../../../src/nutrition-plate-flags/derive-plate-logistics.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1459,7 +1460,7 @@ export const getActiveProgramByUserId = async (req, res) => {
 
     const fastingContext = await resolveClientFastingContext(user, program.program_data, now);
     const clinicalConstraints = await resolveClientClinicalConstraints(user.id) || {};
-    const meals = annotateServedMeals(withNoSwapNotes(applyFastingToMeals(program.program_data?.nutrition?.meals || [], fastingContext, clinicalConstraints)));
+    const meals = annotateServedMealsLogistics(annotateServedMeals(withNoSwapNotes(applyFastingToMeals(program.program_data?.nutrition?.meals || [], fastingContext, clinicalConstraints))));
 
     const heatAdvisory = getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number), date: now });
     
@@ -1546,7 +1547,7 @@ export const getActiveProgramByUserId = async (req, res) => {
           ...program.program_data,
           nutrition_program: {
             ...(program.program_data?.nutrition_program || {}),
-            culinary_meals: annotateServedMeals(servedCulinaryForResponse),
+            culinary_meals: annotateServedMealsLogistics(annotateServedMeals(servedCulinaryForResponse)),
           },
         }
       : program.program_data;

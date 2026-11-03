@@ -286,6 +286,27 @@ export default function MealsTab({
                         </span>
                       </div>
                     )}
+                    {(() => {
+                      // Logistics: shown only when at least one value is known;
+                      // unknown logistics render nothing, never a placeholder.
+                      const lg = item.logistics;
+                      if (!lg || typeof lg !== 'object') return null;
+                      const parts = [];
+                      if (lg.requires_storage === true) parts.push('يحفظ في الثلاجة');
+                      if (lg.requires_storage === false) parts.push('لا يحتاج تبريد');
+                      if (lg.requires_reheating === true) parts.push('يسخن قبل الأكل');
+                      if (lg.requires_reheating === false) parts.push('يؤكل كما هو');
+                      if (typeof lg.food_state === 'string' && lg.food_state.trim() !== '') parts.push(lg.food_state.trim());
+                      if (typeof lg.prep_notes === 'string' && lg.prep_notes.trim() !== '') parts.push(lg.prep_notes.trim());
+                      if (parts.length === 0) return null;
+                      return (
+                        <div style={{ marginTop: '3px' }}>
+                          <span style={{ fontSize: '0.67rem', fontWeight: 700, color: '#065F46', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '1px 6px', borderRadius: '6px' }}>
+                            {parts.join(' • ')}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Clean Action Buttons */}

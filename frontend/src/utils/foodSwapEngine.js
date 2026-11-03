@@ -2351,6 +2351,22 @@ export function foodAllergyFlags(code) {
 }
 
 /**
+ * Client-side logistics for a swapped item. The client carries no logistics
+ * source: the server annotation is authoritative. This always returns the
+ * unknown shape, so a locally swapped item never keeps the replaced item's
+ * storage/heating instructions (stale instructions would be wrong). The
+ * next server refresh re-annotates the item with real values, when known.
+ */
+export function foodLogistics() {
+  return {
+    requires_storage: null,
+    requires_reheating: null,
+    food_state: null,
+    prep_notes: null,
+  };
+}
+
+/**
  * Returns all clinically safe, taste-compatible swap options for a given food.
  */
 export function getCompatibleSwaps(foodCode, clinicalProfile = {}, options = {}) {

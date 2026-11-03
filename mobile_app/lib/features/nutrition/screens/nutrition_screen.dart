@@ -578,6 +578,20 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     ),
                   ),
                 ],
+                // Logistics: shown only when at least one value is known.
+                if (hasLogisticsInfo(item.logistics)) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    formatLogisticsAr(item.logistics).join(' • '),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF065F46),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

@@ -8,7 +8,7 @@ import { cacheProgramLocally, getCachedProgram, cacheGymRushCatalogLocally } fro
 import { applyDeloadToSession, EFFORT_LEVELS } from '../../../utils/progressionEngine.js';
 import { applyFastingToMeals, FASTING_MODES, RAMADAN_CARDIO_GUIDANCE_AR } from '../../../utils/fastingCalendarEngine.js';
 import { webCodesForDislikes } from '../../../utils/dislikedFoods.js';
-import { foodAllergyFlags } from '../../../utils/foodSwapEngine.js';
+import { foodAllergyFlags, foodLogistics } from '../../../utils/foodSwapEngine.js';
 
 /** Rep range of a client exercise from its prescription ("8-10" fallback). */
 function resolveRepRange(ex) {
@@ -637,7 +637,11 @@ export function useClientInteractiveData() {
               cal: swapResult.replacement_food.macros.calories_kcal,
               // P0-A8: a locally swapped item shows its own flags, never the
               // replaced item's flags.
-              allergy_flags: foodAllergyFlags(swapResult.replacement_food.code)
+              allergy_flags: foodAllergyFlags(swapResult.replacement_food.code),
+              // Logistics: a locally swapped item never keeps the replaced
+              // item's storage/heating instructions; the next server refresh
+              // re-annotates it with real values, when known.
+              logistics: foodLogistics()
             };
           })
         };
