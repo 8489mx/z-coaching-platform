@@ -58,6 +58,15 @@ export const generateProgram = async (req, res) => {
       return res.status(400).json({ error: "Invalid intake form data" });
     }
 
+    // P0-A2: a case outside the service (pregnancy, kidney disease, a diagnosed
+    // heart condition without clearance, too young, severe underweight) is
+    // refused here, on the same raw intake the intake controller gates on —
+    // never built, never saved, on any generate path.
+    const scope = assessServiceScope(intakePayload);
+    if (!scope.supported) {
+      return res.status(422).json(outsideScopeResponse(scope));
+    }
+
     const evaluationContext = Object.freeze({
       system_time: new Date().toISOString(),
       assessmentDate: (meta && meta.assessmentDate) || new Date().toISOString().split("T")[0]
@@ -124,6 +133,13 @@ export const generateProgramPreview = async (req, res) => {
       return res.status(400).json({ error: "Invalid intake form data" });
     }
 
+    // P0-A2: same scope refusal as generate (a preview is still a plan handed
+    // out, so a refused case gets no preview either).
+    const scope = assessServiceScope(intakePayload);
+    if (!scope.supported) {
+      return res.status(422).json(outsideScopeResponse(scope));
+    }
+
     const evaluationContext = Object.freeze({
       system_time: new Date().toISOString(),
       assessmentDate: (meta && meta.assessmentDate) || new Date().toISOString().split("T")[0]
@@ -161,6 +177,12 @@ export const generateAndSaveProgram = async (req, res) => {
     
     if (!intakePayload || !intakePayload.personal) {
       return res.status(400).json({ error: "Invalid intake form data" });
+    }
+
+    // P0-A2: refuse before any user, submission, or program row is created.
+    const scope = assessServiceScope(intakePayload);
+    if (!scope.supported) {
+      return res.status(422).json(outsideScopeResponse(scope));
     }
 
     const evaluationContext = Object.freeze({
@@ -1563,8 +1585,24 @@ export const updateCustomProgram = async (req, res) => {
 
     // A case outside the service (pregnancy, kidney disease, a diagnosed heart condition...) is not
     // published from the editor either, with or without a medical confirmation.
+    // P0-A2: fail closed — an intake that cannot be loaded never passes this
+    // gate. A missing intake is a 409 (same as the macro calculator); a load
+    // failure is a 500, never a silent pass.
     if (shouldPublish) {
-      const scope = assessServiceScope(await loadLatestIntakeAnswers(user.id).catch(() => null));
+      let latestAnswers;
+      try {
+        latestAnswers = await loadLatestIntakeAnswers(user.id);
+      } catch (err) {
+        console.error("updateCustomProgram intake load error:", err);
+        return res.status(500).json({ error: "فشل قراءة الاستمارة؛ لم يتم النشر." });
+      }
+      if (!latestAnswers) {
+        return res.status(409).json({
+          code: "INTAKE_REQUIRED",
+          error: "لا توجد استمارة مكتملة لهذا المتدرب؛ لا يمكن النشر من غير الملف الصحي.",
+        });
+      }
+      const scope = assessServiceScope(latestAnswers);
       if (!scope.supported) {
         return res.status(422).json(outsideScopeResponse(scope));
       }

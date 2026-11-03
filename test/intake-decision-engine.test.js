@@ -717,7 +717,10 @@ test("eating-disorder history prevents automatic deficit or surplus", () => {
     medical: { eatingDisorderHistory: EatingDisorderHistory.PAST },
   });
   const result = evaluate(input);
-  assert.equal(result.plan_status, PlanStatus.COACH_REVIEW_REQUIRED);
+  // P0-A2: an eating-disorder history rides the medical-review path, so
+  // generation saves a DRAFT and publishing needs a human medical-review
+  // confirmation — never an ACTIVE automatic plan.
+  assert.equal(result.plan_status, PlanStatus.MEDICAL_REVIEW_REQUIRED);
   assert.equal(result.nutrition_decision.calorie_direction, "REVIEW_REQUIRED");
   assert.equal(result.nutrition_decision.confidence, "LOW");
 });

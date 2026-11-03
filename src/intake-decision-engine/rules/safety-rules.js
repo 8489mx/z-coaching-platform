@@ -176,6 +176,30 @@ export function evaluateMedicalConditions(input) {
         ),
       );
     }
+    // P0-A2: kidney disease agrees with the service-scope refusal — it never
+    // yields a clean READY plan. The scope gate refuses it outright at
+    // generation; this mark covers every path that evaluates without gating
+    // (publish confirmation, next cycle), and carries no protein number: a
+    // cap is the nephrologist's job, never the engine's.
+    if (condition.conditionCode === "KIDNEY_CONDITION") {
+      result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "KIDNEY_REQUIRES_MEDICAL_REVIEW"));
+      result.reviewFlags.push(
+        reviewFlag(
+          "KIDNEY_REQUIRES_MEDICAL_REVIEW",
+          Scope.GLOBAL,
+          ReviewLevel.MEDICAL,
+          "Kidney disease: protein and mineral limits depend on lab results and the nephrologist's plan, so no automatic plan is approved until medical review is confirmed.",
+          `${sourcePath}.conditionCode`,
+        ),
+      );
+      result.reasons.push(
+        reason(
+          "KIDNEY_REQUIRES_MEDICAL_REVIEW",
+          Scope.GLOBAL,
+          "Kidney disease prevents automatic approval until medical review is confirmed.",
+        ),
+      );
+    }
     if (MANDATORY_MEDICAL_REVIEW_CONDITIONS.has(condition.conditionCode)) {
       result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW"));
       result.reviewFlags.push(

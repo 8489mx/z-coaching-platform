@@ -224,13 +224,17 @@ export function evaluateEatingDisorderSafety(input) {
     return { ...result, reviewRequired: false };
   }
 
-  result.statusCandidates.push(statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "EATING_DISORDER_HISTORY"));
+  // P0-A2: an eating-disorder history rides the medical-review path, not the
+  // coach-review path: generation then saves a DRAFT, never an ACTIVE plan,
+  // and publishing requires a human medical-review confirmation. The energy
+  // direction stays withheld either way.
+  result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "EATING_DISORDER_HISTORY"));
   result.reviewFlags.push(
     reviewFlag(
       "EATING_DISORDER_HISTORY_REVIEW",
       Scope.NUTRITION,
-      ReviewLevel.COACH,
-      "No automatic deficit or surplus may be applied before coach review of the reported history.",
+      ReviewLevel.MEDICAL,
+      "No automatic deficit or surplus may be applied before medical review of the reported history.",
       "medical.eatingDisorderHistory",
     ),
   );

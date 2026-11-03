@@ -31,6 +31,7 @@ import { securityHeaders } from "./middlewares/securityHeaders.js";
 import { csrfProtection, isTrustedOrigin } from "./middlewares/csrfProtection.js";
 import { exportRateLimiter, uploadRateLimiter, engineCalculatorRateLimiter } from "./middlewares/rateLimiter.js";
 import { recordAuditEvent, readRecentAuditEvents } from "./services/auditLog.service.js";
+import { assessServiceScope, outsideScopeResponse } from "./services/serviceScope.js";
 import { User } from "./models/index.js";
 import { createUploadFileHandler } from "./utils/uploadAccess.js";
 import { applyFreezeStart, applyFreezeResume } from "../execution-engines/subscription-freeze-engine.js";
@@ -91,6 +92,23 @@ app.get("/api/v1/health", (req, res) => {
 // 2. High-Density Deterministic Execution Engine Endpoints
 app.post("/api/v1/engines/onboarding/generate-plan", engineCalculatorRateLimiter, (req, res) => {
   try {
+    // P0-A2: this public endpoint takes a different, smaller shape than the
+    // intake form, so the scope gate is fed a translated input. Anything the
+    // shape cannot express (notably a heart clearance) fails closed: a heart
+    // condition listed here is refused, because no clearance can accompany it.
+    const onboardingScopeInput = {
+      age: req.body?.age,
+      weight_kg: req.body?.weightKg,
+      height_cm: req.body?.heightCm,
+      female_pregnancy: req.body?.pregnancyTrimester && req.body.pregnancyTrimester !== "NONE" ? "PREGNANT" : undefined,
+      medical_conditions: {
+        selected: [...(req.body?.medicalConditions || []), ...(req.body?.medicalFlags || [])].map((c) => String(c).toLowerCase()),
+      },
+    };
+    const scope = assessServiceScope(onboardingScopeInput);
+    if (!scope.supported) {
+      return res.status(422).json({ success: false, ...outsideScopeResponse(scope) });
+    }
     const plan = generateInitialPlan(req.body);
     res.json({ success: true, data: plan });
   } catch (err) {
