@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { API_BASE } from '../../../config/api.js';
 import { extractClientFastingProfile } from '../../../utils/seasonalFastingRadar.js';
-import { getPracticalCardioPrescription, CARDIO_TYPES, getGulfHeatAdvisory } from '../../../utils/cardioZonesEngine.js';
+import { getGulfHeatAdvisory } from '../../../utils/cardioZonesEngine.js';
 import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYPES } from '../../../utils/offlineSyncEngine.js';
 import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from '../utils/programAdapters.js';
 import { cacheProgramLocally, getCachedProgram, cacheGymRushCatalogLocally } from '../../../utils/offlineWorkoutSync.js';
@@ -27,44 +27,6 @@ function sanitizeClientDisplayName(name) {
     .trim() || 'المشترك';
 }
 
-export const DEFAULT_FALLBACK_WEEKS = [
-  {
-    week_number: 1,
-    phase: 'ACCUMULATION',
-    target_rir: 3,
-    volume_modifier: 1.0,
-    focus_note: 'تأسيس التكنيك والمدى الحركي الكامل',
-  },
-  {
-    week_number: 2,
-    phase: 'ACCUMULATION',
-    target_rir: 2,
-    volume_modifier: 1.0,
-    focus_note: 'زيادة الحمل التدريبي والتوتر الميكانيكي',
-  },
-  {
-    week_number: 3,
-    phase: 'OVERREACHING',
-    target_rir: 1,
-    volume_modifier: 1.15,
-    focus_note: 'أقصى استثارة عضلية وتكثيف الحمل',
-  },
-  {
-    week_number: 4,
-    phase: 'PEAK',
-    target_rir: 1,
-    volume_modifier: 1.25,
-    focus_note: 'قمة الأداء التدريبي وتحدي عضلي كامل بتكنيك محكم',
-  },
-  {
-    week_number: 5,
-    phase: 'DELOAD',
-    target_rir: 3,
-    volume_modifier: 0.6,
-    focus_note: 'أسبوع كسر الإجهاد والاستشفاء العضلي (-40% حجم)',
-  }
-];
-
 export function useClientInteractiveData() {
   // 1. Day & Week Selection
   const [selectedDay, setSelectedDay] = useState(1); // 1 to 7
@@ -86,7 +48,6 @@ export function useClientInteractiveData() {
       plan_approval_status: parsedUser?.plan_approval_status || 'PENDING_COACH_REVIEW',
       enable_rest_timer: false,
       enable_weight_logging: false,
-      streak: 1,
       clinicalProfile: {
         is_g6pd: false,
         is_bariatric: false,
@@ -123,7 +84,8 @@ export function useClientInteractiveData() {
     if (Array.isArray(fromProg) && fromProg.length > 0) {
       return fromProg;
     }
-    return DEFAULT_FALLBACK_WEEKS;
+    // P0-A14: no program means no weeks — never a fabricated week plan.
+    return [];
   }, [clientProgram]);
 
   const selectedWeekData = useMemo(() => {
@@ -153,62 +115,14 @@ export function useClientInteractiveData() {
   const [isSyncing, setIsSyncing] = useState(false);
 
   // 5. Meals State
-  const [meals, setMeals] = useState([
-    {
-      id: 'm1',
-      title: 'الوجبة الأولى: إفطار التأسيس الأيضي',
-      workout_timing: 'NONE',
-      time: '08:30 ص',
-      completed: true,
-      items: [
-        { id: 'i1', code: 'EGG_WHITES', name: 'بياض بيض مسلوق', amount: 150, unit: 'جم', p: 16.5, c: 1, f: 0.3, cal: 78 },
-        { id: 'i2', code: 'SWEET_POTATO_BAKED', name: 'بطاطا حلوة مشوية', amount: 150, unit: 'جم', p: 2.4, c: 31.5, f: 0.2, cal: 135 },
-        { id: 'i3', code: 'RAW_ALMONDS', name: 'لوز نيء غير محمص', amount: 15, unit: 'جم', p: 3.1, c: 3.3, f: 7.4, cal: 87 }
-      ]
-    },
-    {
-      id: 'm2',
-      title: 'الوجبة الثانية: غداء التعافي والبناء',
-      workout_timing: 'POST_WORKOUT',
-      time: '02:00 م',
-      completed: false,
-      items: [
-        { id: 'i4', code: 'CHICKEN_BREAST', name: 'صدور دجاج مشوية', amount: 150, unit: 'جم', p: 46.5, c: 0, f: 5.2, cal: 247 },
-        { id: 'i5', code: 'BASMATI_RICE_COOKED', name: 'أرز بسمتي مسلوق', amount: 150, unit: 'جم', p: 4.0, c: 42.0, f: 0.6, cal: 195 },
-        { id: 'i6', code: 'EXTRA_VIRGIN_OLIVE_OIL', name: 'زيت زيتون بكر ممتاز', amount: 10, unit: 'جم', p: 0, c: 0, f: 10, cal: 88 },
-        { id: 'i7', code: 'VEGETABLES', name: 'طبق خضار سوتيه مشكل', amount: 150, unit: 'جم', p: 3, c: 8, f: 0, cal: 45 }
-      ]
-    },
-    {
-      id: 'm3',
-      title: 'الوجبة الثالثة: وجبة ما قبل التمرين',
-      workout_timing: 'PRE_WORKOUT',
-      time: '05:30 م',
-      completed: false,
-      items: [
-        { id: 'i8', code: 'SWEET_POTATO_BAKED', name: 'بطاطا حلوة مشوية', amount: 150, unit: 'جم', p: 2.4, c: 31.5, f: 0.2, cal: 135 },
-        { id: 'i9', code: 'BANANA', name: 'موز طازج حبة متوسطة', amount: 1, unit: 'حبة', p: 1.2, c: 27.0, f: 0.3, cal: 105 },
-        { id: 'i10', code: 'COFFEE', name: 'قهوة سوداء بدون سكر', amount: 1, unit: 'كوب', p: 0, c: 0, f: 0, cal: 5 }
-      ]
-    },
-    {
-      id: 'm4',
-      title: 'الوجبة الرابعة: عشاء الاستشفاء الليلي',
-      workout_timing: 'NONE',
-      time: '09:30 م',
-      completed: false,
-      items: [
-        { id: 'i11', code: 'WHITE_FISH_FILLET', name: 'سمك فيليه أبيض مشوي', amount: 180, unit: 'جم', p: 43.2, c: 0, f: 2.7, cal: 198 },
-        { id: 'i12', code: 'SALAD', name: 'سلطة خضراء غنية بالورقيات', amount: 200, unit: 'جم', p: 2.0, c: 6.0, f: 0, cal: 35 },
-        { id: 'i13', code: 'FRESH_AVOCADO', name: 'أفوكادو طازج', amount: 50, unit: 'جم', p: 1.0, c: 4.2, f: 7.5, cal: 80 }
-      ]
-    }
-  ]);
+  // P0-A14: no demo meals before the first fetch — an empty list, never a fake plan.
+  const [meals, setMeals] = useState([]);
 
   const [activeSwapItem, setActiveSwapItem] = useState(null);
   const [swapMealId, setSwapMealId] = useState(null);
   const [prehabCompleted, setPrehabCompleted] = useState(false);
-  const [cardioPrescription, setCardioPrescription] = useState(() => getPracticalCardioPrescription({ type: CARDIO_TYPES.LISS_TALK_TEST }));
+  // P0-A14: no hardcoded cardio prescription — null hides the section until a real one is wired.
+  const [cardioPrescription, setCardioPrescription] = useState(null);
 
   // 6. Autoregulation & Workout Session State
   const [dailyReadiness, setDailyReadiness] = useState(() => {
@@ -226,62 +140,8 @@ export function useClientInteractiveData() {
     } catch {}
   };
 
-  const [workoutSession, setWorkoutSession] = useState({
-    title: 'اليوم 1: سحب الجزء العلوي (Upper Pull & Core)',
-    duration: '55 دقيقة',
-    warmupProtocol: 'بروتوكول RAMP: 5 دقائق مشي مائل + تفعيل Glute Bridges و Band Pull-aparts',
-    exercises: [
-      {
-        id: 'e1',
-        name: 'سحب ظهر واسع على الكابل (Lat Pulldown)',
-        isCompound: true,
-        restDurationSec: 90,
-        safetyNote: 'الحفاظ على صدر مرفوع وتفادي أرجحة الجذع لحماية أسفل الظهر',
-        sets: [
-          { setNum: 1, weight: '0', reps: '10-12', completed: false },
-          { setNum: 2, weight: '0', reps: '10-12', completed: false },
-          { setNum: 3, weight: '0', reps: '10-12', completed: false },
-          { setNum: 4, weight: '0', reps: '10-12', completed: false }
-        ]
-      },
-      {
-        id: 'e2',
-        name: 'سحب أفقي جالس مسنود الصدر (Chest-Supported Row)',
-        isCompound: true,
-        restDurationSec: 90,
-        safetyNote: 'تثبيت الصدر على المسند يمنع التحميل الضاغط على الفقرات القطنية L5-S1',
-        sets: [
-          { setNum: 1, weight: '0', reps: '10-12', completed: false },
-          { setNum: 2, weight: '0', reps: '10-12', completed: false },
-          { setNum: 3, weight: '0', reps: '10-12', completed: false }
-        ]
-      },
-      {
-        id: 'e3',
-        name: 'تبادل دمبل بايسبس جالس مائل (Incline Dumbbell Curl)',
-        isCompound: false,
-        restDurationSec: 60,
-        safetyNote: 'مد كامل للذراع في الأسفل مع ثبات الكوعين لعزل الرأس الطويل للبايسبس',
-        sets: [
-          { setNum: 1, weight: '0', reps: '12-15', completed: false },
-          { setNum: 2, weight: '0', reps: '12-15', completed: false },
-          { setNum: 3, weight: '0', reps: '12-15', completed: false }
-        ]
-      },
-      {
-        id: 'e4',
-        name: 'بلانك أمامي مع شد البطن والحوض (Hardstyle Plank)',
-        isCompound: false,
-        restDurationSec: 60,
-        safetyNote: 'شد عضلات البطن والمؤخرة معاً لمنع تقوس أسفل الظهر (McGill Big 3)',
-        sets: [
-          { setNum: 1, weight: '0', reps: '40 ثانية', completed: false },
-          { setNum: 2, weight: '0', reps: '35 ثانية', completed: false },
-          { setNum: 3, weight: '0', reps: '30 ثانية', completed: false }
-        ]
-      }
-    ]
-  });
+  // P0-A14: no demo workout before the first fetch — null renders the empty state.
+  const [workoutSession, setWorkoutSession] = useState(null);
 
   // 7. Deterministic Program Data Application & Offline Storage
   const applyProgramData = useCallback((data, rawCode) => {
@@ -413,10 +273,10 @@ export function useClientInteractiveData() {
         }
       }
       const tWeeks = (Array.isArray(data.master_program?.training_program?.weeks) && data.master_program.training_program.weeks.length > 0)
-        ? data.master_program.training_program.weeks 
+        ? data.master_program.training_program.weeks
         : ((Array.isArray(data.master_program?.training?.weeks) && data.master_program.training.weeks.length > 0)
-          ? data.master_program.training.weeks 
-          : DEFAULT_FALLBACK_WEEKS);
+          ? data.master_program.training.weeks
+          : []);
       const wData = tWeeks.find(w => w.week_number === currentTrainingWeek) || tWeeks[0];
       const sessions = wData?.sessions 
         || data.master_program.training?.sessions 
@@ -486,21 +346,26 @@ export function useClientInteractiveData() {
           ? clientProgram.master_program.training.weeks
           : ((Array.isArray(clientProgram?.training?.weeks) && clientProgram.training.weeks.length > 0)
             ? clientProgram.training.weeks
-            : DEFAULT_FALLBACK_WEEKS)));
+            : [])));
+    // P0-A14: no weeks at all means nothing to sync — never a fabricated week.
+    if (tWeeks.length === 0) return;
     const wData = tWeeks.find(w => w.week_number === currentTrainingWeek) || tWeeks[0];
 
     if (!clientProgram) {
-      setWorkoutSession(prev => ({
-        ...prev,
-        exercises: (prev.exercises || []).map(ex => ({
-          ...ex,
-          targetRir: wData.target_rir ?? 2,
-          prescription: {
-            ...(ex.prescription || {}),
-            target_rir: wData.target_rir ?? 2
-          }
-        }))
-      }));
+      setWorkoutSession(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          exercises: (prev.exercises || []).map(ex => ({
+            ...ex,
+            targetRir: wData.target_rir ?? 2,
+            prescription: {
+              ...(ex.prescription || {}),
+              target_rir: wData.target_rir ?? 2
+            }
+          }))
+        };
+      });
       return;
     }
 
@@ -746,7 +611,8 @@ export function useClientInteractiveData() {
       }
     }
 
-    return { p: 155, c: 200, f: 50, cal: 1870 };
+    // P0-A14: no fixed targets — zeros mean "no plan yet", never a fabricated plan.
+    return { p: 0, c: 0, f: 0, cal: 0 };
   }, [clientProgram, meals]);
 
   // 15. Supplements State

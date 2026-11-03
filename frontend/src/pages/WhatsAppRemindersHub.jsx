@@ -19,7 +19,7 @@ import {
   generateWhatsAppUrl 
 } from '../utils/whatsappRemindersEngine';
 import { arabicSearchMatch } from '../utils/searchUtils';
-import { CLINICAL_MASTER_BLUEPRINTS, STRESS_TEST_CLIENTS } from '../data/stressTestClientsBlueprints';
+import { CLINICAL_MASTER_BLUEPRINTS } from '../data/stressTestClientsBlueprints';
 
 // استخراج وإثراء بيانات الخطة الحيوية للمشترك
 function getEnrichedPlanSummary(client) {
@@ -81,6 +81,8 @@ export default function WhatsAppRemindersHub() {
 
   // Live Clients API Data
   const [clientsData, setClientsData] = useState([]);
+  // P0-A14: load-failure message — never demo clients as a fallback.
+  const [clientsError, setClientsError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const getAppOrigin = useCallback(() => {
@@ -93,6 +95,7 @@ export default function WhatsAppRemindersHub() {
   const fetchClients = useCallback(async () => {
     try {
       setLoading(true);
+      setClientsError(null);
       const token = localStorage.getItem('token') || localStorage.getItem('coach_token') || localStorage.getItem('admin_token');
       
       let fetchedList = [];
@@ -113,7 +116,9 @@ export default function WhatsAppRemindersHub() {
         console.warn('Clients API fetch failed, trying fallback:', e);
       }
 
-      // إذا تعذر جلب المشتركين من المسار الرئيسي، يتم الجلب الاحتياطي
+      // P0-A14: if the main route returns nothing, one real fallback route is
+      // tried. There is NO demo-clients fallback: an empty result is an error
+      // state, never fifteen fabricated clients the coach could message.
       if (!fetchedList.length) {
         try {
           const resFallback = await fetch(`${API_BASE}/api/v1/subscriptions/overview`);
@@ -124,13 +129,12 @@ export default function WhatsAppRemindersHub() {
             }
           }
         } catch {
-          // fallback to stress test data
-          fetchedList = STRESS_TEST_CLIENTS;
+          // No demo fallback: leave fetchedList empty so the error state renders.
         }
       }
 
       if (!fetchedList.length) {
-        fetchedList = STRESS_TEST_CLIENTS;
+        setClientsError('تعذر جلب المشتركين من الخادم. تحقق من الاتصال وحاول مرة أخرى.');
       }
 
       const enriched = fetchedList.map((client) => {
@@ -199,6 +203,7 @@ export default function WhatsAppRemindersHub() {
       }
     } catch (err) {
       console.error('Failed to fetch clients:', err);
+      setClientsError('تعذر جلب المشتركين من الخادم. تحقق من الاتصال وحاول مرة أخرى.');
     } finally {
       setLoading(false);
     }
@@ -588,7 +593,7 @@ export default function WhatsAppRemindersHub() {
             <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '720px', overflowY: 'auto' }}>
               {filteredClients.length === 0 ? (
                 <div style={{ padding: '40px 10px', textAlign: 'center', color: '#64748B', fontSize: '12px' }}>
-                  لا توجد تنبيهات مطابقة للفلتر المحدد
+                  {clientsError || 'لا توجد تنبيهات مطابقة للفلتر المحدد'}
                 </div>
               ) : (
                 filteredClients.map((client) => {

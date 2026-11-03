@@ -761,74 +761,9 @@ export default function CheckinReviewDashboard() {
       if (existingIdx !== -1) {
         setSelectedIdx(existingIdx);
       } else {
-        // Dynamically create the new client baseline check-in (Week 0 - New Trainee)
-        const newClientEntry = {
-          id: `CHK_${cleanTarget}_W0`,
-          is_new_client: true,
-          client: {
-            id: `CL_${cleanTarget}`,
-            name: 'مشترك جديد',
-            code: cleanTarget,
-            package: 'MAX',
-            phone: '010XXXXXXXX',
-            country: { name: 'مصر' },
-            gender: 'MALE',
-            goal_type: 'CUTTING',
-            target_goal: 'خسارة دهون وتنشيف عضلي',
-            start_weight: 85.0,
-            target_weight: 77.0
-          },
-          week_number: 0,
-          submission_date: 'مشترك جديد (الأسبوع التأسيسي)',
-          history: [
-            { week: 0, weight: 85.0, waist: 92.0, adherence: 100, date: 'نقطة البداية', diff: 0 }
-          ],
-          metrics: {
-            previous_weight: 85.0,
-            current_weight: 85.0,
-            weight_change: 0,
-            waist_previous: 92.0,
-            waist_current: 92.0,
-            waist_change: 0,
-            adherence: 100,
-            workouts_completed: 0,
-            workouts_target: 4,
-            daily_steps_avg: 8000,
-            strength_trend: 'STABLE',
-            strength_note: 'بداية البرنامج (الأسبوع الأول)',
-            off_plan_meals: 0,
-            water_liters: 3.0
-          },
-          biofeedback: {
-            energy: 8,
-            sleep: 8,
-            hunger: 5,
-            recovery: 8,
-            stress_level: 3,
-            digestion_status: 'طبيعي وممتاز',
-            cycle_phase: null
-          },
-          reflections: {
-            nsv_note: 'المشترك في مرحلة التأسيس الأولى واستلام الخطة.',
-            struggle_note: 'بانتظار إتمام الأسبوع الأول لإجراء أول تقييم ومقارنة للوزن.'
-          },
-          client_notes: 'تم الاشتراك وتأكيد الباقة بنجاح، بانتظار استلام جدول الوجبات والتمارين للأسبوع الأول.',
-          ai_analysis: {
-            recommendation: 'مشترك جديد (الأسبوع التأسيسي): يوصى باعتماد سعرات العجز المعتدل (-350 سعرة) مع تثبيت البروتين عند 2.0 جم/كجم، وبدء أول 4 أيام تمرين تدريجياً لتقييم الاستجابة العضلية.',
-            status_badge: 'مشترك جديد - مرحلة التأسيس',
-            warning: 'ملاحظة: موعد أول تقييم أسبوعي سيكون بعد 7 أيام من بدء الخطة.'
-          },
-          baseline_macros: {
-            calories: 1950,
-            protein: 160,
-            carbs: 180,
-            fats: 50
-          },
-          suggested_reply: `أهلاً بك يا بطل في Z Coaching! تم اعتماد وتفعيل خطتك للأسبوع الأول (1950 سعرة، 160 جم بروتين، 180 جم كارب، 50 جم دهون). التزم بالوجبات ومواعيد التمرين، وموعدنا في أول تقييم أسبوعي بعد 7 أيام لنقيس التطور والنزول معاً!`
-        };
-
-        setCheckinList(prev => [newClientEntry, ...prev]);
-        setSelectedIdx(0);
+        // P0-A14: unknown code creates NO entry. A fabricated week-0 check-in
+        // (invented phone, weights, adherence, macros) must never enter the
+        // review queue, where it could be approved without any server record.
       }
     }
   // مقصود: التأثير يعمل عند تغيّر مفتاحه فقط. إضافة الدوال للتبعيات تُعاد إنشاؤها كل رندر فتدخل في حلقة إعادة تشغيل.
@@ -997,6 +932,13 @@ export default function CheckinReviewDashboard() {
     setIsSubmitting(true);
 
     const checkinDbId = activeCheckin.raw_id;
+    // P0-A14: never a success toast without a server response. An entry with
+    // no server id (e.g. a formerly fabricated one) cannot be approved.
+    if (!checkinDbId) {
+      setApproveError('لا يمكن اعتماد هذه المراجعة: لا يوجد سجل شيك إن مطابق على الخادم.');
+      setIsSubmitting(false);
+      return;
+    }
     const clientPhone = safeClient?.phone;
     const replyMsg = coachReply;
     const approvedClientName = safeClient?.name || 'المتدرب';

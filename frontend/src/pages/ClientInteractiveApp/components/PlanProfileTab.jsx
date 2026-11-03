@@ -108,12 +108,7 @@ export default function PlanProfileTab({
             </strong>
           </div>
 
-          <div style={{ background: '#F0FDF4', padding: '10px 12px', borderRadius: '10px', border: '1px solid #DCFCE7' }}>
-            <span style={{ fontSize: '0.68rem', color: '#166534', display: 'block' }}>سجل الالتزام المستمر</span>
-            <strong style={{ fontSize: '0.82rem', color: '#15803D', fontWeight: 800 }}>
-              {clientData.streak} يوم التزام متصل
-            </strong>
-          </div>
+          {/* P0-A14: streak card removed — no real-data streak source exists, so nothing is shown instead of a fake "1 day". */}
         </div>
       </div>
 

@@ -191,7 +191,7 @@ export default function ClientInteractiveApp() {
                 currentTrainingWeek={currentTrainingWeek}
                 setCurrentTrainingWeek={setCurrentTrainingWeek}
                 selectedWeekData={selectedWeekData}
-                workoutSession={workoutSession}
+                workoutSession={workoutSession || { exercises: [] }}
                 dailyReadiness={dailyReadiness}
                 handleSetDailyReadiness={handleSetDailyReadiness}
                 clientData={clientData}
