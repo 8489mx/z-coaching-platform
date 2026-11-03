@@ -26,6 +26,7 @@ import { assessServiceScope, outsideScopeResponse } from "../services/serviceSco
 import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSwapOilText, liveSwapTargetGrams, liveSwapServingText } from "../services/liveFoodSwapValue.js";
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
 import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
+import { recordAuditEvent } from "../services/auditLog.service.js";
 import { buildSessionMobilityProtocol } from "../../../src/mobility-warmup-engine-v2/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1597,6 +1598,23 @@ export const calculateTargetsHandler = async (req, res) => {
   }
 };
 
+// P0-A6: read the four macro targets from a program object across the
+// known schema shapes, for audit old/new values. Returns null for a
+// missing field (never an invented number). Twin of the helper in
+// checkin.controller.js, kept local so each controller stays
+// self-contained.
+function readProgramMacroTargets(programData) {
+  const macroTargets = programData?.nutrition_program?.macro_targets || null;
+  const targets = programData?.nutrition_program?.targets || programData?.nutrition?.targets || null;
+  const num = (v) => (v === null || v === undefined || v === "" ? null : (Number.isFinite(Number(v)) ? Number(v) : null));
+  return {
+    calories: num(macroTargets?.calories_kcal ?? targets?.target_calories_kcal ?? targets?.calories_kcal ?? targets?.calories),
+    protein: num(macroTargets?.protein_g ?? macroTargets?.total_protein_g ?? targets?.protein_g ?? targets?.protein),
+    carbs: num(macroTargets?.carbohydrate_g ?? macroTargets?.carb_g ?? targets?.carbohydrate_g ?? targets?.carb_g ?? targets?.carbs),
+    fats: num(macroTargets?.fat_g ?? macroTargets?.total_fat_g ?? targets?.fat_g ?? targets?.fats),
+  };
+}
+
 export const updateCustomProgram = async (req, res) => {
   try {
     // S4-1: the editor save path is coach-only. Any authenticated account
@@ -1878,6 +1896,10 @@ export const updateCustomProgram = async (req, res) => {
       }
     }
 
+    // P0-A6: snapshot the stored targets before any overwrite, for the
+    // macro-change audit below (a newly created program has no previous
+    // targets, so it logs nothing).
+    let previousMacros = null;
     let program = await Program.findOne({
       where: { user_id: user.id },
       order: [["id", "DESC"]]
@@ -1892,6 +1914,7 @@ export const updateCustomProgram = async (req, res) => {
         status: shouldPublish ? "ACTIVE" : "DRAFT"
       });
     } else {
+      previousMacros = program.program_data ? readProgramMacroTargets(program.program_data) : null;
       if (program_data) {
         // The coach's fasting toggle lives in program_data but is not part of the editor's plan object.
         const previousOverride = program.program_data?.fasting_override;
@@ -1918,6 +1941,30 @@ export const updateCustomProgram = async (req, res) => {
         program.version = (Number(program.version) || 1) + 1;
       }
       await program.save();
+    }
+
+    // P0-A6: audit a manual macro change (editor and macro calculator
+    // saves both flow through this path) with coach identity, client,
+    // old/new values, and time. Unchanged targets log nothing.
+    if (program_data && previousMacros) {
+      const newMacros = readProgramMacroTargets(program.program_data);
+      const macroChanged = ["calories", "protein", "carbs", "fats"].some((k) => previousMacros[k] !== newMacros[k]);
+      if (macroChanged) {
+        recordAuditEvent({
+          event: "COACH_MACRO_OVERRIDE",
+          req,
+          status: "SUCCESS",
+          userId: req.user?.id || "COACH",
+          userRole: req.user?.role || "COACH",
+          details: {
+            source: "program_editor",
+            target_user_id: user.id,
+            program_id: program.id,
+            previous_macros: previousMacros,
+            new_macros: newMacros,
+          },
+        });
+      }
     }
 
     if (coach_notes !== undefined) {

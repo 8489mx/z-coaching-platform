@@ -959,6 +959,23 @@ export async function updateCheckinMeasurements(req, res) {
 }
 
 /**
+ * P0-A6: read the four macro targets from a program object across the
+ * known schema shapes, for audit old/new values. Returns null for a
+ * missing field (never an invented number).
+ */
+function readProgramMacroTargets(programData) {
+  const macroTargets = programData?.nutrition_program?.macro_targets || null;
+  const targets = programData?.nutrition_program?.targets || programData?.nutrition?.targets || null;
+  const num = (v) => (v === null || v === undefined || v === "" ? null : (Number.isFinite(Number(v)) ? Number(v) : null));
+  return {
+    calories: num(macroTargets?.calories_kcal ?? targets?.target_calories_kcal ?? targets?.calories_kcal ?? targets?.calories),
+    protein: num(macroTargets?.protein_g ?? macroTargets?.total_protein_g ?? targets?.protein_g ?? targets?.protein),
+    carbs: num(macroTargets?.carbohydrate_g ?? macroTargets?.carb_g ?? targets?.carbohydrate_g ?? targets?.carb_g ?? targets?.carbs),
+    fats: num(macroTargets?.fat_g ?? macroTargets?.total_fat_g ?? targets?.fat_g ?? targets?.fats),
+  };
+}
+
+/**
  * 1-Click Coach Approval and Program Auto-Regulation
  */
 export async function approveCheckin(req, res) {
@@ -1107,7 +1124,10 @@ export async function approveCheckin(req, res) {
       // numbers and re-approves. Any other merge failure still surfaces as a
       // 500 through the outer handler catch.
       let mergedProgramData;
+      let preMergeMacros = null;
       try {
+        // P0-A6: snapshot the pre-merge targets for the override audit below.
+        preMergeMacros = readProgramMacroTargets(progData);
         mergedProgramData = mergeAdaptedPlanIntoProgram(
           progData,
           alreadyAdaptedForThisCheckin ? {} : (adapted || checkin.analysis_output || {}),
@@ -1132,6 +1152,31 @@ export async function approveCheckin(req, res) {
         if (mergedProgramData.nutrition) draftData.nutrition = mergedProgramData.nutrition;
         if (mergedProgramData.nutrition_program) draftData.nutrition_program = mergedProgramData.nutrition_program;
         await waitingDraft.update({ program_data: draftData });
+      }
+
+      // P0-A6: a manual macro change is audited with coach identity,
+      // client, old/new values, and time (recordAuditEvent stamps the time
+      // and the requesting coach from req). A pure engine adaptation is
+      // not a manual change and is not logged here. This sits inside the
+      // adaptation block, so a stale-blocked approval (no merge) logs
+      // nothing, exactly as before.
+      if (hasCustomMacros) {
+        recordAuditEvent({
+          event: "COACH_MACRO_OVERRIDE",
+          req,
+          status: "SUCCESS",
+          userId: req.user?.id || "COACH",
+          userRole: req.user?.role || "COACH",
+          details: {
+            source: "checkin_approval",
+            checkin_id: checkin.id,
+            target_user_id: checkin.user_id,
+            program_id: latestProgram.id,
+            custom_macros_applied: custom_macros,
+            previous_macros: preMergeMacros,
+            new_macros: readProgramMacroTargets(mergedProgramData),
+          },
+        });
       }
 
       checkin.adapted_program_id = latestProgram.id;

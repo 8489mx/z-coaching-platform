@@ -123,52 +123,99 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
   // 1. Deep clone original program to guarantee immutability of input
   const merged = JSON.parse(JSON.stringify(currentMasterProgram));
 
-  // 2. Extract final target macros (Coach custom overrides take top priority)
-  let finalCalories = null;
-  let finalProtein = null;
-  let finalCarbs = null;
-  let finalFats = null;
+  // 2. Extract final target macros. Engine values are computed first;
+  // P0-A6: coach custom macros are a per-field overlay on those engine
+  // values, never a wholesale replacement. A custom object carrying only
+  // the fields the coach actually typed changes only those fields; the
+  // rest keep the engine's adaptation. An untouched dashboard draft is
+  // never sent (see CheckinReviewDashboard), so placeholder numbers can
+  // no longer overwrite the engine's adaptation.
+  const customField = (key) => customMacros && typeof customMacros === "object" && Number(customMacros[key]) > 0;
+  const hasAnyCustom = ["calories", "protein", "carbs", "fats"].some(customField);
 
-  if (customMacros && typeof customMacros === 'object' && Number(customMacros.calories) > 0) {
-    finalCalories = Number(customMacros.calories);
-    finalProtein = Number(customMacros.protein || adaptationResult?.adapted_nutrition?.protein_g || 140);
-    finalCarbs = Number(customMacros.carbs || adaptationResult?.adapted_nutrition?.carbohydrate_g || 200);
-    finalFats = Number(customMacros.fats || adaptationResult?.adapted_nutrition?.fat_g || 50);
-  } else if (adaptationResult?.adapted_nutrition?.target_calories_kcal) {
-    finalCalories = Number(adaptationResult.adapted_nutrition.target_calories_kcal);
-    finalProtein = Number(adaptationResult.adapted_nutrition.protein_g);
-    finalCarbs = Number(adaptationResult.adapted_nutrition.carbohydrate_g);
-    finalFats = Number(adaptationResult.adapted_nutrition.fat_g);
+  let engineCalories = null;
+  let engineProtein = null;
+  let engineCarbs = null;
+  let engineFats = null;
+
+  if (adaptationResult?.adapted_nutrition?.target_calories_kcal) {
+    engineCalories = Number(adaptationResult.adapted_nutrition.target_calories_kcal);
+    engineProtein = Number(adaptationResult.adapted_nutrition.protein_g);
+    engineCarbs = Number(adaptationResult.adapted_nutrition.carbohydrate_g);
+    engineFats = Number(adaptationResult.adapted_nutrition.fat_g);
   } else if (adaptationResult?.suggested_calorie_delta !== undefined && adaptationResult?.suggested_calorie_delta !== null) {
-    const baseCal = merged.nutrition_program?.macro_targets?.calories_kcal 
+    const baseCal = merged.nutrition_program?.macro_targets?.calories_kcal
       || merged.nutrition_program?.targets?.target_calories_kcal
       || merged.nutrition_program?.targets?.calories_kcal
-      || merged.nutrition?.targets?.calories 
+      || merged.nutrition?.targets?.calories
       || 2000;
-    finalCalories = baseCal + Number(adaptationResult.suggested_calorie_delta);
+    engineCalories = baseCal + Number(adaptationResult.suggested_calorie_delta);
     const baseCarb = merged.nutrition_program?.macro_targets?.carbohydrate_g
       || merged.nutrition_program?.macro_targets?.carb_g
       || merged.nutrition_program?.targets?.carbohydrate_g
       || merged.nutrition_program?.targets?.carb_g
       || merged.nutrition?.targets?.carbs
       || 200;
-    finalCarbs = baseCarb + (adaptationResult.suggested_carb_delta_g !== undefined 
-      ? Number(adaptationResult.suggested_carb_delta_g) 
+    engineCarbs = baseCarb + (adaptationResult.suggested_carb_delta_g !== undefined
+      ? Number(adaptationResult.suggested_carb_delta_g)
       : Math.round(Number(adaptationResult.suggested_calorie_delta) / 4));
-    finalProtein = merged.nutrition_program?.macro_targets?.protein_g 
+    engineProtein = merged.nutrition_program?.macro_targets?.protein_g
       || merged.nutrition_program?.targets?.protein_g
-      || merged.nutrition?.targets?.protein 
+      || merged.nutrition?.targets?.protein
       || 140;
-    finalFats = merged.nutrition_program?.macro_targets?.fat_g 
+    engineFats = merged.nutrition_program?.macro_targets?.fat_g
       || merged.nutrition_program?.targets?.fat_g
-      || merged.nutrition?.targets?.fats 
+      || merged.nutrition?.targets?.fats
       || 50;
+  }
+
+  // Current program targets: last fallback under a partial custom
+  // override only (a typed protein with no engine values must still
+  // leave the other fields on the client's real targets, not literals).
+  const programCalories = merged.nutrition_program?.macro_targets?.calories_kcal
+    || merged.nutrition_program?.targets?.target_calories_kcal
+    || merged.nutrition_program?.targets?.calories_kcal
+    || merged.nutrition?.targets?.calories
+    || null;
+  const programProtein = merged.nutrition_program?.macro_targets?.protein_g
+    || merged.nutrition_program?.targets?.protein_g
+    || merged.nutrition?.targets?.protein
+    || null;
+  const programCarbs = merged.nutrition_program?.macro_targets?.carbohydrate_g
+    || merged.nutrition_program?.macro_targets?.carb_g
+    || merged.nutrition_program?.targets?.carbohydrate_g
+    || merged.nutrition_program?.targets?.carb_g
+    || merged.nutrition?.targets?.carbs
+    || null;
+  const programFats = merged.nutrition_program?.macro_targets?.fat_g
+    || merged.nutrition_program?.targets?.fat_g
+    || merged.nutrition?.targets?.fats
+    || null;
+
+  let finalCalories = null;
+  let finalProtein = null;
+  let finalCarbs = null;
+  let finalFats = null;
+
+  if (hasAnyCustom) {
+    // Overlay: a typed field wins; an untyped field keeps the engine
+    // value, then the current program value, then the historical literal.
+    const finiteOr = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+    finalCalories = customField("calories") ? Number(customMacros.calories) : finiteOr(engineCalories, programCalories || 2000);
+    finalProtein = customField("protein") ? Number(customMacros.protein) : finiteOr(engineProtein, programProtein || 140);
+    finalCarbs = customField("carbs") ? Number(customMacros.carbs) : finiteOr(engineCarbs, programCarbs || 200);
+    finalFats = customField("fats") ? Number(customMacros.fats) : finiteOr(engineFats, programFats || 50);
+  } else {
+    finalCalories = engineCalories;
+    finalProtein = engineProtein;
+    finalCarbs = engineCarbs;
+    finalFats = engineFats;
   }
 
   // S3-2: guard coach custom macros before anything is written. The adapted
   // path was already guarded by buildAdaptedPlan; only custom numbers need
   // this check.
-  const customMacrosApplied = customMacros && typeof customMacros === "object" && Number(customMacros.calories) > 0;
+  const customMacrosApplied = hasAnyCustom;
   if (customMacrosApplied && finalCalories !== null) {
     validateCustomMacros(merged, { finalCalories, finalProtein, finalCarbs, finalFats });
   }

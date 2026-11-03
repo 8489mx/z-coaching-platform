@@ -50,6 +50,11 @@ import { RefreshButton } from '@/shared/components/refresh-button';
 import { TierFilter } from '@/shared/components/tier-filter';
 
 const DEFAULT_BASELINE_MACROS = {
+  // P0-A6: display-only starting draft for the macro editor. These numbers
+  // are NEVER sent as an override on their own: handleApprove sends only
+  // the fields the coach actually typed (editedMacroFields). An untouched
+  // approve-with-adaptation therefore runs the engine's adaptation purely
+  // instead of overwriting it with these placeholders.
   calories: 2000,
   protein: 140,
   carbs: 220,
@@ -592,6 +597,11 @@ export default function CheckinReviewDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState('ALL'); // ALL | MAX | ELITE
   const [macroAdjustments, setMacroAdjustments] = useState(DEFAULT_BASELINE_MACROS);
+  // P0-A6: fields the coach actually typed in the macro editor, keyed by
+  // field name. Preset buttons and the calorie recompute only change the
+  // displayed draft; they do not mark a field edited, so they can never
+  // send placeholder numbers as an override.
+  const [editedMacroFields, setEditedMacroFields] = useState({});
   const [coachReply, setCoachReply] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_approvedCount, setApprovedCount] = useState(0);
@@ -880,6 +890,7 @@ export default function CheckinReviewDashboard() {
   useEffect(() => {
     if (activeCheckin) {
       setMacroAdjustments(activeCheckin?.baseline_macros || DEFAULT_BASELINE_MACROS);
+      setEditedMacroFields({});
       setCoachReply(activeCheckin?.suggested_reply || "");
     }
   }, [activeCheckin]);
@@ -993,13 +1004,23 @@ export default function CheckinReviewDashboard() {
     setApproveError(null);
     try {
       if (checkinDbId) {
+        // P0-A6: send custom_macros ONLY for fields the coach actually
+        // typed. An untouched approve-with-adaptation sends no custom
+        // macros at all, so the server runs the engine's adaptation
+        // purely instead of overwriting it with the displayed draft.
+        const changedMacros = {};
+        for (const field of ["calories", "protein", "carbs", "fats"]) {
+          if (editedMacroFields[field] && Number.isFinite(Number(macroAdjustments[field]))) {
+            changedMacros[field] = Number(macroAdjustments[field]);
+          }
+        }
         const res = await fetch(`${API_BASE}/api/v1/checkin/${checkinDbId}/approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             coach_notes: replyMsg,
             apply_program_adaptation: Boolean(applyAdaptation),
-            ...(applyAdaptation ? { custom_macros: macroAdjustments } : {})
+            ...(applyAdaptation && Object.keys(changedMacros).length > 0 ? { custom_macros: changedMacros } : {})
           })
         });
         if (!res.ok) {
@@ -2296,6 +2317,7 @@ export default function CheckinReviewDashboard() {
                         type="button"
                         onClick={() => {
                           setMacroAdjustments(safeMacros);
+                        setEditedMacroFields({});
                           setCoachReply(activeCheckin.suggested_reply);
                         }}
                         style={{
@@ -2524,6 +2546,7 @@ export default function CheckinReviewDashboard() {
                       type="button"
                       onClick={() => {
                         setMacroAdjustments(safeMacros);
+                        setEditedMacroFields({});
                         setCoachReply(`عاش يا ${clientFirstName}! مستواك الأسبوع ده ممتاز ونتايجك ماشية على الخطة بالظبط. هنثبت على نفس السعرات والماكروز عشان نواصل التقدم بنفس الزخم. كمل بنفس القوة يا بطل!`);
                       }}
                       style={{
@@ -2554,6 +2577,7 @@ export default function CheckinReviewDashboard() {
                         const f = Math.max(35, safeMacros.fats - 5);
                         const newCals = (p * 4) + (c * 4) + (f * 9);
                         setMacroAdjustments({ calories: newCals, protein: p, carbs: c, fats: f });
+                        setEditedMacroFields({});
                         setCoachReply(`أداء ممتاز يا ${clientFirstName}! بناءً على قراءة الأسبوع، عملنا عجز تدريجي بسيط بمقدار 150 سعرة (خصم 25 جم كارب و 5 جم دهون) لتنشيط معدل الحرق واستمرار نزول الدهون بدون التأثير على طاقتك. ركز على شرب الماء والخطوات!`);
                       }}
                       style={{
@@ -2584,6 +2608,7 @@ export default function CheckinReviewDashboard() {
                         const f = safeMacros.fats;
                         const newCals = (p * 4) + (c * 4) + (f * 9);
                         setMacroAdjustments({ calories: newCals, protein: p, carbs: c, fats: f });
+                        setEditedMacroFields({});
                         setCoachReply(`عاش يا ${clientFirstName}! عشان نغذي البناء العضلي ونرفع كفاءة الطاقة في الجيم، زودنالك 150 سعرة إضافية (30 جم كارب و 5 جم بروتين). استغل الطاقة دي في كسر أوزان جديدة في التمرين!`);
                       }}
                       style={{
@@ -2672,7 +2697,7 @@ export default function CheckinReviewDashboard() {
                     <span>تعديل الماكروز للأسبوع القادم</span>
                   </div>
                 }
-                description="ضبط السعرات والجرامات اليومية المعتمدة للبرنامج."
+                description="ضبط السعرات والجرامات اليومية المعتمدة للبرنامج. الأرقام المعروضة مسودة للعرض فقط؛ لا يُرسل منها إلا ما تكتبه بنفسك في الحقول، وأي حقل تتركه كما هو يأخذ رقم المحرك المعدَّل كما هو."
               >
                 {(() => {
                   const pKcal = (macroAdjustments.protein || 0) * 4;
@@ -2720,7 +2745,7 @@ export default function CheckinReviewDashboard() {
                             type="number"
                             className="no-spinner bare-input inline-pill-input clean-inline-input"
                             value={macroAdjustments.calories || ''}
-                            onChange={(e) => setMacroAdjustments({ ...macroAdjustments, calories: Number(e.target.value) })}
+                            onChange={(e) => { setMacroAdjustments({ ...macroAdjustments, calories: Number(e.target.value) }); setEditedMacroFields((prev) => ({ ...prev, calories: true })); }}
                             style={{ 
                               width: '65px', 
                               border: 'none', 
@@ -2781,6 +2806,7 @@ export default function CheckinReviewDashboard() {
                                 const val = Number(e.target.value);
                                 const newCals = (val * 4) + (macroAdjustments.carbs * 4) + (macroAdjustments.fats * 9);
                                 setMacroAdjustments({ ...macroAdjustments, protein: val, calories: newCals });
+                                setEditedMacroFields((prev) => ({ ...prev, protein: true }));
                               }}
                               style={{ 
                                 width: '100%', 
@@ -2845,6 +2871,7 @@ export default function CheckinReviewDashboard() {
                                 const val = Number(e.target.value);
                                 const newCals = (macroAdjustments.protein * 4) + (val * 4) + (macroAdjustments.fats * 9);
                                 setMacroAdjustments({ ...macroAdjustments, carbs: val, calories: newCals });
+                                setEditedMacroFields((prev) => ({ ...prev, carbs: true }));
                               }}
                               style={{ 
                                 width: '100%', 
@@ -2909,6 +2936,7 @@ export default function CheckinReviewDashboard() {
                                 const val = Number(e.target.value);
                                 const newCals = (macroAdjustments.protein * 4) + (macroAdjustments.carbs * 4) + (val * 9);
                                 setMacroAdjustments({ ...macroAdjustments, fats: val, calories: newCals });
+                                setEditedMacroFields((prev) => ({ ...prev, fats: true }));
                               }}
                               style={{ 
                                 width: '100%', 
