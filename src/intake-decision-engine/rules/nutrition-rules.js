@@ -305,17 +305,24 @@ export function decideNutrition(input, safetyContext) {
   // goal starts in a deficit and a muscle-gain goal starts in a surplus;
   // anything else starts at maintenance. Safety and eating-history gates
   // still withhold the direction entirely (REVIEW_REQUIRED) when they fire.
+  // P1-B2: recomposition is a small deficit, so it is a DEFICIT direction
+  // (the plan's 10% deficit and the decision now agree); an unresolved
+  // COACH_DECIDES goal withholds the direction instead of silently borrowing
+  // the fat-loss deficit — the caller resolves it first (see
+  // build-master-engine-v2) and the decision is recomputed on the resolved goal.
+  const unresolvedGoal = input.goals.primary === PrimaryGoal.COACH_DECIDES;
   const goalDirection =
-    input.goals.primary === PrimaryGoal.FAT_LOSS
+    input.goals.primary === PrimaryGoal.FAT_LOSS ||
+    input.goals.primary === PrimaryGoal.BODY_RECOMPOSITION
       ? CalorieDirection.DEFICIT
       : input.goals.primary === PrimaryGoal.MUSCLE_GAIN
         ? CalorieDirection.SURPLUS
         : CalorieDirection.MAINTENANCE;
-  const calorieDirection = reviewRequired
+  const calorieDirection = (reviewRequired || unresolvedGoal)
     ? CalorieDirection.REVIEW_REQUIRED
     : goalDirection;
   const goalApplied =
-    !reviewRequired && goalDirection !== CalorieDirection.MAINTENANCE;
+    !reviewRequired && !unresolvedGoal && goalDirection !== CalorieDirection.MAINTENANCE;
   const confidence = determineCalorieConfidence(input, reviewRequired);
   const mealCountStrategy = reviewRequired
     ? MealCountStrategy.COACH_TO_CONFIRM
@@ -325,7 +332,7 @@ export function decideNutrition(input, safetyContext) {
 
   const decisionReasons = [
     reason(
-      reviewRequired
+      (reviewRequired || unresolvedGoal)
         ? "NUTRITION_WITHHELD_PENDING_REVIEW"
         : goalApplied
           ? "GOAL_APPLIED_TO_CALORIE_DIRECTION"
@@ -333,9 +340,11 @@ export function decideNutrition(input, safetyContext) {
       Scope.NUTRITION,
       reviewRequired
         ? "A safety or eating-history gate prevents an automatic calorie direction."
-        : goalApplied
-          ? "The client's goal sets the calorie direction from day 1 instead of starting at maintenance."
-          : "The client's goal maintains weight, so the maintenance calorie direction was applied.",
+        : unresolvedGoal
+          ? "The goal is undecided (COACH_DECIDES); no calorie direction is set until the goal is resolved."
+          : goalApplied
+            ? "The client's goal sets the calorie direction from day 1 instead of starting at maintenance."
+            : "The client's goal maintains weight, so the maintenance calorie direction was applied.",
     ),
     reason(
       goalApplied

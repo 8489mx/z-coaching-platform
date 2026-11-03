@@ -15,7 +15,7 @@ test("Stage 3 - S3-1: Calorie floor is absolute and unbreakable (1200 kcal femal
   const femaleSmallClient = {
     body: { weightKg: 42, heightCm: 148, bodyFat: 28 },
     personal: { sex: "FEMALE", dateOfBirth: "1985-01-01" },
-    goals: { primaryGoal: "FAT_LOSS" },
+    goals: { primary: "FAT_LOSS" },
     nutrition: { activityLevel: "sedentary" }
   };
   const femaleTargets = calculateUniversalNutritionTargets(femaleSmallClient);
@@ -26,7 +26,7 @@ test("Stage 3 - S3-1: Calorie floor is absolute and unbreakable (1200 kcal femal
   const maleSmallClient = {
     body: { weightKg: 50, heightCm: 155, bodyFat: 20 },
     personal: { sex: "MALE", dateOfBirth: "1975-01-01" },
-    goals: { primaryGoal: "FAT_LOSS" },
+    goals: { primary: "FAT_LOSS" },
     nutrition: { activityLevel: "sedentary" }
   };
   const maleTargets = calculateUniversalNutritionTargets(maleSmallClient);

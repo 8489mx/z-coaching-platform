@@ -231,7 +231,11 @@ function validatePersonal(input, assessmentDate, issues) {
 
 function validateGoals(input, issues) {
   const goals = requiredObject(input.goals, "goals", issues);
-  rejectUnknownKeys(goals, ["primary", "secondaryTraining"], "goals", issues);
+  // P1-B2: requested_primary is internal provenance set by build-master-engine-v2
+  // (the goal before early resolution) so the plan-time resolution can still
+  // record its redirect. Decision rules read primary only; this key never
+  // changes a decision.
+  rejectUnknownKeys(goals, ["primary", "secondaryTraining", "requested_primary"], "goals", issues);
   enumValue(goals.primary, PrimaryGoal, "goals.primary", issues);
   if (goals.secondaryTraining !== undefined && goals.secondaryTraining !== null) {
     requiredString(goals.secondaryTraining, "goals.secondaryTraining", issues);

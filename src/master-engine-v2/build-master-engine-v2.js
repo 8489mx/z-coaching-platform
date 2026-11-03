@@ -145,6 +145,7 @@ import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.j
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
 import { resolveDailySteps, resolveTdeeActivityFactor } from "../steps-source/resolve-daily-steps.js";
+import { normalizeGoal, resolveBodyFat, resolvePrimaryGoal, isMaintenanceGoal } from "../goal-resolution/resolve-primary-goal.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
 import { generatePeriWorkoutNutrientTimingSchedule, calculateCaffeineCutoffWindow } from "../execution-engines/circadian-nutrient-timing-engine.js";
@@ -359,40 +360,14 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   // estimate), so body fat and the tape measurements are read from the submitted answers.
   const rawBody = effectiveRaw?.body || {};
   const rawCircumferences = effectiveRaw?.circumferences || {};
-  let bodyFat = Number(
-    body.bodyFat ?? body.body_fat ?? body.bodyFatPct ?? body.body_fat_pct ??
-    rawBody.bodyFat ?? rawBody.body_fat ?? rawBody.bodyFatPct ?? rawBody.body_fat_pct ?? rawBody.body_fat_percent ?? rawBody.bodyFatPercentage ??
-    effectiveRaw?.body_fat ?? effectiveRaw?.body_fat_percent ?? effectiveRaw?.bodyFatPct ?? effectiveRaw?.bodyFat ?? effectiveRaw?.body_fat_percentage,
-  ) || null;
-  if (bodyFat !== null && bodyFat > 0 && bodyFat <= 0.60) {
-    bodyFat = Math.round(bodyFat * 100 * 10) / 10;
-  }
-  if (bodyFat !== null && (bodyFat < 3 || bodyFat > 65)) {
-    bodyFat = null;
-  }
+  // P1-B2: body fat comes from the shared goal module — the same computation
+  // the early decision-time resolution uses, so both resolve the same goal.
+  const bodyFat = resolveBodyFat({ body, rawBody, rawCircumferences, effectiveRaw, isMale, height });
   const neck = Number(body.neckCm || body.neck_cm || rawBody.neckCm || rawBody.neck_cm || rawCircumferences.neck_cm) || null;
   const waist = Number(rawBody.waistCm || rawBody.waist_cm || rawCircumferences.waist_cm || effectiveRaw?.waist_cm) || null;
   const hip = Number(body.hipCm || body.hip_cm || rawBody.hipCm || rawBody.hip_cm || rawCircumferences.hips_cm) || null;
 
 
-  // Calculate US Navy Body Fat if neck and waist are present and direct bodyFat was not supplied
-  if (!bodyFat && neck && waist && waist > neck) {
-    if (isMale) {
-      const logWaistNeck = Math.log10(waist - neck);
-      const logHeight = Math.log10(height);
-      const calculatedFat = 495 / (1.0324 - 0.19077 * logWaistNeck + 0.15456 * logHeight) - 450;
-      if (calculatedFat >= 5 && calculatedFat <= 50) {
-        bodyFat = Math.round(calculatedFat * 10) / 10;
-      }
-    } else if (hip && (waist + hip) > neck) {
-      const logWaistHipNeck = Math.log10(waist + hip - neck);
-      const logHeight = Math.log10(height);
-      const calculatedFat = 495 / (1.29579 - 0.35004 * logWaistHipNeck + 0.22100 * logHeight) - 450;
-      if (calculatedFat >= 8 && calculatedFat <= 55) {
-        bodyFat = Math.round(calculatedFat * 10) / 10;
-      }
-    }
-  }
 
   // 1. BMR Calculation (Katch-McArdle if body fat provided, otherwise Mifflin-St Jeor)
   let bmr = 0;
@@ -436,55 +411,23 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const tdee = Math.round(bmr * activityFactor);
 
   // 3. Goal-Driven Calorie Target
-  // The canonical goal enum folds recomposition into FAT_LOSS; recover it from the submitted answer.
+  // P1-B2: one shared resolution. The raw answer wins for RECOMP and
+  // COACH_DECIDES (the canonical goal can only carry what the adapter
+  // preserved); otherwise the canonical goal wins. A missing goal throws —
+  // it never silently becomes fat loss.
   const rawGoal = String(effectiveRaw?.goals?.primary ?? effectiveRaw?.primary_goal ?? "").trim().toUpperCase();
-  const isRecomposition = rawGoal.includes("RECOMP") || rawGoal.includes("إعادة تكوين") || rawGoal.includes("اعادة تكوين");
-  let primaryGoal = isRecomposition ? "BODY_RECOMPOSITION" : (goals.primary || "FAT_LOSS");
-  // Bulking with high body fat (above 25% men / 35% women, or a BMI of 30+ when body fat is unknown)
-  // adds fat to a body that already carries too much. Recomposition - a small deficit with high
-  // protein and training - builds muscle while fat comes down; the coach sees why the goal changed.
-  let goalRedirect = null;
+  const rawNormalized = normalizeGoal(rawGoal);
+  // P1-B2: the early decision-time resolution may already have replaced the
+  // canonical goal with the resolved one; requested_primary (set there)
+  // carries the ORIGINAL goal so the redirect record below is still built
+  // (e.g. bulk -> recomposition) instead of silently vanishing.
+  const requestedGoal = (rawNormalized === "BODY_RECOMPOSITION" || rawNormalized === "COACH_DECIDES")
+    ? rawNormalized
+    : (normalizeGoal(goals.requested_primary) ?? normalizeGoal(goals.primary) ?? rawNormalized);
   const bmiNow = weight / ((height / 100) ** 2);
-  const tooMuchFatToBulk = bodyFat ? bodyFat > (isMale ? 25 : 35) : bmiNow >= 30;
-  // "Let the coach decide": high body fat -> fat loss; moderate -> fat loss with muscle building
-  // (recomposition); lean -> muscle gain. The coach sees the suggestion and why before approving.
-  if (rawGoal === "COACH_DECIDES") {
-    const moderateFat = bodyFat ? bodyFat > (isMale ? 18 : 28) : bmiNow >= 25;
-    const chosen = tooMuchFatToBulk ? "FAT_LOSS" : moderateFat ? "BODY_RECOMPOSITION" : "MUSCLE_GAIN";
-    const chosenAr = { FAT_LOSS: "نزول دهون ووزن", BODY_RECOMPOSITION: "نزول دهون مع شد وبناء عضل", MUSCLE_GAIN: "زيادة عضل ووزن" }[chosen];
-    const basis = bodyFat ? `نسبة الدهون ${bodyFat}%` : `مؤشر كتلة الجسم ${bmiNow.toFixed(1)}`;
-    goalRedirect = {
-      from: "COACH_DECIDES",
-      to: chosen,
-      coach_review_required: true,
-      reason_ar: `المتدرب ساب اختيار الهدف للكوتش؛ النظام اقترح "${chosenAr}" بناءً على ${basis}. راجعه قبل اعتماد الخطة.`,
-    };
-    primaryGoal = chosen;
-  }
-  // A body under BMI 18.5 asking to lose weight: never a deficit on a body that light. The goal
-  // becomes building muscle and the coach reads why, so he can talk to the client and change it
-  // (WHO thinness; severe thinness under 16 is refused earlier, api/services/serviceScope.js).
-  const UNDERWEIGHT_BMI = 18.5;
-  // Adults only: a BMI of 17-18 is normal for a growing child (see the young trainee rules below).
-  if (!isYoungTrainee && bmiNow < UNDERWEIGHT_BMI && (primaryGoal === "FAT_LOSS" || primaryGoal === "BODY_RECOMPOSITION")) {
-    goalRedirect = {
-      from: primaryGoal,
-      to: "MUSCLE_GAIN",
-      coach_review_required: true,
-      reason_ar: `وزن المتدرب تحت الطبيعي (مؤشر كتلة الجسم ${bmiNow.toFixed(1)}) وطلب نزول وزن؛ النظام حوّل الهدف لبناء عضل من غير أي عجز حراري. كلّمه: لو الهدف اتكتب غلط عدّله من المحرر، ولو مصمم على النزول وجّهه لدكتور الأول.`,
-    };
-    primaryGoal = "MUSCLE_GAIN";
-  }
-  if ((primaryGoal === "MUSCLE_GAIN" || primaryGoal === "LEAN_BULK") && tooMuchFatToBulk) {
-    goalRedirect = {
-      from: primaryGoal,
-      to: "BODY_RECOMPOSITION",
-      reason_ar: bodyFat
-        ? `نسبة الدهون ${bodyFat}% أعلى من المناسب لزيادة الوزن؛ الهدف بقى "نزول دهون مع شد وبناء عضل" لحد ما النسبة تنزل، وبعدها نبدأ زيادة العضل والوزن.`
-        : `مؤشر كتلة الجسم ${bmiNow.toFixed(1)} أعلى من المناسب لزيادة الوزن؛ الهدف بقى "نزول دهون مع شد وبناء عضل" لحد ما الوزن ينزل، وبعدها نبدأ زيادة العضل والوزن.`,
-    };
-    primaryGoal = "BODY_RECOMPOSITION";
-  }
+  const { resolved: primaryGoal, redirect: goalRedirect } = resolvePrimaryGoal({
+    goal: requestedGoal, bodyFat, bmi: bmiNow, isMale, isYoungTrainee,
+  });
   let targetCalories = tdee;
   let proteinPerKg = 2.0;
   let calorieAdjustmentDesc = "سعرات صيانة (Maintenance)";
@@ -546,6 +489,11 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     calorieFloorApplied = true;
     calorieAdjustmentDesc += ` (تم رفع السعرات للحد الأدنى الفسيولوجي المطلق ${targetCalories} سعرة)`;
   }
+
+  // P1-B2: the goal target the balance below is measured against, captured
+  // after lactation, young-trainee, and floor adjustments — the energy the
+  // client was actually promised.
+  const goalTargetCalories = targetCalories;
 
   // Protein reference weight: grams per kg of total weight overshoot in people carrying a lot of fat
   // mass (a 140 kg client would get ~310 g/day). Use the weight this lean mass would have at a healthy
@@ -721,6 +669,15 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       }
     }
     targetCalories = proteinG * 4 + carbG * 4 + fatG * 9;
+  }
+  // P1-B2 (Q17): a maintenance-type goal whose balance cut more than 10%
+  // under its goal target is refused, never delivered as maintenance. The
+  // ENERGY step above can drag a maintenance client deep into deficit (the
+  // audited case cut 32%); the coach must resolve the goal or the clinical
+  // limits instead of approving a deficit wearing a maintenance label.
+  if (isMaintenanceGoal(primaryGoal) && targetCalories < Math.round(goalTargetCalories * 0.90)) {
+    const cutPct = Math.round((1 - targetCalories / goalTargetCalories) * 100);
+    throw new RangeError(`خطة الصيانة رُفضت ولم تُسلَّم: الموازنة كانت ستنزل السعرات من ${goalTargetCalories} إلى ${targetCalories} سعرة (عجز ${cutPct}%) تحت هدف الصيانة، والحد المسموح 10%. راجع الهدف أو الحدود السريرية مع العميل قبل إعادة البناء.`);
   }
   // Built when the targets are returned: the PCOS lower-carb below may add its own steps.
   const energyBalanceNoteAr = () => balanceSteps.length === 0 ? null : [
@@ -1026,6 +983,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     calories_kcal: targetCalories,
     calorie_adjustment_desc: calorieAdjustmentDesc,
     effective_goal: goalRedirect ? goalRedirect.to : null,
+    resolved_goal: primaryGoal,
     goal_redirect: goalRedirect,
     protein_g: proteinG,
     total_protein_g: proteinG,
@@ -1163,6 +1121,42 @@ export function buildMasterEngineV2(inputs) {
   if (!Number.isFinite(bodyHeight) || bodyHeight < 120 || bodyHeight > 250) {
     throw new RangeError(`قيمة الطول غير صالحة فسيولوجياً (${canonicalIntake.body?.heightCm} سم). لا يمكن بناء خطة بطول غير صالح.`);
   }
+
+  // P1-B2: resolve the goal BEFORE the decision is evaluated, so the decision
+  // record, the training/mobility engines, and the nutrition pipeline all read
+  // the goal the plan is actually built on — never a folded canonical goal.
+  // Same shared module and same body-fat computation as the plan-time
+  // resolution below, so both agree by construction. A missing goal throws
+  // here, before any plan is built.
+  const earlyPersonal = canonicalIntake.personal || canonicalIntake.client || {};
+  const earlyIsMale = earlyPersonal.sex
+    ? earlyPersonal.sex !== "FEMALE"
+    : (String(earlyPersonal.gender || earlyPersonal.client_gender || "").trim().toUpperCase() !== "FEMALE");
+  const earlyAge = earlyPersonal.dateOfBirth
+    ? calculateAge(earlyPersonal.dateOfBirth, evaluationContext.assessmentDate)
+    : Number(earlyPersonal.age) || 28;
+  const earlyBodyFat = resolveBodyFat({
+    body: canonicalIntake.body || {},
+    rawBody: effectiveIntake?.body || {},
+    rawCircumferences: effectiveIntake?.circumferences || {},
+    effectiveRaw: effectiveIntake,
+    isMale: earlyIsMale,
+    height: bodyHeight,
+  });
+  const earlyRawNormalized = normalizeGoal(effectiveIntake?.goals?.primary ?? effectiveIntake?.primary_goal);
+  const earlyRequestedGoal = (earlyRawNormalized === "BODY_RECOMPOSITION" || earlyRawNormalized === "COACH_DECIDES")
+    ? earlyRawNormalized
+    : (normalizeGoal(canonicalIntake.goals?.primary) ?? earlyRawNormalized);
+  const earlyResolved = resolvePrimaryGoal({
+    goal: earlyRequestedGoal,
+    bodyFat: earlyBodyFat,
+    bmi: bodyWeight / ((bodyHeight / 100) ** 2),
+    isMale: earlyIsMale,
+    isYoungTrainee: Number.isFinite(earlyAge) && earlyAge > 0 && earlyAge < 18,
+  }).resolved;
+  // The original goal is kept as requested_primary so the plan-time
+  // resolution below can still record its redirect (see there).
+  canonicalIntake.goals = { ...canonicalIntake.goals, primary: earlyResolved, requested_primary: canonicalIntake.goals?.primary };
 
   // 1. Evaluate Intake
   const intake_decision = evaluateIntake(canonicalIntake, evaluationContext);

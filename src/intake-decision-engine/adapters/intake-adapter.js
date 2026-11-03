@@ -116,13 +116,15 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       'تضخيم': 'MUSCLE_GAIN',
       'بناء عضل': 'MUSCLE_GAIN',
       'زيادة عضل': 'MUSCLE_GAIN',
-      RECOMPOSITION: 'FAT_LOSS',
-      BODY_RECOMPOSITION: 'FAT_LOSS',
-      // "Let the coach decide": the plan engine picks the goal from body fat; see build-master-engine-v2.
-      COACH_DECIDES: 'FAT_LOSS',
-      RECOMP: 'FAT_LOSS',
-      'إعادة تكوين': 'FAT_LOSS',
-      'اعادة تكوين': 'FAT_LOSS',
+      // P1-B2: recomposition and "let the coach decide" are carried through
+      // unchanged — folding them into FAT_LOSS made the decision say DEFICIT
+      // while the plan delivered a surplus or a smaller deficit.
+      RECOMPOSITION: 'BODY_RECOMPOSITION',
+      BODY_RECOMPOSITION: 'BODY_RECOMPOSITION',
+      COACH_DECIDES: 'COACH_DECIDES',
+      RECOMP: 'BODY_RECOMPOSITION',
+      'إعادة تكوين': 'BODY_RECOMPOSITION',
+      'اعادة تكوين': 'BODY_RECOMPOSITION',
       WEIGHT_MAINTENANCE: 'WEIGHT_MAINTENANCE',
       MAINTENANCE: 'WEIGHT_MAINTENANCE',
       'تثبيت وزن': 'WEIGHT_MAINTENANCE',
@@ -142,8 +144,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       canonicalGoal = VALID_GOALS_MAP[g];
     } else {
       throw new IntakeValidationError(
-        [{ path: 'goals.primary', code: 'INVALID_FIELD_VALUE', message: `قيمة غير صالحة للهدف الرئيسي: '${rawGoal}'. القيم المسموحة: FAT_LOSS, MUSCLE_GAIN, RECOMPOSITION, WEIGHT_MAINTENANCE, ATHLETIC_PERFORMANCE.` }],
-        `قيمة غير صالحة للهدف الرئيسي: '${rawGoal}'. القيم المسموحة: FAT_LOSS, MUSCLE_GAIN, RECOMPOSITION, WEIGHT_MAINTENANCE, ATHLETIC_PERFORMANCE.`,
+        [{ path: 'goals.primary', code: 'INVALID_FIELD_VALUE', message: `قيمة غير صالحة للهدف الرئيسي: '${rawGoal}'. القيم المسموحة: FAT_LOSS, MUSCLE_GAIN, RECOMPOSITION, WEIGHT_MAINTENANCE, ATHLETIC_PERFORMANCE, COACH_DECIDES.` }],
+        `قيمة غير صالحة للهدف الرئيسي: '${rawGoal}'. القيم المسموحة: FAT_LOSS, MUSCLE_GAIN, RECOMPOSITION, WEIGHT_MAINTENANCE, ATHLETIC_PERFORMANCE, COACH_DECIDES.`,
         'INVALID_FIELD_VALUE',
         'primary_goal',
         rawGoal
@@ -276,7 +278,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
   if (!intake.goals && (intake.primary_goal || canonicalGoal)) {
     intake.goals = {
-      primary: canonicalGoal || 'FAT_LOSS'
+      primary: canonicalGoal || null
     };
   }
 
@@ -572,8 +574,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     LEAN_BULK: "MUSCLE_GAIN",
     BULK: "MUSCLE_GAIN",
     HYPERTROPHY: "MUSCLE_GAIN",
-    BODY_RECOMPOSITION: "FAT_LOSS",
-    RECOMP: "FAT_LOSS",
+    BODY_RECOMPOSITION: "BODY_RECOMPOSITION",
+    RECOMP: "BODY_RECOMPOSITION",
+    COACH_DECIDES: "COACH_DECIDES",
     WEIGHT_MAINTENANCE: "WEIGHT_MAINTENANCE",
     MAINTENANCE: "WEIGHT_MAINTENANCE",
     GENERAL_HEALTH: "GENERAL_HEALTH",
@@ -581,7 +584,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     OTHER: "OTHER"
   };
   const canonicalGoals = {
-    primary: canonicalGoal || primaryGoalMap[goals.primary] || "FAT_LOSS",
+    // P1-B2: a missing goal stays null so validation refuses it — it never silently becomes fat loss.
+    primary: canonicalGoal || primaryGoalMap[goals.primary] || null,
     secondaryTraining: goals.secondaryTraining || "NONE"
   };
 
