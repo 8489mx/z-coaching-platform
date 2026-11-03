@@ -311,7 +311,9 @@ const ISOLATION_STRETCH_MOVEMENTS = new Set([
 ]);
 
 // Joint-load groups used by the injury firewall (codes from both the V2 templates and the V1 catalog).
-const AXIAL_SQUATS = new Set(["BARBELL_BACK_SQUAT", "BARBELL_FRONT_SQUAT", "SMITH_MACHINE_SQUAT"]);
+// P0-A9: the V1 barbell squat code belongs here too — without it a lower-back client on a
+// 4/5/6-day plan kept a loaded barbell squat (audit S3).
+const AXIAL_SQUATS = new Set(["BARBELL_BACK_SQUAT", "BARBELL_FRONT_SQUAT", "SMITH_MACHINE_SQUAT", "BARBELL_SQUAT"]);
 const LOADED_HINGES = new Set([
   "BARBELL_DEADLIFT",
   "BARBELL_CONVENTIONAL_DEADLIFT",
@@ -325,6 +327,8 @@ const LUNGE_PATTERNS = new Set([
   "DUMBBELL_WALKING_LUNGES",
   "DEFICIT_REVERSE_LUNGE",
   "BODYWEIGHT_SPLIT_SQUAT",
+  // P0-A9: the V1 split-squat code (audit S4).
+  "SPLIT_SQUAT",
 ]);
 const KNEE_DOMINANT_LOADED = new Set(["LEG_PRESS_MACHINE", "GOBLET_SQUAT"]);
 const STANDING_OVERHEAD_PRESSES = new Set([
@@ -347,6 +351,67 @@ const INCLINE_DECLINE_PRESSES = new Set([
   "DECLINE_DUMBBELL_BENCH_PRESS",
   "DECLINE_BENCH_PRESS",
 ]);
+// P0-A9: elbow/wrist loading sets. V1 already holds push/pull slots for these injuries; the
+// mesocycle must not refill them. The catalog carries no grip data, so elbow and wrist share
+// the same exclusion sets.
+const ELBOW_WRIST_PRESS = new Set([
+  "BARBELL_BENCH_PRESS",
+  "BARBELL_FLAT_BENCH_PRESS",
+  "DUMBBELL_BENCH_PRESS",
+  "DUMBBELL_FLOOR_PRESS",
+  "MACHINE_CHEST_PRESS",
+  "PUSH_UP",
+  "INCLINE_PUSH_UP",
+  "CLOSE_GRIP_PUSH_UP",
+  ...INCLINE_DECLINE_PRESSES,
+  ...OVERHEAD_PRESSES,
+]);
+const ELBOW_WRIST_PULL = new Set([
+  "BARBELL_BENT_OVER_ROW",
+  "CHEST_SUPPORTED_ROW",
+  "SEATED_CABLE_ROW",
+  "ONE_ARM_DUMBBELL_ROW",
+  "CHEST_SUPPORTED_INCLINE_DB_ROW",
+  "LAT_PULLDOWN",
+]);
+const ELBOW_WRIST_ARM = new Set([
+  "DUMBBELL_BICEPS_CURL",
+  "INCLINE_DUMBBELL_CURL",
+  "DUMBBELL_HAMMER_CURL",
+  "BICEPS_CURL",
+  "OVERHEAD_CABLE_TRICEPS_EXTENSION",
+  "DUMBBELL_OVERHEAD_TRICEPS_EXTENSION",
+  "TRICEPS_ROPE_PUSHDOWN",
+  "CABLE_TRICEPS_ROPE_PUSHDOWN",
+  "CABLE_TRICEPS_PUSHDOWN",
+]);
+// P0-A9: hip loading = any squat, lunge, hinge, thrust or bridge under load.
+const HIP_LOADED = new Set([
+  ...AXIAL_SQUATS,
+  "GOBLET_SQUAT",
+  "LEG_PRESS_MACHINE",
+  "HACK_SQUAT_MACHINE",
+  "INCLINE_LEG_PRESS",
+  ...LUNGE_PATTERNS,
+  ...LOADED_HINGES,
+  "BARBELL_HIP_THRUST",
+  "HIP_THRUST",
+  "DUMBBELL_GLUTE_BRIDGE",
+  "GLUTE_BRIDGE",
+]);
+// P0-A9: ankle loading = squats, lunges and calf raises (the ankle moves under load).
+const ANKLE_LOADED = new Set([
+  ...AXIAL_SQUATS,
+  "GOBLET_SQUAT",
+  "LEG_PRESS_MACHINE",
+  "HACK_SQUAT_MACHINE",
+  "INCLINE_LEG_PRESS",
+  ...LUNGE_PATTERNS,
+  "BODYWEIGHT_SQUAT",
+  "STANDING_CALF_RAISE",
+  "SEATED_CALF_RAISE",
+  "DUMBBELL_CALF_RAISE",
+]);
 // When a substitution would repeat an exercise already in the session, use this instead.
 const DUPLICATE_ALTERNATIVES = Object.freeze({
   DUMBBELL_LATERAL_RAISE: "ROTATOR_CUFF_EXTERNAL_ROTATION",
@@ -365,6 +430,13 @@ const INJURY_CUES_AR = Object.freeze({
   LOWER_BACK: "حماية أسفل الظهر: تم استبدال التحميل المحوري والانحناء المحمل ببديل بظهر مسنود؛ ثبّت الحوض والعمود الفقري في وضع محايد وأوقف التمرين عند أي ألم ينزل للرجل.",
   KNEE: "حماية الركبة: اشتغل في مدى حركي بدون ألم (ثني الركبة حتى 90 درجة تقريباً) ونزول بطيء متحكم؛ ألم خفيف لا يتجاوز 3 من 10 ويختفي خلال 24 ساعة مقبول، وأكثر من ذلك يستدعي تقليل المدى أو الوزن.",
   SHOULDER: "حماية الكتف: تم حذف الضغط فوق الرأس والنزول العميق في تمارين الصدر؛ استخدم قبضة محايدة، وارفع الذراع في مستوى لوح الكتف (30 درجة أمام الجسم) بدون تجاوز مستوى الكتف.",
+  // P0-A9: cues for the new guards (held slots are recorded on the plan flag, not here,
+  // because a dropped exercise carries no prescription to attach a cue to).
+  ELDERLY_HIGH_BMI: "بداية محافظة لكبار السن أو الوزن المرتفع: الأسبوع الأول تمارين تأسيسية بأوزان خفيفة بدون بار على الظهر وبدون قفز، ومراجعة المدرب مطلوبة قبل التقدم للبار من الأسبوع الثاني.",
+  ELBOW: "حماية الكوع: تم حذف التمارين المحملة على الكوع من الخطة؛ راجع المدرب لاختيار بدائل مناسبة.",
+  WRIST: "حماية الرسغ: تم حذف التمارين المحملة على الرسغ من الخطة؛ راجع المدرب لاختيار بدائل مناسبة.",
+  HIP: "حماية الحوض: تم حذف التمارين المحملة على الحوض من الخطة؛ راجع المدرب لاختيار بدائل مناسبة.",
+  ANKLE: "حماية الكاحل: تم حذف التمارين المحملة على الكاحل من الخطة؛ راجع المدرب لاختيار بدائل مناسبة.",
 });
 
 const BEGINNER_MIN_RIR = 2;
@@ -534,6 +606,13 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
   const hasLowerBackInjury = checkInjury(["LOWER_BACK", "SPINE", "LUMBAR", "BACK"], ["HINGE", "DEADLIFT"]);
   const hasShoulderInjury = checkInjury(["SHOULDER", "ROTATOR_CUFF", "NECK"], ["OVERHEAD", "PRESS"]);
   const hasKneeInjury = checkInjury(["KNEE"], ["SQUAT", "LUNGE"]);
+  // P0-A9: area-only matching for the new joints. Movement keywords are deliberately empty:
+  // movement-alone matching falsely fires other joints' guards (audit S19: hip/ankle mapped
+  // to SQUAT/HINGE movements would otherwise trigger the knee/lower-back guards).
+  const hasElbowInjury = checkInjury(["ELBOW"]);
+  const hasWristInjury = checkInjury(["WRIST"]);
+  const hasHipInjury = checkInjury(["HIP"]);
+  const hasAnkleInjury = checkInjury(["ANKLE"]);
   const hasInjuries =
     hasLowerBackInjury ||
     hasShoulderInjury ||
@@ -554,6 +633,69 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     medical.hasHeartCondition === true ||
     rawIntake.hasHypertension === true ||
     rawMedicalConditions.some(c => c.includes("HYPERTENSION") || c.includes("HEART_CONDITION") || c.includes("HIGH_BLOOD_PRESSURE"));
+
+  // P0-A9: elderly / high-BMI guard (owner decision Q13: age 65+ and/or BMI 35+, beginners).
+  // Age sources, in order: explicit option, raw personal.age, date of birth (the canonical
+  // intake stores an age input as a birth year), decision profile. BMI from raw body
+  // weight/height. Fail-closed: a beginner whose age or BMI cannot be determined is flagged
+  // for coach review instead of being treated as young/lean. Note: the intake adapter
+  // defaults a missing age to 1998-01-01 and missing weight/height to 75kg/175cm, so
+  // callers passing adapter output can never look "unknown" — the unknown branch covers
+  // direct callers that omit personal/body entirely.
+  const toFiniteNumberOrNull = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+  const rawPersonal = rawIntake.personal || {};
+  const rawBody = rawIntake.body || {};
+  let clientAge = toFiniteNumberOrNull(options.clientAge ?? rawPersonal.age ?? rawIntake.age ?? intakeDecision.profile?.age);
+  if (clientAge === null) {
+    const dob = rawPersonal.dateOfBirth || rawIntake.dateOfBirth || intakeDecision.profile?.dateOfBirth;
+    if (typeof dob === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dob)) {
+      const birth = new Date(dob + "T00:00:00Z");
+      if (!Number.isNaN(birth.getTime())) {
+        const now = new Date();
+        let years = now.getUTCFullYear() - birth.getUTCFullYear();
+        const monthDiff = now.getUTCMonth() - birth.getUTCMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && now.getUTCDate() < birth.getUTCDate())) years -= 1;
+        clientAge = years;
+      }
+    }
+  }
+  const clientWeightKg = toFiniteNumberOrNull(options.clientWeightKg ?? rawBody.weightKg ?? rawIntake.weight_kg ?? intakeDecision.profile?.weight_kg);
+  const clientHeightCm = toFiniteNumberOrNull(options.clientHeightCm ?? rawBody.heightCm ?? rawIntake.height_cm ?? intakeDecision.profile?.height_cm);
+  const clientBmi = (clientWeightKg !== null && clientHeightCm !== null && clientHeightCm > 0)
+    ? clientWeightKg / ((clientHeightCm / 100) ** 2)
+    : null;
+  const isBeginnerClient = !isAdvanced && !isIntermediate;
+  const elderlyHighBmi = isBeginnerClient && ((clientAge !== null && clientAge >= 65) || (clientBmi !== null && clientBmi >= 35));
+  const unknownAgeOrBmi = isBeginnerClient && (clientAge === null || clientBmi === null);
+
+  // P0-A9: plan-level coach-review flags. Every held/excluded slot is recorded here (deduped
+  // by joint+slot+code) so nothing is silently dropped; the flags ride on the returned program.
+  const guardReviewFlags = [];
+  const guardReviewFlagKeys = new Set();
+  const flagHeldSlot = (joint, slotCode, code) => {
+    const key = joint + "|" + slotCode + "|" + code;
+    if (!guardReviewFlagKeys.has(key)) {
+      guardReviewFlagKeys.add(key);
+      guardReviewFlags.push(Object.freeze({ joint, slot_code: slotCode, excluded_exercise: code }));
+    }
+  };
+  if (elderlyHighBmi) {
+    guardReviewFlags.push(Object.freeze({
+      type: "ELDERLY_HIGH_BMI",
+      age: clientAge,
+      bmi: clientBmi !== null ? Math.round(clientBmi * 10) / 10 : null,
+      note_ar: INJURY_CUES_AR.ELDERLY_HIGH_BMI,
+    }));
+  }
+  if (unknownAgeOrBmi) {
+    guardReviewFlags.push(Object.freeze({
+      type: "UNKNOWN_AGE_OR_BMI",
+      note_ar: "عمر العميل أو مؤشر كتلة جسمه غير معروف: لا يمكن التأكد أنه ليس من فئة كبار السن أو الوزن المرتفع، لذا الخطة تحتاج مراجعة مدرب قبل التسليم.",
+    }));
+  }
 
   // 2. Generate Periodized Weeks
   const weekConfigs = resolveMesocycleWeekConfigs({
@@ -701,11 +843,14 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           // the knee-dominant loaded pair (goblet squat / leg press, including the lower-back
           // guard's substitutes above) all become hip-extension work, exactly like lunges.
           // Goblet squats and leg presses stay in the plan only for clients without a knee injury.
+          // P0-A9: the V1 bodyweight squat is knee-dominant too (audit S4); it is not in the
+          // loaded pair, so it is listed explicitly rather than renamed into that set.
           if (
             AXIAL_SQUATS.has(finalCode) ||
             finalCode === "HACK_SQUAT_MACHINE" ||
             KNEE_DOMINANT_LOADED.has(finalCode) ||
-            LUNGE_PATTERNS.has(finalCode)
+            LUNGE_PATTERNS.has(finalCode) ||
+            finalCode === "BODYWEIGHT_SQUAT"
           ) {
             finalCode = isHome ? "GLUTE_BRIDGE" : "BARBELL_HIP_THRUST";
           }
@@ -723,6 +868,52 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             finalCode = "ROTATOR_CUFF_EXTERNAL_ROTATION";
           }
           if (finalCode !== beforeShoulder) injuryCues.push(INJURY_CUES_AR.SHOULDER);
+        }
+
+        // P0-A9: elderly / high-BMI intro week (week 1 only): no barbell axial loading and
+        // no Bulgarian split squat as opening lifts. The replacements are the safest
+        // alternatives the codebase already offers beginners: goblet squat (the home
+        // template and the safe default for KNEE_DOMINANT), bodyweight split squat
+        // (audit S1: stable split stance before Bulgarian, with support), and dumbbell
+        // Romanian deadlift (the FULL_BODY_B hinge). Week 1 sets are capped at 2 below.
+        // Weeks 2+ still contain barbell work: the plan-level ELDERLY_HIGH_BMI flag tells
+        // the coach that barbell progression from week 2 needs their clearance.
+        if (elderlyHighBmi && config.week_number === 1) {
+          const beforeElderly = finalCode;
+          if (AXIAL_SQUATS.has(finalCode)) {
+            finalCode = "GOBLET_SQUAT";
+          } else if (finalCode === "BULGARIAN_SPLIT_SQUAT") {
+            finalCode = "BODYWEIGHT_SPLIT_SQUAT";
+          } else if (LOADED_HINGES.has(finalCode)) {
+            finalCode = "DUMBBELL_ROMANIAN_DEADLIFT";
+          }
+          if (finalCode !== beforeElderly) injuryCues.push(INJURY_CUES_AR.ELDERLY_HIGH_BMI);
+        }
+
+        // P0-A9: elbow/wrist/hip/ankle guards. The codebase defines no safe substitute for
+        // loaded upper-body work without elbow/wrist load, and no hip-safe substitute for
+        // hip patterns (the knee guard's hip-extension conversion is exactly what a hip
+        // injury must avoid), so the joint-loading exercise is excluded and the held slot
+        // is recorded on the plan flag for the coach to fill. This follows V1, which
+        // already holds push/pull slots for these injuries — the mesocycle must not refill
+        // them with loaded work. These guards run after the knee/lower-back guards on
+        // purpose: a hip client falsely tripping the knee guard (audit S19) gets the
+        // knee guard's hip-thrust substitute removed again here.
+        if (hasElbowInjury && (ELBOW_WRIST_PRESS.has(finalCode) || ELBOW_WRIST_PULL.has(finalCode) || ELBOW_WRIST_ARM.has(finalCode))) {
+          flagHeldSlot("ELBOW", ex.slot_code, finalCode);
+          finalCode = null;
+        }
+        if (hasWristInjury && (ELBOW_WRIST_PRESS.has(finalCode) || ELBOW_WRIST_PULL.has(finalCode) || ELBOW_WRIST_ARM.has(finalCode))) {
+          flagHeldSlot("WRIST", ex.slot_code, finalCode);
+          finalCode = null;
+        }
+        if (hasHipInjury && HIP_LOADED.has(finalCode)) {
+          flagHeldSlot("HIP", ex.slot_code, finalCode);
+          finalCode = null;
+        }
+        if (hasAnkleInjury && ANKLE_LOADED.has(finalCode)) {
+          flagHeldSlot("ANKLE", ex.slot_code, finalCode);
+          finalCode = null;
         }
 
         // Hypertension & Cardiovascular Guard: Exclude inverted postures & excessive Valsalva compressive exercises
@@ -845,6 +1036,10 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         ) {
           calculatedSets = Math.min(5, calculatedSets + 1);
         }
+
+        // P0-A9: elderly / high-BMI intro week is technique-first: at most 2 sets in week 1.
+        // Placed after the muscle-bias block so the cap wins over any +1 set.
+        if (elderlyHighBmi && config.week_number === 1) calculatedSets = Math.min(calculatedSets, 2);
 
         // Adjust RIR across weeks (Intro RIR 3 -> Loading RIR 2 -> Intensify RIR 1 -> Peak RIR 0 -> Deload RIR 4),
         // never below the proximity-to-failure floor for this lifter and exercise class.
@@ -981,7 +1176,21 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
       hypertension_guard_active: Boolean(hasHypertensionOrHeart),
       min_rir_enforced: hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR : null,
       valsalva_safety_cue_ar: hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.VALSALVA_SAFETY_CUE_AR : null,
+      // P0-A9: elderly / high-BMI guard (Q13) and the new joint guards.
+      elderly_high_bmi_guard_active: elderlyHighBmi,
+      elderly_high_bmi_age: elderlyHighBmi ? clientAge : null,
+      elderly_high_bmi_bmi: elderlyHighBmi && clientBmi !== null ? Math.round(clientBmi * 10) / 10 : null,
+      unknown_age_or_bmi_flagged: unknownAgeOrBmi,
+      joint_guards_active: Object.freeze({
+        elbow: hasElbowInjury,
+        wrist: hasWristInjury,
+        hip: hasHipInjury,
+        ankle: hasAnkleInjury,
+      }),
     },
+    // P0-A9: every held/excluded slot + the elderly/unknown flags, for the coach to review
+    // before approving the plan. The approval gate withholds the plan until then.
+    coach_review_flags: Object.freeze(guardReviewFlags),
     weeks: Object.freeze(periodizedWeeks),
     preflight_report: preflight,
   });
