@@ -14,7 +14,20 @@
  */
 
 import { Op } from "sequelize";
-import { User, Order } from "../models/index.js";
+import fs from "fs";
+import path from "path";
+import {
+  User,
+  Order,
+  Program,
+  IntakeSubmission,
+  CheckinSubmission,
+  ProgressPhoto,
+  WorkoutLog,
+  NutritionPlan,
+  WorkoutPlan,
+} from "../models/index.js";
+import { PROGRESS_PHOTOS_DIR } from "../utils/photoStorage.js";
 import { recordAuditEvent } from "./auditLog.service.js";
 
 /**
@@ -48,6 +61,17 @@ export async function restoreClientAccountService({ user_id, client_code, coach_
 
   if (!user) {
     return { success: false, statusCode: 404, error: "المستخدم غير موجود" };
+  }
+
+  // P0-A5: a permanently purged account must never come back, even if some
+  // other path flipped its status back to DEACTIVATED after the purge. The
+  // notes marker is the durable proof of purge; it wins over the status.
+  if (user.subscription_status === "PERMANENTLY_PURGED" || String(user.notes || "").includes("[PERMANENTLY_PURGED:")) {
+    return {
+      success: false,
+      statusCode: 410,
+      error: "تم مسح هذا الحساب نهائياً بعد انتهاء مهلة الـ 90 يوماً ولا يمكن استعادته."
+    };
   }
 
   if (user.subscription_status !== "DEACTIVATED") {
@@ -101,8 +125,12 @@ export async function restoreClientAccountService({ user_id, client_code, coach_
 /**
  * Permanently purges PII for accounts deleted more than retentionDays ago,
  * while strictly preserving financial and accounting records (Orders).
- * @param {number} retentionDays 
- * @returns {Promise<{ purged_count: number, financial_records_retained: number }>}
+ * P0-A5: the old version scrubbed only the User row, leaving programs,
+ * intake answers, check-ins, workout logs, plans, photo rows AND photo
+ * files behind forever. This version erases all of them; only the archived
+ * User stub (no name, no email, no phone, no password) and the Orders stay.
+ * @param {number} retentionDays
+ * @returns {Promise<{ purged_count: number, financial_records_retained: number, related_records_deleted: number, photo_files_deleted: number }>}
  */
 export async function purgeExpiredDeletedAccounts(retentionDays = 90) {
   const deactivatedUsers = await User.findAll({
@@ -113,6 +141,8 @@ export async function purgeExpiredDeletedAccounts(retentionDays = 90) {
 
   let purgedCount = 0;
   let totalFinancialOrdersRetained = 0;
+  let totalRelatedRecordsDeleted = 0;
+  let totalPhotoFilesDeleted = 0;
   const now = Date.now();
 
   for (const user of deactivatedUsers) {
@@ -120,9 +150,33 @@ export async function purgeExpiredDeletedAccounts(retentionDays = 90) {
     const elapsedDays = (now - deletionDate.getTime()) / (1000 * 60 * 60 * 24);
 
     if (elapsedDays >= retentionDays) {
-      // Count financial ledger orders before wiping PII
+      // Count financial ledger orders before wiping PII (Orders are kept).
       const orders = await Order.findAll({ where: { client_id: user.id } });
       totalFinancialOrdersRetained += orders.length;
+
+      const clientCode = user.client_code;
+
+      // Erase related personal/health rows. Children first: check-ins
+      // reference programs (adapted_program_id) and logs reference programs.
+      totalRelatedRecordsDeleted += await WorkoutLog.destroy({ where: { user_id: user.id } });
+      totalRelatedRecordsDeleted += await CheckinSubmission.destroy({ where: { user_id: user.id } });
+      totalRelatedRecordsDeleted += await Program.destroy({ where: { user_id: user.id } });
+      totalRelatedRecordsDeleted += await IntakeSubmission.destroy({ where: { user_id: user.id } });
+      totalRelatedRecordsDeleted += await NutritionPlan.destroy({ where: { user_id: user.id } });
+      totalRelatedRecordsDeleted += await WorkoutPlan.destroy({ where: { user_id: user.id } });
+      totalRelatedRecordsDeleted += await ProgressPhoto.destroy({ where: { user_id: user.id } });
+
+      // Erase the photo files themselves, not just their rows.
+      if (clientCode) {
+        try {
+          const clientPhotosDir = path.join(PROGRESS_PHOTOS_DIR, String(clientCode));
+          const entries = fs.readdirSync(clientPhotosDir, { withFileTypes: true });
+          totalPhotoFilesDeleted += entries.filter((e) => e.isFile()).length;
+          fs.rmSync(clientPhotosDir, { recursive: true, force: true });
+        } catch {
+          // No photo folder for this client: nothing to erase.
+        }
+      }
 
       const nowIso = new Date().toISOString();
       const existingNotes = user.notes ? `${user.notes}\n` : "";
@@ -131,6 +185,7 @@ export async function purgeExpiredDeletedAccounts(retentionDays = 90) {
         full_name: "مشترك مؤرشف",
         phone_number: `deleted_${user.id}_${now}`,
         email: null,
+        password: null,
         avatar: null,
         subscription_status: "PERMANENTLY_PURGED",
         token_version: (user.token_version || 1) + 1,
@@ -143,6 +198,8 @@ export async function purgeExpiredDeletedAccounts(retentionDays = 90) {
 
   return {
     purged_count: purgedCount,
-    financial_records_retained: totalFinancialOrdersRetained
+    financial_records_retained: totalFinancialOrdersRetained,
+    related_records_deleted: totalRelatedRecordsDeleted,
+    photo_files_deleted: totalPhotoFilesDeleted,
   };
 }

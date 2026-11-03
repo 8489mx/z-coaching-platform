@@ -353,6 +353,13 @@ app.post('/api/v1/coach/toggle-freeze', requireAuth, requireAdmin, async (req, r
     }
     if (!user) return res.status(404).json({ success: false, message: 'المشترك غير موجود' });
 
+    // P0-A5: a deleted or permanently purged account must never come back as
+    // ACTIVE through the freeze toggle. Reactivation belongs to the coach
+    // restore flow only (which refuses purged accounts outright).
+    if (user.subscription_status === 'DEACTIVATED' || user.subscription_status === 'PERMANENTLY_PURGED') {
+      return res.status(400).json({ success: false, message: 'هذا الحساب محذوف أو تم مسحه نهائياً ولا يمكن تغيير حالته من هنا. استخدم مسار الاستعادة الخاص بالكوتش.' });
+    }
+
     const newStatus = status === 'FROZEN' ? 'FROZEN' : 'ACTIVE';
     const now = new Date();
 

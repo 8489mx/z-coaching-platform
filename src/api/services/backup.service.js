@@ -16,6 +16,7 @@ import {
   WorkoutPlan,
   RateLimitLog
 } from "../models/index.js";
+import { sanitizeBackupPayload } from "./backupSanitizer.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -169,7 +170,10 @@ export const performDatabaseBackup = async () => {
       workoutPlans,
       rateLimits
     ] = await Promise.all([
-      User.findAll({ attributes: { exclude: ['password_hash'] }, raw: true }).catch(() => []),
+      // P0-A5: exclude the REAL password field. The old code excluded a
+      // nonexistent `password_hash` column, so password hashes leaked into
+      // backups. The payload sanitizer below strips both names anyway.
+      User.findAll({ attributes: { exclude: ['password', 'password_hash'] }, raw: true }).catch(() => []),
       Program.findAll({ raw: true }).catch(() => []),
       IntakeSubmission.findAll({ raw: true }).catch(() => []),
       CheckinSubmission.findAll({ raw: true }).catch(() => []),
@@ -181,38 +185,50 @@ export const performDatabaseBackup = async () => {
       RateLimitLog.findAll({ raw: true }).catch(() => []),
     ]);
 
-    // تطهير إضافي صارم لضمان استبعاد أي حقول حساسة (S4-6)
-    const sanitizedUsers = (users || []).map((u) => {
-      if (!u || typeof u !== 'object') return u;
-      const { password_hash, ...safe } = u;
-      return safe;
+    // P0-A5: sanitize the whole payload before it is written. New backups
+    // contain no password, no client email, no phone number, and no health
+    // field (intake answers, check-in health columns, clinical notes, and
+    // health keys embedded in program_data.client). Table shapes are kept
+    // so a future restore tolerates the missing keys without invented values.
+    const sanitized = sanitizeBackupPayload({
+      users,
+      programs,
+      intakes,
+      checkins,
+      photos,
+      workoutLogs,
+      orders,
+      nutritionPlans,
+      workoutPlans,
+      rateLimits,
     });
 
     const backupPayload = {
-      version: "2.0.0",
+      // 2.1.0 = sanitized format (2.0.0 backups may still contain secrets).
+      version: "2.1.0",
       created_at: new Date().toISOString(),
       backup_id: backupId,
       server_timezone: process.env.TZ || "Africa/Cairo",
       statistics: {
-        total_users: sanitizedUsers.length,
-        total_programs: programs.length,
-        total_intake_submissions: intakes.length,
-        total_checkins: checkins.length,
-        total_photos_indexed: photos.length,
-        total_workout_logs: workoutLogs.length,
-        total_orders: orders.length,
+        total_users: sanitized.users.length,
+        total_programs: sanitized.programs.length,
+        total_intake_submissions: sanitized.intakes.length,
+        total_checkins: sanitized.checkins.length,
+        total_photos_indexed: sanitized.photos.length,
+        total_workout_logs: sanitized.workoutLogs.length,
+        total_orders: sanitized.orders.length,
       },
       data: {
-        users: sanitizedUsers,
-        programs,
-        intakes,
-        checkins,
-        photos,
-        workoutLogs,
-        orders,
-        nutritionPlans,
-        workoutPlans,
-        rateLimits,
+        users: sanitized.users,
+        programs: sanitized.programs,
+        intakes: sanitized.intakes,
+        checkins: sanitized.checkins,
+        photos: sanitized.photos,
+        workoutLogs: sanitized.workoutLogs,
+        orders: sanitized.orders,
+        nutritionPlans: sanitized.nutritionPlans,
+        workoutPlans: sanitized.workoutPlans,
+        rateLimits: sanitized.rateLimits,
       }
     };
 
@@ -247,12 +263,18 @@ export const performDatabaseBackup = async () => {
 };
 
 /**
- * 2. نسخ وأرشفة مجلد صور المشتركين دون المساس بأي ملف قديم نهائياً
+ * 2. نسخ وأرشفة مجلد صور المشتركين، مشفرة بالكامل (P0-A5).
+ * الأرشيف نفسه (بما فيه أسماء الملفات والمجلدات داخل tar) يُشفّر بنفس
+ * AES-256-GCM المستخدم لنسخة قاعدة البيانات، ثم يُحذف الأرشيف غير المشفر
+ * المؤقت. لا يُنتَج أي نسخة صور غير مشفرة من هذا المسار أبداً.
+ * فشل الأرشفة = فشل النسخة (رفض)، وليس نجاحاً بملف فهرس غير مشفر.
  */
 export const performPhotosBackup = async () => {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const backupId = `photos_${timestamp}`;
-  const archivePath = path.join(photosBackupsDir, `${backupId}.tar.gz`);
+  // Encrypted bytes, not gzip: the .enc suffix says so.
+  const archivePath = path.join(photosBackupsDir, `${backupId}.tar.gz.enc`);
+  const tmpTarPath = path.join(photosBackupsDir, `${backupId}.tar.gz.tmp`);
   const uploadsPhotosPath = path.resolve(rootDir, "uploads", "progress_photos");
 
   if (!fs.existsSync(uploadsPhotosPath)) {
@@ -278,49 +300,41 @@ export const performPhotosBackup = async () => {
     }
   }
 
-  // إنشاء أرشيف مضغوط للصور
-  return new Promise((resolve) => {
-    const tarCmd = `tar -czf "${archivePath}" -C "${path.resolve(rootDir, "uploads")}" progress_photos`;
+  // إنشاء أرشيف مضغوط للصور، ثم تشفيره وحذف النسخة غير المشفرة
+  return new Promise((resolve, reject) => {
+    const tarCmd = `tar -czf "${tmpTarPath}" -C "${path.resolve(rootDir, "uploads")}" progress_photos`;
 
     exec(tarCmd, (err) => {
-      if (err) {
-        // في حال تعذر tar، نقوم بإنشاء سجل فهرسي مؤمن
-        console.warn("tar execution notice, generating photo manifest archive:", err.message);
-        const photoManifestPath = path.join(photosBackupsDir, `${backupId}.index.json`);
-        fs.writeFileSync(
-          photoManifestPath,
-          JSON.stringify({
-            created_at: new Date().toISOString(),
-            total_photos: totalPhotos,
-            total_bytes: totalBytes,
-            clients_count: clientFolders.length,
-            client_folders: clientFolders
-          }, null, 2),
-          "utf-8"
-        );
+      try {
+        if (err) {
+          throw new Error(`Photo archive failed: ${err.message}`);
+        }
+        const plainBuffer = fs.readFileSync(tmpTarPath);
+        const encryptedBuffer = encryptBackupPayload(plainBuffer);
+        fs.writeFileSync(archivePath, encryptedBuffer);
         return resolve({
           success: true,
           backupId,
-          archivePath: photoManifestPath,
+          archivePath,
+          fileName: `${backupId}.tar.gz.enc`,
+          sizeBytes: encryptedBuffer.length,
           totalPhotos,
           totalBytes,
           clientsCount: clientFolders.length,
-          type: "INDEX_PRESERVED"
+          type: "TAR_GZ_ENC",
+          is_encrypted: true,
+          encryption_algorithm: "AES-256-GCM",
         });
+      } catch (e) {
+        return reject(e);
+      } finally {
+        // The plaintext tar must never survive, success or failure.
+        try {
+          if (fs.existsSync(tmpTarPath)) fs.unlinkSync(tmpTarPath);
+        } catch (cleanupErr) {
+          console.warn("Could not remove plaintext photo tar temp file:", cleanupErr.message);
+        }
       }
-
-      const archiveStats = fs.existsSync(archivePath) ? fs.statSync(archivePath) : { size: totalBytes };
-      return resolve({
-        success: true,
-        backupId,
-        archivePath,
-        fileName: `${backupId}.tar.gz`,
-        sizeBytes: archiveStats.size,
-        totalPhotos,
-        totalBytes,
-        clientsCount: clientFolders.length,
-        type: "TAR_GZ"
-      });
     });
   });
 };
