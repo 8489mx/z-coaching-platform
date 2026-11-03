@@ -5,7 +5,8 @@ import { getStoredCoachConfig } from '../utils/themeAndCoachConfig';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { getExerciseDisplayNames } from '../utils/exerciseTranslator';
 import { getItemPortionMeta } from '../utils/kitchenYieldEngine';
-import { sanitizeCoachNotesForClient, filterEmptyDaysAndSections } from '../utils/pdfExportEngine';
+import { sanitizeClientFacingPlan, filterEmptyDaysAndSections } from '../utils/pdfExportEngine';
+import { ALLERGY_FLAG_LABELS_AR } from '../utils/foodSwapEngine';
 
 const CSS_STYLES = `
   @page {
@@ -354,6 +355,7 @@ export default function ProgramPdfView() {
   const [loading, setLoading] = useState(true);
   const [program, setProgram] = useState(null);
   const [user, setUser] = useState(null);
+  const [clientView, setClientView] = useState(null);
   const [approvalError, setApprovalError] = useState(null);
 
   const searchParams = new URLSearchParams(window.location.search);
@@ -371,6 +373,7 @@ export default function ProgramPdfView() {
       setApprovalError(null);
       setProgram(null);
       setUser(null);
+      setClientView(null);
       // P0-A3: authenticate the fetch (same stored-token chain as the
       // check-in form) so an approved client actually receives their plan
       // instead of an unauthenticated denial.
@@ -393,11 +396,25 @@ export default function ProgramPdfView() {
         return;
       }
       if (data.master_program || data.program) {
-        setProgram(data.master_program || data.program);
+        // P0-A13: the document renders only the privacy-shielded plan copy.
+        // The shield is deep: nested clinical keys and nested notes are
+        // cleaned at every depth, and the input is never mutated.
+        setProgram(sanitizeClientFacingPlan(data.master_program || data.program));
+      } else {
+        // P0-A13: an approved-looking response with no plan data is an error,
+        // never a reason to render substitute content.
+        setApprovalError('لا توجد خطة معتمدة لعرضها في الوثيقة.');
+        return;
       }
-      if (data.user) setUser(data.user);
+      if (data.user) setUser(sanitizeClientFacingPlan(data.user));
+      // P0-A13: client_view carries the served plate (annotated meals) and
+      // the served cardio prescription; the PDF reads its meals from here
+      // when no culinary meals exist, so it shows what the client gets.
+      if (data.client_view) setClientView(data.client_view);
     } catch (e) {
       console.error('ProgramPdfView load error:', e);
+      // P0-A13: a network failure is an error state, never a demo plan.
+      setApprovalError('تعذر تحميل الوثيقة. يرجى التأكد من الاتصال والمحاولة مجدداً.');
     } finally {
       setLoading(false);
     }
@@ -408,7 +425,7 @@ export default function ProgramPdfView() {
   };
 
   useEffect(() => {
-    if (!loading && (program || user) && (searchParams.get('auto_print') === 'true' || searchParams.get('download') === 'true')) {
+    if (!loading && program && (searchParams.get('auto_print') === 'true' || searchParams.get('download') === 'true')) {
       const timer = setTimeout(() => {
         handlePrint();
       }, 600);
@@ -457,83 +474,57 @@ export default function ProgramPdfView() {
   const clientObj = program?.client || user || {};
   const fastingProfile = extractClientFastingProfile(clientObj, clientObj.answers || program?.intake_summary);
 
-  // Bio-metrics
-  const heightCm = program?.client?.height_cm || user?.height || user?.height_cm || program?.intake_summary?.height || 180;
-  const weightKg = program?.client?.weight_kg || user?.weight || user?.weight_kg || program?.intake_summary?.weight || 80;
-  const bmi = (weightKg / ((heightCm / 100) * (heightCm / 100))).toFixed(1);
-  const bodyFat = program?.client?.body_fat || user?.body_fat || program?.intake_summary?.body_fat || '18.5%';
-  const neckCm = program?.intake_summary?.neck || 40;
-  const waistCm = program?.intake_summary?.waist || 88;
-  const hipsCm = program?.intake_summary?.hips || 102;
-  const primaryGoal = sanitizeGoalLabel(program?.client?.goal_label || program?.client?.primary_goal || user?.primary_goal || program?.intake_summary?.primary_goal || 'خسارة دهون وتنشيف عضلي متقدم');
-  const rawCoachNotes = program?.coach_notes || program?.notes || clientObj?.coach_notes || user?.coach_notes || '';
-  const coachNotes = sanitizeCoachNotesForClient(rawCoachNotes);
+  // Bio-metrics. P0-A13: no invented defaults. A missing value renders as
+  // '—' instead of a fabricated 180 cm / 80 kg / 18.5% / 88 / 102 body.
+  const heightCm = program?.client?.height_cm || user?.height || user?.height_cm || program?.intake_summary?.height || null;
+  const weightKg = program?.client?.weight_kg || user?.weight || user?.weight_kg || program?.intake_summary?.weight || null;
+  const bmi = (heightCm && weightKg) ? (weightKg / ((heightCm / 100) * (heightCm / 100))).toFixed(1) : null;
+  const bodyFat = program?.client?.body_fat || user?.body_fat || program?.intake_summary?.body_fat || null;
+  const neckCm = program?.intake_summary?.neck || null;
+  const waistCm = program?.intake_summary?.waist || null;
+  const hipsCm = program?.intake_summary?.hips || null;
+  const rawGoal = program?.client?.goal_label || program?.client?.primary_goal || user?.primary_goal || program?.intake_summary?.primary_goal || null;
+  const primaryGoal = rawGoal ? sanitizeGoalLabel(rawGoal) : null;
 
-  // Energy & Macros
-  const targetCalories = Math.round(
-    program?.nutrition?.targets?.calories ||
-    program?.nutrition_program?.stages?.energy_target?.target_calories_kcal || 
-    program?.nutrition_program?.macro_targets?.calories_kcal ||
-    2250
+  // Energy & Macros. P0-A13: first finite stored value, else null ('—').
+  // Never the old 2250 / 180 / 230 / 68 invented targets.
+  const firstFiniteTarget = (...vals) => {
+    for (const v of vals) {
+      const n = Number(v);
+      if (Number.isFinite(n)) return Math.round(n);
+    }
+    return null;
+  };
+  const targetCalories = firstFiniteTarget(
+    program?.nutrition?.targets?.calories,
+    program?.nutrition_program?.stages?.energy_target?.target_calories_kcal,
+    program?.nutrition_program?.macro_targets?.calories_kcal
   );
-  const proteinG = Math.round(
-    program?.nutrition?.targets?.protein ||
-    program?.nutrition_program?.stages?.macro_targets?.protein_g || 
-    180
+  const proteinG = firstFiniteTarget(
+    program?.nutrition?.targets?.protein,
+    program?.nutrition_program?.stages?.macro_targets?.protein_g
   );
-  const carbsG = Math.round(
-    program?.nutrition?.targets?.carbs ||
-    program?.nutrition_program?.stages?.macro_targets?.carbohydrate_g || 
-    program?.nutrition_program?.macro_targets?.carb_g ||
-    230
+  const carbsG = firstFiniteTarget(
+    program?.nutrition?.targets?.carbs,
+    program?.nutrition_program?.stages?.macro_targets?.carbohydrate_g,
+    program?.nutrition_program?.macro_targets?.carb_g
   );
-  const fatsG = Math.round(
-    program?.nutrition?.targets?.fats ||
-    program?.nutrition_program?.stages?.macro_targets?.fat_g || 
-    68
+  const fatsG = firstFiniteTarget(
+    program?.nutrition?.targets?.fats,
+    program?.nutrition_program?.stages?.macro_targets?.fat_g
   );
   const hydrationLiters = program?.nutrition_program?.targets?.hydration?.recommended_range_liters
-    || program?.nutrition_program?.hydration?.recommended_range_liters 
+    || program?.nutrition_program?.hydration?.recommended_range_liters
     || program?.nutrition?.hydration?.recommended_range_liters
-    || `${(weightKg * 0.040).toFixed(1)} - ${(weightKg * 0.040 + 0.5).toFixed(1)} لتر/اليوم`;
+    || (weightKg ? `${(weightKg * 0.040).toFixed(1)} - ${(weightKg * 0.040 + 0.5).toFixed(1)} لتر/اليوم` : null);
 
-  // Meals
-  const meals = program?.nutrition?.meals 
-    || program?.nutrition_program?.quantized_plan?.meals 
-    || [
-    {
-      meal_name_ar: 'الوجبة الأولى (وجبة الإفطار)',
-      meal_energy_kcal: 506,
-      items: [
-        { name_ar: 'بيض طازج كامل مسلوق', amount_g: 3, unit: 'حبات' },
-        { name_ar: 'بياض بيض صافي', amount_g: 100, unit: 'جم' },
-        { name_ar: 'شوفان كامل الحبة خام', amount_g: 70, unit: 'جم' },
-        { name_ar: 'توت مشكل أو فراولة طازجة', amount_g: 100, unit: 'جم' }
-      ],
-      protein_g: 34, carbs_g: 52, fat_g: 18
-    },
-    {
-      meal_name_ar: 'الوجبة الثانية (وجبة الغداء)',
-      meal_energy_kcal: 566,
-      items: [
-        { name_ar: 'صدور دجاج متبلة مشوية', amount_g: 200, unit: 'جم' },
-        { name_ar: 'أرز بسمتي مطبوخ', amount_g: 220, unit: 'جم' },
-        { name_ar: 'خضار مشكل سوتيه', amount_g: 150, unit: 'جم' },
-        { name_ar: 'زيت زيتون بكر ممتاز', amount_g: 10, unit: 'جم' }
-      ],
-      protein_g: 48, carbs_g: 62, fat_g: 14
-    },
-    {
-      meal_name_ar: 'الوجبة الثالثة (وجبة العشاء)',
-      meal_energy_kcal: 308,
-      items: [
-        { name_ar: 'جبن قريش طبيعي قليل الملح', amount_g: 150, unit: 'جم' },
-        { name_ar: 'بطاطس مسلوقة أو مشوية', amount_g: 150, unit: 'جم' },
-        { name_ar: 'سلطة خضراء مع خيار وورقيات', amount_g: 150, unit: 'جم' }
-      ],
-      protein_g: 30, carbs_g: 38, fat_g: 4
-    }
-  ];
+  // Meals. P0-A13: the PDF shows the served plate, exactly as the client
+  // app does: annotated culinary meals first, then the annotated served
+  // meals from client_view. No demo meals, ever: an empty list renders an
+  // absence note in the table instead of invented food.
+  const meals = (Array.isArray(program?.nutrition_program?.culinary_meals) && program.nutrition_program.culinary_meals.length > 0)
+    ? program.nutrition_program.culinary_meals
+    : (Array.isArray(clientView?.meals) && clientView.meals.length > 0 ? clientView.meals : []);
 
   // Active Training Week Resolution
   const activeWeekNum = parseInt(searchParams.get('week'), 10) || program?.current_week || clientObj?.current_week || 1;
@@ -541,89 +532,54 @@ export default function ProgramPdfView() {
     ? (program.training_program.weeks.find(w => Number(w.week_number) === Number(activeWeekNum)) || program.training_program.weeks[0])
     : null;
 
-  // Training Sessions
-  const rawSessions = program?.training?.sessions 
-    || program?.training_split?.sessions 
+  // Training Sessions. P0-A13: real sessions only. An empty list renders
+  // no session pages instead of 4 invented demo sessions.
+  const rawSessions = program?.training?.sessions
+    || program?.training_split?.sessions
     || activeWeekObj?.sessions
-    || program?.training_program?.weeks?.[0]?.sessions 
-    || [
-    {
-      session_name: 'الحصة التدريبية 1: الصدر والأكتاف والترايسبس (Push A)',
-      exercises: [
-        { name_en: 'Barbell Bench Press', name_ar: 'بنش برس بالبار مستوي', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
-        { name_en: 'Barbell Bent-Over Row', name_ar: 'تجديف بالبار منحني الظهر', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
-        { name_en: 'Barbell Overhead Press (OHP)', name_ar: 'ضغط كتف بالبار واقفاً', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
-        { name_en: 'Lat Pulldown', name_ar: 'سحب عالي للظهر قبضة واسعة', sets: 3, reps: '8 - 12', rest: '75 ثانية' },
-        { name_en: 'Dumbbell Biceps Curl', name_ar: 'مرجحة بايسبس بالدمبل متبادل', sets: 3, reps: '12 - 15', rest: '60 ثانية' },
-        { name_en: 'Close-Grip Push-Up', name_ar: 'ضغط قبضة ضيقة للترايسبس والصدر', sets: 3, reps: '12 - 20', rest: '60 ثانية' }
-      ]
-    },
-    {
-      session_name: 'الحصة التدريبية 2: الأرجل والسمانة واستقرار الكور (Legs A)',
-      exercises: [
-        { name_en: 'Barbell Back Squat', name_ar: 'سكوات بالبار الخلفي للأرجل', sets: 3, reps: '8 - 10', rest: '120 ثانية' },
-        { name_en: 'Dumbbell Romanian Deadlift', name_ar: 'ديدليفت روماني بالدمبل للخلفيات', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
-        { name_en: 'Dumbbell Reverse Lunge', name_ar: 'طعنات عكسية بالدمبل للأرجل', sets: 3, reps: '10 - 12', rest: '75 ثانية' },
-        { name_en: 'Lying Leg Curl Machine', name_ar: 'مرجحة أرجل خلفية نائماً على الجهاز', sets: 3, reps: '10 - 15', rest: '60 ثانية' },
-        { name_en: 'Dumbbell Calf Raise', name_ar: 'رفع السمانة بالدمبل واقفاً', sets: 3, reps: '15 - 20', rest: '60 ثانية' },
-        { name_en: 'Dead Bug', name_ar: 'تمرين الحشرة الميتة لاستقرار الكور والبطن', sets: 3, reps: '15 - 20', rest: '60 ثانية' }
-      ]
-    },
-    {
-      session_name: 'الحصة التدريبية 3: الظهر والكتف الجانبي والبايسبس (Pull A)',
-      exercises: [
-        { name_en: 'Barbell Overhead Press (OHP)', name_ar: 'ضغط كتف بالبار واقفاً', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
-        { name_en: 'Lat Pulldown', name_ar: 'سحب عالي للظهر قبضة واسعة', sets: 3, reps: '8 - 12', rest: '75 ثانية' },
-        { name_en: 'Barbell Bench Press', name_ar: 'بنش برس بالبار مستوي', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
-        { name_en: 'Barbell Bent-Over Row', name_ar: 'تجديف بالبار منحني الظهر', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
-        { name_en: 'Close-Grip Push-Up', name_ar: 'ضغط قبضة ضيقة للترايسبس والصدر', sets: 3, reps: '12 - 20', rest: '60 ثانية' },
-        { name_en: 'Dumbbell Biceps Curl', name_ar: 'مرجحة بايسبس بالدمبل متبادل', sets: 3, reps: '12 - 15', rest: '60 ثانية' }
-      ]
-    },
-    {
-      session_name: 'الحصة التدريبية 4: الجزء السفلي والظهر السفلي (Legs B)',
-      exercises: [
-        { name_en: 'Dumbbell Romanian Deadlift', name_ar: 'ديدليفت روماني بالدمبل للخلفيات', sets: 3, reps: '8 - 10', rest: '90 ثانية' },
-        { name_en: 'Barbell Back Squat', name_ar: 'سكوات بالبار الخلفي للأرجل', sets: 3, reps: '8 - 10', rest: '120 ثانية' },
-        { name_en: 'Lying Leg Curl Machine', name_ar: 'مرجحة أرجل خلفية نائماً على الجهاز', sets: 3, reps: '10 - 15', rest: '60 ثانية' },
-        { name_en: 'Dumbbell Reverse Lunge', name_ar: 'طعنات عكسية بالدمبل للأرجل', sets: 3, reps: '10 - 12', rest: '75 ثانية' },
-        { name_en: 'Dumbbell Calf Raise', name_ar: 'رفع السمانة بالدمبل واقفاً', sets: 3, reps: '15 - 20', rest: '60 ثانية' },
-        { name_en: 'Dead Bug', name_ar: 'تمرين الحشرة الميتة لاستقرار الكور والبطن', sets: 3, reps: '15 - 20', rest: '60 ثانية' }
-      ]
-    }
-  ];
+    || program?.training_program?.weeks?.[0]?.sessions
+    || [];
 
-  // Cardio & Daily Physical Activity (NEAT)
-  const cardioModality = program?.cardio?.modality 
-    || program?.cardio_protocol?.modality 
-    || 'مشي على سير مائل (Incline Treadmill)';
-  const cardioWeeklySessions = program?.cardio?.weekly_sessions 
-    || program?.cardio_protocol?.weekly_sessions 
-    || 3;
-  const cardioDuration = program?.cardio?.session_duration_min 
-    || program?.cardio_protocol?.duration_minutes 
-    || 30;
-  const cardioHeartRate = program?.cardio?.heart_rate_target?.range_display
-    || program?.cardio?.target_heart_rate_zone 
-    || program?.cardio_protocol?.target_heart_rate_zone 
-    || '120 - 135 نبضة / دقيقة (Zone 2)';
-  const cardioNeatSteps = program?.cardio?.neat_target?.range_display
-    || program?.cardio?.neat_target_steps 
-    || program?.cardio?.daily_steps 
-    || program?.cardio?.target_daily_steps 
-    || 8500;
+  // Cardio & Daily Physical Activity (NEAT). P0-A13: the served prescription
+  // from client_view first (master-engine plans store no program.cardio, so
+  // the old chain fell through to invented incline / 3x / 30 / HR / 8500),
+  // then the stored chain, else null ('—'). Never invented defaults.
+  const cardioModality = clientView?.cardio?.protocol_title_ar
+    || program?.cardio?.modality
+    || program?.cardio_protocol?.modality
+    || null;
+  const cardioWeeklySessions = clientView?.cardio?.sessions_per_week
+    ?? program?.cardio?.weekly_sessions
+    ?? program?.cardio_protocol?.weekly_sessions
+    ?? null;
+  const cardioDuration = clientView?.cardio?.duration_minutes
+    ?? program?.cardio?.session_duration_min
+    ?? program?.cardio_protocol?.duration_minutes
+    ?? null;
+  const cardioHeartRate = clientView?.cardio?.heart_rate_target?.range_display
+    || program?.cardio?.heart_rate_target?.range_display
+    || program?.cardio?.target_heart_rate_zone
+    || program?.cardio_protocol?.target_heart_rate_zone
+    || null;
+  const cardioNeatSteps = clientView?.cardio?.neat_target?.range_display
+    || clientView?.cardio?.daily_steps_target
+    || program?.cardio?.neat_target?.range_display
+    || program?.cardio?.neat_target_steps
+    || program?.cardio?.daily_steps
+    || program?.cardio?.target_daily_steps
+    || null;
+  // NEAT may be a number (format it) or a range string (already complete).
+  const cardioNeatDisplay = cardioNeatSteps === null || cardioNeatSteps === undefined ? null
+    : (typeof cardioNeatSteps === 'number' ? `${cardioNeatSteps.toLocaleString()} خطوة / اليوم` : String(cardioNeatSteps));
 
-  // Prescribed Daily Supplements Protocol
+  // Prescribed Daily Supplements Protocol. P0-A13: real lists only. The old
+  // 4-item invented list (creatine / omega-3 / D3+K2 / magnesium) is deleted:
+  // an empty list renders an absence row, never invented supplements.
   const supplementsList = (Array.isArray(program?.cardio?.supplements) && program.cardio.supplements.length > 0)
     ? program.cardio.supplements
     : ((Array.isArray(program?.supplements) && program.supplements.length > 0)
         ? program.supplements
-        : [
-            { name: 'الكرياتين مونوهيدرات (Creatine Monohydrate)', dosage: '5 جم يومياً', timing: 'بعد التمرين أو مع الوجبة الأولى', purpose: 'زيادة القوة العضلية وتخليق الـ ATP' },
-            { name: 'أوميجا 3 عالي التركيز (Omega-3 Fish Oil)', dosage: '1000 - 2000 مجم EPA/DHA', timing: 'مع وجبة الغداء أو العشاء', purpose: 'صحة المفاصل وتخفيف الالتهاب' },
-            { name: 'فيتامين D3 + K2 (MK-7)', dosage: '5000 وحدة دولية', timing: 'صباحاً مع وجبة غنية بالدهون', purpose: 'دعم العظام والمناعة والتستوستيرون' },
-            { name: 'مغنيسيوم بيسجلايسينات (Magnesium Glycinate)', dosage: '300 - 400 مجم', timing: 'قبل النوم بـ 45 دقيقة', purpose: 'استرخاء العضلات وجودة النوم العميق' }
-          ]);
+        : []);
 
   // Divide sessions into chunks of 2 per page for ultra-spacious, premium full-width rendering
   const sessionChunks = [];
@@ -745,7 +701,7 @@ export default function ProgramPdfView() {
                 <th style={{ textAlign: 'center' }}>نوع الباقة</th>
                 <td style={{ fontWeight: '600', textAlign: 'center' }}>{packageTier}</td>
                 <th style={{ textAlign: 'center' }}>الهدف المعتمد</th>
-                <td style={{ fontWeight: '700', color: '#0284C7', textAlign: 'center' }}>{primaryGoal}</td>
+                <td style={{ fontWeight: '700', color: '#0284C7', textAlign: 'center' }}>{primaryGoal ?? '—'}</td>
               </tr>
               {fastingProfile && (fastingProfile.isCoptic || fastingProfile.isRamadan || fastingProfile.isIntermittent) && (
                 <tr>
@@ -778,13 +734,13 @@ export default function ProgramPdfView() {
             </thead>
             <tbody>
               <tr style={{ fontWeight: '700' }}>
-                <td style={{ textAlign: 'center' }} className="nowrap">{heightCm} سم</td>
-                <td style={{ textAlign: 'center' }} className="nowrap">{weightKg} كجم</td>
-                <td style={{ textAlign: 'center', color: '#0284C7' }} className="nowrap">{bodyFat}</td>
-                <td style={{ textAlign: 'center' }} className="nowrap">{bmi}</td>
-                <td style={{ textAlign: 'center' }} className="nowrap">{waistCm} سم</td>
-                <td style={{ textAlign: 'center' }} className="nowrap">{hipsCm} سم</td>
-                <td style={{ textAlign: 'center' }} className="nowrap">{neckCm} سم</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{heightCm ?? '—'} سم</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{weightKg ?? '—'} كجم</td>
+                <td style={{ textAlign: 'center', color: '#0284C7' }} className="nowrap">{bodyFat ?? '—'}</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{bmi ?? '—'}</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{waistCm ?? '—'} سم</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{hipsCm ?? '—'} سم</td>
+                <td style={{ textAlign: 'center' }} className="nowrap">{neckCm ?? '—'} سم</td>
               </tr>
             </tbody>
           </table>
@@ -797,7 +753,7 @@ export default function ProgramPdfView() {
             <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0F172A', padding: '8px 6px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#475569' }}>السعرات اليومية</span>
               <div style={{ fontSize: '14pt', fontWeight: '900', color: '#0F172A', margin: '3px 0' }} className="nowrap">
-                {targetCalories}
+                {targetCalories ?? '—'}
               </div>
               <small style={{ fontSize: '7pt', color: '#64748B', fontWeight: '600' }} className="nowrap">سعرة / اليوم</small>
             </div>
@@ -806,7 +762,7 @@ export default function ProgramPdfView() {
             <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #0284C7', padding: '8px 6px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#0284C7' }}>البروتين الصافي</span>
               <div style={{ fontSize: '14pt', fontWeight: '900', color: '#0284C7', margin: '3px 0' }} className="nowrap">
-                {proteinG} جم
+                {proteinG ?? '—'} جم
               </div>
               <small style={{ fontSize: '7pt', color: '#64748B', fontWeight: '600' }} className="nowrap">بناء واستشفاء</small>
             </div>
@@ -815,7 +771,7 @@ export default function ProgramPdfView() {
             <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #D97706', padding: '8px 6px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#D97706' }}>الكربوهيدرات</span>
               <div style={{ fontSize: '14pt', fontWeight: '900', color: '#D97706', margin: '3px 0' }} className="nowrap">
-                {carbsG} جم
+                {carbsG ?? '—'} جم
               </div>
               <small style={{ fontSize: '7pt', color: '#64748B', fontWeight: '600' }} className="nowrap">طاقة وأداء عضلي</small>
             </div>
@@ -824,7 +780,7 @@ export default function ProgramPdfView() {
             <div className="pdf-card" style={{ textAlign: 'center', borderTop: '2.5pt solid #10B981', padding: '8px 6px', margin: 0 }}>
               <span style={{ fontSize: '7.5pt', fontWeight: '700', color: '#10B981' }}>الدهون الصحية</span>
               <div style={{ fontSize: '14pt', fontWeight: '900', color: '#10B981', margin: '3px 0' }} className="nowrap">
-                {fatsG} جم
+                {fatsG ?? '—'} جم
               </div>
               <small style={{ fontSize: '7pt', color: '#64748B', fontWeight: '600' }} className="nowrap">توازن هرموني</small>
             </div>
@@ -834,7 +790,7 @@ export default function ProgramPdfView() {
           {/* Hydration Banner - Centered content */}
           <div className="pdf-card" style={{ background: '#F0F9FF', borderColor: '#BAE6FD', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', padding: '5px 10px', marginBottom: '8px' }}>
             <span style={{ fontSize: '8pt', fontWeight: '700', color: '#0369A1' }}>معدل الترطيب واستهلاك الماء اليومي المستهدف:</span>
-            <span style={{ fontSize: '9pt', fontWeight: '800', color: '#0284C7' }} className="nowrap">{hydrationLiters}</span>
+            <span style={{ fontSize: '9pt', fontWeight: '800', color: '#0284C7' }} className="nowrap">{hydrationLiters ?? '—'}</span>
           </div>
 
           {/* 3. Structured Meals Protocol */}
@@ -871,22 +827,46 @@ export default function ProgramPdfView() {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 6px', alignItems: 'center' }}>
                       {meal.items?.map((it, iIdx) => {
                         const meta = getItemPortionMeta(it);
+                        // P0-A13: the served plate's own flags and logistics,
+                        // exactly as the meals tab shows them. Unknown values
+                        // render nothing, never a placeholder.
+                        const flagsLine = Array.isArray(it.allergy_flags) && it.allergy_flags.length > 0
+                          ? `يحتوي على: ${it.allergy_flags.map((f) => ALLERGY_FLAG_LABELS_AR[f] || f).join('، ')}`
+                          : null;
+                        const lg = it.logistics;
+                        const logisticsParts = [];
+                        if (lg && typeof lg === 'object') {
+                          if (lg.requires_storage === true) logisticsParts.push('يحفظ في الثلاجة');
+                          if (lg.requires_storage === false) logisticsParts.push('لا يحتاج تبريد');
+                          if (lg.requires_reheating === true) logisticsParts.push('يسخن قبل الأكل');
+                          if (lg.requires_reheating === false) logisticsParts.push('يؤكل كما هو');
+                          if (typeof lg.food_state === 'string' && lg.food_state.trim() !== '') logisticsParts.push(lg.food_state.trim());
+                          if (typeof lg.prep_notes === 'string' && lg.prep_notes.trim() !== '') logisticsParts.push(lg.prep_notes.trim());
+                        }
                         return (
                           <span key={iIdx} style={{ background: '#F8FAFC', border: '0.5pt solid #E2E8F0', borderRadius: '6px', padding: '1px 5px', fontSize: '7pt', color: '#334155' }}>
                             <strong style={{ color: '#0284C7' }}>{meta.badge_text}</strong> {meta.name || it.name_ar || it.name}
+                            {flagsLine && (<span style={{ color: '#92400E' }}> — {flagsLine}</span>)}
+                            {logisticsParts.length > 0 && (<span style={{ color: '#065F46' }}> — {logisticsParts.join(' • ')}</span>)}
                           </span>
                         );
                       })}
                     </div>
                   </td>
-                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7', fontSize: '7.5pt' }} className="nowrap">{meal.protein_g ?? meal.p ?? 35} جم</td>
-                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#D97706', fontSize: '7.5pt' }} className="nowrap">{meal.carbs_g ?? meal.c ?? 45} جم</td>
-                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#10B981', fontSize: '7.5pt' }} className="nowrap">{meal.fat_g ?? meal.f ?? 12} جم</td>
-                  <td style={{ textAlign: 'center', fontWeight: '800', color: '#0F172A', fontSize: '7.5pt' }} className="nowrap">{meal.meal_energy_kcal ?? meal.cal ?? 450}</td>
+                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#0284C7', fontSize: '7.5pt' }} className="nowrap">{meal.protein_g ?? meal.p ?? '—'} جم</td>
+                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#D97706', fontSize: '7.5pt' }} className="nowrap">{meal.carbs_g ?? meal.c ?? '—'} جم</td>
+                  <td style={{ textAlign: 'center', fontWeight: '700', color: '#10B981', fontSize: '7.5pt' }} className="nowrap">{meal.fat_g ?? meal.f ?? '—'} جم</td>
+                  <td style={{ textAlign: 'center', fontWeight: '800', color: '#0F172A', fontSize: '7.5pt' }} className="nowrap">{meal.meal_energy_kcal ?? meal.cal ?? '—'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          {meals.length === 0 && (
+            <div className="pdf-card" style={{ fontSize: '7.5pt', lineHeight: '1.5', margin: '0 0 8px 0', padding: '6px 10px', textAlign: 'center', color: '#64748B' }}>
+              لا توجد وجبات مسجلة في الخطة المعتمدة.
+            </div>
+          )}
 
           {/* Culinary Guidelines Box */}
           <div className="section-title">4. إرشادات التحضير وقواعد الطهي الصحي</div>
@@ -1183,23 +1163,23 @@ export default function ProgramPdfView() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', textAlign: 'center' }}>
               <div>
                 <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block' }}>النشاط الموصى به</span>
-                <strong style={{ fontSize: '7.2pt', color: '#0F172A' }}>{cardioModality}</strong>
+                <strong style={{ fontSize: '7.2pt', color: '#0F172A' }}>{cardioModality ?? '—'}</strong>
               </div>
               <div>
                 <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block' }}>التكرار الأسبوعي</span>
-                <strong style={{ fontSize: '7.2pt', color: '#0284C7' }} className="nowrap">{cardioWeeklySessions} جلسات</strong>
+                <strong style={{ fontSize: '7.2pt', color: '#0284C7' }} className="nowrap">{cardioWeeklySessions ?? '—'} جلسات</strong>
               </div>
               <div>
                 <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block' }}>المدة لكل جلسة</span>
-                <strong style={{ fontSize: '7.2pt', color: '#0F172A' }} className="nowrap">{cardioDuration} دقيقة</strong>
+                <strong style={{ fontSize: '7.2pt', color: '#0F172A' }} className="nowrap">{cardioDuration ?? '—'} دقيقة</strong>
               </div>
               <div>
                 <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block' }}>النبض المستهدف</span>
-                <strong style={{ fontSize: '7.2pt', color: '#16A34A' }} className="nowrap">{cardioHeartRate}</strong>
+                <strong style={{ fontSize: '7.2pt', color: '#16A34A' }} className="nowrap">{cardioHeartRate ?? '—'}</strong>
               </div>
               <div>
                 <span style={{ fontSize: '6.8pt', color: '#64748B', display: 'block' }}>النشاط اليومي (NEAT)</span>
-                <strong style={{ fontSize: '7.2pt', color: '#0284C7' }} className="nowrap">{Number(cardioNeatSteps).toLocaleString()} خطوة / اليوم</strong>
+                <strong style={{ fontSize: '7.2pt', color: '#0284C7' }} className="nowrap">{cardioNeatDisplay ?? '—'}</strong>
               </div>
             </div>
           </div>
@@ -1218,9 +1198,9 @@ export default function ProgramPdfView() {
             <tbody>
               {supplementsList.map((sup, sIdx) => {
                 const sName = typeof sup === 'string' ? sup : (sup.name_ar || sup.name || sup.code);
-                const sDose = sup.dosage || sup.dose || sup.standard_dosage || 'جرعة يومية منتظمة';
-                const sTiming = sup.timing || sup.time || 'مع إحدى الوجبات الرئيسية';
-                const sPurpose = sup.purpose || sup.notes || sup.category || 'دعم البناء والاستشفاء العضلي';
+                const sDose = sup.dosage || sup.dose || sup.standard_dosage || '—';
+                const sTiming = sup.timing || sup.time || '—';
+                const sPurpose = sup.purpose || sup.notes || sup.category || '—';
                 return (
                   <tr key={sIdx}>
                     <td style={{ fontWeight: '700', color: '#0F172A', fontSize: '7pt', textAlign: 'right' }}>
@@ -1238,6 +1218,13 @@ export default function ProgramPdfView() {
                   </tr>
                 );
               })}
+              {supplementsList.length === 0 && (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: 'center', color: '#64748B', fontSize: '7pt' }}>
+                    لا توجد مكملات موصوفة في الخطة المعتمدة.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
 
@@ -1256,12 +1243,9 @@ export default function ProgramPdfView() {
               </div>
             </div>
 
-            {coachNotes && (
-              <div style={{ background: '#F0F9FF', border: '0.5pt solid #BAE6FD', borderRadius: '6px', padding: '4px 8px', marginBottom: '6px' }}>
-                <span style={{ fontWeight: '800', color: '#0369A1' }}>توجيهات الكوتش الخاصة: </span>
-                <span style={{ color: '#0F172A' }}>{coachNotes}</span>
-              </div>
-            )}
+            {/* P0-A13: free-text coach notes are not rendered in the PDF.
+                An untagged clinical line passes any keyword filter, so the
+                only honest fix is to not print free text here at all. */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontSize: '8pt', fontWeight: '900', color: '#0F172A' }}>

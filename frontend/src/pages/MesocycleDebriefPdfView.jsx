@@ -130,6 +130,7 @@ export default function MesocycleDebriefPdfView() {
   const [loading, setLoading] = useState(true);
   const [clientData, setClientData] = useState(null);
   const [checkinsList, setCheckinsList] = useState([]);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     fetchClientAndCheckins();
@@ -140,54 +141,37 @@ export default function MesocycleDebriefPdfView() {
   const fetchClientAndCheckins = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const res = await fetch(`${API_BASE}/api/v1/customers/${targetCode}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.client) setClientData(data.client);
-        if (Array.isArray(data.checkins) && data.checkins.length > 0) {
-          setCheckinsList(data.checkins);
-        } else {
-          // Fallback to demo checkins
-          setCheckinsList(getDemoCheckins());
-        }
-      } else {
-        setClientData(getDemoClient(targetCode));
-        setCheckinsList(getDemoCheckins());
+      if (!res.ok) {
+        setLoadError('تعذر تحميل بيانات المراجعة. يرجى التأكد من تسجيل الدخول والمحاولة مجدداً.');
+        return;
       }
+      const data = await res.json();
+      if (!data.client) {
+        setLoadError('لا توجد بيانات عميل لعرضها في تقرير المراجعة.');
+        return;
+      }
+      setClientData(data.client);
+      setCheckinsList(Array.isArray(data.checkins) ? data.checkins : []);
     } catch (err) {
       console.error('Failed to load debrief data:', err);
-      setClientData(getDemoClient(targetCode));
-      setCheckinsList(getDemoCheckins());
+      setLoadError('تعذر تحميل بيانات المراجعة. يرجى التأكد من الاتصال والمحاولة مجدداً.');
     } finally {
       setLoading(false);
     }
   };
 
-  const getDemoClient = (code) => ({
-    id: code,
-    client_code: code,
-    full_name: 'أحمد محمود العوضي',
-    phone_number: '201001234567',
-    package_name: 'باقة MAX (MAX Coaching)',
-    goal_label: 'خسارة دهون وتنشيف',
-    weight_kg: 82.5,
-    initial_weight: 86.0,
-    initial_waist_cm: 92,
-    waist_circumference_cm: 87
-  });
-
-  const getDemoCheckins = () => [
-    { week_number: 1, date: '2026-08-01', weight_kg: 86.0, waist_circumference_cm: 92, diet_adherence_percentage: 95, workout_adherence_percentage: 92, sleep_quality: 4.5, notes: 'انطلاقة قوية والتزام كامل بالماكروز' },
-    { week_number: 2, date: '2026-08-08', weight_kg: 85.1, waist_circumference_cm: 90.5, diet_adherence_percentage: 92, workout_adherence_percentage: 95, sleep_quality: 4.0, notes: 'تحسن ملحوظ في أوزان السكوات' },
-    { week_number: 3, date: '2026-08-15', weight_kg: 84.0, waist_circumference_cm: 89, diet_adherence_percentage: 90, workout_adherence_percentage: 96, sleep_quality: 3.8, notes: 'نزول متسارع في محيط الخصر' },
-    { week_number: 4, date: '2026-08-22', weight_kg: 82.8, waist_circumference_cm: 87.5, diet_adherence_percentage: 94, workout_adherence_percentage: 100, sleep_quality: 4.2, notes: 'اكتمال الميزوسايكل بأعلى فورمة' }
-  ];
-
-  const report = generateMesocycleDebriefReport({
-    client: clientData || getDemoClient(targetCode),
-    checkins: checkinsList,
-    mesocycleNumber: 1
-  });
+  // P0-A13: the report is computed only for real data. Computing it for a
+  // null client / empty history would fabricate values (the engine defaults
+  // to 82 kg / 88 cm / 85% adherence), so it stays null until the gates pass.
+  const report = (!loading && !loadError && clientData && checkinsList.length > 0)
+    ? generateMesocycleDebriefReport({
+        client: clientData,
+        checkins: checkinsList,
+        mesocycleNumber: 1
+      })
+    : null;
 
   const handlePrint = () => {
     window.print();
@@ -209,6 +193,28 @@ export default function MesocycleDebriefPdfView() {
         <div style={{ textAlign: 'center' }}>
           <Activity size={32} color="#0F172A" className="animate-spin" />
           <h4 style={{ marginTop: '14px', color: '#0F172A', fontWeight: 800 }}>جاري استخراج وتحليل بيانات الميزوسايكل...</h4>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#FFFFFF', fontFamily: 'Cairo, sans-serif' }} dir="rtl">
+        <div style={{ textAlign: 'center', maxWidth: '420px', padding: '24px' }}>
+          <h4 style={{ color: '#B91C1C', fontWeight: 800, margin: '0 0 12px 0' }}>لا يمكن عرض تقرير المراجعة</h4>
+          <p style={{ color: '#334155', fontSize: '14px', lineHeight: 1.7, margin: 0 }}>{loadError}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!loading && clientData && checkinsList.length === 0) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#FFFFFF', fontFamily: 'Cairo, sans-serif' }} dir="rtl">
+        <div style={{ textAlign: 'center', maxWidth: '420px', padding: '24px' }}>
+          <h4 style={{ color: '#0F172A', fontWeight: 800, margin: '0 0 12px 0' }}>لا توجد متابعات مسجلة</h4>
+          <p style={{ color: '#334155', fontSize: '14px', lineHeight: 1.7, margin: 0 }}>لا توجد متابعات أسبوعية مسجلة لهذا العميل بعد، لذلك لا يمكن إعداد تقرير مراجعة.</p>
         </div>
       </div>
     );

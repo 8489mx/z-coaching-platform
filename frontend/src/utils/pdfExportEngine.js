@@ -624,28 +624,56 @@ export function auditMicronutrientCoverage(micronutrients = {}) {
 }
 
 /**
+ * Clinical keys the privacy shield deletes at EVERY depth. The audit probe
+ * proved the old shallow copy leaked all of these from nested objects
+ * (nutrition_program, client, cardio) and from nested coach notes.
+ */
+const CLINICAL_SHIELD_KEYS = new Set([
+  'clinical_guardrails',
+  'requires_medical_review',
+  'tier_0_lock',
+  'internal_debug_flags',
+  'audit_identifiers',
+  'clinical_lockout',
+  'medical_review_notes',
+  'diagnosis',
+  'allergies',
+  'medical_conditions',
+]);
+
+/**
+ * Deep, non-mutating sanitization: recurses into every object and array,
+ * deletes every clinical key at every depth, and runs the notes sanitizer
+ * over every coach_notes/notes string at every depth. Served plate data
+ * (meals, items, allergy_flags, logistics) is preserved untouched: none of
+ * its keys are in the delete list.
+ */
+function deepSanitizeClientFacing(value) {
+  if (Array.isArray(value)) return value.map(deepSanitizeClientFacing);
+  if (!value || typeof value !== 'object') return value;
+  const out = {};
+  for (const [key, val] of Object.entries(value)) {
+    if (CLINICAL_SHIELD_KEYS.has(key)) continue;
+    if ((key === 'coach_notes' || key === 'notes') && typeof val === 'string') {
+      out[key] = sanitizeCoachNotesForClient(val);
+      continue;
+    }
+    out[key] = deepSanitizeClientFacing(val);
+  }
+  return out;
+}
+
+/**
  * Sanitizes entire client-facing plan data bundle to ensure zero clinical leaks.
- * Solves J-04: Clinical Privacy Shield.
+ * Solves J-04: Clinical Privacy Shield. Deep since P0-A13: the old shallow
+ * {...plan} copy leaked nested copies by reference and was never called on
+ * the PDF path at all. Note: free-text coach notes are no longer rendered in
+ * the PDF itself (an untagged clinical line cannot be reliably filtered by
+ * keywords); this sanitizer is defense in depth for the PDF-bound data copy.
  */
 export function sanitizeClientFacingPlan(planData = {}) {
   if (!planData || typeof planData !== 'object') return {};
-
-  const clean = { ...planData };
-
-  if (clean.coach_notes) {
-    clean.coach_notes = sanitizeCoachNotesForClient(clean.coach_notes);
-  }
-  if (clean.notes) {
-    clean.notes = sanitizeCoachNotesForClient(clean.notes);
-  }
-
-  delete clean.clinical_guardrails;
-  delete clean.requires_medical_review;
-  delete clean.tier_0_lock;
-  delete clean.internal_debug_flags;
-  delete clean.audit_identifiers;
-
-  return clean;
+  return deepSanitizeClientFacing(planData);
 }
 
 /**
