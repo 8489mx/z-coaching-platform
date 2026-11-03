@@ -81,10 +81,17 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       _clinicalDirective = localLock?['directive']?.toString() ??
           (cached?['clinical_lockout'] is Map ? cached!['clinical_lockout']['emergency_directive']?.toString() : null) ??
           'تم إيقاف النشاط التدريبي فوراً لدواعي السلامة السريرية والوقاية القلبية.';
-    } else {
-      _isClinicalLocked = false;
-      _clinicalDirective = null;
+      // P0-A4: never keep sessions, cardio or readiness from the cached plan
+      // while locked; the build already returns the lockout screen first,
+      // and this keeps no plan content behind it.
+      _sessions = [];
+      _cardio = null;
+      _readinessGuidance = null;
+      setState(() {});
+      return;
     }
+    _isClinicalLocked = false;
+    _clinicalDirective = null;
 
     // P0-A3: a pending cached program shows the pending screen, never
     // sessions. The clinical-lockout state above is preserved so the lockout

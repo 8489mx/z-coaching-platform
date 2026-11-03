@@ -1343,6 +1343,15 @@ export default function WeeklyCheckinForm() {
               </p>
             </div>
 
+            {/* P0-A4: repeat the urgent chest-pain/syncope warning on the
+            success screen when those symptoms were reported, using the same
+            wording as the pre-submit banner. */}
+            {(formData.exertional_chest_pain || formData.syncope) && (
+              <div style={{ width: '100%', maxWidth: '400px', background: '#FFFFFF', border: '1.5px solid #E11D48', borderRadius: '8px', padding: '10px', fontSize: '11px', color: '#9F1239', lineHeight: 1.5, fontWeight: 700, textAlign: 'right' }}>
+                تحذير أمان سريري عاجل: توقف فوراً عن ممارسة أي تمرين أو مجهود بدني، واستشر الطبيب المختص أو اتصل بالإسعاف (123 / 997 / 911) عند وجود ألم ممتد للذراع أو الفك أو ضيق تنفس حاد. سيتم تعليق التمارين تلقائياً لحمايتك.
+              </div>
+            )}
+
             {/* Quick Metrics Summary Box */}
             <div style={{ width: '100%', maxWidth: '400px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 16px', textAlign: 'right', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>

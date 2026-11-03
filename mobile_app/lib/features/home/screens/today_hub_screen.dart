@@ -84,6 +84,15 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
     }
 
     _activeProgram = widget.storage.getCachedActiveProgram();
+    // P0-A4: a cached program carrying an active lockout locks the hub even
+    // when no stored lockout row exists (e.g. after an app update), so the
+    // cached path below never fills plan fields for a locked client.
+    final cachedLock = _activeProgram?['clinical_lockout'];
+    if (cachedLock is Map && cachedLock['active'] == true) {
+      _isClinicalLocked = true;
+      _clinicalDirective = cachedLock['emergency_directive']?.toString() ??
+          cachedLock['reason_ar']?.toString() ?? _clinicalDirective;
+    }
     // P0-A3: a cached pending response never renders as a plan.
     if (_isPendingApprovalMap(_activeProgram)) {
       _isPendingApproval = true;
@@ -205,6 +214,18 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
 
   /// يقرأ الأهداف اليومية وجلسة اليوم من شكل البرنامج الذي يرسله الخادم.
   void _applyProgram(Map<String, dynamic> program) {
+    // P0-A4: never fill plan fields from the full plan while locked. The
+    // server nulls client_view.training_session when locked, but the weeks
+    // fallback below would otherwise still surface a session name, macros
+    // and supplements from the cached/full plan.
+    if (_isClinicalLocked) {
+      _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0, waterLiters: 0.0);
+      _supplements = [];
+      _todayWorkoutName = 'لا توجد جلسة محددة لليوم';
+      _todayExercisesCount = 0;
+      _hasProgram = false;
+      return;
+    }
     bool hasAnyData = false;
 
     // 1. الأهداف الغذائية من client_view أو nutrition
@@ -283,6 +304,45 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
   Widget build(BuildContext context) {
     final clientName = _user?.fullName.isNotEmpty == true ? _user!.fullName : 'كابتن';
     final isMax = _user?.tier.toUpperCase().contains('MAX') == true;
+
+    // P0-A4: a locked client sees only the lockout screen, never plan
+    // content. Lockout wins over pending approval, as on the workout tab.
+    if (_isClinicalLocked) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.health_and_safety_outlined, size: 48, color: Color(0xFFDC2626)),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'التدريب موقوف لدواعي السلامة السريرية',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Alexandria'),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _clinicalDirective ?? 'تم إيقاف النشاط التدريبي فوراً لدواعي السلامة السريرية والوقاية القلبية.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5, fontFamily: 'Alexandria'),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'توقف عن أي مجهود بدني وراجع الطبيب المختص، وتواصل مع الكوتش.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5, fontFamily: 'Alexandria'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     // P0-A3: pending approval replaces all plan content. A locked client
     // still reaches the safety directive from this screen.

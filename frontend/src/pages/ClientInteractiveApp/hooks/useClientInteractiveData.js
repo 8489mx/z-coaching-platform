@@ -100,6 +100,10 @@ export function useClientInteractiveData() {
 
   // 3. Active Program State
   const [clientProgram, setClientProgram] = useState(null);
+  // P0-A4: active clinical lockout reported by the server on the program
+  // response (null when no lockout is active). A response without the field
+  // (e.g. the pending response) leaves the previous state untouched.
+  const [clinicalLockout, setClinicalLockout] = useState(null);
   // Progression (server-computed from workout logs) and this session's logging draft.
   const [progression, setProgression] = useState(null);
   // Today's religious fasting context (server-computed from religion, the calendar and the coach override).
@@ -290,6 +294,22 @@ export function useClientInteractiveData() {
     const approvalStatus = data.plan_approval_status || data.user?.plan_approval_status;
     if (data.has_program === false || (approvalStatus && approvalStatus !== 'APPROVED' && approvalStatus !== 'PUBLISHED')) {
       setClientProgram(null);
+    }
+    // P0-A4: store the server-reported clinical lockout so the app can show
+    // the lockout screen instead of plan content. Only an object-shaped
+    // field updates the state; its absence leaves the previous state alone.
+    if (data.clinical_lockout && typeof data.clinical_lockout === 'object') {
+      if (data.clinical_lockout.active === true) {
+        setClinicalLockout({
+          active: true,
+          directive: data.clinical_lockout.emergency_directive || data.clinical_lockout.reason_ar || null,
+          reason_ar: data.clinical_lockout.reason_ar || null,
+          checkin_id: data.clinical_lockout.checkin_id || null,
+          week_number: data.clinical_lockout.week_number || null,
+        });
+      } else {
+        setClinicalLockout(null);
+      }
     }
     if (data.user) {
       const rawAllergies = (data.user.allergies || data.master_program?.client?.allergies || []).map(a => String(a));
@@ -903,6 +923,7 @@ export function useClientInteractiveData() {
     clientData,
     setClientData,
     clientProgram,
+    clinicalLockout,
     currentTrainingWeek,
     setCurrentTrainingWeek,
     trainingWeeks,

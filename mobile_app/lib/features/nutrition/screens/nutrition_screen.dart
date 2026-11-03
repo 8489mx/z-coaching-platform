@@ -21,6 +21,9 @@ class _NutritionScreenState extends State<NutritionScreen> {
   List<Meal> _meals = [];
   // P0-A3: true while the client's plan is not coach-approved.
   bool _isPendingApproval = false;
+  // P0-A4: true while an active clinical lockout is in force.
+  bool _isClinicalLocked = false;
+  String? _clinicalDirective;
 
   /// P0-A3: same pending-approval reading as the home hub: an explicitly
   /// pending cached response gates the screen; older approved caches carry
@@ -44,6 +47,27 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   void _loadMeals() {
     final cached = widget.storage.getCachedActiveProgram();
+    // P0-A4: a locked client sees the lockout directive, never meals. The
+    // stored lockout row and the cached program's lockout map are both
+    // consulted, so the gate holds even before any live refresh. Lockout
+    // wins over pending approval, as on the workout tab.
+    final clientData = widget.storage.getClientData();
+    final userId = clientData?['client_code']?.toString() ?? clientData?['id']?.toString() ?? '';
+    final storedLock = userId.isNotEmpty ? widget.storage.getClientClinicalLockout(userId) : null;
+    final cachedLockMap = cached?['clinical_lockout'] is Map ? cached!['clinical_lockout'] as Map : null;
+    if (storedLock != null || (cachedLockMap != null && cachedLockMap['active'] == true)) {
+      _isClinicalLocked = true;
+      _clinicalDirective = storedLock?['directive']?.toString() ??
+          cachedLockMap?['emergency_directive']?.toString() ??
+          cachedLockMap?['reason_ar']?.toString();
+      _isPendingApproval = false;
+      _meals = [];
+      _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0);
+      setState(() {});
+      return;
+    }
+    _isClinicalLocked = false;
+    _clinicalDirective = null;
     // P0-A3: a pending cached program shows the pending screen, never meals.
     if (_isPendingApprovalMap(cached)) {
       _isPendingApproval = true;
@@ -150,6 +174,51 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // P0-A4: a locked client sees only the lockout directive, never meals
+    // or swap entry points. Lockout wins over pending approval.
+    if (_isClinicalLocked) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('خطة التغذية والوجبات'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: AppColors.primaryDeep),
+              onPressed: _loadMeals,
+            ),
+          ],
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.health_and_safety_outlined, size: 48, color: Color(0xFFDC2626)),
+                const SizedBox(height: 16),
+                const Text(
+                  'التدريب موقوف لدواعي السلامة السريرية',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _clinicalDirective ?? 'تم إيقاف النشاط التدريبي فوراً لدواعي السلامة السريرية والوقاية القلبية.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'توقف عن أي مجهود بدني وراجع الطبيب المختص، وتواصل مع الكوتش.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     // P0-A3: pending approval replaces all meal content.
     if (_isPendingApproval) {
       return Scaffold(

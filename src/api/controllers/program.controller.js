@@ -633,6 +633,28 @@ export const getSwapCandidatesHandler = async (req, res) => {
 
 export const calculateSwapHandler = async (req, res) => {
   try {
+    // P0-A4: a client under an active clinical lockout cannot execute a food
+    // swap. The target is resolved exactly like swapContextFor does (a client
+    // swaps for themselves; a coach/admin swaps for the client_code given).
+    // This mirrors the workout-log lockout, which also blocks before any
+    // staff exemption: a locked client's plan is not to be changed at all.
+    const swapRequester = req.user?.id ? await User.findByPk(req.user.id).catch(() => null) : null;
+    const swapCode = String(req.body?.client_code || "").replace(/^#+/, "").trim();
+    const swapTarget = swapRequester && ["COACH", "ADMIN"].includes(swapRequester.role) && swapCode
+      ? await User.findOne({ where: { client_code: swapCode } }).catch(() => null)
+      : (swapRequester?.role === "CLIENT" ? swapRequester : null);
+    if (swapTarget) {
+      const swapLock = await getActiveClinicalLockout(swapTarget.id);
+      if (swapLock?.locked) {
+        return res.status(403).json({
+          success: false,
+          code: "CLINICAL_SAFETY_LOCKOUT",
+          error: "تم إيقاف استبدال الأكل بقرار أمان سريري (أعراض قلبية أو إغماء مرتبطة بالمجهود). يرجى التوقف الفوري عن المجهود ومراجعة الطبيب المختص وتزويد الكوتش بالتقرير الطبي لإلغاء القفل.",
+          details: { locked: true, directive_ar: swapLock.directive_ar || null },
+        });
+      }
+    }
+
     const {
       source_food_code,
       current_food_code,

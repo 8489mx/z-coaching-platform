@@ -101,8 +101,31 @@ export default function ClientInteractiveApp() {
     sessionLogStatus,
     updateLogDraft,
     repeatLastLog,
-    submitSessionLog
+    submitSessionLog,
+    clinicalLockout
   } = useClientInteractiveData();
+
+  // P0-A4: a locked client sees only the lockout screen — no tabs, no
+  // sessions to tick, no swap modals, no bottom nav. This early return sits
+  // after all hooks, so it never disturbs hook order. Lockout wins over the
+  // pending-approval notices below.
+  if (clinicalLockout?.active) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex justify-center font-sans" dir="rtl" style={{ fontFamily: "'Segoe UI', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif", width: '100%', overflowX: 'hidden' }}>
+        <div style={{ width: '100%', maxWidth: '480px', margin: '0 auto', background: '#FAFAFC', minHeight: '100vh', boxShadow: '0 0 30px rgba(15, 23, 42, 0.08)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 16px' }}>
+          <div style={{ background: '#FFFFFF', border: '1.5px solid #FCA5A5', borderRadius: '16px', padding: '24px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 20px rgba(15, 23, 42, 0.05)', width: '100%' }}>
+            <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#B91C1C' }}>التدريب موقوف لدواعي السلامة السريرية</h2>
+            <p style={{ margin: 0, fontSize: '13.5px', color: '#0F172A', lineHeight: 1.7, fontWeight: 600 }}>
+              {clinicalLockout.directive || clinicalLockout.reason_ar || 'تم إيقاف النشاط التدريبي فوراً لدواعي السلامة السريرية. توقف عن أي مجهود بدني وراجع الطبيب المختص، وتواصل مع الكوتش.'}
+            </p>
+            <p style={{ margin: 0, fontSize: '12px', color: '#64748B', lineHeight: 1.6 }}>
+              توقف فوراً عن أي تمرين أو مجهود بدني، واستشر الطبيب المختص، وزوّد الكوتش بالتقرير الطبي لإلغاء القفل.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 flex justify-center font-sans" dir="rtl" style={{ fontFamily: "'Segoe UI', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Tahoma', sans-serif", width: '100%', overflowX: 'hidden' }}>
