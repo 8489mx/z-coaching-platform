@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { ArrowLeftRight } from 'lucide-react';
-import { 
-  formatItemPortionDisplay, 
-  PORTION_DISPLAY_MODES, 
-  COOKING_STATE_MODES 
+import {
+  formatItemPortionDisplay,
+  PORTION_DISPLAY_MODES,
+  COOKING_STATE_MODES,
+  ALLERGY_FLAG_LABELS_AR
 } from '../../../utils/foodSwapEngine';
 import { getPrepOptionsForFood } from '../../../utils/culinaryRecipes';
 
@@ -276,6 +277,13 @@ export default function MealsTab({
                     {item.fasting_note_ar && (
                       <div style={{ marginTop: '3px', fontSize: '0.68rem', color: item.fasting_blocked ? '#B91C1C' : '#92400E', fontWeight: 600 }}>
                         {item.fasting_note_ar}
+                      </div>
+                    )}
+                    {Array.isArray(item.allergy_flags) && item.allergy_flags.length > 0 && (
+                      <div style={{ marginTop: '3px' }}>
+                        <span style={{ fontSize: '0.67rem', fontWeight: 700, color: '#92400E', background: '#FFFBEB', border: '1px solid #FDE68A', padding: '1px 6px', borderRadius: '6px' }}>
+                          يحتوي على: {item.allergy_flags.map((f) => ALLERGY_FLAG_LABELS_AR[f] || f).join('، ')}
+                        </span>
                       </div>
                     )}
                   </div>

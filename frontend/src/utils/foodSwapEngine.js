@@ -2305,6 +2305,52 @@ export function isFoodClinicallySafe(foodItem, clinicalProfile = {}) {
 }
 
 /**
+ * P0-A8: allergen content flags for one frontend food-database code, derived
+ * only from the database entry's own fields plus the code patterns the
+ * clinical filter uses. Mirrors the server plate-flags module so a locally
+ * swapped item shows the same flags as a server-served one. Unknown codes
+ * and absent fields yield no flags; nothing is invented.
+ */
+export const ALLERGY_FLAG_LABELS_AR = Object.freeze({
+  GLUTEN: 'جلوتين',
+  DAIRY: 'ألبان',
+  EGG: 'بيض',
+  FISH: 'سمك',
+  SOY: 'صويا',
+  NUTS: 'مكسرات',
+  SESAME: 'سمسم',
+  LEGUME: 'بقوليات',
+  FAVA: 'فول',
+  BERRY: 'توت',
+  TROPICAL: 'فواكه استوائية',
+});
+
+export function foodAllergyFlags(code) {
+  const upper = String(code || '').toUpperCase();
+  if (!upper) return [];
+  const food = FOOD_DATABASE[upper] || FOOD_DATABASE[code] || null;
+  const flags = [];
+  if (food) {
+    if (food.is_gluten_free === false) flags.push('GLUTEN');
+    if (food.is_dairy === true) flags.push('DAIRY');
+    if (Array.isArray(food.allergens)) {
+      if (food.allergens.includes('EGGS')) flags.push('EGG');
+      if (food.allergens.includes('FISH') || food.allergens.includes('SHELLFISH')) flags.push('FISH');
+      if (food.allergens.includes('SOY')) flags.push('SOY');
+      if (food.allergens.includes('PEANUTS') || food.allergens.includes('TREE_NUTS')) flags.push('NUTS');
+      if (food.allergens.includes('SESAME')) flags.push('SESAME');
+    }
+    // Exact egg codes only: a bare EGG substring would misflag eggplant.
+    if (['WHOLE_EGG', 'EGG_WHITE', 'SHAKSHOUKA_EGGS', 'EGGS_OMELETTE', 'LIQUID_EGG_WHITES'].includes(upper)) flags.push('EGG');
+    if (food.is_legume === true) flags.push('LEGUME');
+    if (/FAVA|FOUL/.test(upper)) flags.push('FAVA');
+  }
+  if (/STRAWBERR|BLUEBERR|BERR/.test(upper)) flags.push('BERRY');
+  if (/MANGO|KIWI|PINEAPPLE|TROPICAL/.test(upper)) flags.push('TROPICAL');
+  return [...new Set(flags)];
+}
+
+/**
  * Returns all clinically safe, taste-compatible swap options for a given food.
  */
 export function getCompatibleSwaps(foodCode, clinicalProfile = {}, options = {}) {

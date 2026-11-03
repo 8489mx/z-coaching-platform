@@ -34,6 +34,21 @@ class DailyMacroTarget {
   }
 }
 
+// P0-A8: Arabic labels for the served allergy_flags codes.
+const Map<String, String> allergyFlagLabelsAr = {
+  'GLUTEN': 'جلوتين',
+  'DAIRY': 'ألبان',
+  'EGG': 'بيض',
+  'FISH': 'سمك',
+  'SOY': 'صويا',
+  'NUTS': 'مكسرات',
+  'SESAME': 'سمسم',
+  'LEGUME': 'بقوليات',
+  'FAVA': 'فول',
+  'BERRY': 'توت',
+  'TROPICAL': 'فواكه استوائية',
+};
+
 class FoodItem {
   final String id;
   final String code;
@@ -50,6 +65,9 @@ class FoodItem {
   final bool isLocked;
   final String? lockReason;
   bool isCompleted;
+  // P0-A8: allergen content flags carried from the served payload
+  // (server-annotated allergy_flags); empty on older cached items.
+  final List<String> allergyFlags;
 
   FoodItem({
     required this.id,
@@ -67,6 +85,7 @@ class FoodItem {
     this.isLocked = false,
     this.lockReason,
     this.isCompleted = false,
+    this.allergyFlags = const [],
   });
 
   String get imageAsset {
@@ -114,6 +133,10 @@ class FoodItem {
       isLocked: locked,
       lockReason: json['lock_reason']?.toString() ?? 'صنف أساسي لتوازن الدهون الصحية والألياف ولا يمكن استبداله.',
       isCompleted: json['isCompleted'] == true,
+      allergyFlags: (json['allergy_flags'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
     );
   }
 

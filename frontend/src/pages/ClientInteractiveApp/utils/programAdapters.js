@@ -79,7 +79,11 @@ export function adaptProgramToInteractiveMeals(masterProgram) {
           f: Number((it.fat_g ?? it.f ?? 0).toFixed ? (it.fat_g ?? it.f ?? 0).toFixed(1) : (it.fat_g ?? it.f ?? 0)),
           cal: Math.round(it.calories_kcal ?? it.cal ?? 0),
           category: it.category || 'MAIN',
-          taste_profile: it.taste_profile
+          taste_profile: it.taste_profile,
+          // P0-A8: allergy content flags carried from the served payload
+          // (server-annotated); missing on older cached meals, never invented.
+          allergy_flags: Array.isArray(it.allergy_flags) ? it.allergy_flags : [],
+          low_lactose: it.low_lactose === true
         }))
       };
     });

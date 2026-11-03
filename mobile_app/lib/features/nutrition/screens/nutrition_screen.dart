@@ -564,6 +564,20 @@ class _NutritionScreenState extends State<NutritionScreen> {
                     ),
                   ),
                 ],
+                // P0-A8: allergy content flags, shown as plain text only.
+                if (item.allergyFlags.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    'يحتوي على: ${item.allergyFlags.map((f) => allergyFlagLabelsAr[f] ?? f).join('، ')}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF92400E),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

@@ -29,6 +29,8 @@ import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
 import { evaluateCulinaryPreflight, evaluateCulinaryMeal } from "../../../src/nutrition-plan-preflight/evaluate-culinary-preflight.js";
 import { buildSessionMobilityProtocol } from "../../../src/mobility-warmup-engine-v2/index.js";
+import { buildAllergenContext } from "../../../src/nutrition-meal-context-v2/build-culinary-meals.js";
+import { annotateServedMeals, plateAllergyViolations, ALLERGY_FLAG_LABELS_AR } from "../../../src/nutrition-plate-flags/derive-plate-flags.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1393,6 +1395,55 @@ export const getActiveProgramByUserId = async (req, res) => {
       }
     }
 
+    // P0-A8: an allergen on the served plate never reaches the client, even
+    // when the program row is ACTIVE or the user is approved. Staff still see
+    // the full payload (coach review needs it). This covers editor saves and
+    // pre-fix programs, which no build-time check ever saw: the served meals
+    // are checked against the client's own allergy exclusions, and any match
+    // withholds the plate with the offending items named.
+    if (!isStaffRequest) {
+      const allergyMeals = servedCulinaryMeals(program.program_data || {});
+      if (allergyMeals.length > 0) {
+        const allergyAnswers = (await loadLatestIntakeAnswers(user.id).catch(() => null)) || {};
+        let allergyContext = {};
+        try {
+          allergyContext = buildAllergenContext(
+            adaptIntakePayloadToCanonicalEngine(structuredClone(allergyAnswers)),
+            allergyAnswers,
+          );
+        } catch {
+          allergyContext = {};
+        }
+        const allergyViolations = plateAllergyViolations(allergyMeals, allergyContext);
+        if (allergyViolations.length > 0) {
+          const violationDesc = allergyViolations.map((v) => {
+            const labels = v.matched_flags.map((f) => ALLERGY_FLAG_LABELS_AR[f] || f).join("، ");
+            return `${v.item_name || v.item_code} (يحتوي على: ${labels})`;
+          }).join("؛ ");
+          return res.status(200).json({
+            has_program: false,
+            is_pending_review: true,
+            allergy_review_required: true,
+            allergy_violations: allergyViolations,
+            plan_approval_status: user.plan_approval_status || "PENDING_COACH_REVIEW",
+            program_id: program.id,
+            user: {
+              id: user.id,
+              client_code: user.client_code,
+              full_name: user.full_name || `متدرب #${user.client_code}`,
+              phone_number: user.phone_number,
+              email: user.email,
+              subscription_package: user.subscription_package,
+              plan_approval_status: user.plan_approval_status,
+              role: user.role,
+            },
+            master_program: null,
+            message: `الخطة تحت مراجعة الكوتش: فيها أصناف تتعارض مع حساسية مسجلة عندك (${violationDesc})، ومش هتظهر لحد ما تتظبط.`,
+          });
+        }
+      }
+    }
+
     const isApproved = program.status === "ACTIVE" || user.plan_approval_status === "APPROVED";
 
     const targets = program.program_data?.nutrition?.targets || {};
@@ -1408,7 +1459,7 @@ export const getActiveProgramByUserId = async (req, res) => {
 
     const fastingContext = await resolveClientFastingContext(user, program.program_data, now);
     const clinicalConstraints = await resolveClientClinicalConstraints(user.id) || {};
-    const meals = withNoSwapNotes(applyFastingToMeals(program.program_data?.nutrition?.meals || [], fastingContext, clinicalConstraints));
+    const meals = annotateServedMeals(withNoSwapNotes(applyFastingToMeals(program.program_data?.nutrition?.meals || [], fastingContext, clinicalConstraints)));
 
     const heatAdvisory = getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number), date: now });
     
@@ -1486,6 +1537,20 @@ export const getActiveProgramByUserId = async (req, res) => {
       readiness_guidance_ar: READINESS_GUIDANCE_AR,
     };
 
+    // P0-A8: the served plate carries its allergy content flags. The stored
+    // program row is never mutated: only the response copy is annotated, so
+    // an editor save or a cache refresh still sees the raw stored meals.
+    const servedCulinaryForResponse = servedCulinaryMeals(program.program_data || {});
+    const servedProgramData = servedCulinaryForResponse.length > 0
+      ? {
+          ...program.program_data,
+          nutrition_program: {
+            ...(program.program_data?.nutrition_program || {}),
+            culinary_meals: annotateServedMeals(servedCulinaryForResponse),
+          },
+        }
+      : program.program_data;
+
     return res.status(200).json({
       has_program: isApproved,
       is_pending_review: !isApproved,
@@ -1494,7 +1559,7 @@ export const getActiveProgramByUserId = async (req, res) => {
       version: program.version || 1,
       updated_at: program.updatedAt || program.updated_at,
       user: program.user || user,
-      master_program: program.program_data,
+      master_program: servedProgramData,
       lifestyle: { bedtime_hour: await resolveClientBedtimeHour(user.id) },
       clinical_constraints: await resolveClientClinicalConstraints(user.id),
       clinical_lockout: clinicalLock?.locked ? {
