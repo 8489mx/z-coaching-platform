@@ -459,6 +459,82 @@ function resolveRirFloor(exerciseCode, slotCode, isAdvanced, isIntermediate) {
 }
 
 /**
+ * P0-A11: the final check. It runs on the FINAL mesocycle weeks, after every
+ * mutation above (templates, gym upgrades, injury guards, equipment guard,
+ * dedup, re-dosing) — the upstream structural preflight cannot see exercises
+ * the mesocycle itself introduced, so it is not reused here. The forbidden
+ * sets are exactly the ones the guards above enforce, so a survivor is a
+ * guard miss, not a new medical judgment. Equipment is checked only for
+ * home clients against a declared set (null = undeclared, unverifiable,
+ * skipped — never assumed), mirroring the in-build equipment guard, which
+ * runs for home only: gym plans assume the full room today (audit S8,
+ * owner decision Q5 still open), so the final check does not newly
+ * withhold gym plans on equipment grounds. A failing plan is never fixed
+ * up here: violations are reported and the caller withholds the plan via
+ * the existing review mechanism.
+ *
+ * @param {Array} weeks final mesocycle weeks ({ sessions: [{ exercises: [{ exercise_code }] }] })
+ * @param {Object} [context] injury flags, hypertension flag, declared equipment set
+ * @returns {{ status: "PASSED"|"REVIEW_REQUIRED", violations: Array }}
+ */
+export function evaluateFinalTrainingWeeks(weeks, context = {}) {
+  const violations = [];
+  const push = (code, weekNumber, sessionCode, exerciseCode, message, messageAr) =>
+    violations.push(Object.freeze({ code, severity: "REVIEW", week_number: weekNumber, session_code: sessionCode, exercise_code: exerciseCode, message, message_ar: messageAr }));
+
+  const forbiddenByJoint = [
+    ["LOWER_BACK", context.hasLowerBackInjury, new Set([...AXIAL_SQUATS, ...LOADED_HINGES, ...STANDING_OVERHEAD_PRESSES, "BARBELL_BENT_OVER_ROW"])],
+    ["KNEE", context.hasKneeInjury, new Set([...AXIAL_SQUATS, "HACK_SQUAT_MACHINE", ...KNEE_DOMINANT_LOADED, ...LUNGE_PATTERNS, "BODYWEIGHT_SQUAT"])],
+    ["SHOULDER", context.hasShoulderInjury, new Set(["BARBELL_BENCH_PRESS", "BARBELL_FLAT_BENCH_PRESS", ...INCLINE_DECLINE_PRESSES, ...OVERHEAD_PRESSES])],
+    ["ELBOW", context.hasElbowInjury, new Set([...ELBOW_WRIST_PRESS, ...ELBOW_WRIST_PULL, ...ELBOW_WRIST_ARM])],
+    ["WRIST", context.hasWristInjury, new Set([...ELBOW_WRIST_PRESS, ...ELBOW_WRIST_PULL, ...ELBOW_WRIST_ARM])],
+    ["HIP", context.hasHipInjury, HIP_LOADED],
+    ["ANKLE", context.hasAnkleInjury, ANKLE_LOADED],
+  ];
+  const hypertensionContraindicated = context.hasHypertensionOrHeart
+    ? new Set(CLINICAL_GUIDELINES.HYPERTENSION.CONTRAINDICATED_EXERCISES)
+    : null;
+
+  for (const week of weeks || []) {
+    for (const session of week?.sessions || []) {
+      const seenInSession = new Set();
+      for (const exercise of session?.exercises || []) {
+        const code = exercise?.exercise_code || exercise?.code;
+        if (!code) continue;
+        for (const [joint, active, forbidden] of forbiddenByJoint) {
+          if (active && forbidden.has(code)) {
+            push("FINAL_INJURY_VIOLATION", week.week_number ?? null, session.session_code ?? null, code,
+              `Final weeks contain ${code}, forbidden for a ${joint} injury.`,
+              `الخطة النهائية فيها تمرين ${code} وهو ممنوع على إصابة ${joint} — الخطة تحتاج مراجعة مدرب قبل التسليم.`);
+          }
+        }
+        if (hypertensionContraindicated && hypertensionContraindicated.has(code)) {
+          push("FINAL_INJURY_VIOLATION", week.week_number ?? null, session.session_code ?? null, code,
+            `Final weeks contain ${code}, contraindicated for hypertension/cardiovascular conditions.`,
+            `الخطة النهائية فيها تمرين ${code} وهو ممنوع لمرضى الضغط والقلب — الخطة تحتاج مراجعة مدرب قبل التسليم.`);
+        }
+        if (seenInSession.has(code)) {
+          push("FINAL_DUPLICATE_EXERCISE", week.week_number ?? null, session.session_code ?? null, code,
+            `Final weeks repeat ${code} twice in one session.`,
+            `الخطة النهائية فيها تمرين ${code} مرتين في نفس الجلسة — الخطة تحتاج مراجعة مدرب قبل التسليم.`);
+        }
+        seenInSession.add(code);
+        if (context.isHome && context.availableEquipment instanceof Set && !exerciseFitsEquipment(code, context.availableEquipment)) {
+          push("FINAL_EQUIPMENT_MISMATCH", week.week_number ?? null, session.session_code ?? null, code,
+            `Final weeks contain ${code}, which the client's declared equipment cannot perform.`,
+            `الخطة النهائية فيها تمرين ${code} والعميل معندوش المعدات اللي تنفذه — الخطة تحتاج مراجعة مدرب قبل التسليم.`);
+        }
+      }
+    }
+  }
+
+  return Object.freeze({
+    status: violations.length > 0 ? "REVIEW_REQUIRED" : "PASSED",
+    violations: Object.freeze(violations),
+  });
+}
+
+/**
  * Builds a multi-week periodized meso-cycle from an Intake Decision.
  *
  * @param {import("../intake-decision-engine/domain/contracts.js").IntakeDecision} intakeDecision
@@ -1163,6 +1239,37 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     });
   });
 
+  // P0-A11: the final check runs on the FINAL weeks, after every mutation
+  // above. The upstream preflight carried in `preflight` was computed before
+  // the mesocycle rewrote exercises, so it cannot describe these weeks.
+  // A failing plan is flagged here and withheld by the caller (generate
+  // handlers save DRAFT on final_preflight REVIEW_REQUIRED); nothing is
+  // silently fixed up or dropped at this layer.
+  const finalPreflight = evaluateFinalTrainingWeeks(periodizedWeeks, {
+    hasLowerBackInjury,
+    hasShoulderInjury,
+    hasKneeInjury,
+    hasElbowInjury,
+    hasWristInjury,
+    hasHipInjury,
+    hasAnkleInjury,
+    hasHypertensionOrHeart,
+    isHome,
+    availableEquipment,
+  });
+  if (finalPreflight.status === "REVIEW_REQUIRED") {
+    for (const violation of finalPreflight.violations) {
+      guardReviewFlags.push(Object.freeze({
+        type: "FINAL_PREFLIGHT",
+        code: violation.code,
+        week_number: violation.week_number,
+        session_code: violation.session_code,
+        exercise_code: violation.exercise_code,
+        note_ar: violation.message_ar,
+      }));
+    }
+  }
+
   return Object.freeze({
     engine_version: TRAINING_ENGINE_V2_VERSION,
     total_weeks: periodizedWeeks.length,
@@ -1172,6 +1279,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     muscle_bias: muscleBias,
     experience: intakeExperience,
     experience_level: intakeExperience,
+    final_preflight: finalPreflight,
     clinical_guardrails: {
       hypertension_guard_active: Boolean(hasHypertensionOrHeart),
       min_rir_enforced: hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR : null,

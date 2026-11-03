@@ -108,11 +108,17 @@ export const generateProgram = async (req, res) => {
     // 4. Save to Database with an explicit status: never the ACTIVE default.
     // P0-A7: a program whose served plate failed the culinary preflight is
     // saved DRAFT, never ACTIVE — an invalid plate is never served.
+    // P0-A11: same rule for a program whose FINAL training weeks or FINAL
+    // cardio sessions failed the final check — an unchecked final plan is
+    // never served either.
     const culinaryReviewRequired = masterProgram.nutrition_program?.culinary_preflight?.status === "REVIEW_REQUIRED";
+    const finalPreflightReviewRequired =
+      masterProgram.training_program?.final_preflight?.status === "REVIEW_REQUIRED" ||
+      masterProgram.cardio_program?.final_preflight?.status === "REVIEW_REQUIRED";
     const savedProgram = await Program.create({
       user_id: req.user.id,
       program_data: masterProgram,
-      status: requiresMedicalReview || culinaryReviewRequired ? "DRAFT" : "ACTIVE",
+      status: requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired ? "DRAFT" : "ACTIVE",
     });
 
     return res.status(201).json({
@@ -265,12 +271,16 @@ export const generateAndSaveProgram = async (req, res) => {
     // default, and never keep an existing ACTIVE status for a plan that
     // now requires medical review — or whose served plate failed the
     // culinary preflight (P0-A7: an invalid plate is never served, even
-    // when it replaces a previously ACTIVE plan).
+    // when it replaces a previously ACTIVE plan) — or whose FINAL training
+    // weeks or FINAL cardio sessions failed the final check (P0-A11).
     const culinaryReviewRequired = masterProgram.nutrition_program?.culinary_preflight?.status === "REVIEW_REQUIRED";
+    const finalPreflightReviewRequired =
+      masterProgram.training_program?.final_preflight?.status === "REVIEW_REQUIRED" ||
+      masterProgram.cardio_program?.final_preflight?.status === "REVIEW_REQUIRED";
     let program = await Program.findOne({ where: { user_id: user.id } });
     if (program) {
       program.program_data = masterProgram;
-      if (requiresMedicalReview || culinaryReviewRequired) {
+      if (requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired) {
         program.status = "DRAFT";
       }
       await program.save();
@@ -278,7 +288,7 @@ export const generateAndSaveProgram = async (req, res) => {
       program = await Program.create({
         user_id: user.id,
         program_data: masterProgram,
-        status: requiresMedicalReview || culinaryReviewRequired ? "DRAFT" : "ACTIVE"
+        status: requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired ? "DRAFT" : "ACTIVE"
       });
     }
 

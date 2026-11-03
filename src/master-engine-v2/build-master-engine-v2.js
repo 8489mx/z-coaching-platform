@@ -134,6 +134,7 @@ export function resolveOptimalDietFramework(canonicalIntake, rawIntake = {}) {
 import { evaluateIntake } from "../intake-decision-engine/index.js";
 import { buildTrainingMesoCycle } from "../training-engine-v2/index.js";
 import { buildCardioEngine } from "../cardio-engine/index.js";
+import { evaluateFinalCardioPlan } from "../cardio-plan-preflight/index.js";
 import { buildMobilityEngine } from "../mobility-engine/index.js";
 import { buildSessionMobilityProtocol } from "../mobility-warmup-engine-v2/index.js";
 import { buildNutritionEngine } from "../nutrition-engine/index.js";
@@ -1326,6 +1327,18 @@ export function buildMasterEngineV2(inputs) {
     },
   );
 
+  // P0-A11: the final cardio check runs on the FINAL sessions (after the
+  // HIIT->LISS overlay and day assignment), not on the upstream schedule —
+  // the structural preflight never inspects modality, intensity, duration,
+  // or day. The duration bound is the client's own prescribed session max
+  // (the prescription dose); when no prescription dose exists there is no
+  // duration bound to enforce and none is invented. A failing plan is
+  // reported here and withheld by the generate handlers (DRAFT on
+  // final_preflight REVIEW_REQUIRED), same pattern as the culinary preflight.
+  const cardioFinalPreflight = evaluateFinalCardioPlan(enrichedCardioSessions, {
+    maxDurationMinutes: baseCardioProgram.prescription?.sessions?.[0]?.duration_minutes ?? null,
+  });
+
   const cardio_program_v2 = Object.freeze({
     ...baseCardioProgram,
     clinical_guardrails: {
@@ -1335,6 +1348,7 @@ export function buildMasterEngineV2(inputs) {
       preferred_modality: noHighIntensity ? "LISS_ZONE_2" : null,
       guidance_ar: noHighIntensity ? HIGH_INTENSITY_NOTE_AR : null,
     },
+    final_preflight: cardioFinalPreflight,
     weekly_schedule: Object.freeze({
       ...baseCardioProgram.weekly_schedule,
       sessions: Object.freeze(enrichedCardioSessions),
