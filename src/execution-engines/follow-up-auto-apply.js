@@ -22,6 +22,9 @@ function finiteNumber(value) {
  */
 export function baseTargetsFromProgram(programData = {}) {
   const data = programData && typeof programData === "object" ? programData : {};
+  // P1-B3: no invented base — when the program carries no targets, the base
+  // stays null (never 2000 kcal / 8000 steps). Callers must treat a null base
+  // as "needs coach review", never as a delta against an invented number.
   const calories =
     finiteNumber(data.nutrition_program?.macro_targets?.calories_kcal) ??
     finiteNumber(data.nutrition_program?.targets?.calories_kcal) ??
@@ -31,9 +34,9 @@ export function baseTargetsFromProgram(programData = {}) {
     finiteNumber(data.nutrition?.targets?.calories) ??
     finiteNumber(data.nutrition_program?.stages?.energy_target?.target_calories) ??
     finiteNumber(data.nutrition_program?.stages?.energy_target?.target_calories_kcal) ??
-    2000;
+    null;
   const steps =
-    finiteNumber(data.cardio_program?.prescription?.daily_step_target) ?? 8000;
+    finiteNumber(data.cardio_program?.prescription?.daily_step_target) ?? null;
   return Object.freeze({ baseCaloriesKcal: calories, baseSteps: steps });
 }
 
@@ -55,7 +58,7 @@ function hasBiomechanicalSwap(adapted) {
  * Derive the classifier's `proposed` signals plus the extra engine flags
  * the classifier does not carry (deload / refeed), from one adapted plan.
  */
-export function deriveEngineProposed({ adapted = null, baseCaloriesKcal = 2000, baseSteps = 8000 } = {}) {
+export function deriveEngineProposed({ adapted = null, baseCaloriesKcal = null, baseSteps = null } = {}) {
   if (!adapted || typeof adapted !== "object") {
     return Object.freeze({
       proposed: Object.freeze({
@@ -83,10 +86,16 @@ export function deriveEngineProposed({ adapted = null, baseCaloriesKcal = 2000, 
   const nutrition = adapted.adapted_nutrition && typeof adapted.adapted_nutrition === "object"
     ? adapted.adapted_nutrition
     : {};
-  const calorieDelta =
-    (finiteNumber(nutrition.target_calories_kcal) ?? baseCaloriesKcal) - baseCaloriesKcal;
-  const stepsDelta =
-    (finiteNumber(adapted.adapted_cardio?.daily_step_target) ?? baseSteps) - baseSteps;
+  // P1-B3: with no real base, there is no delta — only a coach-approval
+  // requirement. (A null delta must never reach the green-cap comparison as
+  // 0 via Math.abs(null); the gate blocks null bases explicitly below.)
+  const hasBase = Number.isFinite(baseCaloriesKcal) && Number.isFinite(baseSteps);
+  const calorieDelta = hasBase
+    ? (finiteNumber(nutrition.target_calories_kcal) ?? baseCaloriesKcal) - baseCaloriesKcal
+    : null;
+  const stepsDelta = hasBase
+    ? (finiteNumber(adapted.adapted_cardio?.daily_step_target) ?? baseSteps) - baseSteps
+    : null;
   const reasons = adaptedReasons(adapted);
   const floorOrCeilingClamp = reasons.some(
     (r) =>
@@ -98,7 +107,7 @@ export function deriveEngineProposed({ adapted = null, baseCaloriesKcal = 2000, 
     reasons.some((r) => r?.code === "BIOMECHANICAL_INJURY_FIREWALL_SWAPPED") ||
     hasBiomechanicalSwap(adapted);
   const engineFlags = Object.freeze({
-    requires_coach_approval: adapted.requires_coach_approval === true,
+    requires_coach_approval: adapted.requires_coach_approval === true || !hasBase,
     alignment_conflict: nutrition.alignment_conflict === true,
     diet_break_eligible:
       adapted.is_diet_break_recommended === true ||
@@ -131,8 +140,8 @@ export function deriveEngineProposed({ adapted = null, baseCaloriesKcal = 2000, 
 export function decideFollowUpAutoApply({
   triage = null,
   adapted = null,
-  baseCaloriesKcal = 2000,
-  baseSteps = 8000,
+  baseCaloriesKcal = null,
+  baseSteps = null,
   alreadyApplied = false,
   withheldStage = false,
 } = {}) {
@@ -140,6 +149,9 @@ export function decideFollowUpAutoApply({
   if (!triage || typeof triage !== "object") blocked.push("TRIAGE_MISSING");
   else if (triage.tier !== "GREEN") blocked.push("NOT_GREEN");
   if (!adapted || typeof adapted !== "object") blocked.push("ADAPTED_PLAN_MISSING");
+  // P1-B3: a missing base blocks auto-apply — a delta can never be checked
+  // against an invented 2000 kcal / 8000 steps base.
+  if (!Number.isFinite(baseCaloriesKcal) || !Number.isFinite(baseSteps)) blocked.push("BASE_TARGETS_MISSING");
   if (alreadyApplied === true) blocked.push("ALREADY_APPLIED");
   if (withheldStage === true) blocked.push("WITHHELD_STAGE");
   if (triage && triage.safety_correction !== null && triage.safety_correction !== undefined) {
@@ -187,6 +199,7 @@ const BLOCKED_REASON_MESSAGES_AR = Object.freeze({
   ALREADY_APPLIED: "المتابعة مطبقة مسبقًا؛ لا تطبيق مكرر.",
   ADAPTED_PLAN_MISSING: "لا توجد خطة معدلة من المحرك؛ لا تطبيق تلقائي بلا نتيجة محرك.",
   TRIAGE_MISSING: "لا يوجد تصنيف للمتابعة؛ لا تطبيق تلقائي بلا تصنيف.",
+  BASE_TARGETS_MISSING: "لا توجد أهداف أساسية للخطة الحالية؛ لا تطبيق تلقائي بلا أساس يقاس عليه التغير.",
 });
 
 /**

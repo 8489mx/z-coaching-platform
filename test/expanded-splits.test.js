@@ -12,7 +12,8 @@ test('Expanded Splits Generator Suite', async (t) => {
       age: 25,
       weightKg: 80,
       heightCm: 180,
-      trainingDaysPerWeek: 6
+      trainingDaysPerWeek: 6,
+      goal: 'FAT_LOSS',
     });
 
     assert.equal(plan.training_split.id, 'arnold_split');
@@ -29,7 +30,8 @@ test('Expanded Splits Generator Suite', async (t) => {
       age: 27,
       weightKg: 85,
       heightCm: 182,
-      trainingDaysPerWeek: 5
+      trainingDaysPerWeek: 5,
+      goal: 'FAT_LOSS',
     });
 
     assert.equal(plan.training_split.id, 'ul_arms_hybrid');
@@ -45,7 +47,8 @@ test('Expanded Splits Generator Suite', async (t) => {
       age: 26,
       weightKg: 60,
       heightCm: 165,
-      trainingDaysPerWeek: 4
+      trainingDaysPerWeek: 4,
+      goal: 'FAT_LOSS',
     });
 
     assert.equal(plan4.training_split.id, 'female_glute_specialized');
@@ -58,7 +61,8 @@ test('Expanded Splits Generator Suite', async (t) => {
       age: 28,
       weightKg: 62,
       heightCm: 168,
-      trainingDaysPerWeek: 5
+      trainingDaysPerWeek: 5,
+      goal: 'FAT_LOSS',
     });
 
     assert.equal(plan5.training_split.id, 'female_glute_specialized');
@@ -73,7 +77,8 @@ test('Expanded Splits Generator Suite', async (t) => {
       weightKg: 90,
       heightCm: 185,
       trainingDaysPerWeek: 4,
-      splitPreference: 'ARNOLD'
+      splitPreference: 'ARNOLD',
+      goal: 'FAT_LOSS',
     });
 
     assert.equal(plan.training_split.id, 'arnold_split');
@@ -87,7 +92,8 @@ test('Expanded Splits Generator Suite', async (t) => {
       age: 24,
       weightKg: 75,
       heightCm: 175,
-      trainingDaysPerWeek: 4
+      trainingDaysPerWeek: 4,
+      goal: 'FAT_LOSS',
     });
 
     assert.ok(plan.daily_targets.fiber_grams > 0);

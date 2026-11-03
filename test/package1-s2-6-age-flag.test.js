@@ -45,7 +45,7 @@ test("S2-6: when dateOfBirth is present, heart_rate_target flags real age", () =
   assert.equal(hrTarget.guidance_ar.includes("تقريبي"), false, "guidance_ar should not claim approximate when age is real");
 });
 
-test("S2-6: when age is missing from raw intake, age defaults to 30 with explicit flags and guidance note", () => {
+test("S2-6: when age is missing from raw intake, generation stops instead of defaulting to 30", () => {
   const intake = {
     primary_goal: "PERFORMANCE",
     average_daily_steps: 10000,
@@ -58,24 +58,18 @@ test("S2-6: when age is missing from raw intake, age defaults to 30 with explici
     training_environment: "commercial_gym",
   };
 
-  const program = buildMasterEngineV2({
-    intake,
-    evaluationContext: EVALUATION_CONTEXT,
-    nutritionFoodCatalog: CATALOG,
-    options: { weeksCount: 5 },
-  });
-
-  const sessions = program.cardio_program?.weekly_schedule?.sessions || [];
-  assert.ok(sessions.length > 0, "PERFORMANCE goal with cardio capacity must yield cardio sessions");
-
-  const hrTarget = sessions[0].heart_rate_target;
-  assert.ok(hrTarget, "Cardio session must have heart_rate_target");
-  // Tanaka for age 30: 208 - 0.7 * 30 = 187
-  assert.equal(hrTarget.estimated_hr_max, 187, "Tanaka HR max for default age 30 must be 187");
-  assert.equal(hrTarget.is_age_estimated, true, "is_age_estimated must be true when age is defaulted");
-  assert.equal(hrTarget.age_source, "DEFAULT_FALLBACK", "age_source must be DEFAULT_FALLBACK when age is defaulted");
-  assert.ok(
-    hrTarget.guidance_ar.includes("تقريبي") || hrTarget.guidance_ar.includes("لعدم تحديد العمر"),
-    "guidance_ar must state the range is approximate because age is missing"
+  // P1-B3 (Q1): a missing age stops generation — it never silently becomes
+  // 30 with flags. The old DEFAULT_FALLBACK zone behavior is retired; the
+  // decision gate refuses the intake before any plan is built.
+  assert.throws(
+    () =>
+      buildMasterEngineV2({
+        intake,
+        evaluationContext: EVALUATION_CONTEXT,
+        nutritionFoodCatalog: CATALOG,
+        options: { weeksCount: 5 },
+      }),
+    /validation failed/,
+    "Missing age must stop generation, never invent an age"
   );
 });

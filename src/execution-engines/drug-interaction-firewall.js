@@ -104,11 +104,14 @@ export function evaluatePharmacologicalFirewall(medicationsList = []) {
 export function evaluateMasterClinicalProfile({
   medicalConditions = [],
   pregnancyTrimester = 'NONE',
-  weightKg = 75,
-  targetCalories = 2000,
-  targetProteinGrams = 150,
-  targetCarbGrams = 200,
-  targetFatGrams = 60,
+  // P1-B3: no invented profile — missing inputs stay null (never 75 / 2000 /
+  // 150 / 200 / 60 / 8000). The onboarding path passes real values, so its
+  // plans are unaffected; a direct call with nothing gets nulls, not a plan.
+  weightKg = null,
+  targetCalories = null,
+  targetProteinGrams = null,
+  targetCarbGrams = null,
+  targetFatGrams = null,
   waterLiters = 3.5
 }) {
   let adjusted = {
@@ -121,7 +124,7 @@ export function evaluateMasterClinicalProfile({
     prohibitedSupplements: [],
     prescribedNutrients: [],
     biomechanicalRestrictions: [],
-    cardioProtocol: { type: 'LISS', equipment: 'INCLINE_TREADMILL', dailySteps: 8000, maxHeartRateZone: 2 },
+    cardioProtocol: { type: 'LISS', equipment: 'INCLINE_TREADMILL', dailySteps: null, maxHeartRateZone: 2 },
     safetyCues: []
   };
 
@@ -178,7 +181,8 @@ export function evaluateMasterClinicalProfile({
 
   // 8. القصور الكلوي
   if (conds.includes('RENAL_INSUFFICIENCY')) {
-    adjusted.proteinGrams = Math.round((weightKg || 75) * 1.1);
+    // P1-B3: weight-based grams only when weight is known — never 75 kg.
+    if (Number.isFinite(weightKg)) adjusted.proteinGrams = Math.round(weightKg * 1.1);
     adjusted.prohibitedSupplements.push('CREATINE');
     adjusted.safetyCues.push('تقنين البروتين عند 1.1 جم/كجم لحماية الكلى مع حظر تام لمكمل الكرياتين.');
   }
@@ -191,7 +195,8 @@ export function evaluateMasterClinicalProfile({
 
   // 10. التكميم والـ GLP-1
   if (conds.includes('BARIATRIC_SURGERY') || conds.includes('GLP1_USER')) {
-    adjusted.proteinGrams = Math.max(adjusted.proteinGrams, Math.round((weightKg || 75) * 2.2));
+    // P1-B3: weight-based grams only when weight is known — never 75 kg.
+    if (Number.isFinite(weightKg)) adjusted.proteinGrams = Math.max(adjusted.proteinGrams ?? 0, Math.round(weightKg * 2.2));
     adjusted.prescribedNutrients.push('WHEY_ISOLATE_FLUID_SEPARATION');
     adjusted.safetyCues.push('فصل شرب السوائل عن الوجبة بـ 30 دقيقة قبل وبعد لتجنب الغثيان ومتلازمة الإغراق.');
   }
@@ -263,7 +268,7 @@ export function evaluateMasterClinicalProfile({
   // 21. الكورتيزون المزمن
   if (conds.includes('CORTICOSTEROIDS')) {
     adjusted.prescribedNutrients.push('LOW_SODIUM_HIGH_CALCIUM');
-    adjusted.proteinGrams = Math.round(adjusted.proteinGrams * 1.15);
+    if (Number.isFinite(adjusted.proteinGrams)) adjusted.proteinGrams = Math.round(adjusted.proteinGrams * 1.15);
   }
 
   // 22. أسفل الظهر والغضروف

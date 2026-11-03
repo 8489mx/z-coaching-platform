@@ -70,9 +70,10 @@ test("base targets are read from the same program paths the adaptation engine us
   const targets = baseTargetsFromProgram(baseProgram());
   assert.equal(targets.baseCaloriesKcal, 2000);
   assert.equal(targets.baseSteps, 8000);
+  // P1-B3: an empty program has no base — never an invented 2000/8000.
   const fallback = baseTargetsFromProgram({});
-  assert.equal(fallback.baseCaloriesKcal, 2000);
-  assert.equal(fallback.baseSteps, 8000);
+  assert.equal(fallback.baseCaloriesKcal, null);
+  assert.equal(fallback.baseSteps, null);
 });
 
 test("GREEN inside caps with a clean engine result is eligible", () => {

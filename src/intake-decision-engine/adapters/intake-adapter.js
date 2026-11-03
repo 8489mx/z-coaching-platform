@@ -272,7 +272,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       lastName: intake.last_name || (intake.full_name || '').split(' ').slice(1).join(' ') || "جديد",
       dateOfBirth: intake.date_of_birth,
       age: parseCleanNumber(intake.age, null),
-      sex: canonicalSex || 'MALE'
+      sex: canonicalSex || null
     };
   }
 
@@ -284,8 +284,8 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
   if (!intake.body && (intake.height_cm || intake.weight_kg || intake.circumferences || intake.waist_cm)) {
     intake.body = {
-      heightCm: parseCleanNumber(intake.height_cm, 175),
-      weightKg: parseCleanNumber(intake.weight_kg, 75),
+      heightCm: parseCleanNumber(intake.height_cm, null),
+      weightKg: parseCleanNumber(intake.weight_kg, null),
       waistCm: parseCleanNumber(intake.waist_cm || intake.circumferences?.waist_cm, null),
       neckCm: parseCleanNumber(intake.circumferences?.neck_cm, null),
       hipCm: parseCleanNumber(intake.circumferences?.hips_cm, null),
@@ -550,14 +550,20 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     dob = `${birthYear}-01-01`;
   }
   if (!dob || typeof dob !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
-    dob = "1998-01-01";
+    // P1-B3: a missing date of birth stays null — it never silently becomes
+    // 1998-01-01. The decision gate (validateIntake) refuses a null dob, so
+    // generation stops instead of planning a stranger's metabolism.
+    dob = null;
   }
 
   const canonicalPersonal = {
     firstName: String(personal.firstName || "متدرب").trim() || "متدرب",
     lastName: String(personal.lastName || "جديد").trim() || "جديد",
     dateOfBirth: dob,
-    sex: canonicalSex || (personal.sex === "FEMALE" ? "FEMALE" : "MALE"),
+    // P1-B3: a missing sex stays null — it never silently becomes MALE.
+    // The decision gate refuses a null sex (male BMR formula and the male
+    // calorie floor must never apply to an unknown client).
+    sex: canonicalSex || null,
     residenceCountry: personal.residenceCountry && personal.residenceCountry.length === 2 ? personal.residenceCountry.toUpperCase() : "EG",
     // The form asks for the guardian only under 18: name, phone and an explicit consent.
     guardianConsent: personal.guardianConsent !== undefined
@@ -594,11 +600,16 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   let quality = body.measurementQuality;
   if (quality === "ACTUAL_MEASURED" || quality === "HIGH") quality = "HIGH";
   else if (quality === "APPROXIMATE" || quality === "LOW") quality = "LOW";
-  else if (!["HIGH", "MEDIUM", "LOW", "UNKNOWN"].includes(quality)) quality = "HIGH";
+  // P1-B3: an unknown measurement quality stays UNKNOWN — it never silently
+  // becomes HIGH, so guessed numbers are never presented as measured data.
+  else if (!["HIGH", "MEDIUM", "LOW", "UNKNOWN"].includes(quality)) quality = "UNKNOWN";
 
-  const height = parseCleanNumber(body.heightCm, parseCleanNumber(intake.height_cm, 175));
-  const weight = parseCleanNumber(body.weightKg, parseCleanNumber(intake.weight_kg, 75));
-  const waist = parseCleanNumber(body.waistCm, parseCleanNumber(intake.waist_cm || intake.circumferences?.waist_cm, Math.round(height * 0.45)));
+  // P1-B3: missing height/weight/waist stay null — never 175 / 75 / height*0.45.
+  // The decision gate refuses null height/weight, and a null waist simply
+  // skips the Navy body-fat estimate instead of fabricating one.
+  const height = parseCleanNumber(body.heightCm, parseCleanNumber(intake.height_cm, null));
+  const weight = parseCleanNumber(body.weightKg, parseCleanNumber(intake.weight_kg, null));
+  const waist = parseCleanNumber(body.waistCm, parseCleanNumber(intake.waist_cm || intake.circumferences?.waist_cm, null));
   const neck = parseCleanNumber(body.neckCm, parseCleanNumber(intake.circumferences?.neck_cm, null));
   const hip = parseCleanNumber(body.hipCm, parseCleanNumber(intake.circumferences?.hips_cm, null));
   let rawBodyFatInput = 
@@ -641,7 +652,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     waistCm: waist,
 
 
-    weightTrend: ["LOSING", "STABLE", "GAINING"].includes(body.weightTrend) ? body.weightTrend : "STABLE",
+    // P1-B3: an unknown weight trend stays UNKNOWN — it never silently
+    // becomes STABLE, so a moving weight is never recorded as stable.
+    weightTrend: ["LOSING", "STABLE", "GAINING", "FLUCTUATING", "UNKNOWN"].includes(body.weightTrend) ? body.weightTrend : "UNKNOWN",
     measurementQuality: quality,
     progressPhotosAvailable: Boolean(body.progressPhotosAvailable || (body.photos && Object.keys(body.photos).length > 0))
   };

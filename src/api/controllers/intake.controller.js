@@ -115,11 +115,21 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
   const messageSteps = resolveDailySteps({ averageDailySteps: cardio.averageDailySteps });
   const cardioStrategy = `تم تحديد ${cardio.maxSessionsPerWeek || 3} جلسات كارديو أسبوعياً بنطاق نبضات حرق الدهون Zone 2 (${cardioBpm})${messageSteps.known ? ` بالإضافة إلى مستهدف ${messageSteps.value} خطوة يومياً لتحفيز نزول الدهون دون التأثير على الاستشفاء العضلي.` : ` بالإضافة إلى هدف مشي يومي يحدده المدرب بعد تسجيل خطواتك اليومية لتحفيز نزول الدهون دون التأثير على الاستشفاء العضلي.`}`;
 
-  const weight = Number(body.weightKg || base.weight_kg) || 75;
-  const height = Number(body.heightCm || base.height_cm) || 175;
-  const age = Number(personal.age || base.age) || (personal.dateOfBirth ? (new Date().getFullYear() - new Date(personal.dateOfBirth).getFullYear()) : 28);
-  const isMale = (personal.sex || base.sex || base.gender) !== 'FEMALE';
+  // P1-B3: no invented demographics here — a missing weight/height/age/sex
+  // stays null (never 75 / 175 / 28 / male). The fallback math below runs
+  // only when every input is genuinely present; otherwise the numbers stay
+  // null and the rationale says the data is missing.
+  const weightRaw = body.weightKg || base.weight_kg;
+  const heightRaw = body.heightCm || base.height_cm;
+  const ageRaw = personal.age || base.age;
+  const sexRaw = personal.sex || base.sex || base.gender;
+  const weight = weightRaw ? Number(weightRaw) : null;
+  const height = heightRaw ? Number(heightRaw) : null;
+  const age = ageRaw ? Number(ageRaw)
+    : (personal.dateOfBirth ? (new Date().getFullYear() - new Date(personal.dateOfBirth).getFullYear()) : null);
+  const isMale = sexRaw ? sexRaw !== 'FEMALE' : null;
   const bodyFat = Number(body.bodyFat || base.body_fat) || null;
+  const demographicsPresent = Number.isFinite(weight) && Number.isFinite(height) && Number.isFinite(age) && isMale !== null;
 
   // Unify with masterProgram deterministic nutrition targets if available
   const targets = masterProgram?.nutrition_program?.targets || {};
@@ -128,7 +138,9 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
   // 1. Calculate / Extract BMR
   let bmr = targets.bmr;
   if (!bmr) {
-    if (bodyFat && bodyFat > 0 && bodyFat < 50) {
+    if (!demographicsPresent) {
+      bmr = null;
+    } else if (bodyFat && bodyFat > 0 && bodyFat < 50) {
       const lbm = weight * (1 - bodyFat / 100);
       bmr = Math.round(370 + (21.6 * lbm));
     } else {
@@ -143,29 +155,35 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
   // primary TDEE path in the master engine does apply it.)
   let tdee = targets.tdee;
   if (!tdee) {
-    const fallbackSteps = resolveDailySteps({ averageDailySteps: cardio.averageDailySteps }).value;
-    const trainDays = Number(training.preferredDaysPerWeek) || 3;
-    let activityMultiplier = stepsActivityFactor(fallbackSteps);
-    if (trainDays >= 4) activityMultiplier += 0.10;
-    else if (trainDays >= 3) activityMultiplier += 0.05;
-    tdee = Math.round(bmr * (targets.activity_factor || activityMultiplier));
+    if (bmr === null) {
+      tdee = null;
+    } else {
+      const fallbackSteps = resolveDailySteps({ averageDailySteps: cardio.averageDailySteps }).value;
+      const trainDays = Number(training.preferredDaysPerWeek) || 3;
+      let activityMultiplier = stepsActivityFactor(fallbackSteps);
+      if (trainDays >= 4) activityMultiplier += 0.10;
+      else if (trainDays >= 3) activityMultiplier += 0.05;
+      tdee = Math.round(bmr * (targets.activity_factor || activityMultiplier));
+    }
   }
 
   // 3. Calorie Deficit / Surplus and Target Macros
-  const targetCalories = targets.target_calories || macroTargets.calories_kcal || tdee;
-  const proteinG = targets.protein_g || macroTargets.protein_g || Math.round(weight * 2.0);
-  const fatG = targets.fat_g || macroTargets.fat_g || Math.round((targetCalories * 0.22) / 9);
-  const carbG = targets.carbohydrate_g || targets.carb_g || macroTargets.carbohydrate_g || Math.max(0, Math.round((targetCalories - (proteinG * 4) - (fatG * 9)) / 4));
-  const proteinPerKg = targets.protein_per_kg || (weight > 0 ? (proteinG / weight).toFixed(1) : 2.0);
+  const targetCalories = targets.target_calories || macroTargets.calories_kcal || tdee || null;
+  const proteinG = targets.protein_g || macroTargets.protein_g || (Number.isFinite(weight) ? Math.round(weight * 2.0) : null);
+  const fatG = targets.fat_g || macroTargets.fat_g || (targetCalories ? Math.round((targetCalories * 0.22) / 9) : null);
+  const carbG = targets.carbohydrate_g || targets.carb_g || macroTargets.carbohydrate_g || (targetCalories && proteinG !== null && fatG !== null ? Math.max(0, Math.round((targetCalories - (proteinG * 4) - (fatG * 9)) / 4)) : null);
+  const proteinPerKg = targets.protein_per_kg || (weight > 0 && proteinG !== null ? (proteinG / weight).toFixed(1) : null);
 
   const mealCount = targets.meals_count || Number(nutrition.preferredMealCount) || 3;
-  const mealProtein = Math.round(proteinG / mealCount);
-  const mealFat = Math.round(fatG / mealCount);
-  const mealCarb = Math.round(carbG / mealCount);
+  const mealProtein = proteinG !== null ? Math.round(proteinG / mealCount) : null;
+  const mealFat = fatG !== null ? Math.round(fatG / mealCount) : null;
+  const mealCarb = carbG !== null ? Math.round(carbG / mealCount) : null;
 
   const goalDesc = targets.calorie_adjustment_desc || (goals.primary === 'FAT_LOSS' ? 'عجز 20% للتنشيف' : goals.primary === 'MUSCLE_GAIN' ? 'فائض 10% للبناء العضلي' : 'سعرات صيانة وتثبيت');
 
-  const macroRationale = `سعرات الصيانة (TDEE): ~${tdee} kcal. تم تطبيق ${goalDesc} لتصبح السعرات المستهدفة (${targetCalories} kcal) مقسمة بدقة: بروتين (${proteinG} جم بمعدل ${proteinPerKg} جم/كجم) + دهون صحية (${fatG} جم) + كاربوهيدرات (${carbG} جم). متوسط كل وجبة من الوجبات الـ (${mealCount}): ~${mealProtein} جم بروتين، ~${mealCarb} جم كارب، ~${mealFat} جم دهون مع توزيع الوجبات بما يخدم الشبع والأداء الرياضي.`;
+  const macroRationale = (tdee === null || targetCalories === null || proteinG === null || fatG === null || carbG === null)
+    ? 'بيانات أساسية ناقصة (وزن أو طول أو عمر أو جنس)؛ لم يتم حساب سعرات أو ماكروز حتى يتم توفيرها.'
+    : `سعرات الصيانة (TDEE): ~${tdee} kcal. تم تطبيق ${goalDesc} لتصبح السعرات المستهدفة (${targetCalories} kcal) مقسمة بدقة: بروتين (${proteinG} جم بمعدل ${proteinPerKg} جم/كجم) + دهون صحية (${fatG} جم) + كاربوهيدرات (${carbG} جم). متوسط كل وجبة من الوجبات الـ (${mealCount}): ~${mealProtein} جم بروتين، ~${mealCarb} جم كارب، ~${mealFat} جم دهون مع توزيع الوجبات بما يخدم الشبع والأداء الرياضي.`;
 
   return {
     injury_exclusions: injuryExclusions,

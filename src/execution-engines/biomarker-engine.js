@@ -12,9 +12,15 @@ export function analyzeBloodworkBiomarkers(rawInput = {}) {
   const normalized = { ...rawInput };
 
   // Flexible key resolution
-  const body_weight_kg = Number(normalized.body_weight_kg ?? normalized.weight_kg ?? normalized.weight ?? 75);
-  const gender = String(normalized.gender ?? normalized.sex ?? 'MALE').toUpperCase();
-  const isMale = gender === 'MALE';
+  // P1-B3: a missing weight stays null — never 75. (This variable is
+  // currently not consumed by any adjustment below; the null keeps a future
+  // use honest instead of silently planning a 75 kg client.)
+  const body_weight_kg = Number(normalized.body_weight_kg ?? normalized.weight_kg ?? normalized.weight ?? NaN) || null;
+  // P1-B3: a missing sex stays unknown — never MALE. Sex-specific cutoffs
+  // below are skipped when unknown instead of judging by the wrong sex.
+  const genderRaw = normalized.gender ?? normalized.sex;
+  const gender = genderRaw ? String(genderRaw).toUpperCase() : null;
+  const isMale = gender === "MALE" ? true : gender === "FEMALE" ? false : null;
 
   const hba1c_percent = normalized.hba1c_percent !== undefined ? Number(normalized.hba1c_percent) : (normalized.hba1c !== undefined ? Number(normalized.hba1c) : null);
   const fasting_glucose_mg_dl = normalized.fasting_glucose_mg_dl !== undefined ? Number(normalized.fasting_glucose_mg_dl) : (normalized.fasting_glucose !== undefined ? Number(normalized.fasting_glucose) : null);
@@ -73,7 +79,7 @@ export function analyzeBloodworkBiomarkers(rawInput = {}) {
   }
 
   // 2. Renal Function Guardrail (Creatinine & eGFR)
-  const isElevatedCreatinine = typeof creatinine_mg_dl === 'number' && Number.isFinite(creatinine_mg_dl) && (isMale ? creatinine_mg_dl > 1.3 : creatinine_mg_dl > 1.1);
+  const isElevatedCreatinine = typeof creatinine_mg_dl === 'number' && Number.isFinite(creatinine_mg_dl) && isMale !== null && (isMale ? creatinine_mg_dl > 1.3 : creatinine_mg_dl > 1.1);
   const isReducedEGFR = typeof egfr_ml_min === 'number' && Number.isFinite(egfr_ml_min) && egfr_ml_min < 60;
 
   if (isReducedEGFR || isElevatedCreatinine) {
@@ -93,7 +99,7 @@ export function analyzeBloodworkBiomarkers(rawInput = {}) {
   }
 
   // 3. Uric Acid & Hyperuricemia Guardrail (Gout Shield)
-  const isElevatedUricAcid = typeof uric_acid_mg_dl === 'number' && Number.isFinite(uric_acid_mg_dl) && (isMale ? uric_acid_mg_dl > 7.0 : uric_acid_mg_dl > 6.0);
+  const isElevatedUricAcid = typeof uric_acid_mg_dl === 'number' && Number.isFinite(uric_acid_mg_dl) && isMale !== null && (isMale ? uric_acid_mg_dl > 7.0 : uric_acid_mg_dl > 6.0);
   if (isElevatedUricAcid) {
     flags.push({
       biomarker: 'URIC_ACID_HYPERURICEMIA',

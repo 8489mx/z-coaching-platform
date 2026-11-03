@@ -350,9 +350,23 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     throw new RangeError(`قيمة الطول غير فسيولوجية (${rawHeight} سم). يجب أن يتراوح الطول البشري بين 120 و 250 سم لبناء خطة التغذية.`);
   }
 
-  const age = personal.dateOfBirth
+  // P1-B3: a missing age stops generation — it never silently becomes 28.
+  // (Weight/height already throw above; age and sex get the same treatment
+  // so a direct master-engine call cannot plan on invented demographics.)
+  const ageNum = Number(personal.age);
+  const dobValid = typeof personal.dateOfBirth === "string" && /^\d{4}-\d{2}-\d{2}$/.test(personal.dateOfBirth);
+  const age = dobValid
     ? calculateAge(personal.dateOfBirth, evaluationContext.assessmentDate)
-    : Number(personal.age) || 28;
+    : (Number.isFinite(ageNum) && ageNum > 0 ? ageNum : null);
+  if (age === null || !Number.isFinite(age)) {
+    throw new RangeError("العمر أو تاريخ الميلاد مطلوب لبناء خطة التغذية ولم يتم توفيره.");
+  }
+  const sexProvided = personal.sex
+    ? String(personal.sex).trim()
+    : String(personal.gender || personal.client_gender || "").trim();
+  if (!sexProvided) {
+    throw new RangeError("الجنس مطلوب لبناء خطة التغذية ولم يتم توفيره.");
+  }
   const isMale = personal.sex
     ? personal.sex !== "FEMALE"
     : (String(personal.gender || personal.client_gender || "").trim().toUpperCase() !== "FEMALE");
@@ -1222,8 +1236,10 @@ export function buildMasterEngineV2(inputs) {
 
 
   // 3. Cardio Engine V2 with Zone 2 Target Heart Rates
-  // S2-6: Check if date of birth or age was actually provided by the client,
-  // because the intake adapter silently defaults missing dateOfBirth to "1998-01-01".
+  // S2-6 (P1-B3 note): a missing date of birth/age now stops generation in
+  // the targets step above, so this fallback is defense-in-depth only. Its
+  // output stays flagged estimated and held for review (P0-A16), never
+  // served as a confirmed zone.
   const rawDobCandidates = [
     effectiveIntake?.personal?.dateOfBirth,
     effectiveIntake?.personal?.date_of_birth,
@@ -1500,10 +1516,11 @@ export function buildMasterEngineV2(inputs) {
   const enhancedQuantizedPlan = {
     ...(quantizedNutrition || {}),
     daily_totals: {
-      calories_kcal: universalTargets.target_calories || universalTargets.target_calories_kcal || 2000,
-      protein_g: universalTargets.protein_g || 160,
-      carbs_g: universalTargets.carb_g || universalTargets.carbohydrate_g || 200,
-      fat_g: universalTargets.fat_g || 60,
+      // P1-B3: no invented headline — a missing target stays null, never 2000/160/200/60.
+      calories_kcal: universalTargets.target_calories || universalTargets.target_calories_kcal || null,
+      protein_g: universalTargets.protein_g || null,
+      carbs_g: universalTargets.carb_g || universalTargets.carbohydrate_g || null,
+      fat_g: universalTargets.fat_g || null,
     },
     meals: culinaryRecipeMeals.map((crm) => ({
       meal_number: crm.meal_number,
@@ -1553,10 +1570,11 @@ export function buildMasterEngineV2(inputs) {
       meals: culinaryRecipeMeals,
     },
     macro_targets: {
-      calories_kcal: universalTargets.target_calories || universalTargets.target_calories_kcal || 2000,
-      protein_g: universalTargets.protein_g || 160,
-      carbohydrate_g: universalTargets.carb_g || universalTargets.carbohydrate_g || 200,
-      fat_g: universalTargets.fat_g || 60,
+      // P1-B3: no invented headline — a missing target stays null, never 2000/160/200/60.
+      calories_kcal: universalTargets.target_calories || universalTargets.target_calories_kcal || null,
+      protein_g: universalTargets.protein_g || null,
+      carbohydrate_g: universalTargets.carb_g || universalTargets.carbohydrate_g || null,
+      fat_g: universalTargets.fat_g || null,
     },
     // The client's declared sugar in tea/coffee: not added to the targets, shown to the coach so the
     // extra 20-60 kcal a day is a decision and not a surprise.

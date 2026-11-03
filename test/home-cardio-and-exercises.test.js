@@ -8,6 +8,11 @@ test('Home Exercise Library & Home Cardio Integration Suite', async (t) => {
   await t.test('1. Generates home treadmill incline protocol for healthy client with treadmill at home', () => {
     const plan = generateInitialPlan({
       name: 'علي المنزلي',
+      gender: 'MALE',
+      age: 25,
+      weightKg: 75,
+      heightCm: 175,
+      goal: 'FAT_LOSS',
       environment: 'HOME',
       homeEquipment: ['DUMBBELLS', 'TREADMILL'],
       trainingDaysPerWeek: 3
@@ -21,6 +26,11 @@ test('Home Exercise Library & Home Cardio Integration Suite', async (t) => {
   await t.test('2. Adjusts treadmill to flat walk when client has patellar tendinitis', () => {
     const plan = generateInitialPlan({
       name: 'سامي المصاب',
+      gender: 'MALE',
+      age: 25,
+      weightKg: 75,
+      heightCm: 175,
+      goal: 'FAT_LOSS',
       environment: 'HOME',
       homeEquipment: ['TREADMILL'],
       medicalConditions: ['PATELLAR_TENDINITIS'],
@@ -34,6 +44,11 @@ test('Home Exercise Library & Home Cardio Integration Suite', async (t) => {
   await t.test('3. Switches to stationary bike when knee patient has both treadmill and bike at home', () => {
     const plan = generateInitialPlan({
       name: 'هاني',
+      gender: 'MALE',
+      age: 25,
+      weightKg: 75,
+      heightCm: 175,
+      goal: 'FAT_LOSS',
       environment: 'HOME',
       homeEquipment: ['TREADMILL', 'STATIONARY_BIKE'],
       medicalConditions: ['PATELLAR_TENDINITIS'],
@@ -46,6 +61,11 @@ test('Home Exercise Library & Home Cardio Integration Suite', async (t) => {
   await t.test('4. Generates bodyweight exercise variations when bodyweight only is selected', () => {
     const plan = generateInitialPlan({
       name: 'عمر وزن جسم',
+      gender: 'MALE',
+      age: 25,
+      weightKg: 75,
+      heightCm: 175,
+      goal: 'FAT_LOSS',
       environment: 'HOME',
       homeEquipment: ['BODYWEIGHT_ONLY'],
       trainingDaysPerWeek: 3

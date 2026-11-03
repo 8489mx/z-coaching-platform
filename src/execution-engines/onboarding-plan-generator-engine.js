@@ -92,12 +92,12 @@ export const HOME_EXERCISE_LIBRARY = {
 
 export function generateInitialPlan({
   name = 'المتدرب',
-  gender = 'MALE',
-  age = 25,
-  weightKg = 75,
-  heightCm = 175,
+  gender,
+  age,
+  weightKg,
+  heightCm,
   activityLevel = 'LIGHT',
-  goal = 'FAT_LOSS',
+  goal,
   trainingDaysPerWeek = 4,
   experienceLevel = 'BEGINNER',
   environment = 'GYM',
@@ -112,10 +112,18 @@ export function generateInitialPlan({
   preferredWorkoutTime = 'EVENING',
   splitPreference = 'AUTO'
 }) {
+  // P1-B3: no invented client data — a missing gender/age/weight/height/goal
+  // stops generation (the route surfaces this as a 400) instead of planning
+  // a 25-year-old 75 kg / 175 cm male on fat loss nobody asked for.
+  if (!gender || !String(gender).trim()) throw new Error('الجنس مطلوب لبناء الخطة ولم يتم توفيره.');
+  if (!Number.isFinite(Number(age)) || Number(age) <= 0) throw new Error('العمر مطلوب لبناء الخطة ولم يتم توفيره.');
+  if (!Number.isFinite(Number(weightKg)) || Number(weightKg) <= 0) throw new Error('الوزن مطلوب لبناء الخطة ولم يتم توفيره.');
+  if (!Number.isFinite(Number(heightCm)) || Number(heightCm) <= 0) throw new Error('الطول مطلوب لبناء الخطة ولم يتم توفيره.');
+  if (!goal || !String(goal).trim()) throw new Error('الهدف مطلوب لبناء الخطة ولم يتم توفيره.');
   const isMale = String(gender).toUpperCase() === 'MALE';
-  const ageNum = Number(age) || 25;
-  const weightNum = Number(weightKg) || 75;
-  const heightNum = Number(heightCm) || 175;
+  const ageNum = Number(age);
+  const weightNum = Number(weightKg);
+  const heightNum = Number(heightCm);
 
   // 1. حساب معدل الأيض الأساسي (Mifflin-St Jeor)
   let bmr = (10 * weightNum) + (6.25 * heightNum) - (5 * ageNum);
@@ -355,7 +363,9 @@ export function generateInitialPlan({
   // =========================================================================
   // Home Cardio Protocol Integration (مصفوفة الكارديو المنزلي التلقائي)
   // =========================================================================
-  let finalCardioProtocol = masterClinicalProfile.cardioProtocol || { type: 'LISS', equipment: 'INCLINE_TREADMILL', dailySteps: 8000 };
+  // P1-B3: no invented step target — when no protocol exists, the protocol
+  // carries no dailySteps (never 8000) and the note says so honestly.
+  let finalCardioProtocol = masterClinicalProfile.cardioProtocol || { type: 'LISS', equipment: 'INCLINE_TREADMILL' };
 
   if (envType === 'HOME') {
     const hasHomeTreadmill = normalizedHomeTools.includes('TREADMILL');
@@ -399,11 +409,14 @@ export function generateInitialPlan({
         notes_ar: 'بروتوكول الدراجة الثابتة المنزلية بنطاق نبض Zone 2 لمدة 30 دقيقة لحرق الدهون وتحسين كفاءة القلب.'
       };
     } else {
+      const stepsTarget = masterClinicalProfile.cardioProtocol?.dailySteps || null;
       finalCardioProtocol = {
         type: 'LISS',
         equipment: 'OUTDOOR_OR_INDOOR_STEPS',
-        dailySteps: masterClinicalProfile.cardioProtocol.dailySteps || 8000,
-        notes_ar: 'المشي اليومي الحر لتحقيق مستهدف ' + (masterClinicalProfile.cardioProtocol.dailySteps || 8000) + ' خطوة.'
+        ...(stepsTarget ? { dailySteps: stepsTarget } : {}),
+        notes_ar: stepsTarget
+          ? 'المشي اليومي الحر لتحقيق مستهدف ' + stepsTarget + ' خطوة.'
+          : 'المشي اليومي الحر؛ مستهدف الخطوات يحدده المدرب بعد تسجيل خطواتك اليومية.'
       };
     }
   }
