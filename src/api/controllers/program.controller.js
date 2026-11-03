@@ -1512,7 +1512,15 @@ export const getActiveProgramByUserId = async (req, res) => {
 
     if (training_session) {
       const sessionPattern = training_session.pattern || training_session.type || (training_session.name?.includes("سفلي") || training_session.name?.includes("أرجل") ? "LOWER" : (training_session.name?.includes("علوي") || training_session.name?.includes("صدر") || training_session.name?.includes("ظهر") ? "UPPER" : "FULL_BODY"));
-      const sessionMobility = buildSessionMobilityProtocol(sessionPattern, injuries);
+      // P0-A10 (Q36): a weekly mobility prescription held for coach review
+      // withholds the automatic warm-up/cool-down here too, including for
+      // pre-fix stored programs whose sessions already carry a concrete
+      // routine. No stored status means no evidence of a hold, so serving
+      // continues unchanged for those programs.
+      const storedMobilityStatus = program.program_data?.mobility_program?.prescription?.status;
+      const sessionMobility = buildSessionMobilityProtocol(sessionPattern, injuries, {
+        ...(storedMobilityStatus ? { mobilityPrescriptionStatus: storedMobilityStatus } : {}),
+      });
       training_session.dynamic_warmup = sessionMobility.dynamic_warmup;
       training_session.static_cooldown = sessionMobility.static_cooldown;
       if (!Array.isArray(training_session.pre_workout_mobility) || training_session.pre_workout_mobility.length === 0) {

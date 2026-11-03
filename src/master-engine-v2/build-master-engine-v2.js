@@ -1163,6 +1163,12 @@ export function buildMasterEngineV2(inputs) {
   // 1. Evaluate Intake
   const intake_decision = evaluateIntake(canonicalIntake, evaluationContext);
 
+  // P0-A10 (Q36): the weekly mobility prescription is the gate for automatic
+  // warm-ups. This prescription-only run reads exactly the status the full
+  // Mobility Engine run below will store (it needs no weekly plan, so it can
+  // run before session enrichment); it changes no stored output.
+  const mobilityPrescriptionStatus = buildMobilityEngine(intake_decision, null).prescription?.status;
+
   // 2. Training Engine V2 (Multi-Week Meso-Cycle Periodization)
   const training_mesocycle = buildTrainingMesoCycle(intake_decision, {
     weeksCount: options.weeksCount || 5,
@@ -1192,6 +1198,9 @@ export function buildMasterEngineV2(inputs) {
                 ...(canonicalIntake.training?.medicalMovementRestrictions || []),
                 ...(intake?.training?.medicalMovementRestrictions || []),
               ],
+              // P0-A10 (Q36): a review-held weekly prescription withholds the
+              // automatic warm-up/cool-down instead of serving it.
+              mobilityPrescriptionStatus,
             }),
           ),
         }),

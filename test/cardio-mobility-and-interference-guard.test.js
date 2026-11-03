@@ -158,10 +158,14 @@ test('Phase 10: Cardio Prescription, Mobility Protocols & Leg-Day Interference S
     assert.ok(kneeMobility.dynamic_warmup.exercises.some(e => e.id === 'GLUTE_BRIDGE_ACTIVATION'));
     assert.ok(kneeMobility.clinical_contraindications_bypassed_ar.length > 0);
 
-    // Case B: Rotator Cuff Impingement -> Substitutes aggressive arm circles with banded dislocates
+    // Case B: Rotator Cuff Impingement -> Removes aggressive arm circles AND
+    // overhead band dislocates (P0-A10, audit S10: the dislocates move the
+    // band over the head, so they are themselves overhead). Below-shoulder
+    // band pull-aparts remain.
     const shoulderMobility = buildSessionMobilityProtocol('UPPER', ['rotator_cuff', 'shoulder']);
     assert.equal(shoulderMobility.dynamic_warmup.exercises.some(e => e.id === 'ARM_CIRCLES_SWINGS'), false);
-    assert.ok(shoulderMobility.dynamic_warmup.exercises.some(e => e.id === 'BANDED_DISLOCATES_GENTLE'));
+    assert.equal(shoulderMobility.dynamic_warmup.exercises.some(e => e.id === 'BANDED_DISLOCATES_GENTLE'), false);
+    assert.ok(shoulderMobility.dynamic_warmup.exercises.some(e => e.id === 'BAND_PULL_APARTS'));
 
     // Case C: Lumbar Disc Herniation -> Substitutes rounded-back hamstring flexion with neutral spine supine stretch
     const spineMobility = buildSessionMobilityProtocol('FULL_BODY', ['lumbar_disc', 'spine_back']);

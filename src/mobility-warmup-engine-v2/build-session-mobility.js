@@ -270,8 +270,39 @@ export function buildSessionMobilityProtocol(sessionCode = "FULL_BODY", exercise
   let effectiveMedical = medicalContext && typeof medicalContext === "object" ? { ...medicalContext } : {};
   if (!Array.isArray(exercises) && typeof exercises === "object" && exercises !== null) {
     effectiveMedical = { ...exercises, ...effectiveMedical };
-  } else if (Array.isArray(exercises) && exercises.length > 0 && typeof exercises[0] === "string" && (!medicalContext || Object.keys(medicalContext).length === 0)) {
-    effectiveMedical.injuries = exercises;
+  } else if (Array.isArray(exercises) && exercises.length > 0 && typeof exercises[0] === "string") {
+    // P0-A10: a string-array 2nd argument is the injuries list (controller
+    // call shape) and must survive even when a 3rd-argument context is also
+    // passed (e.g. the review-held gate status). Previously it was dropped
+    // whenever medicalContext was non-empty.
+    effectiveMedical.injuries = [...(effectiveMedical.injuries || []), ...exercises];
+  }
+
+  // P0-A10 (Q36): a weekly mobility prescription held for coach review stops
+  // automatic warm-ups too. Withheld, never served: empty routines plus an
+  // Arabic message, so no concrete movement reaches the client.
+  const mobilityPrescriptionStatus = effectiveMedical?.mobilityPrescriptionStatus;
+  if (mobilityPrescriptionStatus === "PROVISIONAL_REVIEW_REQUIRED" || mobilityPrescriptionStatus === "WITHHELD") {
+    const withheldMessage = "الإحماء والتهدئة التلقائيان موقوفان مؤقتاً لحين مراجعة المدرب للوصفة الأسبوعية، ولن تظهر حركات محددة قبل موافقته";
+    return {
+      session_target: sessionType,
+      estimated_warmup_minutes: 0,
+      estimated_cooldown_minutes: 0,
+      warmup_withheld_for_review: true,
+      clinical_contraindications_bypassed_ar: [withheldMessage],
+      dynamic_warmup: {
+        title_ar: "بروتوكول الإحماء الحركي الديناميكي (Pre-Workout Dynamic Warm-Up)",
+        description_ar: withheldMessage,
+        total_exercises: 0,
+        exercises: [],
+      },
+      static_cooldown: {
+        title_ar: "بروتوكول الاستطالات الثابتة والتهدئة (Post-Workout Static Stretching & Cool-Down)",
+        description_ar: withheldMessage,
+        total_exercises: 0,
+        exercises: [],
+      },
+    };
   }
 
   const conditions = Array.isArray(effectiveMedical?.conditions) ? effectiveMedical.conditions : [];
@@ -285,19 +316,73 @@ export function buildSessionMobilityProtocol(sessionCode = "FULL_BODY", exercise
   };
   const allInjuryTokens = conditions.concat(restrictions).concat(injuries).map(getConditionStr);
 
-  const hasLumbarDisc = effectiveMedical?.hasHerniation || allInjuryTokens.some(c => {
+  // P0-A10: the old matcher was English-substring only, so an injury recorded
+  // in Arabic (or a generic "no overhead" restriction) slipped through
+  // unfiltered. Arabic area names map to the same canonical areas the
+  // mesocycle guards use, so every matcher below runs on expanded tokens.
+  const ARABIC_AREA_MAP = [
+    ["كتف", "SHOULDER"],
+    ["ركبة", "KNEE"],
+    ["انفصال", "DIASTASIS_RECTI"],
+    ["قطني", "LUMBAR"],
+    ["أسفل الظهر", "LOWER_BACK"],
+    ["ظهر", "BACK"],
+    ["رقبة", "NECK"],
+    ["عنق", "NECK"],
+  ];
+  const expandedInjuryTokens = [...allInjuryTokens];
+  for (const token of allInjuryTokens) {
+    const s = String(token);
+    for (const [arabic, code] of ARABIC_AREA_MAP) {
+      if (s.includes(arabic)) expandedInjuryTokens.push(code);
+    }
+  }
+  // Generic overhead-avoidance restrictions (code or Arabic wording) count as
+  // a shoulder flag even without a named shoulder injury.
+  const hasNoOverhead = allInjuryTokens.some((c) => {
+    const s = String(c).toUpperCase();
+    return s.includes("NO_OVERHEAD") || String(c).includes("فوق الرأس");
+  });
+
+  // P0-A10 joint-load filter sets: filter by what the movement loads, not by
+  // one or two ids. Shoulder = every overhead movement plus the doorway
+  // shoulder-loaded stretches (the old doorway "neutral" substitute is itself
+  // a doorway shoulder load). Knee = every deep-flexion movement. Diastasis =
+  // the back-arch movement (cat-cow's cow phase), the only back-arch item in
+  // these catalogs; the old code claimed a cobra ban while filtering nothing.
+  const SHOULDER_FORBIDDEN_IDS = new Set([
+    "ARM_CIRCLES_SWINGS",
+    "BANDED_DISLOCATES_GENTLE",
+    "OVERHEAD_TRICEPS_LAT_STRETCH",
+    "CHILDS_POSE_UPPER",
+    "DOORWAY_CHEST_STRETCH",
+    "DOORWAY_CHEST_NEUTRAL",
+    "CROSS_BODY_SHOULDER_STRETCH",
+  ]);
+  const DEEP_KNEE_FLEXION_IDS = new Set([
+    "WORLDS_GREATEST_STRETCH",
+    "SQUAT_TO_STAND",
+    "GLUTE_BRIDGE_HIP_90_90",
+    "PIGEON_POSE_GLUTES",
+    "STANDING_QUAD_STRETCH",
+  ]);
+  const ABDOMINAL_EXTENSION_IDS = new Set(["CAT_COW_THORACIC"]);
+
+  const hasLumbarDisc = effectiveMedical?.hasHerniation || expandedInjuryTokens.some(c => {
     const s = String(c).toUpperCase();
     return s.includes("DISC") || s.includes("LUMBAR") || s.includes("HERNIATION") || s.includes("L4") || s.includes("L5") || s.includes("SPINE") || s.includes("LOWER_BACK") || s.includes("BACK");
   }) || restrictions.includes("NO_AXIAL_SPINAL_LOADING");
 
-  const hasDiastasisRecti = effectiveMedical?.hasDiastasisRecti || allInjuryTokens.some(c => String(c).toUpperCase().includes("DIASTASIS_RECTI")) || restrictions.includes("NO_CRUNCHES");
+  const hasDiastasisRecti = effectiveMedical?.hasDiastasisRecti || expandedInjuryTokens.some(c => String(c).toUpperCase().includes("DIASTASIS_RECTI")) || restrictions.includes("NO_CRUNCHES");
 
-  const hasRotatorCuff = effectiveMedical?.hasRotatorCuff || allInjuryTokens.some(c => {
+  // Shoulder covers rotator cuff, shoulder, and neck (the mesocycle's
+  // canonical shoulder areas) plus any overhead-avoidance restriction.
+  const hasShoulder = effectiveMedical?.hasRotatorCuff || expandedInjuryTokens.some(c => {
     const s = String(c).toUpperCase();
-    return s.includes("ROTATOR") || s.includes("SHOULDER_IMPINGEMENT") || s.includes("IMPINGEMENT") || s.includes("SHOULDER");
-  }) || restrictions.includes("NO_BEHIND_NECK_PRESS");
+    return s.includes("ROTATOR") || s.includes("SHOULDER_IMPINGEMENT") || s.includes("IMPINGEMENT") || s.includes("SHOULDER") || s.includes("NECK");
+  }) || restrictions.includes("NO_BEHIND_NECK_PRESS") || hasNoOverhead;
 
-  const hasKneeIssues = effectiveMedical?.hasKneeIssues || allInjuryTokens.some(c => {
+  const hasKneeIssues = effectiveMedical?.hasKneeIssues || expandedInjuryTokens.some(c => {
     const s = String(c).toUpperCase();
     return s.includes("PATELL") || s.includes("KNEE") || s.includes("MENISCUS") || s.includes("CHONDROMALACIA");
   }) || restrictions.includes("NO_DEEP_SQUATS");
@@ -337,48 +422,38 @@ export function buildSessionMobilityProtocol(sessionCode = "FULL_BODY", exercise
     contraindicationsBypassed.push("حظر استطالات ثني العمود الفقري وتدوير الجذع الحاد لحماية الغضاريف L4-L5");
   }
 
-  // 2. Diastasis Recti
+  // 2. Diastasis Recti — real filtering, not a words-only ban. The only
+  // back-arch item in these catalogs is cat-cow (its cow phase arches the
+  // back and stretches the abdominal wall); it is removed, and the message
+  // names exactly that instead of claiming a cobra ban that filters nothing.
   if (hasDiastasisRecti) {
-    contraindicationsBypassed.push("حظر استطالات التمدد البطني العنيف كالكوبرا ووضعيات التقوس الخلفي لحماية الخط الأبيض");
-  }
-
-  // 3. Rotator Cuff Impingement & Shoulder Safety
-  if (hasRotatorCuff) {
-    // Dynamic Warm-Up: Gentle band dislocates instead of full unrestricted arm swings
-    const hadArmCircles = dynamicWarmup.some(d => d.id === "ARM_CIRCLES_SWINGS");
-    if (hadArmCircles) {
-      dynamicWarmup = dynamicWarmup.filter(d => d.id !== "ARM_CIRCLES_SWINGS");
-      dynamicWarmup.unshift({
-        id: "BANDED_DISLOCATES_GENTLE",
-        name_ar: "تدوير الكتف بحبل مطاطي واسع بنطاق مريح (Band Dislocates)",
-        name_en: "Gentle Band Dislocates (Wide Grip)",
-        dose: "10 تكرارات سلسة وبطيئة بدون أي ألم",
-        target_joints_ar: "مفصل الكتف واللوحين بأمان تام",
-        cues_ar: "امسك الحبل بقبضة واسعة وحركه فوق رأسك برفق مع التوقف قبل أي نقطة انضغاط لوتر الروتاتور كاف.",
-        video_query: "band dislocates shoulder mobility"
-      });
-      contraindicationsBypassed.push("استبدال دوائر الذراعين بتدوير الحبل الواسع لتجنب انحصار وتر الروتاتور كاف");
+    const hadBackArch = dynamicWarmup.some(d => ABDOMINAL_EXTENSION_IDS.has(d.id));
+    dynamicWarmup = dynamicWarmup.filter(d => !ABDOMINAL_EXTENSION_IDS.has(d.id));
+    staticCooldown = staticCooldown.filter(s => !ABDOMINAL_EXTENSION_IDS.has(s.id));
+    if (hadBackArch) {
+      contraindicationsBypassed.push("استبعاد وضعية القطة والبقرة (مرحلة تقوس الظهر) لحماية الخط الأبيض عند انفصال البطن");
     }
-
-    // Static Cool-down: Remove forced cross-body internal rotation stretch
-    staticCooldown = staticCooldown.filter(s => s.id !== "CROSS_BODY_SHOULDER_STRETCH");
-    staticCooldown.push({
-      id: "DOORWAY_CHEST_NEUTRAL",
-      name_ar: "إطالة الصدر والكتف عند مدخل الباب بقبضة محايدة",
-      name_en: "Neutral Humerus Doorway Stretch",
-      duration_seconds: 30,
-      target_muscle_ar: "الصدر والأكتاف بدون أي اختناق لوتر الكتف",
-      cues_ar: "ضع ساعدك بزاوية 90 درجة بقبضة محايدة واخطُ للأمام بلطف دون التواء مفصل الكتف للداخل.",
-      video_query: "neutral grip doorway chest stretch rotator cuff"
-    });
-    contraindicationsBypassed.push("حظر استطالات الضغط الحاد والالتواء الداخلي لمفصل الكتف لتفادي تهيج وتر الروتاتور كاف");
   }
 
-  // 4. Patellar Tendonitis & Knee Joint Issues
+  // 3. Rotator Cuff Impingement & Shoulder Safety — exclusion by joint load
+  // (P0-A9 pattern: no invented substitutes). The old code replaced arm
+  // circles with band dislocates that move the band OVER the head, and pushed
+  // a doorway stretch for a shoulder client — both are removed with the rest
+  // of the overhead / shoulder-loaded set, and nothing is pushed back.
+  if (hasShoulder) {
+    dynamicWarmup = dynamicWarmup.filter(d => !SHOULDER_FORBIDDEN_IDS.has(d.id));
+    staticCooldown = staticCooldown.filter(s => !SHOULDER_FORBIDDEN_IDS.has(s.id));
+    contraindicationsBypassed.push("استبعاد كل حركات فوق الرأس وإطالات الكتف المحملة (دوائر الذراعين، تدوير الحبل فوق الرأس، إطالة الترايسبس فوق الرأس، وضعية الطفل بذراعين ممدودتين، وإطالات الصدر عند الباب) لحماية الكتف");
+  }
+
+  // 4. Patellar Tendonitis & Knee Joint Issues — exclusion by joint load:
+  // every deep-flexion movement is removed (deep lunge, deep squat, 90/90,
+  // pigeon front-leg bend, standing quad stretch). The codebase's own
+  // knee-safe substitutes (glute bridge, supported wall quad stretch) are
+  // kept, as before.
   if (hasKneeIssues) {
-    // Dynamic Warm-Up: Filter out deep knee flexion movements (e.g. SQUAT_TO_STAND)
     const hadSquatToStand = dynamicWarmup.some(d => d.id === "SQUAT_TO_STAND");
-    dynamicWarmup = dynamicWarmup.filter(d => d.id !== "SQUAT_TO_STAND");
+    dynamicWarmup = dynamicWarmup.filter(d => !DEEP_KNEE_FLEXION_IDS.has(d.id));
     if (hadSquatToStand && !dynamicWarmup.some(d => d.id === "GLUTE_BRIDGE_ACTIVATION")) {
       dynamicWarmup.push({
         id: "GLUTE_BRIDGE_ACTIVATION",
@@ -392,8 +467,8 @@ export function buildSessionMobilityProtocol(sessionCode = "FULL_BODY", exercise
       contraindicationsBypassed.push("استبعاد حركات الإحماء ذات الثني الحاد للركبة (Squat to Stand) واستبدالها بتفعيل الجسر الحوضي الآمن للركبة");
     }
 
-    // Static Cool-down
-    staticCooldown = staticCooldown.filter(s => s.id !== "STANDING_QUAD_STRETCH");
+    // Static Cool-down (substitute push kept unconditional, as before)
+    staticCooldown = staticCooldown.filter(s => !DEEP_KNEE_FLEXION_IDS.has(s.id));
     staticCooldown.push({
       id: "SUPPORTED_WALL_QUAD_STRETCH",
       name_ar: "إطالة الفخذ الأمامي المسنودة على الحائط بزاوية ركبة آمنة",
@@ -403,13 +478,14 @@ export function buildSessionMobilityProtocol(sessionCode = "FULL_BODY", exercise
       cues_ar: "استند بكلتا يديك واسحب كاحلك بلطف دون ثني الركبة بزاوية حادة لتجنب إجهاد الوتر الرضفي.",
       video_query: "patellar tendonitis safe quad stretch"
     });
-    contraindicationsBypassed.push("حظر استطالات الجلوس في قرفصاء عميقة وثني الركبة الحاد لحماية أوتار الرضفة والغضروف الهلالي");
+    contraindicationsBypassed.push("حظر كل حركات الثني العميق للركبة (الطعن العميق، القرفصاء العميق، وضعية 90/90، وضعية الحمام، وإطالة الفخذ الأمامي واقفاً) لحماية أوتار الرضفة والغضروف الهلالي");
   }
 
   return {
     session_target: sessionType,
     estimated_warmup_minutes: 6,
     estimated_cooldown_minutes: 5,
+    warmup_withheld_for_review: false,
     clinical_contraindications_bypassed_ar: contraindicationsBypassed,
     dynamic_warmup: {
       title_ar: "بروتوكول الإحماء الحركي الديناميكي (Pre-Workout Dynamic Warm-Up)",

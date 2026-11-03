@@ -401,8 +401,13 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       });
       const shoulderHasArmCircles = shoulderProtocol.dynamic_warmup.exercises.some((e) => e.id === "ARM_CIRCLES_SWINGS");
       assert.equal(shoulderHasArmCircles, false, "Shoulder impingement client MUST NOT have unrestricted arm circles");
+      // P0-A10 (audit S10): the old band-dislocates substitute moves the band
+      // OVER the head, so it is itself an overhead movement and must NOT be
+      // served to a shoulder client. Exclusion, no substitute.
       const shoulderHasBandDislocates = shoulderProtocol.dynamic_warmup.exercises.some((e) => e.id === "BANDED_DISLOCATES_GENTLE");
-      assert.equal(shoulderHasBandDislocates, true, "Shoulder impingement client MUST receive gentle band dislocates");
+      assert.equal(shoulderHasBandDislocates, false, "Shoulder impingement client MUST NOT receive overhead band dislocates");
+      const shoulderHasSafePullAparts = shoulderProtocol.dynamic_warmup.exercises.some((e) => e.id === "BAND_PULL_APARTS");
+      assert.equal(shoulderHasSafePullAparts, true, "Shoulder impingement client keeps below-shoulder band pull-aparts");
     });
   });
 
