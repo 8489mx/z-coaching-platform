@@ -26,6 +26,7 @@
  *   program is the separate S3-3 remainder, untouched by this package.
  */
 import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engine/adapters/intake-adapter.js";
+import { resolveDailySteps } from "../../steps-source/resolve-daily-steps.js";
 import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { calculateUniversalNutritionTargets } from "../../master-engine-v2/build-master-engine-v2.js";
 
@@ -210,7 +211,11 @@ export function buildClientTargets({ answers, measurements = {}, assessmentDate 
     guardrails.energy_balance_note_ar,
     computed.meal_count_note_ar,
   ].filter(Boolean);
-  const effectiveSteps = Number(canonicalIntake.cardio.averageDailySteps) || 6000;
+  // P1-B1: one step source — unknown stays unknown (null) in the report,
+  // never the old silent 6000.
+  const effectiveSteps = resolveDailySteps({
+    averageDailySteps: canonicalIntake.cardio.averageDailySteps,
+  }).value;
   return {
     targets,
     notes_ar,

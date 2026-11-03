@@ -5,6 +5,7 @@
  */
 
 import { normalizeTrainingAge, experienceForTrainingAge, trainingAgeForExperience } from "../../training-engine-v2/training-age.js";
+import { resolveDailySteps } from "../../steps-source/resolve-daily-steps.js";
 import { IntakeValidationError } from "../validation/intake-validation-error.js";
 import { dislikedFoodCodes } from "./disliked-foods.js";
 
@@ -1210,12 +1211,15 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
 
   // 8. Cardio & Activity Steps
-  // The form's step-count answer, when the client knows it, replaces the step count guessed from the
-  // activity level ("moderate" alone used to mean 8500 steps).
-  const FORM_DAILY_STEPS = { under_3000: 2500, "3000_6000": 4500, "6000_9000": 7500, over_9000: 10500 };
-  const formDailySteps = FORM_DAILY_STEPS[String(intake.average_daily_steps || "").trim().toLowerCase()];
+  // P1-B1: one step source. A reported number wins, then the client's own
+  // form band; unknown stays unknown (null). Daily activity is never used
+  // to invent a step count — the old activity-map guess (and its 6500
+  // fallback) is gone, so the decision's unknown-steps branch can fire.
   const cardio = { ...(intake.cardio || {}) };
-  if (formDailySteps && !(Number(cardio.averageDailySteps) > 0)) cardio.averageDailySteps = formDailySteps;
+  const stepResolution = resolveDailySteps({
+    averageDailySteps: cardio.averageDailySteps,
+    formBand: intake.average_daily_steps,
+  });
   const sports = Array.isArray(cardio.additionalSports) ? cardio.additionalSports.map(s => ({
     sportCode: s.sportCode || (s.otherSportText ? null : "FOOTBALL"),
     otherSportText: s.otherSportText ?? null,
@@ -1225,19 +1229,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     participationLevel: s.participationLevel || "RECREATIONAL"
   })) : [];
 
-  const activityStepsMap = {
-    SEDENTARY: 4500,
-    LIGHT: 6500,
-    MODERATE: 8500,
-    HIGH: 12500,
-  };
-  const derivedSteps = (!isNaN(Number(cardio.averageDailySteps)) && Number(cardio.averageDailySteps) > 0)
-    ? Number(cardio.averageDailySteps)
-    : (activityStepsMap[canonicalLifestyle.dailyActivity] || 6500);
-
   const canonicalCardio = {
     additionalSports: sports,
-    averageDailySteps: Math.min(30000, Math.max(1000, derivedSteps)),
+    averageDailySteps: stepResolution.value,
     walkingAbility: ["EASY", "MODERATE", "PAINFUL"].includes(cardio.walkingAbility) ? cardio.walkingAbility : "EASY",
     maxSessionsPerWeek: Math.min(7, Math.max(0, !isNaN(Number(cardio.maxSessionsPerWeek)) ? Number(cardio.maxSessionsPerWeek) : 2)),
     maxDurationMinutes: Math.min(120, Math.max(10, !isNaN(Number(cardio.maxDurationMinutes)) ? Number(cardio.maxDurationMinutes) : 30))

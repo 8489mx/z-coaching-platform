@@ -13,7 +13,9 @@ test("a known step count replaces the guess from the activity level", () => {
   assert.equal(steps("over_9000"), 10500);
 });
 
-test("an unknown step count keeps the activity-level estimate", () => {
-  assert.equal(steps("unknown"), 8500);
-  assert.equal(steps(undefined), 8500);
+// P1-B1 (Q14): unknown stays unknown — the old activity-level guess (8500)
+// is exactly the silent invention this package removes.
+test("an unknown step count stays unknown instead of an activity-level guess", () => {
+  assert.equal(steps("unknown"), null);
+  assert.equal(steps(undefined), null);
 });

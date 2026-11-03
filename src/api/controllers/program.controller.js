@@ -1516,6 +1516,16 @@ export const getActiveProgramByUserId = async (req, res) => {
       advisories_ar
     };
 
+    // P1-B1: the served card shows the prescription's step number, never
+    // an invented one. (The card reads daily_steps_target; the prescription
+    // field is daily_step_target.) Pre-fix programs without a target keep
+    // the card's generic text — no number is fabricated for them.
+    const prescriptionStepTarget =
+      program.program_data?.cardio_program?.prescription?.daily_step_target;
+    if (Number.isInteger(prescriptionStepTarget) && prescriptionStepTarget > 0) {
+      cardio.daily_steps_target = prescriptionStepTarget;
+    }
+
     // P0-A16 (Q48): pre-fix ACTIVE programs may carry zones computed on an
     // estimated age. Surface the hold on the served card instead of
     // silently serving guessed BPM numbers.

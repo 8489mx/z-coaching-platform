@@ -442,6 +442,20 @@ export function decideCardioStrategy(input, safetyContext, conservativeRecoveryS
     );
   }
 
+  // P1-B1 (Q15): every fat-loss client carries a numeric step target at
+  // minimum. The obesity rule above already converts BMI 30+; this catches
+  // the rest, so no fat-loss client is left with no movement target at all.
+  if (strategy === CardioStrategy.NO_ADDITIONAL_CARDIO && input.goals.primary === PrimaryGoal.FAT_LOSS) {
+    strategy = CardioStrategy.STEPS_ONLY;
+    decisionReasons.push(
+      reason(
+        "STEPS_TARGET_FAT_LOSS_MINIMUM_MOVEMENT",
+        Scope.CARDIO,
+        "Every fat-loss client carries a daily steps target at minimum, whatever activity was reported.",
+      ),
+    );
+  }
+
   if (
     !hasFormalCardioCapacity &&
     explicitEnduranceGoal &&

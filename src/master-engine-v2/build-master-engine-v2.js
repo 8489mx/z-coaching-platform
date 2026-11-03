@@ -144,6 +144,7 @@ import { evaluateCulinaryPreflight } from "../nutrition-plan-preflight/evaluate-
 import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
+import { resolveDailySteps, resolveTdeeActivityFactor } from "../steps-source/resolve-daily-steps.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
 import { generatePeriWorkoutNutrientTimingSchedule, calculateCaffeineCutoffWindow } from "../execution-engines/circadian-nutrient-timing-engine.js";
@@ -416,16 +417,18 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
 
 
   // 2. Activity Multiplier based on real daily steps & resistance training
-  const steps = Number(cardio.averageDailySteps || cardio.average_daily_steps) || 6000;
+  // P1-B1: one step source — unknown steps stay unknown and take the
+  // sedentary floor (1.20) instead of the old silent 6000 — and reported
+  // daily activity enters TDEE through the same ladder, taking the higher
+  // of the two signals so neither is ignored.
+  const stepResolution = resolveDailySteps({
+    averageDailySteps: cardio.averageDailySteps ?? cardio.average_daily_steps,
+  });
   const trainDays = Number(training.preferredDaysPerWeek || training.preferred_days_per_week) || 3;
-  let activityFactor = 1.20; // Sedentary (< 5000 steps)
-  if (steps >= 12000) {
-    activityFactor = 1.70; // High
-  } else if (steps >= 8000) {
-    activityFactor = 1.50; // Moderate
-  } else if (steps >= 5000) {
-    activityFactor = 1.35; // Light
-  }
+  let activityFactor = resolveTdeeActivityFactor({
+    steps: stepResolution.value,
+    dailyActivity: canonicalIntake.lifestyle?.dailyActivity,
+  });
   if (trainDays >= 4 && activityFactor < 1.70) {
     activityFactor = Math.min(1.70, activityFactor + 0.05);
   }

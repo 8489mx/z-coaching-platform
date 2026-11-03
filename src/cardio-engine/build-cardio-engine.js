@@ -4,6 +4,9 @@ import { buildCardioPrescription } from "../cardio-prescription/index.js";
 import { buildWeeklyCardioSchedule } from "../weekly-cardio-schedule/index.js";
 import { evaluateCardioPlanPreflight } from "../cardio-plan-preflight/index.js";
 import { CARDIO_ENGINE_VERSION } from "./domain/enums.js";
+import { CardioPrescriptionStatus } from "../cardio-prescription/domain/enums.js";
+import { CardioStrategy, PrimaryGoal } from "../intake-decision-engine/domain/enums.js";
+import { resolveDailySteps, resolveStepTarget } from "../steps-source/resolve-daily-steps.js";
 
 /**
  * Builds the complete Cardio Engine pipeline from intake to preflight.
@@ -26,6 +29,22 @@ export function buildCardioEngine(
 
   // 3. Generate concrete dose prescriptions
   const prescription = buildCardioPrescription(plan_specification, modality_requirements);
+
+  // P1-B1: one step number. STEPS_ONLY always carries a number, and every
+  // fat-loss client carries a minimum movement target even with sessions.
+  // The number comes from the same single source as the decision and TDEE;
+  // a withheld prescription carries no target at all.
+  if (
+    prescription.status !== CardioPrescriptionStatus.WITHHELD &&
+    (plan_specification.strategy === CardioStrategy.STEPS_ONLY ||
+      (clientIntakeProfile?.goals?.primary === PrimaryGoal.FAT_LOSS &&
+        plan_specification.strategy === CardioStrategy.CARDIO_SESSIONS))
+  ) {
+    const stepBaseline = resolveDailySteps({
+      averageDailySteps: clientIntakeProfile?.cardio?.averageDailySteps,
+    }).value;
+    prescription.daily_step_target = resolveStepTarget(stepBaseline);
+  }
 
   // 4. Schedule sessions into the week
   const weekly_schedule = buildWeeklyCardioSchedule(

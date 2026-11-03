@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engine/adapters/intake-adapter.js";
+import { resolveDailySteps, stepsActivityFactor } from "../../steps-source/resolve-daily-steps.js";
 import { IntakeValidationError } from "../../intake-decision-engine/validation/intake-validation-error.js";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
 import { resolveIntakeMedicalReview, MEDICAL_REVIEW_CONFIRMATION_REQUIRED, resolveCountryFromPhone } from "./program.controller.js";
@@ -110,7 +111,9 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
   }
 
   const cardioBpm = "120 - 135 bpm";
-  const cardioStrategy = `تم تحديد ${cardio.maxSessionsPerWeek || 3} جلسات كارديو أسبوعياً بنطاق نبضات حرق الدهون Zone 2 (${cardioBpm}) بالإضافة إلى مستهدف ${cardio.averageDailySteps || 10000} خطوة يومياً لتحفيز نزول الدهون دون التأثير على الاستشفاء العضلي.`;
+  // P1-B1: one step source for the message too — no invented 10000.
+  const messageSteps = resolveDailySteps({ averageDailySteps: cardio.averageDailySteps });
+  const cardioStrategy = `تم تحديد ${cardio.maxSessionsPerWeek || 3} جلسات كارديو أسبوعياً بنطاق نبضات حرق الدهون Zone 2 (${cardioBpm})${messageSteps.known ? ` بالإضافة إلى مستهدف ${messageSteps.value} خطوة يومياً لتحفيز نزول الدهون دون التأثير على الاستشفاء العضلي.` : ` بالإضافة إلى هدف مشي يومي يحدده المدرب بعد تسجيل خطواتك اليومية لتحفيز نزول الدهون دون التأثير على الاستشفاء العضلي.`}`;
 
   const weight = Number(body.weightKg || base.weight_kg) || 75;
   const height = Number(body.heightCm || base.height_cm) || 175;
@@ -134,13 +137,15 @@ function generateAiRationaleAudit(intakePayload, masterProgram) {
   }
 
   // 2. Activity multiplier & TDEE
+  // P1-B1: one step source — unknown steps take the sedentary floor (1.20)
+  // instead of the old silent 6000. (This fallback has no normalized daily
+  // activity available, so the activity ladder cannot apply here; the
+  // primary TDEE path in the master engine does apply it.)
   let tdee = targets.tdee;
   if (!tdee) {
-    const steps = Number(cardio.averageDailySteps) || 6000;
+    const fallbackSteps = resolveDailySteps({ averageDailySteps: cardio.averageDailySteps }).value;
     const trainDays = Number(training.preferredDaysPerWeek) || 3;
-    let activityMultiplier = 1.35;
-    if (steps >= 10000) activityMultiplier += 0.15;
-    else if (steps >= 7000) activityMultiplier += 0.10;
+    let activityMultiplier = stepsActivityFactor(fallbackSteps);
     if (trainDays >= 4) activityMultiplier += 0.10;
     else if (trainDays >= 3) activityMultiplier += 0.05;
     tdee = Math.round(bmr * (targets.activity_factor || activityMultiplier));

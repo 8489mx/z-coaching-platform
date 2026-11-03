@@ -182,7 +182,7 @@ export const getClients = async (req, res) => {
       // 5. Cardio prescription
       const cardioSessions = activeProg?.cardio_program?.prescription?.recommended_sessions ??
                              activeProg?.cardio_program?.prescription?.sessions?.length ??
-                             activeProg?.cardio_program?.weekly_schedule?.length ??
+                             activeProg?.cardio_program?.weekly_schedule?.sessions?.length ??
                              activeProg?.cardio?.frequency_per_week ??
                              (activeProg ? 0 : 3);
 
