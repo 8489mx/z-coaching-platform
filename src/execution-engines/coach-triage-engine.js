@@ -329,6 +329,21 @@ export function classifyFollowUp(signals) {
     analysisStatus === "INJURY_FLAGGED" ||
     (maxPainLevel !== null && maxPainLevel >= FOLLOW_UP_TRIAGE.FLAGGED_PAIN_LEVEL);
 
+  // P0-A12: pain reported without a level is unknown severity — YELLOW,
+  // never GREEN. Detected from the evaluation output flag or from any
+  // raw pain report carrying no numeric level (the controller passes raw
+  // reports as flagged_pains). Levelled pains are unaffected: level >= 4
+  // already went RED through the injury reason below.
+  const painWithoutLevel =
+    signals.pain_without_level === true ||
+    analysis.pain_without_level === true ||
+    flaggedPains.some(
+      (p) =>
+        p &&
+        typeof p === "object" &&
+        typeof (p.pain_level ?? p.score ?? p.severity) !== "number",
+    );
+
   const alerts = Array.isArray(analysis.biofeedback_alerts)
     ? analysis.biofeedback_alerts
     : [];
@@ -439,22 +454,29 @@ export function classifyFollowUp(signals) {
       ),
     );
   }
-  if (rapidLoss && medicalReview) {
-    if (repeatedRapidLoss) {
-      redReasons.push(
-        reason(
-          "REPEATED_RAPID_LOSS_MEDICAL_CLIENT",
-          "نزول سريع للمتابعة الثانية على التوالي لمتدرب ملفه يستوجب مراجعة طبية.",
-        ),
-      );
-    } else {
-      redReasons.push(
-        reason(
-          "RAPID_LOSS_MEDICAL_REVIEW",
-          "نزول سريع لمتدرب ملفه يستوجب مراجعة طبية؛ الحالة تحتاج مراجعة الكوتش الآن.",
-        ),
-      );
-    }
+  // P0-A12: repeated rapid loss (2+ consecutive) is RED even without a
+  // medical file. Before, the alarm only existed for clients already
+  // flagged medical, so a client losing >1.5%/week for weeks running
+  // with no medical-review file never escalated past YELLOW. The medical
+  // flag now changes the message, not the tier.
+  if (repeatedRapidLoss) {
+    redReasons.push(
+      reason(
+        medicalReview
+          ? "REPEATED_RAPID_LOSS_MEDICAL_CLIENT"
+          : "REPEATED_RAPID_LOSS",
+        medicalReview
+          ? "نزول سريع للمتابعة الثانية على التوالي لمتدرب ملفه يستوجب مراجعة طبية."
+          : "نزول سريع للمتابعة الثانية على التوالي من غير ملف طبي؛ التكرار نفسه إنذار يستوجب مراجعة الكوتش الآن.",
+      ),
+    );
+  } else if (rapidLoss && medicalReview) {
+    redReasons.push(
+      reason(
+        "RAPID_LOSS_MEDICAL_REVIEW",
+        "نزول سريع لمتدرب ملفه يستوجب مراجعة طبية؛ الحالة تحتاج مراجعة الكوتش الآن.",
+      ),
+    );
   }
 
   // R-SAFETY-1: rapid loss alone (no other red reason, no deficit lock)
@@ -463,7 +485,7 @@ export function classifyFollowUp(signals) {
   const rapidLossOnly = rapidLoss && redReasons.length === 0 && !deficitLocked;
   if (rapidLoss && !rapidLossOnly) {
     const alreadyCoveredByMedicalCode = redReasons.some((r) =>
-      ["RAPID_LOSS_MEDICAL_REVIEW", "REPEATED_RAPID_LOSS_MEDICAL_CLIENT"].includes(r.code),
+      ["RAPID_LOSS_MEDICAL_REVIEW", "REPEATED_RAPID_LOSS_MEDICAL_CLIENT", "REPEATED_RAPID_LOSS"].includes(r.code),
     );
     if (!alreadyCoveredByMedicalCode) {
       redReasons.push(
@@ -481,6 +503,7 @@ export function classifyFollowUp(signals) {
     adherence_tier: adherenceTier ?? null,
     weight_change_percent: weightChangePercent,
     max_pain_level: maxPainLevel,
+    pain_without_level: painWithoutLevel,
     clinical_lockout_locked: lockoutLocked,
     clinical_lockout_unknown: lockoutUnknown,
     medical_review_required: medicalReview,
@@ -526,6 +549,14 @@ export function classifyFollowUp(signals) {
     safetyCorrection = Object.freeze({
       calorie_delta: FOLLOW_UP_TRIAGE.SAFETY_CALORIE_CORRECTION_KCAL,
     });
+  }
+  if (painWithoutLevel) {
+    reasons.push(
+      reason(
+        "PAIN_WITHOUT_LEVEL",
+        "تم الإبلاغ عن ألم مفصلي من غير مستوى شدة؛ الشدة غير معروفة فالحالة تحتاج مراجعة الكوتش، ولا تصنيف أخضر قبل تحديدها.",
+      ),
+    );
   }
   if (safetySignalsUnknown) {
     reasons.push(

@@ -14,6 +14,7 @@ import { mealCountNoteForCheckin } from "../../checkin-engine/meal-count-note.js
 import { evaluateClientCheckinSchedule } from "../services/checkinScheduleService.js";
 import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
 import { classifyFollowUp } from "../../execution-engines/coach-triage-engine.js";
+import { applySafetyCorrectionToAdaptation } from "../../checkin-engine/apply-safety-correction.js";
 import {
   baseTargetsFromProgram,
   deriveEngineProposed,
@@ -618,7 +619,9 @@ export async function submitCheckin(req, res) {
               // back instead of leaving a changed program behind a still
               // pending check-in that a later coach approval would merge again.
               await sequelize.transaction(async (t) => {
-                await activeProgram.update({ program_data: mergedProgramData }, { transaction: t });
+                // P0-A12 stage 3: bump the version with the merge, so the
+                // client meal cache (keyed on version) drops stale meals.
+                await activeProgram.update({ program_data: mergedProgramData, version: (Number(activeProgram.version) || 1) + 1 }, { transaction: t });
                 const waitingDraft = await Program.findOne({ where: { user_id: targetUserId, status: "DRAFT" }, order: [["id", "DESC"]], transaction: t });
                 if (waitingDraft && waitingDraft.id !== activeProgram.id && Number(waitingDraft.id) > Number(activeProgram.id) && waitingDraft.program_data) {
                   const draftData = JSON.parse(JSON.stringify(waitingDraft.program_data));
@@ -1001,6 +1004,21 @@ export async function approveCheckin(req, res) {
       return res.status(404).json({ success: false, error: "Check-in not found" });
     }
 
+    // P0-A12 stage 1: status guard. Only a PENDING_REVIEW row may be
+    // approved. Without it, an already-approved or auto-applied row sits
+    // in the coach's queue (the pending endpoint returns status !=
+    // APPROVED, which includes AUTO_APPLIED) and approving it again
+    // merges the same adaptation a second time — week counter and
+    // targets re-applied. A second approval is rejected, never merged.
+    if (checkin.status !== "PENDING_REVIEW") {
+      return res.status(409).json({
+        success: false,
+        error: "هذه المتابعة اعتُمدت من قبل ولا يمكن اعتمادها مرة أخرى؛ اعتماد ثانٍ كان سيُدمج نفس التعديل مرتين",
+        code: "CHECKIN_NOT_PENDING",
+        checkin_status: checkin.status,
+      });
+    }
+
     const latestProgram = await findPlanInUse(checkin.user_id);
 
     // الفصل التام بين مراجعة المتابعة وتعديل البرامج:
@@ -1052,6 +1070,11 @@ export async function approveCheckin(req, res) {
     }
     const blockedStaleAdaptation = Boolean(staleApproval && requestedAdaptation);
     const shouldAdaptProgram = requestedAdaptation && !blockedStaleAdaptation;
+
+    // P0-A12: carried out of the adaptation block into the transaction
+    // below (null when this approval merges nothing).
+    let pendingMerge = null;
+    let safetyCorrectionApplied = false;
 
     if (shouldAdaptProgram && latestProgram && latestProgram.program_data) {
       const progData = typeof latestProgram.program_data === "string"
@@ -1118,6 +1141,26 @@ export async function approveCheckin(req, res) {
         });
       }
 
+      // P0-A12 stage 7: the triage safety correction (+150) recorded for a
+      // rapid-loss check-in evaporates when the adaptation branch returns
+      // MAINTAIN (low adherence). Apply it here, on coach approval only,
+      // unless the adaptation already applied a rapid-loss surplus (the
+      // helper returns the adaptation untouched then, never double).
+      // Skipped for already-adapted rows, whose merge input is {} below.
+      if (!alreadyAdaptedForThisCheckin && adapted && typeof adapted === "object") {
+        const storedTriage = checkin.analysis_output?.triage;
+        if (storedTriage?.safety_correction) {
+          // In effect either way: the helper applies it now, or the
+          // engine's own rapid-loss branch already applied it (the
+          // helper then returns the adaptation untouched, never double).
+          const alreadyHadSurplus = adapted.adaptation_action === "INCREASE_CALORIES_RAPID_LOSS"
+            || (adapted.adaptation_reasons || []).some((r) => r?.code === "RAPID_LOSS_SURPLUS_APPLIED");
+          const corrected = applySafetyCorrectionToAdaptation(adapted, storedTriage);
+          safetyCorrectionApplied = alreadyHadSurplus || corrected !== adapted;
+          adapted = corrected;
+        }
+      }
+
       // Safe, Deterministic, and Idempotent Non-Destructive Deep Merge.
       // S3-2: out-of-range custom macros are a coach-facing 400, not a 500:
       // nothing has been written yet at this point, so the coach fixes the
@@ -1140,62 +1183,100 @@ export async function approveCheckin(req, res) {
         throw err;
       }
 
-      await latestProgram.update({
-        program_data: mergedProgramData,
-      });
-
-      // The next cycle waiting as a draft was cloned before this check-in: give it the same food
-      // targets, so publishing it does not take the client back to last week's calories.
-      const waitingDraft = await Program.findOne({ where: { user_id: checkin.user_id, status: "DRAFT" }, order: [["id", "DESC"]] });
-      if (waitingDraft && waitingDraft.id !== latestProgram.id && Number(waitingDraft.id) > Number(latestProgram.id) && waitingDraft.program_data) {
-        const draftData = JSON.parse(JSON.stringify(waitingDraft.program_data));
-        if (mergedProgramData.nutrition) draftData.nutrition = mergedProgramData.nutrition;
-        if (mergedProgramData.nutrition_program) draftData.nutrition_program = mergedProgramData.nutrition_program;
-        await waitingDraft.update({ program_data: draftData });
-      }
-
-      // P0-A6: a manual macro change is audited with coach identity,
-      // client, old/new values, and time (recordAuditEvent stamps the time
-      // and the requesting coach from req). A pure engine adaptation is
-      // not a manual change and is not logged here. This sits inside the
-      // adaptation block, so a stale-blocked approval (no merge) logs
-      // nothing, exactly as before.
-      if (hasCustomMacros) {
-        recordAuditEvent({
-          event: "COACH_MACRO_OVERRIDE",
-          req,
-          status: "SUCCESS",
-          userId: req.user?.id || "COACH",
-          userRole: req.user?.role || "COACH",
-          details: {
-            source: "checkin_approval",
-            checkin_id: checkin.id,
-            target_user_id: checkin.user_id,
-            program_id: latestProgram.id,
-            custom_macros_applied: custom_macros,
-            previous_macros: preMergeMacros,
-            new_macros: readProgramMacroTargets(mergedProgramData),
-          },
-        });
-      }
-
-      checkin.adapted_program_id = latestProgram.id;
+      // P0-A12 stages 1+3: nothing is written yet. The merge result is
+      // carried out of the block; all three writes happen in the single
+      // transaction below, and the program version bumps so the client
+      // meal cache (keyed on version) drops the stale meals.
+      pendingMerge = { mergedProgramData, preMergeMacros };
     }
 
-    checkin.status = "APPROVED";
-    if (coach_notes) checkin.coach_notes = coach_notes;
-    await checkin.save();
+    // P0-A12 stage 1: one transaction for program + waiting draft +
+    // check-in, exactly like the auto-apply path. A failure in any step
+    // rolls all of them back instead of leaving a changed program behind
+    // a still-pending check-in that a later approval would merge again.
+    await sequelize.transaction(async (t) => {
+      if (pendingMerge && latestProgram) {
+        await latestProgram.update({
+          program_data: pendingMerge.mergedProgramData,
+          version: (Number(latestProgram.version) || 1) + 1,
+        }, { transaction: t });
 
+        // The next cycle waiting as a draft was cloned before this check-in: give it the same food
+        // targets, so publishing it does not take the client back to last week's calories.
+        const waitingDraft = await Program.findOne({ where: { user_id: checkin.user_id, status: "DRAFT" }, order: [["id", "DESC"]], transaction: t });
+        if (waitingDraft && waitingDraft.id !== latestProgram.id && Number(waitingDraft.id) > Number(latestProgram.id) && waitingDraft.program_data) {
+          const draftData = JSON.parse(JSON.stringify(waitingDraft.program_data));
+          if (pendingMerge.mergedProgramData.nutrition) draftData.nutrition = pendingMerge.mergedProgramData.nutrition;
+          if (pendingMerge.mergedProgramData.nutrition_program) draftData.nutrition_program = pendingMerge.mergedProgramData.nutrition_program;
+          await waitingDraft.update({ program_data: draftData }, { transaction: t });
+        }
+      }
+
+      checkin.status = "APPROVED";
+      if (coach_notes) checkin.coach_notes = coach_notes;
+      if (pendingMerge && latestProgram) checkin.adapted_program_id = latestProgram.id;
+      await checkin.save({ transaction: t });
+    });
+
+    // P0-A6: a manual macro change is audited with coach identity,
+    // client, old/new values, and time (recordAuditEvent stamps the time
+    // and the requesting coach from req). A pure engine adaptation is
+    // not a manual change and is not logged here. This sits after the
+    // transaction, so a stale-blocked approval (no merge) logs nothing,
+    // exactly as before, and a rolled-back merge logs nothing either.
+    if (pendingMerge && hasCustomMacros) {
+      recordAuditEvent({
+        event: "COACH_MACRO_OVERRIDE",
+        req,
+        status: "SUCCESS",
+        userId: req.user?.id || "COACH",
+        userRole: req.user?.role || "COACH",
+        details: {
+          source: "checkin_approval",
+          checkin_id: checkin.id,
+          target_user_id: checkin.user_id,
+          program_id: latestProgram.id,
+          custom_macros_applied: custom_macros,
+          previous_macros: pendingMerge.preMergeMacros,
+          new_macros: readProgramMacroTargets(pendingMerge.mergedProgramData),
+        },
+      });
+    }
+
+    // P0-A12 stages 7+2: surface the safety-correction action and any held
+    // training week in the approval response, so the coach sees them on
+    // the screen they already use — the dashboard renders the message,
+    // and these fields carry the detail.
+    const storedSafetyCorrection = checkin.analysis_output?.triage?.safety_correction;
+    const safetyCorrectionDelta = storedSafetyCorrection ? (Number(storedSafetyCorrection.calorie_delta) || 150) : null;
+    const safetyCorrectionAction = storedSafetyCorrection ? {
+      calorie_delta: safetyCorrectionDelta,
+      applied: safetyCorrectionApplied,
+      message_ar: safetyCorrectionApplied
+        ? `تم تطبيق تصحيح السلامة (+${safetyCorrectionDelta} سعرة) على موافقتك لحماية الكتلة العضلية من النزول السريع.`
+        : (blockedStaleAdaptation
+          ? "تصحيح السلامة لم يُطبق لأن الموافقة كانت مراجعة وملاحظات فقط (متابعة راكدة) ولم يعدّل البرنامج."
+          : "تصحيح السلامة لم يُطبق لأن الموافقة كانت حفظ ملاحظات فقط من غير تعديل البرنامج."),
+    } : null;
+    const lastAdaptation = pendingMerge?.mergedProgramData?._last_adaptation;
+    const trainingWeekHeld = lastAdaptation?.training_week_held === true ? {
+      message_ar: lastAdaptation.cardiac_lockout_message_ar || "لم يتقدم رقم الأسبوع التدريبي لأن الأسبوع المعدل كان فارغاً أو موقوفاً.",
+    } : null;
+    const approvalMessage = blockedStaleAdaptation
+      ? "تم اعتماد المتابعة كمراجعة وملاحظات فقط دون تعديل البرنامج لأن المتابعة راكدة"
+      : shouldAdaptProgram
+        ? "تم اعتماد المتابعة وتحديث البرنامج التدريبي والغذائي بنجاح"
+        : "تم اعتماد المتابعة وحفظ الملاحظات بنجاح دون تعديل البرنامج";
     return res.status(200).json({
       success: true,
-      message: blockedStaleAdaptation
-        ? "تم اعتماد المتابعة كمراجعة وملاحظات فقط دون تعديل البرنامج لأن المتابعة راكدة"
-        : shouldAdaptProgram
-          ? "تم اعتماد المتابعة وتحديث البرنامج التدريبي والغذائي بنجاح"
-          : "تم اعتماد المتابعة وحفظ الملاحظات بنجاح دون تعديل البرنامج",
+      message: safetyCorrectionApplied
+        ? `${approvalMessage} وتم تطبيق تصحيح السلامة (+${safetyCorrectionDelta} سعرة).`
+        : approvalMessage,
       checkin,
       program: latestProgram,
       program_adapted: shouldAdaptProgram,
+      ...(safetyCorrectionAction ? { safety_correction_action: safetyCorrectionAction } : {}),
+      ...(trainingWeekHeld ? { training_week_held: trainingWeekHeld } : {}),
       ...(blockedStaleAdaptation
         ? {
             stale_approval_review_only: true,

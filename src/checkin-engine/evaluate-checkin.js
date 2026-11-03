@@ -117,6 +117,18 @@ export function evaluateCheckin(submission) {
     alerts.push(BiofeedbackAlert.JOINT_DISCOMFORT);
   }
 
+  // P0-A12: a pain report with no level is unknown severity, never "no
+  // pain". It is deliberately NOT added to flaggedPains — that list means
+  // level >= 4 and maps to INJURY_FLAGGED/RED in triage, while unknown
+  // severity is YELLOW (fail closed). The flag is carried to the output
+  // and forced to coach review just before the return below.
+  const painWithoutLevel = (Array.isArray(pain_reports) ? pain_reports : []).some(
+    (p) => p && typeof p.pain_level !== "number" && typeof p.score !== "number" && typeof p.severity !== "number",
+  );
+  if (painWithoutLevel) {
+    alerts.push(BiofeedbackAlert.JOINT_DISCOMFORT);
+  }
+
   // 5a. Critical Cardiac & Exertional Safety Screening (P0 Clinical Safety)
   // S3-5: the benign-DOMS check is shared by the free-text screener and
   // the structured pain-report check, so both apply the same patterns
@@ -406,6 +418,15 @@ export function evaluateCheckin(submission) {
     recommendationsEn.push("Alert: weight loss is rapid (>1.5% in one week) despite low adherence; this requires immediate coach review to find the cause, and calories stay locked until then.");
   }
 
+  // P0-A12: unknown-severity pain can never sail through GREEN. It stays
+  // out of the injury branch above (which needs a level) and is forced to
+  // coach review here; triage maps the output flag to YELLOW.
+  if (painWithoutLevel) {
+    requiresCoachReview = true;
+    recommendationsAr.push("تم الإبلاغ عن ألم مفصلي من غير تحديد مستواه؛ شدة الألم غير معروفة، فالحالة تحتاج مراجعة الكوتش قبل أي تقدم أو تطبيق تلقائي.");
+    recommendationsEn.push("Joint pain was reported without a severity level; unknown severity requires coach review before any progression or auto-apply.");
+  }
+
   return Object.freeze({
     engine_version: CHECKIN_ENGINE_VERSION,
     analysis_status: analysisStatus,
@@ -423,6 +444,7 @@ export function evaluateCheckin(submission) {
     is_refeed_recommended: isRefeedRecommended,
     biofeedback_alerts: Object.freeze(alerts),
     flagged_pains: Object.freeze(flaggedPains),
+    pain_without_level: painWithoutLevel,
     recommendations_ar: Object.freeze(recommendationsAr),
     recommendations_en: Object.freeze(recommendationsEn),
     requires_coach_review: requiresCoachReview,

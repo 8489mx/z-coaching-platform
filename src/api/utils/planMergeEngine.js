@@ -220,21 +220,35 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     validateCustomMacros(merged, { finalCalories, finalProtein, finalCarbs, finalFats });
   }
 
-  // Clinical Preservation: If trainee has a capped protein guardrail (e.g. KIDNEY_CONDITION),
-  // ensure the merged protein does not exceed the clinical threshold UNLESS the coach has an active documented override
-  const clinicalGuardrails = merged.nutrition_program?.targets?.clinical_guardrails 
+  // Clinical Preservation: P0-A12 — the kidney cap is the last word.
+  // A custom protein number never defeats the cap or the documented
+  // override: with an override, the only permitted proteins are the
+  // override value itself or a custom value at or under the cap (a fresh
+  // documented decision, audit-logged by the approval path); without an
+  // override, anything above the cap is cut to the cap. This cap comes
+  // from laboratory bloodwork for a client we do follow (see
+  // build-master-engine-v2.js): a declared kidney disease is refused
+  // entirely before generation (serviceScope, Q11), so no declared case
+  // ever reaches this merge — this block can never open a bypass around
+  // that refusal, it only guards the lab-cap path.
+  const clinicalGuardrails = merged.nutrition_program?.targets?.clinical_guardrails
     || merged.nutrition?.targets?.clinical_guardrails
     || merged.clinical_guardrails;
 
   if (clinicalGuardrails?.kidney_protein_capped && clinicalGuardrails?.max_protein_g && finalProtein !== null) {
-    if (clinicalGuardrails.coach_override_protein_g) {
-      // Coach consciously approved a specific protein override; respect this documented clinical decision
-      if (!customMacros?.protein) {
-        finalProtein = Number(clinicalGuardrails.coach_override_protein_g);
+    const cap = Number(clinicalGuardrails.max_protein_g);
+    const override = Number(clinicalGuardrails.coach_override_protein_g);
+    if (Number.isFinite(override) && override > 0) {
+      // Documented override exists: a custom number at or under the cap
+      // is a fresh documented decision and stands; anything else —
+      // including a custom number above the cap — falls back to the
+      // override value itself, never to the arbitrary custom number.
+      if (!(customMacros?.protein && Number(customMacros.protein) <= cap)) {
+        finalProtein = override;
       }
-    } else if (finalProtein > clinicalGuardrails.max_protein_g) {
+    } else if (finalProtein > cap) {
       // Strict clinical baseline ceiling applies
-      finalProtein = clinicalGuardrails.max_protein_g;
+      finalProtein = cap;
     }
   }
 
@@ -392,10 +406,26 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
   }
 
   // 4. Update Training Meso-Cycle with Idempotency & Chronological Order Guarantee
-  const targetWeekNumber = Number(adaptationResult?.adapted_week_number) 
-    || (Number(merged.current_training_week) ? Number(merged.current_training_week) + 1 : 2);
+  // P0-A12: no week advance when the adapted week is empty or locked.
+  // A cardiac/clinical lockout returns adapted_training_week null (see
+  // build-adapted-plan.js), and advancing the counter then would skip a
+  // week of progression the client never trained. The counter stays put
+  // and the hold is recorded in _last_adaptation below, with a dedicated
+  // cardiac message when the lockout reason is present. The same guard
+  // also stops a macro-only re-application (adaptation {}) from
+  // advancing the week a second time.
+  const trainingWeekHeld = !adaptationResult?.adapted_training_week;
+  const trainingWeekHeldForCardiac = trainingWeekHeld && (adaptationResult?.adaptation_reasons || []).some(
+    (r) => r?.code === "CLINICAL_TRAINING_LOCKOUT",
+  );
+  const targetWeekNumber = trainingWeekHeld
+    ? (Number(merged.current_training_week) || null)
+    : (Number(adaptationResult?.adapted_week_number)
+      || (Number(merged.current_training_week) ? Number(merged.current_training_week) + 1 : 2));
 
-  merged.current_training_week = targetWeekNumber;
+  if (!trainingWeekHeld) {
+    merged.current_training_week = targetWeekNumber;
+  }
 
   if (adaptationResult?.adapted_training_week && merged.training_program) {
     if (!Array.isArray(merged.training_program.weeks)) {
@@ -508,7 +538,15 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     action: adaptationResult?.adaptation_action || 'APPROVED',
     reasons: adaptationResult?.adaptation_reasons || [],
     adapted_week: targetWeekNumber,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    // P0-A12: the week counter did not move on a held week, and a
+    // cardiac hold carries its own message instead of falling through
+    // to an "on track" reading.
+    training_week_held: trainingWeekHeld,
+    ...(trainingWeekHeldForCardiac ? {
+      cardiac_lockout_message_ar: "تم إيقاف التدريب بموجب قفل السلامة السريرية (أعراض قلبية أو إغماء)؛ لم يتقدم رقم الأسبوع التدريبي لأن الأسبوع المعدل فارغ وموقوف، وسيستأنف العميل من نفس الأسبوع بعد التصريح الطبي وموافقة الكوتش.",
+      cardiac_lockout_message_en: "Training suspended under the clinical safety lockout (cardiac symptoms or syncope); the training week counter did not advance because the adapted week is empty and locked.",
+    } : {}),
   };
 
   // S3-3: carry the biomarker analysis and the clinical safety shield into

@@ -62,7 +62,11 @@ export default function WeeklyCheckinForm() {
     exertional_chest_pain: false,
     syncope: false,
     pain_area: '',
-    pain_level: 3,
+    // P0-A12: no default level. A slider sitting at 3 reported pain that
+    // no layer acted on (flag threshold is 4) and sailed through GREEN.
+    // null means "not chosen": the report goes out without a level and
+    // the server maps it to YELLOW coach review, never GREEN.
+    pain_level: null,
     average_daily_calories: '',
     waist_circumference_cm: '',
     nutrition_adherence_percent: 100,
@@ -250,7 +254,7 @@ export default function WeeklyCheckinForm() {
           hungerLevel: Number(formData.biofeedback.hungerLevel)
         },
         pain_reports: formData.has_joint_pain && formData.pain_area
-          ? [{ area: formData.pain_area, body_part: PAIN_AREAS.find((a) => a.id === formData.pain_area)?.label || formData.pain_area, pain_level: Number(formData.pain_level) }]
+          ? [{ area: formData.pain_area, body_part: PAIN_AREAS.find((a) => a.id === formData.pain_area)?.label || formData.pain_area, ...(formData.pain_level === null || formData.pain_level === undefined ? {} : { pain_level: Number(formData.pain_level) }) }]
           : [],
         exertional_chest_pain: Boolean(formData.exertional_chest_pain),
         syncope: Boolean(formData.syncope),
@@ -626,13 +630,13 @@ export default function WeeklyCheckinForm() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                       <span style={{ color: '#0F172A' }}>شدة الألم</span>
-                      <strong style={{ color: '#DC2626', fontFamily: 'JetBrains Mono' }}>{formData.pain_level} / 10</strong>
+                      <strong style={{ color: '#DC2626', fontFamily: 'JetBrains Mono' }}>{formData.pain_level === null ? 'غير محدد — حرّك المؤشر لاختيار الشدة' : `${formData.pain_level} / 10`}</strong>
                     </div>
                     <input
                       type="range"
                       min="1"
                       max="10"
-                      value={formData.pain_level}
+                      value={formData.pain_level ?? 1}
                       onChange={(e) => setFormData({ ...formData, pain_level: parseInt(e.target.value, 10) })}
                       style={{ width: '100%', accentColor: '#DC2626', cursor: 'pointer' }}
                     />
