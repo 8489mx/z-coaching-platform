@@ -155,6 +155,7 @@ export function useClientInteractiveData() {
     const approvalStatus = data.plan_approval_status || data.user?.plan_approval_status;
     if (data.has_program === false || (approvalStatus && approvalStatus !== 'APPROVED' && approvalStatus !== 'PUBLISHED')) {
       setClientProgram(null);
+      setCardioPrescription(null);
     }
     // P0-A4: store the server-reported clinical lockout so the app can show
     // the lockout screen instead of plan content. Only an object-shaped
@@ -254,6 +255,20 @@ export function useClientInteractiveData() {
     // carries a program row (e.g. an ACTIVE program still awaiting approval).
     if (data.has_program && data.master_program && (!approvalStatus || approvalStatus === 'APPROVED' || approvalStatus === 'PUBLISHED')) {
       setClientProgram(data.master_program);
+
+      // P0-A16 (S1): the card reads from the engine's served prescription,
+      // never from a hardcoded default (P0-A14 left it null). Strategy
+      // decides what shows: nothing for NO_ADDITIONAL_CARDIO or a held
+      // review, a walking card for STEPS_ONLY, the session card otherwise.
+      // The served card already carries the engine's real duration,
+      // sessions, talk-test cue and equipment.
+      const servedCardio = data.client_view?.cardio;
+      const cardioStrategy = data.master_program?.cardio_program?.plan_specification?.strategy;
+      if (servedCardio && cardioStrategy !== 'NO_ADDITIONAL_CARDIO' && cardioStrategy !== 'REVIEW_REQUIRED') {
+        setCardioPrescription(servedCardio);
+      } else {
+        setCardioPrescription(null);
+      }
 
       const serverVersion = String(data.version || data.master_program.version || data.updated_at || data.program_id || 'v1');
       const cachedVersion = localStorage.getItem(`kz_prog_ver_${rawCode}`);

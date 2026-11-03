@@ -1549,6 +1549,7 @@ export default function FullIntakeForm() {
                       { key: 'magnesium', label: 'مغنيسيوم جلايسينات' },
                       { key: 'pre_workout', label: 'مشروب طاقة / كافيين بري وورك آوت' },
                       { key: 'hypertension_meds', label: 'أدوية ضغط الدم' },
+                      { key: 'beta_blocker', label: 'حاصرات بيتا (مثل بيسوبرولول / كونكور)' },
                       { key: 'diabetes_meds', label: 'أدوية السكر أو الأنسولين' },
                       { key: 'thyroid_meds', label: 'علاج الغدة الدرقية' }
                     ].map((item) => {

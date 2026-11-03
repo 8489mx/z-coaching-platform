@@ -1299,30 +1299,71 @@ export function buildMasterEngineV2(inputs) {
     ? CLINICAL_GUIDELINES.RESPIRATORY.SAFETY_GUIDANCE_AR
     : "توجيه سريري لمرضى الضغط والقلب: الكارديو معتدل ومستقر (Zone 2) بدل الفترات عالية الشدة، ولو حسيت بأي ألم في الصدر أو دوخة أو ضيق نفس وقف فوراً وكلم دكتورك.";
 
+  // P0-A16: beta-blockers blunt heart rate, so Tanaka BPM targets are
+  // unreliable for these clients (talk test only, never BPM numbers).
+  // The medication question already feeds medical.medications via the
+  // adapter; the cardio overlay never consulted it until now.
+  const BETA_BLOCKER_KEYS = [
+    "BETA_BLOCKER", "BETA-BLOCKER", "BISOPROLOL", "CONCOR", "ATENOLOL",
+    "METOPROLOL", "PROPRANOLOL", "CARVEDILOL", "NEBIVOLOL",
+    "حاصرات بيتا", "بيسوبرولول", "كونكور",
+  ];
+  const betaBlockerMedsText = [
+    ...(Array.isArray(medical?.medications) ? medical.medications : []),
+    ...(Array.isArray(rawMedical?.medications) ? rawMedical.medications : []),
+    ...(Array.isArray(effectiveIntake?.current_meds_supplements_list) ? effectiveIntake.current_meds_supplements_list : []),
+    String(effectiveIntake?.current_meds_supplements || ""),
+  ].join(" ").toUpperCase();
+  const hasBetaBlocker = BETA_BLOCKER_KEYS.some((k) => betaBlockerMedsText.includes(k));
+  const BETA_BLOCKER_NOTE_AR = "إرشاد اختبار الكلام فقط: أدوية حاصرات بيتا بتغيّر نبض القلب، فأرقام النبض مش موثوقة — اعتمد على قدرتك على الكلام بجمل كاملة أثناء الكارديو، ولو حسيت بدوخة أو ضيق نفس وقف فوراً وكلم دكتورك.";
+  // P0-A16: the HTN/asthma group gets a real LOW cap, not text only. The
+  // same group already gets the HIIT->LISS rewrite below; the cap is the
+  // enforced part. Coach clearance of the cap is a future editor toggle,
+  // not invented here — until then the cap stands and the coach is flagged.
+  const LOW_CAP_NOTE_AR = "سقف شدة الكارديو: منخفض (LOW) لحد ما المدرب يسمح بغير كده، بسبب الضغط أو الربو.";
+
   const enrichedCardioSessions = (baseCardioProgram.weekly_schedule?.sessions || []).map(
     (session) => {
       const isHiit = String(session.modality_type || "").toUpperCase().includes("HIIT");
       const safeModality = (noHighIntensity && isHiit) ? "LISS" : session.modality_type;
+      const heartRateTarget = hasBetaBlocker
+        ? {
+            estimated_hr_max: null,
+            zone: "ZONE_2",
+            target_range_bpm: null,
+            target_low_bpm: null,
+            target_high_bpm: null,
+            is_age_estimated: isAgeEstimated,
+            age_source: ageSource,
+            talk_test_only: true,
+            guidance_ar: isAgeEstimated
+              ? `${BETA_BLOCKER_NOTE_AR} والعمر غير مؤكد، فالمناطق محجوزة لمراجعة المدرب لحد ما السن يتأكد.`
+              : BETA_BLOCKER_NOTE_AR,
+          }
+        : {
+            estimated_hr_max: estimatedMaxHr,
+            zone: "ZONE_2",
+            target_range_bpm: `${zone2LowBpm} - ${zone2HighBpm} BPM`,
+            target_low_bpm: zone2LowBpm,
+            target_high_bpm: zone2HighBpm,
+            is_age_estimated: isAgeEstimated,
+            age_source: ageSource,
+            guidance_ar: isAgeEstimated
+              ? (noHighIntensity
+                  ? `${HIGH_INTENSITY_NOTE_AR} معدل نبضات القلب المستهدف تقريبي (بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة) لعدم تحديد العمر بدقة.`
+                  : `معدل نبضات القلب المستهدف تقريبي (بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة) لعدم تحديد العمر بدقة، وذلك لحرق الدهون بكفاءة.`)
+              : (noHighIntensity
+                  ? `${HIGH_INTENSITY_NOTE_AR} معدل نبضات القلب المستهدف: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة.`
+                  : `معدل نبضات القلب المستهدف أثناء جلسة الكارديو: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة لحرق الدهون بكفاءة.`),
+          };
       return Object.freeze({
         ...session,
         modality_type: safeModality,
-        clinical_guidance_ar: noHighIntensity ? HIGH_INTENSITY_NOTE_AR : null,
-        heart_rate_target: {
-          estimated_hr_max: estimatedMaxHr,
-          zone: "ZONE_2",
-          target_range_bpm: `${zone2LowBpm} - ${zone2HighBpm} BPM`,
-          target_low_bpm: zone2LowBpm,
-          target_high_bpm: zone2HighBpm,
-          is_age_estimated: isAgeEstimated,
-          age_source: ageSource,
-          guidance_ar: isAgeEstimated
-            ? (noHighIntensity
-                ? `${HIGH_INTENSITY_NOTE_AR} معدل نبضات القلب المستهدف تقريبي (بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة) لعدم تحديد العمر بدقة.`
-                : `معدل نبضات القلب المستهدف تقريبي (بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة) لعدم تحديد العمر بدقة، وذلك لحرق الدهون بكفاءة.`)
-            : (noHighIntensity
-                ? `${HIGH_INTENSITY_NOTE_AR} معدل نبضات القلب المستهدف: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة.`
-                : `معدل نبضات القلب المستهدف أثناء جلسة الكارديو: بين ${zone2LowBpm} و ${zone2HighBpm} نبضة/دقيقة لحرق الدهون بكفاءة.`),
-        },
+        ...(noHighIntensity && session.intensity !== undefined ? { intensity: "LOW" } : {}),
+        clinical_guidance_ar: noHighIntensity
+          ? `${LOW_CAP_NOTE_AR}${hasAsthma ? ` ${HIGH_INTENSITY_NOTE_AR}` : ""}`
+          : null,
+        heart_rate_target: heartRateTarget,
       });
     },
   );
@@ -1339,14 +1380,34 @@ export function buildMasterEngineV2(inputs) {
     maxDurationMinutes: baseCardioProgram.prescription?.sessions?.[0]?.duration_minutes ?? null,
   });
 
+  // P0-A16: the prescription dose carries the same LOW cap as the weekly
+  // sessions (both derive from intensity_start, which the decision layer
+  // still sets to MODERATE for experienced HTN/asthma clients because
+  // conditions never reach the decision input — the served dose is what
+  // is enforced here; the decision-layer rule is a follow-up).
+  const cappedPrescription = noHighIntensity && Array.isArray(baseCardioProgram.prescription?.sessions)
+    ? {
+        ...baseCardioProgram.prescription,
+        sessions: baseCardioProgram.prescription.sessions.map((s) => (s.intensity !== undefined ? { ...s, intensity: "LOW" } : s)),
+      }
+    : baseCardioProgram.prescription;
+
   const cardio_program_v2 = Object.freeze({
     ...baseCardioProgram,
+    prescription: cappedPrescription,
+    // P0-A16 (Q48): zones computed on an estimated/unconfirmed age are
+    // HELD for coach review — never served as READY. The generate
+    // handlers save DRAFT while this flag is set.
+    heart_rate_zones_held_for_review: isAgeEstimated,
+    heart_rate_zones_status: isAgeEstimated ? "HELD_FOR_COACH_REVIEW" : "READY",
     clinical_guardrails: {
       asthma_guard_active: Boolean(hasAsthma),
       cardiovascular_guard_active: Boolean(hasCardiovascular),
       hiit_banned: Boolean(noHighIntensity),
       preferred_modality: noHighIntensity ? "LISS_ZONE_2" : null,
-      guidance_ar: noHighIntensity ? HIGH_INTENSITY_NOTE_AR : null,
+      guidance_ar: noHighIntensity ? `${LOW_CAP_NOTE_AR}${hasAsthma ? ` ${HIGH_INTENSITY_NOTE_AR}` : ""}` : null,
+      beta_blocker_talk_test_only: Boolean(hasBetaBlocker),
+      htn_asthma_low_cap_active: Boolean(noHighIntensity),
     },
     final_preflight: cardioFinalPreflight,
     weekly_schedule: Object.freeze({

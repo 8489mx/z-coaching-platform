@@ -28,6 +28,7 @@ import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapE
 import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
 import { evaluateCulinaryPreflight, evaluateCulinaryMeal } from "../../../src/nutrition-plan-preflight/evaluate-culinary-preflight.js";
+import { evaluateHiitSave, isBetaBlockerMedication, isHiitCardio } from "../utils/hiitSaveGuard.js";
 import { buildSessionMobilityProtocol } from "../../../src/mobility-warmup-engine-v2/index.js";
 import { buildAllergenContext } from "../../../src/nutrition-meal-context-v2/build-culinary-meals.js";
 import { annotateServedMeals, plateAllergyViolations, ALLERGY_FLAG_LABELS_AR } from "../../../src/nutrition-plate-flags/derive-plate-flags.js";
@@ -115,10 +116,13 @@ export const generateProgram = async (req, res) => {
     const finalPreflightReviewRequired =
       masterProgram.training_program?.final_preflight?.status === "REVIEW_REQUIRED" ||
       masterProgram.cardio_program?.final_preflight?.status === "REVIEW_REQUIRED";
+    // P0-A16 (Q48): zones computed on an estimated age are held for coach
+    // review — the plan saves DRAFT until the age is confirmed.
+    const zonesHeldForReview = masterProgram.cardio_program?.heart_rate_zones_held_for_review === true;
     const savedProgram = await Program.create({
       user_id: req.user.id,
       program_data: masterProgram,
-      status: requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired ? "DRAFT" : "ACTIVE",
+      status: requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired || zonesHeldForReview ? "DRAFT" : "ACTIVE",
     });
 
     return res.status(201).json({
@@ -277,10 +281,13 @@ export const generateAndSaveProgram = async (req, res) => {
     const finalPreflightReviewRequired =
       masterProgram.training_program?.final_preflight?.status === "REVIEW_REQUIRED" ||
       masterProgram.cardio_program?.final_preflight?.status === "REVIEW_REQUIRED";
+    // P0-A16 (Q48): same zones-held rule on the update path — a plan whose
+    // zones were computed on an estimated age never keeps ACTIVE.
+    const zonesHeldForReview = masterProgram.cardio_program?.heart_rate_zones_held_for_review === true;
     let program = await Program.findOne({ where: { user_id: user.id } });
     if (program) {
       program.program_data = masterProgram;
-      if (requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired) {
+      if (requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired || zonesHeldForReview) {
         program.status = "DRAFT";
       }
       await program.save();
@@ -1493,7 +1500,10 @@ export const getActiveProgramByUserId = async (req, res) => {
     const engineStrategy = program.program_data?.cardio_program?.plan_specification?.strategy;
     const cardio = {
       ...getPracticalCardioPrescription({
-        ...(["STEPS_ONLY", "NO_ADDITIONAL_CARDIO"].includes(engineStrategy) && !cardioPayload.type ? { type: "RECOVERY_WALK" } : {}),
+        // P0-A16 (S1): only STEPS_ONLY maps to a walking card. A
+        // NO_ADDITIONAL_CARDIO client gets no card at all (the hook hides
+        // it by strategy); mapping it to a walk here would invent a target.
+        ...(engineStrategy === "STEPS_ONLY" && !cardioPayload.type ? { type: "RECOVERY_WALK" } : {}),
         ...cardioPayload,
         medicalConditions: [...conditions, ...injuries, ...(answers.is_pregnant === true ? ["PREGNANT"] : [])],
         weight_kg: cardioPayload.weight_kg ?? (Number.isFinite(latestWeight) && latestWeight > 0 ? latestWeight : Number(answers.weight_kg) || null),
@@ -1505,6 +1515,34 @@ export const getActiveProgramByUserId = async (req, res) => {
       }),
       advisories_ar
     };
+
+    // P0-A16 (Q48): pre-fix ACTIVE programs may carry zones computed on an
+    // estimated age. Surface the hold on the served card instead of
+    // silently serving guessed BPM numbers.
+    const v2Sessions = program.program_data?.cardio_program?.weekly_schedule?.sessions || [];
+    const v2ZonesEstimated = v2Sessions.some((s) => s?.heart_rate_target?.is_age_estimated === true);
+    if (v2ZonesEstimated) {
+      cardio.heart_rate_zones_held_for_review = true;
+      cardio.zones_hold_notice_ar = "مناطق النبض محجوزة لمراجعة المدرب لحد ما السن يتأكد — اعتمد على اختبار الكلام لحد ما يراجعها.";
+    }
+    // P0-A16: beta-blocker clients never get served BPM numbers, even when
+    // the practical prescription computed them from a known age.
+    const serveMeds = [
+      ...(Array.isArray(answers.current_meds_supplements_list) ? answers.current_meds_supplements_list : []),
+      String(answers.current_meds_supplements || ""),
+    ];
+    if (isBetaBlockerMedication(serveMeds) && cardio.heart_rate_target) {
+      cardio.heart_rate_target = {
+        ...cardio.heart_rate_target,
+        max_heart_rate_bpm: null,
+        target_range_bpm: null,
+        range_display: null,
+        min_bpm: null,
+        max_bpm: null,
+        talk_test_only: true,
+        guidance_ar: "إرشاد اختبار الكلام فقط: أدوية حاصرات بيتا بتغيّر نبض القلب، فأرقام النبض مش موثوقة — اعتمد على قدرتك على الكلام بجمل كاملة أثناء الكارديو.",
+      };
+    }
 
     const progression = await loadProgressionState(user.id, now);
     const trainingNode = program.program_data?.training || program.program_data?.training_program || {};
@@ -1933,6 +1971,50 @@ export const updateCustomProgram = async (req, res) => {
       ...(Array.isArray(program_data?.client?.allergies) ? program_data.client.allergies : []),
       ...(Array.isArray(program_data?.client?.medical_conditions) ? program_data.client.medical_conditions : []),
     ];
+
+    // P0-A16: HIIT save guard (owner decision: HIIT stays for HEALTHY
+    // clients only). The old code only warned for asthma and saved anyway;
+    // a HIIT save for an at-risk client is now refused before any write.
+    // The guard runs on every editor save carrying HIIT, publish or not,
+    // because the PDF reads legacy program.cardio after approval.
+    if (program_data?.cardio) {
+      const legacyCardio = program_data.cardio;
+      const wantsHiit = isHiitCardio(legacyCardio);
+      if (wantsHiit) {
+        let guardAnswers;
+        try {
+          guardAnswers = await loadLatestIntakeAnswers(user.id);
+        } catch (err) {
+          console.error("updateCustomProgram HIIT-guard intake load error:", err);
+          return res.status(500).json({ error: "فشل قراءة الاستمارة؛ لم يتم حفظ HIIT." });
+        }
+        if (!guardAnswers) {
+          return res.status(409).json({
+            code: "INTAKE_REQUIRED",
+            error: "لا توجد استمارة مكتملة لهذا المتدرب؛ لا يمكن حفظ HIIT من غير الملف الصحي.",
+          });
+        }
+        const guardConditions = [
+          ...userConditions,
+          ...(Array.isArray(guardAnswers.medical_conditions?.selected) ? guardAnswers.medical_conditions.selected : []),
+          ...(Array.isArray(guardAnswers.dangerous_symptoms) ? guardAnswers.dangerous_symptoms.filter((s) => s !== "NONE") : []),
+        ];
+        const guardAge = Number(guardAnswers.age) || Number(user.age) || null;
+        const guardWeight = Number(guardAnswers.weight_kg) || Number(user.weight_kg) || Number(user.weight) || null;
+        const guardHeight = Number(guardAnswers.height_cm) || Number(user.height_cm) || Number(user.height) || null;
+        const guardEval = evaluateHiitSave({
+          cardio: legacyCardio,
+          conditions: guardConditions,
+          age: guardAge,
+          weightKg: guardWeight,
+          heightCm: guardHeight,
+          isPregnant: guardAnswers.is_pregnant === true,
+        });
+        if (guardEval.blocked) {
+          return res.status(400).json({ code: guardEval.reason_code, error: guardEval.reason_ar });
+        }
+      }
+    }
 
     // 1. A protein cap the bloodwork asked for: the coach may still type past it, and that is
     // written into the clinical review log. A declared kidney diagnosis is outside the service

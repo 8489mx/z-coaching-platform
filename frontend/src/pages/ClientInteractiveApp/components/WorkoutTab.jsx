@@ -695,7 +695,9 @@ export default function WorkoutTab({
               </h3>
             </div>
             <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0284C7', background: '#FFFFFF', border: '1px solid #BAE6FD', padding: '2px 8px', borderRadius: '6px' }}>
-              {cardioPrescription.duration_minutes} دقيقة | {cardioPrescription.sessions_per_week} جلسات/أسبوع
+              {cardioPrescription.type === 'RECOVERY_WALK'
+                ? (cardioPrescription.daily_steps_target || 'مشي يومي')
+                : `${cardioPrescription.duration_minutes} دقيقة | ${cardioPrescription.sessions_per_week} جلسات/أسبوع`}
             </span>
           </div>
 
