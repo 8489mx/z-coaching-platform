@@ -144,7 +144,12 @@ export const checkinRateLimiter = createRateLimiter({
   keyPrefix: "checkin",
   countAllRequests: true,
   keyGenerator: (req, ip) => {
-    const userId = req.user?.id || req.body?.user_id || req.body?.client_id;
+    // P0-A1: never key on request-body values, they rotate freely and let
+    // one caller dodge the limit by changing the submitted user id.
+    // Authenticated requests key on the verified user id (requireAuth runs
+    // before this limiter on the check-in route); anything without an
+    // authenticated user falls back to IP only.
+    const userId = req.user?.id;
     return userId ? `user_${userId}` : `ip_${ip}`;
   },
   message: (remainingMins) => `تم تجاوز الحد الأقصى المسموح لتقديم المتابعة (10 طلبات خلال ساعة). يرجى الانتظار لمدة ${remainingMins} دقيقة قبل المحاولة مجدداً.`

@@ -33,6 +33,7 @@ export default function WeeklyCheckinForm() {
   const [showExtraDetails, setShowExtraDetails] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [needsLogin, setNeedsLogin] = useState(false);
 
   // Client Identification (URL Query > localStorage > sessionStorage)
   const initialClientCode = useMemo(() => {
@@ -136,6 +137,7 @@ export default function WeeklyCheckinForm() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setError('');
+    setNeedsLogin(false);
     
     try {
       const rawCode = clientIdentifier.trim() || searchParams.get('code') || searchParams.get('user_id') || localStorage.getItem('kz_client_code') || sessionStorage.getItem('z_client_code') || '';
@@ -267,15 +269,33 @@ export default function WeeklyCheckinForm() {
         next_week_notes: formData.next_week_notes
       };
 
+      // P0-A1: check-in submission requires login. Attach the stored session
+      // token (client login stores `token`/`kz_client_token`, staff sessions
+      // use `z_auth_token`); without it the server answers 401.
+      const submitToken = localStorage.getItem('token') || localStorage.getItem('kz_client_token') || localStorage.getItem('z_auth_token');
       const res = await fetch(`${API_BASE}/api/v1/checkin`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(submitToken ? { Authorization: `Bearer ${submitToken}` } : {})
+        },
         body: JSON.stringify(payload)
       });
 
       const data = await res.json().catch(() => null);
 
       if (!res.ok || (data && data.success === false)) {
+        // P0-A1: not logged in (or session expired) — say so plainly and
+        // point the client at the login page instead of a generic error.
+        if (res.status === 401) {
+          setNeedsLogin(true);
+          setError('يجب تسجيل الدخول أولاً لإرسال المتابعة الأسبوعية. سجّل الدخول بحسابك ثم أعد إرسال المتابعة.');
+          return;
+        }
+        if (res.status === 403) {
+          setError('هذه المتابعة باسم عميل آخر، ولا يمكن إرسالها من حسابك. تأكد من الكود الخاص بك ثم أعد المحاولة.');
+          return;
+        }
         const errorMsg = data?.error === 'Client not found'
           ? `تعذر العثور على حساب المشترك بالكود أو الرقم المدخل (#${clientCode}). يرجى التأكد من كتابة الكود أو رقم الهاتف المسجل لدى الكابتن والمحاولة ثانية.`
           : (data?.error || 'حدث خطأ أثناء حفظ التقييم الأسبوعي. يرجى مراجعة البيانات والمحاولة مجدداً.');
@@ -351,9 +371,18 @@ export default function WeeklyCheckinForm() {
         </div>
 
         {error && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#B91C1C', padding: '12px 16px', borderRadius: '8px', fontSize: '12.5px', fontWeight: 700, textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#B91C1C', padding: '12px 16px', borderRadius: '8px', fontSize: '12.5px', fontWeight: 700, textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <AlertCircle size={18} color="#DC2626" style={{ flexShrink: 0 }} />
             <span>{error}</span>
+            {needsLogin && (
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                style={{ background: '#DC2626', color: '#FFFFFF', border: 'none', borderRadius: '9999px', padding: '8px 18px', fontSize: '12.5px', fontWeight: 800, cursor: 'pointer' }}
+              >
+                تسجيل الدخول
+              </button>
+            )}
           </div>
         )}
 

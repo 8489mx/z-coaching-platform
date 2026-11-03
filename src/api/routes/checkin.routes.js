@@ -17,7 +17,7 @@ import { checkinRateLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
 
-router.post("/", checkinRateLimiter, submitCheckin);
+router.post("/", requireAuth, checkinRateLimiter, submitCheckin);
 router.get("/digest", requireAuth, getCoachDigest);
 router.post("/bulk-approve", requireAuth, bulkApproveCheckins);
 router.get("/schedule/:userId", requireAuth, getCheckinSchedule);

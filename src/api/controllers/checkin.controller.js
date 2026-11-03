@@ -92,6 +92,17 @@ export async function submitCheckin(req, res) {
       next_week_notes = null,
     } = req.body;
 
+    // P0-A1: check-in submission requires login. The requester identity is
+    // established here, before the target user is resolved, so the handler
+    // stays fail-closed even if the route chain is ever miswired: without
+    // a verified requester id nothing is accepted.
+    const requesterId = req.user?.id;
+    const requesterRole = req.dbUser?.role || req.user?.role;
+    const isStaffRequester = requesterRole === "ADMIN" || requesterRole === "COACH";
+    if (!requesterId) {
+      return res.status(401).json({ success: false, error: "Unauthorized: login required to submit a check-in" });
+    }
+
     let targetUserId = user_id || client_id;
     if (!targetUserId) {
       return res.status(400).json({ success: false, error: "user_id is required" });
@@ -110,6 +121,13 @@ export async function submitCheckin(req, res) {
       return res.status(400).json({ success: false, error: "المستخدم غير موجود، يرجى تقديم معرف صالح" });
     }
     targetUserId = userObj.id;
+
+    // P0-A1: a client may only submit for themselves. A submission naming
+    // a different user is rejected, never silently re-attributed to the
+    // requester. Staff (ADMIN/COACH) may submit for others.
+    if (!isStaffRequester && String(targetUserId) !== String(requesterId)) {
+      return res.status(403).json({ success: false, error: "Forbidden: you can only submit a check-in for your own account" });
+    }
 
     // Resolve Trainee Occupational Baseline (for OCCUPATIONAL_NEAT_LOCK)
     const traineeOccupation = req.body.occupation_type || null;
@@ -139,7 +157,9 @@ export async function submitCheckin(req, res) {
     // If active program exists, strictly enforce schedule window and cadence
     // In production and live Express HTTP requests, strictly enforced. In direct unit test mocks, enabled when requested.
     const isLiveHttpRequest = Boolean(req.headers || req.app || req.get || req.ip);
-    const bypassGuard = req.body.bypass_schedule_guard === true;
+    // P0-A1: only staff may bypass the schedule guard. A client-supplied
+    // bypass flag is ignored, never honored.
+    const bypassGuard = isStaffRequester && req.body.bypass_schedule_guard === true;
     const shouldEnforce = (isLiveHttpRequest || req.body.enforce_schedule_guard === true) && !bypassGuard;
 
     if (shouldEnforce && schedule.program_id) {
