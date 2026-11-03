@@ -3821,6 +3821,9 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             const denom = 0.11 - (lunchMeat.fatD * 0.106) / lunchMeat.protD;
             let splitEggGrams = Math.floor((fatBudget - (lunchMeat.fatD * remP) / lunchMeat.protD) / denom);
             splitEggGrams = Math.max(0, Math.min(250, splitEggGrams));
+            // P0-A7: eggs must never overshoot the protein remainder, or the
+            // meat remainder goes negative and a negative portion is served.
+            splitEggGrams = Math.min(splitEggGrams, Math.floor(remP / 0.106));
             if (splitEggGrams < 55) splitEggGrams = 0; // less than one egg: meat-only is cleaner than a token egg
             const splitEggP = Math.round(splitEggGrams * 0.106);
             const splitEggF = Math.round(splitEggGrams * 0.11);
@@ -3843,7 +3846,9 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
                 swaps: generateSmartSwaps("PROTEIN", splitEggGrams, "EGGS_OMELETTE", "LUNCH", 10, allergenContext),
               });
             }
-            items.push({
+            // P0-A7: with eggs covering the whole remainder there is no meat
+            // portion left; a 0 g item (let alone a negative one) is never pushed.
+            if (meatGrams > 0) items.push({
               food_code: lunchMeat.code,
               name_ar: lunchMeat.name_ar,
               name_en: lunchMeat.name_en,
@@ -4105,7 +4110,10 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           // shrinking the oil. If eggs are refused too, no protein is
           // forced — the file's existing convention is to serve none
           // rather than a wrong food.
-          const eggGrams = Math.round(remP / 0.106);
+          // P0-A7: same 250 g cap as the lunch split; any protein shortfall
+          // the cap leaves is flagged by the culinary preflight, not served
+          // as a fat overshoot.
+          const eggGrams = Math.min(250, Math.round(remP / 0.106));
           protF = Math.round(eggGrams * 0.11);
           items.push({
             food_code: "EGGS_OMELETTE",
@@ -4654,6 +4662,80 @@ export function refreshActualMacros(meals = []) {
         fat_g: Math.round(sum("fat_g")),
         calories_kcal: Math.round(sum("calories_kcal")),
       },
+    };
+  });
+}
+
+// P0-A7: last-resort protein for a plate that ended up with no protein food
+// at all (a fully-excluded lunch/dinner chain serves veggies + carbs only).
+// Candidates are tried in order; each must pass the client's own clinical
+// filter, and portions are capped the way the templates cap them (meats
+// 220 g, tuna 200 g, cheese 150 g). A meal whose remainder exceeds its cap
+// stays short and the culinary preflight flags it — the fallback removes
+// zero-protein plates, it does not promise full closure. Variety caps do not
+// apply to a rescue item: having protein outranks having a different one.
+const CULINARY_PROTEIN_FALLBACKS = Object.freeze([
+  { code: "CAMEL_MEAT_LEAN", maxGrams: 220 },
+  { code: "LEAN_BEEF", maxGrams: 220 },
+  { code: "CANNED_TUNA", maxGrams: 200 },
+  { code: "TILAPIA_FISH", maxGrams: 220 },
+  { code: "COTTAGE_CHEESE", maxGrams: 150 },
+  { code: "MIXED_LEGUMES_STEW", maxGrams: 300 },
+]);
+
+export function applyCulinaryProteinFallback(meals = [], allergenContext = {}) {
+  if (!Array.isArray(meals)) return meals;
+  // P0-A7 variety rule: a rescue protein must not be a food the day already
+  // serves elsewhere, and two rescues must not repeat each other — otherwise
+  // one fallback food ends up in three meals (the daily-protein variety
+  // guard). Only when every safe candidate is already in the day does the
+  // rescue reuse the first safe one; a repeated protein is still far better
+  // than a protein-less plate, and the preflight still flags the shortfall.
+  const dayProteinCodes = new Set();
+  for (const meal of meals) {
+    for (const item of meal?.items || []) {
+      if (String(item?.category || "").toUpperCase() === "PROTEIN") dayProteinCodes.add(item.food_code);
+    }
+  }
+  return meals.map((meal) => {
+    if (!Array.isArray(meal?.items) || meal.fixed_portions === true) return meal;
+    if (meal.items.some((item) => String(item?.category || "").toUpperCase() === "PROTEIN")) return meal;
+    const targetP = Number(meal.target_macros?.protein_g) || 0;
+    const currentP = meal.items.reduce((s, i) => s + (Number(i?.protein_g ?? i?.p) || 0), 0);
+    const remainder = targetP - currentP;
+    if (!(remainder > 0)) return meal;
+    const nameHaystack = `${meal.meal_name_ar || ""} ${meal.recipe_title_ar || ""}`;
+    const mealContext = /فطار|إفطار|افطار|breakfast/i.test(nameHaystack) || meal.meal_number === 1
+      ? "BREAKFAST"
+      : (/عشاء|عشا|dinner/i.test(nameHaystack) ? "DINNER" : "LUNCH");
+    const safe = CULINARY_PROTEIN_FALLBACKS.filter(({ code }) => {
+      const food = FOOD_SWAP_DATABASE[code];
+      return food && Number(food.protein_per_100g) > 0 && isFoodClinicallySafe(code, allergenContext);
+    });
+    const picked = safe.find(({ code }) => !dayProteinCodes.has(code)) || safe[0];
+    if (!picked) return meal;
+    const food = FOOD_SWAP_DATABASE[picked.code];
+    const grams = Math.min(picked.maxGrams, Math.ceil(remainder / (food.protein_per_100g / 100)));
+    if (!(grams > 0)) return meal;
+    const item = {
+      food_code: picked.code,
+      name_ar: food.name_ar,
+      name_en: food.name_en,
+      category: "PROTEIN",
+      portion_g: grams,
+      household_measurement: `${grams} ${food.unit_label || "جم"}`,
+      protein_g: Math.round(grams * (food.protein_per_100g / 100) * 10) / 10,
+      carb_g: Math.round(grams * (food.carb_per_100g || 0) / 100 * 10) / 10,
+      fat_g: Math.round(grams * (food.fat_per_100g || 0) / 100 * 10) / 10,
+      calories_kcal: Math.round(grams * (food.kcal_per_100g || 0) / 100),
+      swaps: generateSmartSwaps("PROTEIN", grams, picked.code, mealContext, 10, allergenContext),
+      protein_fallback: true,
+    };
+    dayProteinCodes.add(picked.code);
+    return {
+      ...meal,
+      items: [...meal.items, item],
+      protein_fallback_ar: "الطبق ده كان من غير بروتين خالص، فاتضاف له صنف بروتين آمن كبديل أخير؛ راجع الكمية مع العميل.",
     };
   });
 }

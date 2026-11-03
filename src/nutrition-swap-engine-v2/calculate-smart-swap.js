@@ -21,6 +21,10 @@ function requireNonEmptyString(value, name) {
  * @param {number} params.current_portion_g
  * @param {string} params.target_food_code
  * @param {string} [params.meal_category=MealTimeCategory.MAIN_MEAL]
+ * @param {Function} [params.isTargetSafe] Optional (targetCode, grams) => boolean.
+ *   When supplied, an unsafe target is refused here, inside the engine, with
+ *   code SWAP_NOT_CLINICALLY_SAFE — the API handlers pass the client's own
+ *   restrictions. Callers without it keep today's behavior.
  * @returns {Object}
  */
 export function calculateSmartSwap(params) {
@@ -33,6 +37,7 @@ export function calculateSmartSwap(params) {
     current_portion_g,
     target_food_code,
     meal_category = MealTimeCategory.MAIN_MEAL,
+    isTargetSafe = null,
   } = params;
 
   requireNonEmptyString(current_food_code, "current_food_code");
@@ -70,6 +75,16 @@ export function calculateSmartSwap(params) {
   const calculatedGrams = Math.round(
     current_portion_g * (currentItem.primary_nutrient_per_100g / targetItem.primary_nutrient_per_100g),
   );
+
+  // 3b. Clinical safety inside the engine (P0-A7 stage 3): when the caller
+  // supplies a safety predicate, an unsafe target is refused here, not just
+  // filtered downstream. The portion is computed first because some safety
+  // rules depend on it (e.g. the diabetic potato portion cap).
+  if (typeof isTargetSafe === "function" && !isTargetSafe(target_food_code, calculatedGrams)) {
+    const unsafeErr = new Error(`Unsafe Swap: '${targetItem.name_ar}' is not safe for this client's restrictions.`);
+    unsafeErr.code = "SWAP_NOT_CLINICALLY_SAFE";
+    throw unsafeErr;
+  }
 
   // 4. Household Serving Quantization
   const unitCount =

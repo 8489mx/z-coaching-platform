@@ -27,6 +27,7 @@ import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSw
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
 import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
+import { evaluateCulinaryPreflight, evaluateCulinaryMeal } from "../../../src/nutrition-plan-preflight/evaluate-culinary-preflight.js";
 import { buildSessionMobilityProtocol } from "../../../src/mobility-warmup-engine-v2/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -102,10 +103,13 @@ export const generateProgram = async (req, res) => {
     });
 
     // 4. Save to Database with an explicit status: never the ACTIVE default.
+    // P0-A7: a program whose served plate failed the culinary preflight is
+    // saved DRAFT, never ACTIVE — an invalid plate is never served.
+    const culinaryReviewRequired = masterProgram.nutrition_program?.culinary_preflight?.status === "REVIEW_REQUIRED";
     const savedProgram = await Program.create({
       user_id: req.user.id,
       program_data: masterProgram,
-      status: requiresMedicalReview ? "DRAFT" : "ACTIVE",
+      status: requiresMedicalReview || culinaryReviewRequired ? "DRAFT" : "ACTIVE",
     });
 
     return res.status(201).json({
@@ -113,6 +117,8 @@ export const generateProgram = async (req, res) => {
       program_id: savedProgram.id,
       plan_status: intakeDecision.plan_status,
       medical_review_required: requiresMedicalReview,
+      culinary_review_required: culinaryReviewRequired,
+      culinary_preflight_issues: masterProgram.nutrition_program?.culinary_preflight?.issues || [],
       program_status: savedProgram.status,
       master_program: masterProgram
     });
@@ -160,9 +166,11 @@ export const generateProgramPreview = async (req, res) => {
       options: options || {}
     });
 
-    // Skip DB save for preview
+    // Skip DB save for preview — but the coach still sees the served-plate
+    // check, so a preview with a failing plate is never mistaken for ready.
     return res.status(200).json({
       message: "Preview program generated successfully (V2)",
+      culinary_preflight: masterProgram.nutrition_program?.culinary_preflight || null,
       master_program: masterProgram
     });
 
@@ -252,11 +260,14 @@ export const generateAndSaveProgram = async (req, res) => {
 
     // 5. Save or Update Program with an explicit status: never the ACTIVE
     // default, and never keep an existing ACTIVE status for a plan that
-    // now requires medical review.
+    // now requires medical review — or whose served plate failed the
+    // culinary preflight (P0-A7: an invalid plate is never served, even
+    // when it replaces a previously ACTIVE plan).
+    const culinaryReviewRequired = masterProgram.nutrition_program?.culinary_preflight?.status === "REVIEW_REQUIRED";
     let program = await Program.findOne({ where: { user_id: user.id } });
     if (program) {
       program.program_data = masterProgram;
-      if (requiresMedicalReview) {
+      if (requiresMedicalReview || culinaryReviewRequired) {
         program.status = "DRAFT";
       }
       await program.save();
@@ -264,7 +275,7 @@ export const generateAndSaveProgram = async (req, res) => {
       program = await Program.create({
         user_id: user.id,
         program_data: masterProgram,
-        status: requiresMedicalReview ? "DRAFT" : "ACTIVE"
+        status: requiresMedicalReview || culinaryReviewRequired ? "DRAFT" : "ACTIVE"
       });
     }
 
@@ -281,6 +292,8 @@ export const generateAndSaveProgram = async (req, res) => {
       program_id: program.id,
       plan_status: intakeDecision.plan_status,
       medical_review_required: requiresMedicalReview,
+      culinary_review_required: culinaryReviewRequired,
+      culinary_preflight_issues: masterProgram.nutrition_program?.culinary_preflight?.issues || [],
       program_status: program.status,
       master_program: masterProgram
     });
@@ -516,6 +529,70 @@ function withNoSwapNotes(meals = []) {
   }));
 }
 
+/** The served culinary meals inside a stored program, in either shape. */
+function servedCulinaryMeals(programData = {}) {
+  const fromNutritionProgram = programData?.nutrition_program?.culinary_meals;
+  if (Array.isArray(fromNutritionProgram) && fromNutritionProgram.length > 0) return fromNutritionProgram;
+  const topLevel = programData?.culinary_meals;
+  if (Array.isArray(topLevel) && topLevel.length > 0) return topLevel;
+  return [];
+}
+
+/**
+ * P0-A7: the meal as it will actually be eaten must still pass the plate
+ * check. After a live swap is computed, the meal that contains the swapped
+ * food is rebuilt with the new item and checked intrinsically (targets,
+ * portions, unsafe flags, protein presence). A failing post-swap meal refuses
+ * the swap (409) and the served meal is left untouched — the server never
+ * mutates the plan here, so refusing is the whole enforcement.
+ * Returns null when the meal cannot be found or checked (the target-safety
+ * check already enforced by the caller still applies); a checker error also
+ * skips rather than blocking every swap on an internal failure.
+ */
+async function checkPostSwapMeal({ userId, fromCode, fromGrams, toCode, targetGrams, targetMacros }) {
+  try {
+    if (!userId || !fromCode || !toCode || !targetMacros) return null;
+    const program = await Program.findOne({ where: { user_id: userId, status: "ACTIVE" }, order: [["id", "DESC"]] }).catch(() => null);
+    let data = program?.program_data;
+    if (typeof data === "string") {
+      try { data = JSON.parse(data); } catch { data = null; }
+    }
+    const meals = servedCulinaryMeals(data || {});
+    let best = null;
+    meals.forEach((meal) => {
+      for (const item of meal?.items || []) {
+        if (normalizeFoodCode(item?.food_code || item?.code) !== fromCode) continue;
+        const gap = Math.abs((Number(item.portion_g ?? item.amount) || 0) - (Number(fromGrams) || 0));
+        if (!best || gap < best.gap) best = { gap, meal, item };
+      }
+    });
+    if (!best) return null;
+    const postSwapMeal = {
+      ...best.meal,
+      items: (best.meal.items || []).map((item) => (item === best.item ? {
+        ...item,
+        food_code: toCode,
+        portion_g: targetGrams,
+        protein_g: targetMacros.protein_g,
+        carb_g: targetMacros.carbs_g,
+        fat_g: targetMacros.fat_g,
+        calories_kcal: targetMacros.calories,
+      } : item)),
+    };
+    const result = evaluateCulinaryMeal(postSwapMeal);
+    const blocking = result.issues.filter((i) => i.severity !== "note");
+    if (blocking.length === 0) return null;
+    return {
+      blocked: true,
+      reason_ar: `البديل ده هيبوظ الوجبة (${blocking.map((i) => i.message_ar).join(" ")}). اختار بديل تاني أو راجع الكوتش.`,
+      issues: blocking,
+    };
+  } catch (err) {
+    console.error("checkPostSwapMeal skipped:", err.message);
+    return null;
+  }
+}
+
 /**
  * The meal a food sits in on the client's active plan (the portion closest to the one asked about
  * when it appears more than once), as a swap-registry meal category; null when not found.
@@ -679,11 +756,16 @@ export const calculateSwapHandler = async (req, res) => {
     const category = meal_category || mealCategoryFromContext(meal_context)
       || getSmartFoodRegistryItem(toCode)?.meal_categories?.[0] || "MAIN_MEAL";
 
+    // A target the client's restrictions forbid is refused even when sent directly.
+    // The context is resolved before computing so the swap engine itself
+    // rejects an unsafe target (P0-A7 stage 3), not just the handler filter.
+    const clinicalContext = await swapContextFor(req);
     const computed = calculateSmartSwap({
       current_food_code: fromCode,
       current_portion_g: fromGrams,
       target_food_code: toCode,
       meal_category: category,
+      isTargetSafe: (code, grams) => isSwapFoodSafe(code, clinicalContext, grams),
     });
     // Portion from the same food data the value check and the plan use (as in swap-candidates).
     const oneSourceGrams = liveSwapTargetGrams(fromCode, fromGrams, toCode, computed.macro_type);
@@ -701,8 +783,6 @@ export const calculateSwapHandler = async (req, res) => {
         }
       : computed;
 
-    // A target the client's restrictions forbid is refused even when sent directly.
-    const clinicalContext = await swapContextFor(req);
     if (!isSwapFoodSafe(toCode, clinicalContext, result.target_food.portion_g)) {
       return res.status(409).json({ error: "البديل ده مش مناسب لحالتك الصحية أو الحساسية المسجلة", code: "SWAP_NOT_CLINICALLY_SAFE" });
     }
@@ -726,6 +806,20 @@ export const calculateSwapHandler = async (req, res) => {
       serving_display_ar: `${result.target_food.serving_display_ar}${liveSwapOilText(oil)}`,
     };
 
+    // P0-A7: the meal as it will actually be eaten must still pass the plate
+    // check; a swap that breaks its meal is refused and the served meal stands.
+    const mealCheck = await checkPostSwapMeal({
+      userId: swapTarget?.id || null,
+      fromCode,
+      fromGrams,
+      toCode,
+      targetGrams: result.target_food.portion_g,
+      targetMacros: value ? macros : null,
+    });
+    if (mealCheck?.blocked) {
+      return res.status(409).json({ error: mealCheck.reason_ar, code: "SWAP_MEAL_CHECK_FAILED", issues: mealCheck.issues });
+    }
+
     const swappedFood = {
       food_code: result.target_food.food_code,
       name_ar: withOil.name_ar,
@@ -743,6 +837,11 @@ export const calculateSwapHandler = async (req, res) => {
     });
   } catch (err) {
     console.error("calculateSwapHandler error:", err);
+    // The engine itself refused an unsafe target (P0-A7 stage 3): same 409
+    // the handler filter used to return, now enforced at the source.
+    if (err?.code === "SWAP_NOT_CLINICALLY_SAFE") {
+      return res.status(409).json({ error: "البديل ده مش مناسب لحالتك الصحية أو الحساسية المسجلة", code: "SWAP_NOT_CLINICALLY_SAFE" });
+    }
     return res.status(400).json({ error: err.message });
   }
 };
@@ -1252,6 +1351,46 @@ export const getActiveProgramByUserId = async (req, res) => {
         master_program: null,
         message: "No active program found for this client yet"
       });
+    }
+
+    // P0-A7: an invalid served plate never reaches the client, even when
+    // the program row is ACTIVE or the user is approved. Staff still see
+    // the full payload (coach review needs it). Two layers: the stored
+    // build-time flag (full check, incl. forbidden foods and swap lists),
+    // and an intrinsic re-check of the stored meals (covers editor saves
+    // and pre-fix programs that carry no flag).
+    if (!isStaffRequest) {
+      const storedCulinary = program.program_data?.nutrition_program?.culinary_preflight;
+      const storedMeals = servedCulinaryMeals(program.program_data || {});
+      let culinaryBlock = null;
+      if (storedCulinary?.status === "REVIEW_REQUIRED") {
+        culinaryBlock = storedCulinary;
+      } else if (storedMeals.length > 0) {
+        const intrinsic = evaluateCulinaryPreflight(storedMeals);
+        if (intrinsic.status === "REVIEW_REQUIRED") culinaryBlock = intrinsic;
+      }
+      if (culinaryBlock) {
+        return res.status(200).json({
+          has_program: false,
+          is_pending_review: true,
+          culinary_review_required: true,
+          culinary_preflight_issues: culinaryBlock.issues || [],
+          plan_approval_status: user.plan_approval_status || "PENDING_COACH_REVIEW",
+          program_id: program.id,
+          user: {
+            id: user.id,
+            client_code: user.client_code,
+            full_name: user.full_name || `متدرب #${user.client_code}`,
+            phone_number: user.phone_number,
+            email: user.email,
+            subscription_package: user.subscription_package,
+            plan_approval_status: user.plan_approval_status,
+            role: user.role,
+          },
+          master_program: null,
+          message: "الخطة تحت مراجعة الكوتش: وجباتها لم تجتز فحص الطبق المقدم، ومش هتظهر للعميل لحد ما تتظبط.",
+        });
+      }
     }
 
     const isApproved = program.status === "ACTIVE" || user.plan_approval_status === "APPROVED";

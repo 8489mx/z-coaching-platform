@@ -138,7 +138,8 @@ import { buildMobilityEngine } from "../mobility-engine/index.js";
 import { buildSessionMobilityProtocol } from "../mobility-warmup-engine-v2/index.js";
 import { buildNutritionEngine } from "../nutrition-engine/index.js";
 import { rebalanceMacrosToTarget } from "../nutrition-engine/build-nutrition-engine.js";
-import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, enforceClinicalSafety, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, trimMealsToTarget, refreshActualMacros } from "../nutrition-meal-context-v2/index.js";
+import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, enforceClinicalSafety, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, trimMealsToTarget, refreshActualMacros, applyCulinaryProteinFallback, isFoodClinicallySafe } from "../nutrition-meal-context-v2/index.js";
+import { evaluateCulinaryPreflight } from "../nutrition-plan-preflight/evaluate-culinary-preflight.js";
 import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
@@ -1346,7 +1347,7 @@ export function buildMasterEngineV2(inputs) {
   // The safety gate runs last (before totals are recomputed) because templates
   // emit some items unconditionally: without it, a refused food the flags
   // forbid could still reach the plate, and its swaps would still offer it.
-  const culinaryRecipeMeals = refreshActualMacros(enforceClinicalSafety(trimMealsToTarget(diversifyFatSources(
+  const builtCulinaryMeals = refreshActualMacros(enforceClinicalSafety(trimMealsToTarget(diversifyFatSources(
     splitOversizedPortions(enforceDiabeticCarbChoice(
       buildCulinaryRecipeMeals(universalTargets, canonicalIntake, effectiveIntake),
       isDiabeticClient,
@@ -1356,6 +1357,25 @@ export function buildMasterEngineV2(inputs) {
       kidneyProteinCapped: universalTargets.clinical_guardrails?.kidney_protein_capped === true,
     },
   )), culinaryAllergenContext));
+  // P0-A7: the served plate is checked before it reaches anyone. A meal with
+  // no protein food gets one safe fallback protein (never a refused food);
+  // then the culinary preflight audits every final meal — targets, portions,
+  // unsafe items, forbidden foods, listed swaps. An invalid plate is flagged
+  // REVIEW_REQUIRED on the program below and is never saved ACTIVE or served.
+  // Valid meals are untouched: annotation fields are added only when a meal
+  // actually fails or was rescued, so a passing plate serializes as before.
+  const fallbackCulinaryMeals = refreshActualMacros(applyCulinaryProteinFallback(builtCulinaryMeals, culinaryAllergenContext));
+  const culinaryPreflight = evaluateCulinaryPreflight(fallbackCulinaryMeals, {
+    isSafe: (code) => isFoodClinicallySafe(code, culinaryAllergenContext),
+  });
+  const culinaryRecipeMeals = fallbackCulinaryMeals.map((meal) => {
+    const result = culinaryPreflight.meals.find((m) => m.meal_number === meal.meal_number) || {};
+    return {
+      ...meal,
+      ...(result.missing_protein === true ? { missing_protein: true } : {}),
+      ...(result.issues?.length ? { culinary_issues: result.issues } : {}),
+    };
+  });
 
   // What the plates actually carry against what the plan asks for. They part company when the food
   // a client can have cannot hold the day: an operated stomach on small fixed plates, or a client
@@ -1463,6 +1483,10 @@ export function buildMasterEngineV2(inputs) {
     sanitized_plan: sanitizedMealPlan,
     quantized_plan: enhancedQuantizedPlan,
     culinary_meals: culinaryRecipeMeals,
+    // P0-A7: the served-plate check. Generate handlers save the program DRAFT
+    // (never ACTIVE) when this is REVIEW_REQUIRED, and the serve path
+    // withholds the plate from the client until a coach fixes it.
+    culinary_preflight: culinaryPreflight,
     biomarker_analysis: universalTargets.biomarker_analysis,
     clinical_safety_shield: universalTargets.clinical_safety_shield,
     clinical_supplements: universalTargets.biomarker_analysis?.supplement_recommendations || [],

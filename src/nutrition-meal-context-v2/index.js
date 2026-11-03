@@ -16,6 +16,8 @@ export {
   isDiabeticIntake,
   generateSmartSwaps,
   refreshActualMacros,
+  isFoodClinicallySafe,
+  applyCulinaryProteinFallback,
   FOOD_SWAP_DATABASE,
 } from "./build-culinary-meals.js";
 
