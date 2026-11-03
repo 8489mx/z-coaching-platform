@@ -1,5 +1,11 @@
 import { User, ProgressPhoto } from "../models/index.js";
-import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
+import {
+  saveProgressPhotoToDisk,
+  deleteStoredPhotoFile,
+  normalizePhotoPose,
+  isExternalPhotoUrl,
+} from "../utils/photoStorage.js";
+import { validatePhotoPayload } from "../middlewares/uploadValidator.js";
 
 // Helper: التحقق من ملكية المشترك لبياناته أو امتلاك صلاحية المدرب/المشرف
 async function isAuthorizedUserOrCoach(req, targetUserId) {
@@ -69,13 +75,36 @@ export const uploadUserPhoto = async (req, res) => {
       return res.status(400).json({ error: "photo_url is required" });
     }
 
+    // Pose allowlist enforced before any file name is built.
+    const normalizedPose = normalizePhotoPose(pose || "FRONT");
+    if (!normalizedPose) {
+      return res.status(400).json({ error: "pose غير صالح. القيم المسموح بها: FRONT أو SIDE أو BACK" });
+    }
+
+    // External links are never stored as uploads.
+    if (isExternalPhotoUrl(photo_url)) {
+      return res.status(400).json({ error: "الروابط الخارجية غير مقبولة كصور. ارفع الصورة مباشرة." });
+    }
+
+    // Size + magic-byte validation on the upload path (already-served
+    // /uploads/ URLs skip validation; they are existing stored files).
+    if (!photo_url.startsWith("/uploads/")) {
+      const validation = validatePhotoPayload(photo_url);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+    }
+
     const clientCode = user.client_code || user.id;
-    const persistentUrl = saveProgressPhotoToDisk(clientCode, photo_url, Number(week_number) || 1, pose || "FRONT") || photo_url;
+    const persistentUrl = saveProgressPhotoToDisk(clientCode, photo_url, Number(week_number) || 1, normalizedPose);
+    if (!persistentUrl) {
+      return res.status(400).json({ error: "فشل حفظ الصورة. تأكد من صيغة الصورة وحجمها." });
+    }
 
     const photo = await ProgressPhoto.create({
       user_id: user.id,
       week_number: Number(week_number) || 1,
-      pose: pose || "FRONT",
+      pose: normalizedPose,
       photo_url: persistentUrl,
       notes: notes || null,
     });
@@ -103,6 +132,15 @@ export const deleteUserPhoto = async (req, res) => {
     const authorized = await isAuthorizedUserOrCoach(req, photo.user_id);
     if (!authorized) {
       return res.status(403).json({ error: "غير مصرح لك بحذف صور متدرب آخر" });
+    }
+
+    // Delete the file first and verify it is gone: the serve path serves
+    // by folder + filename, not by database row, so destroying the row
+    // alone would leave a "deleted" photo still servable. If the file
+    // cannot be removed, fail loudly and keep the row.
+    const deletion = deleteStoredPhotoFile(photo.photo_url);
+    if (!deletion.verifiedGone) {
+      return res.status(500).json({ error: "فشل حذف ملف الصورة. لم يتم حذف الصورة." });
     }
 
     await photo.destroy();
