@@ -29,6 +29,7 @@ import {
 } from "../models/index.js";
 import { PROGRESS_PHOTOS_DIR } from "../utils/photoStorage.js";
 import { recordAuditEvent } from "./auditLog.service.js";
+import { cleanOldBackupsFromDisk } from "./backup.service.js";
 
 /**
  * Extracts deletion request date from user notes or returns user.updatedAt fallback
@@ -202,4 +203,67 @@ export async function purgeExpiredDeletedAccounts(retentionDays = 90) {
     related_records_deleted: totalRelatedRecordsDeleted,
     photo_files_deleted: totalPhotoFilesDeleted,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Daily purge scheduler (purge-wiring follow-up to P0-A5).
+// The purge needs a live database, so — like the cycle scheduler and unlike
+// the backup scheduler — it is started only on the success path of server
+// bootstrap, never in the mock-persistence fallback.
+// Runs once a day at 05:00 Africa/Cairo, after the 03:00 backup and the
+// 04:00 cycle run: the night's backup exists before any destructive erase,
+// and cycle preparation never races an erase. The check runs every 30
+// minutes and fires at or after the run hour, so a mid-day restart still
+// gets that day's run.
+// ---------------------------------------------------------------------------
+
+const PURGE_RUN_HOUR_CAIRO = 5;
+const PURGE_CHECK_EVERY_MS = 1000 * 60 * 30;
+
+let purgeTimer = null;
+let purgeLastRunDay = null;
+
+function purgeCairoParts(now) {
+  const local = new Date(now.toLocaleString("en-US", { timeZone: "Africa/Cairo" }));
+  return { hour: local.getHours(), day: `${local.getFullYear()}-${local.getMonth() + 1}-${local.getDate()}` };
+}
+
+/** True once per Cairo day, at or after the run hour. */
+export function shouldRunDailyPurge(now, lastDay) {
+  const { hour, day } = purgeCairoParts(now);
+  return hour >= PURGE_RUN_HOUR_CAIRO && day !== lastDay;
+}
+
+/**
+ * One daily run: purge 90-day-expired deactivated accounts (default window,
+ * unchanged) and prune backups older than 365 days (default retention,
+ * unchanged). Counts only are logged — never personal data.
+ */
+export async function runDailyPurgeNow() {
+  let purgeResult = null;
+  try {
+    purgeResult = await purgeExpiredDeletedAccounts();
+    console.log(`[PURGE SCHEDULER] Purged ${purgeResult.purged_count} expired accounts (${purgeResult.related_records_deleted} related records, ${purgeResult.photo_files_deleted} photo files, ${purgeResult.financial_records_retained} financial records retained).`);
+  } catch (err) {
+    console.error("[PURGE SCHEDULER ERROR] Daily purge failed:", err);
+  }
+  let prunedCount = 0;
+  try {
+    prunedCount = cleanOldBackupsFromDisk();
+    console.log(`[PURGE SCHEDULER] Pruned ${prunedCount} backup files older than 365 days.`);
+  } catch (err) {
+    console.error("[PURGE SCHEDULER ERROR] Daily backup pruning failed:", err);
+  }
+  return { purge: purgeResult, pruned_backups: prunedCount };
+}
+
+export function initDailyPurgeScheduler() {
+  if (purgeTimer) clearInterval(purgeTimer);
+  purgeTimer = setInterval(async () => {
+    const now = new Date();
+    if (!shouldRunDailyPurge(now, purgeLastRunDay)) return;
+    purgeLastRunDay = purgeCairoParts(now).day;
+    await runDailyPurgeNow();
+  }, PURGE_CHECK_EVERY_MS);
+  console.log("[PURGE SCHEDULER] Initialized: expired-account purge and backup pruning run daily at 05:00 Africa/Cairo.");
 }

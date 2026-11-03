@@ -24,6 +24,7 @@ import backupRoutes from "./routes/backup.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import { initDailyBackupScheduler } from "./services/backup.service.js";
 import { initDailyCycleScheduler } from "./services/cycleScheduler.service.js";
+import { initDailyPurgeScheduler } from "./services/deletionLifecycle.service.js";
 import { warmUpCatalogCache } from "./services/catalogCache.service.js";
 import { getPrivacyPolicy, getTermsOfService, getDeleteAccountPage } from "./controllers/legal.controller.js";
 import { requireAuth, requireAdmin } from "./middlewares/auth.middleware.js";
@@ -685,6 +686,9 @@ const startServer = async () => {
     console.log("Database synced.");
     initDailyBackupScheduler();
     initDailyCycleScheduler();
+    // Purge needs a live database, so it starts only here (success path),
+    // never in the mock-persistence fallback below.
+    initDailyPurgeScheduler();
     warmUpCatalogCache();
   } catch (err) {
     console.warn("Database connection notice: running with in-memory / mock persistence if needed.", err.message);
