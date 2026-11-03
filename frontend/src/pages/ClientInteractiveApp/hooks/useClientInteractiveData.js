@@ -281,6 +281,16 @@ export function useClientInteractiveData() {
   // 7. Deterministic Program Data Application & Offline Storage
   const applyProgramData = useCallback((data, rawCode) => {
     if (!data) return;
+    // P0-A3: an unapproved response must not leave previously loaded plan
+    // content visible. Clear the in-memory program so derived tabs
+    // (supplements, training weeks) empty out; the tab gates show the
+    // pending notice instead. Per-day local caches are not deleted here:
+    // they are never rendered while unapproved, and the version-key logic
+    // refreshes them on the next approved fetch.
+    const approvalStatus = data.plan_approval_status || data.user?.plan_approval_status;
+    if (data.has_program === false || (approvalStatus && approvalStatus !== 'APPROVED' && approvalStatus !== 'PUBLISHED')) {
+      setClientProgram(null);
+    }
     if (data.user) {
       const rawAllergies = (data.user.allergies || data.master_program?.client?.allergies || []).map(a => String(a));
       const isCeliac = rawAllergies.some(a => {
@@ -358,7 +368,10 @@ export function useClientInteractiveData() {
     setFastingContext(data.fasting_context || null);
     setHeatCountry(data.heat_advisory?.country_code || null);
     if (data.program_id) setProgramId(data.program_id);
-    if (data.has_program && data.master_program) {
+    // P0-A3: only an approved response may (re)populate the in-memory
+    // program; an unapproved one keeps the cleared state above even when it
+    // carries a program row (e.g. an ACTIVE program still awaiting approval).
+    if (data.has_program && data.master_program && (!approvalStatus || approvalStatus === 'APPROVED' || approvalStatus === 'PUBLISHED')) {
       setClientProgram(data.master_program);
 
       const serverVersion = String(data.version || data.master_program.version || data.updated_at || data.program_id || 'v1');

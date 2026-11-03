@@ -42,6 +42,24 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
   String? _programChangeSummary;
   bool _isClinicalLocked = false;
   String? _clinicalDirective;
+  // P0-A3: true while the client's plan is not coach-approved, so the hub
+  // shows a pending screen instead of any plan content.
+  bool _isPendingApproval = false;
+
+  /// P0-A3: a program map counts as pending-approval when it explicitly says
+  /// so (the server pending response: has_program false, or an approval
+  /// status other than APPROVED/PUBLISHED). Older approved caches carry no
+  /// approval fields and keep rendering until a live refresh corrects them.
+  bool _isPendingApprovalMap(Map<String, dynamic>? m) {
+    if (m == null) return false;
+    if (m['has_program'] == false) return true;
+    final userMap = m['user'];
+    final status = m['plan_approval_status'] ??
+        (userMap is Map ? userMap['plan_approval_status'] : null);
+    final s = status?.toString();
+    if (s != null && s != 'APPROVED' && s != 'PUBLISHED') return true;
+    return false;
+  }
 
   @override
   void initState() {
@@ -66,7 +84,11 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
     }
 
     _activeProgram = widget.storage.getCachedActiveProgram();
-    if (_activeProgram != null) {
+    // P0-A3: a cached pending response never renders as a plan.
+    if (_isPendingApprovalMap(_activeProgram)) {
+      _isPendingApproval = true;
+      _activeProgram = null;
+    } else if (_activeProgram != null) {
       _applyProgram(_activeProgram!);
     }
     _refreshActiveProgram();
@@ -100,6 +122,28 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
           if (_activeProgram == null) {
             _errorMessage = 'تعذر الاتصال بالخادم لجلب الخطة الحالية. يرجى التحقق من اتصال الإنترنت.';
           }
+        });
+        return;
+      }
+
+      // P0-A3: an unapproved plan never reaches any surface. Cache the
+      // pending response (overwriting any older approved cache) and show
+      // the pending screen instead of plan content. The clinical-lockout
+      // state is left untouched so a locked client still sees the safety
+      // directive from the pending screen.
+      if (_isPendingApprovalMap(data)) {
+        await widget.storage.cacheActiveProgram(Map<String, dynamic>.from(data));
+        if (!mounted) return;
+        setState(() {
+          _isPendingApproval = true;
+          _activeProgram = null;
+          _hasProgram = false;
+          _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0, waterLiters: 0.0);
+          _supplements = [];
+          _todayWorkoutName = 'لا توجد جلسة محددة لليوم';
+          _todayExercisesCount = 0;
+          _isLoading = false;
+          _errorMessage = null;
         });
         return;
       }
@@ -143,6 +187,7 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
       if (!mounted) return;
       setState(() {
         _activeProgram = program;
+        _isPendingApproval = false;
         _isLoading = false;
         _errorMessage = null;
         _applyProgram(program);
@@ -238,6 +283,62 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
   Widget build(BuildContext context) {
     final clientName = _user?.fullName.isNotEmpty == true ? _user!.fullName : 'كابتن';
     final isMax = _user?.tier.toUpperCase().contains('MAX') == true;
+
+    // P0-A3: pending approval replaces all plan content. A locked client
+    // still reaches the safety directive from this screen.
+    if (_isPendingApproval) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.hourglass_empty_outlined, size: 48, color: AppColors.textMuted),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'خطتك قيد مراجعة الكوتش',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Alexandria'),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'ستظهر خطتك هنا فور اعتمادها من الكوتش.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5, fontFamily: 'Alexandria'),
+                  ),
+                  if (_isClinicalLocked) ...[
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        _showClinicalLockoutDialog(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFDC2626),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text(
+                        'التدريب موقوف لدواعي السلامة السريرية',
+                        style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Alexandria'),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: _refreshActiveProgram,
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('إعادة المحاولة'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,

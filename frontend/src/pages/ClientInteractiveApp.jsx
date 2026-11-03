@@ -203,22 +203,44 @@ export default function ClientInteractiveApp() {
 
           {/* TAB 3: SUPPLEMENTS & GUIDES */}
           {activeTab === 'supplements' && (
-            <SupplementsGuidesTab
-              supplementsList={supplementsList}
-              supplementsTaken={supplementsTaken}
-              toggleSupplementTaken={toggleSupplementTaken}
-              setFreeGuideModalOpen={setFreeGuideModalOpen}
-              setFreeGuideTab={setFreeGuideTab}
-            />
+            (clientData.plan_approval_status === 'APPROVED' || clientData.plan_approval_status === 'PUBLISHED') ? (
+              <SupplementsGuidesTab
+                supplementsList={supplementsList}
+                supplementsTaken={supplementsTaken}
+                toggleSupplementTaken={toggleSupplementTaken}
+                setFreeGuideModalOpen={setFreeGuideModalOpen}
+                setFreeGuideTab={setFreeGuideTab}
+              />
+            ) : (
+              <PendingPlanNotice
+                badge="المكملات قيد المراجعة"
+                badgeBg="#FEF3C7"
+                badgeColor="#D97706"
+                title="جاري اعتماد المكملات والإرشادات"
+                desc="يقوم الكوتش بمراجعة المكملات المقترحة والإرشادات. ستظهر المكملات كاملة فور اعتماد الخطة ونشرها."
+                onNavigate={() => _navigate('/intake/form')}
+              />
+            )
           )}
 
           {/* TAB 4: PLAN PROFILE & CHECK-IN */}
           {activeTab === 'plan' && (
-            <PlanProfileTab
-              clientData={clientData}
-              setEmergencyModalOpen={setEmergencyModalOpen}
-              setPdfModalOpen={setPdfModalOpen}
-            />
+            (clientData.plan_approval_status === 'APPROVED' || clientData.plan_approval_status === 'PUBLISHED') ? (
+              <PlanProfileTab
+                clientData={clientData}
+                setEmergencyModalOpen={setEmergencyModalOpen}
+                setPdfModalOpen={setPdfModalOpen}
+              />
+            ) : (
+              <PendingPlanNotice
+                badge="ملف الخطة قيد المراجعة"
+                badgeBg="#F5F3FF"
+                badgeColor="#7C3AED"
+                title="جاري اعتماد ملف الخطة"
+                desc="يقوم الكوتش بمراجعة ملف الخطة قبل نشرها. ستظهر تفاصيل الخطة كاملة فور اعتمادها."
+                onNavigate={() => _navigate('/intake/form')}
+              />
+            )
           )}
 
         </main>

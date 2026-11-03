@@ -19,6 +19,22 @@ class NutritionScreen extends StatefulWidget {
 class _NutritionScreenState extends State<NutritionScreen> {
   DailyMacroTarget _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0);
   List<Meal> _meals = [];
+  // P0-A3: true while the client's plan is not coach-approved.
+  bool _isPendingApproval = false;
+
+  /// P0-A3: same pending-approval reading as the home hub: an explicitly
+  /// pending cached response gates the screen; older approved caches carry
+  /// no approval fields and render until a live refresh corrects them.
+  bool _isPendingApprovalMap(Map<String, dynamic>? m) {
+    if (m == null) return false;
+    if (m['has_program'] == false) return true;
+    final userMap = m['user'];
+    final status = m['plan_approval_status'] ??
+        (userMap is Map ? userMap['plan_approval_status'] : null);
+    final s = status?.toString();
+    if (s != null && s != 'APPROVED' && s != 'PUBLISHED') return true;
+    return false;
+  }
 
   @override
   void initState() {
@@ -28,6 +44,15 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   void _loadMeals() {
     final cached = widget.storage.getCachedActiveProgram();
+    // P0-A3: a pending cached program shows the pending screen, never meals.
+    if (_isPendingApprovalMap(cached)) {
+      _isPendingApproval = true;
+      _meals = [];
+      _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0);
+      setState(() {});
+      return;
+    }
+    _isPendingApproval = false;
     if (cached != null) {
       final clientView = cached['client_view'] as Map<String, dynamic>?;
       if (clientView != null) {
@@ -125,6 +150,50 @@ class _NutritionScreenState extends State<NutritionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // P0-A3: pending approval replaces all meal content.
+    if (_isPendingApproval) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('خطة التغذية والوجبات'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: AppColors.primaryDeep),
+              onPressed: _loadMeals,
+            ),
+          ],
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.hourglass_empty_outlined, size: 48, color: AppColors.textMuted),
+                const SizedBox(height: 16),
+                const Text(
+                  'خطتك قيد مراجعة الكوتش',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'ستظهر وجباتك هنا فور اعتماد الخطة من الكوتش.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _loadMeals,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('إعادة المحاولة'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(

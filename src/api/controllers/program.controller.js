@@ -1152,6 +1152,35 @@ export const getActiveProgramByUserId = async (req, res) => {
       return res.status(403).json({ error: "غير مصرح لك بعرض برنامج متدرب آخر" });
     }
 
+    // P0-A3: an unapproved client's own request never receives plan content.
+    // Anyone who passed the ownership check for another user's program is
+    // staff, and staff still see unapproved plans for review. Approval means
+    // plan_approval_status APPROVED or PUBLISHED; anything else is pending,
+    // and the response carries no master_program, no client_view, and no
+    // computed plan fields at all.
+    const isStaffRequest = String(req.user?.id) !== String(user.id);
+    const isClientApproved = user.plan_approval_status === "APPROVED" || user.plan_approval_status === "PUBLISHED";
+    if (!isStaffRequest && !isClientApproved) {
+      return res.status(200).json({
+        has_program: false,
+        is_pending_review: true,
+        plan_approval_status: user.plan_approval_status || "PENDING_COACH_REVIEW",
+        program_id: null,
+        user: {
+          id: user.id,
+          client_code: user.client_code,
+          full_name: user.full_name || `متدرب #${user.client_code}`,
+          phone_number: user.phone_number,
+          email: user.email,
+          subscription_package: user.subscription_package,
+          plan_approval_status: user.plan_approval_status,
+          role: user.role,
+        },
+        master_program: null,
+        message: "الخطة قيد مراجعة الكوتش ولم يتم اعتمادها بعد",
+      });
+    }
+
     // The published plan wins over anything newer: a prepared next cycle sits as a DRAFT until the
     // coach releases it, and must never reach the client's app by being the most recent row.
     const clientAttributes = ["id", "client_code", "full_name", "phone_number", "email", "role", "subscription_package", "plan_approval_status"];

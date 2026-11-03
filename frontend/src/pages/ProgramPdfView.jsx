@@ -354,6 +354,7 @@ export default function ProgramPdfView() {
   const [loading, setLoading] = useState(true);
   const [program, setProgram] = useState(null);
   const [user, setUser] = useState(null);
+  const [approvalError, setApprovalError] = useState(null);
 
   const searchParams = new URLSearchParams(window.location.search);
   const targetUserId = searchParams.get('user_id') || searchParams.get('code') || '1';
@@ -367,8 +368,30 @@ export default function ProgramPdfView() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/api/v1/programs/active/${targetUserId}`);
+      setApprovalError(null);
+      setProgram(null);
+      setUser(null);
+      // P0-A3: authenticate the fetch (same stored-token chain as the
+      // check-in form) so an approved client actually receives their plan
+      // instead of an unauthenticated denial.
+      const pdfToken = localStorage.getItem('token') || localStorage.getItem('kz_client_token') || localStorage.getItem('z_auth_token');
+      const res = await fetch(`${API_BASE}/api/v1/programs/active/${targetUserId}`, {
+        headers: pdfToken ? { Authorization: `Bearer ${pdfToken}` } : {}
+      });
+      if (!res.ok) {
+        setApprovalError('تعذر عرض الوثيقة. يرجى التأكد من تسجيل الدخول والمحاولة مجدداً.');
+        return;
+      }
       const data = await res.json();
+      // P0-A3: no document for an unapproved plan. A denied or pending
+      // response shows a clear error instead of any document content. This
+      // gate only; the document rendering below is untouched (P0-A13 owns
+      // the fallback/demo rendering).
+      const approvalStatus = data.plan_approval_status || data.user?.plan_approval_status;
+      if (data.has_program === false || (approvalStatus && approvalStatus !== 'APPROVED' && approvalStatus !== 'PUBLISHED')) {
+        setApprovalError('الخطة قيد مراجعة الكوتش ولم يتم اعتمادها بعد. ستظهر الوثيقة فور اعتماد الخطة.');
+        return;
+      }
       if (data.master_program || data.program) {
         setProgram(data.master_program || data.program);
       }
@@ -401,6 +424,18 @@ export default function ProgramPdfView() {
         <div style={{ textAlign: 'center' }}>
           <div style={{ width: '40px', height: '40px', border: '3px solid #E2E8F0', borderTopColor: '#0284C7', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px auto' }}></div>
           <h5 style={{ fontWeight: 800, color: '#0F172A', margin: 0 }}>جاري تجهيز الوثيقة التنفيذية المعتمدة...</h5>
+        </div>
+      </div>
+    );
+  }
+
+  // P0-A3: an unapproved or denied plan shows a clear error and no document.
+  if (approvalError) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#FFFFFF', direction: 'rtl', fontFamily: 'var(--font-sans)' }}>
+        <div style={{ textAlign: 'center', maxWidth: '420px', padding: '24px' }}>
+          <h5 style={{ fontWeight: 800, color: '#B91C1C', margin: '0 0 12px 0' }}>لا يمكن عرض الوثيقة</h5>
+          <p style={{ color: '#334155', fontSize: '14px', lineHeight: 1.7, margin: 0 }}>{approvalError}</p>
         </div>
       </div>
     );
