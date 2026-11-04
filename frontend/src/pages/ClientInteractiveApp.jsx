@@ -84,6 +84,7 @@ export default function ClientInteractiveApp() {
     syncStatus,
     handleTriggerSync,
     workoutSession,
+    sessionDayInfo,
     setWorkoutSession,
     dailyReadiness,
     handleSetDailyReadiness,
