@@ -2,14 +2,17 @@
  * Overdue Check-in & Ghosting Prevention Engine
  * Z Coaching Platform - Operations & Client Retention
  *
- * Deterministically detects active clients who missed their scheduled weekly check-in (>48h grace),
+ * Deterministically detects active clients who missed their scheduled weekly check-in (>72h grace),
  * and generates courteous, high-converting Egyptian WhatsApp nudge messages.
  * Zero emojis, strictly Arabic RTL clinical directives.
  */
 
 export const CHECKIN_CYCLE_DAYS = 7;
-export const CHECKIN_GRACE_HOURS = 48; // 2 days grace period
-export const OVERDUE_THRESHOLD_DAYS = 9; // 7 days cycle + 2 days grace
+// P1-B10: ONE lateness clock — 72 hours, matching the schedule service's
+// SUBMISSION_WINDOW_HOURS (72), so a client inside the submission window
+// is never "overdue" here and "on time" there.
+export const CHECKIN_GRACE_HOURS = 72; // 3 days grace period
+export const OVERDUE_THRESHOLD_DAYS = 10; // 7 days cycle + 3 days grace
 
 /**
  * How often this client is asked to check in. The packages differ on purpose: MAX is reviewed every
@@ -50,9 +53,19 @@ export function evaluateClientCheckinOverdue(client = {}, now = new Date()) {
   let referenceDate = null;
   let isFirstCheckin = false;
 
-  if (checkins.length > 0) {
-    // Find most recent checkin
-    const sorted = [...checkins].sort((a, b) => {
+  // P1-B10: the reference is the latest APPROVED or AUTO_APPLIED check-in,
+  // not the latest submission of any status. A PENDING submission is not
+  // evidence of compliance: the old code treated a 5-day-old pending
+  // submission as proof the client checked in, hiding a client who is
+  // actually 20 days overdue. With no approved check-in yet, fall back to
+  // the subscription start (first-checkin case), as before.
+  const approvedCheckins = checkins.filter((c) => {
+    const s = String(c.status || c.analysis_status || "").toUpperCase();
+    return s === "APPROVED" || s === "AUTO_APPLIED";
+  });
+  if (approvedCheckins.length > 0) {
+    // Find most recent approved checkin
+    const sorted = [...approvedCheckins].sort((a, b) => {
       const timeB = new Date(b.created_at || b.createdAt || b.submitted_at || 0).getTime();
       const timeA = new Date(a.created_at || a.createdAt || a.submitted_at || 0).getTime();
       return timeB - timeA;
@@ -80,7 +93,7 @@ export function evaluateClientCheckinOverdue(client = {}, now = new Date()) {
   const diffMs = nowTime - referenceDate.getTime();
   const daysElapsed = Math.max(0, Math.floor(diffMs / (1000 * 3600 * 24)));
 
-  // The client is late only against their own package's cadence, plus the two days of grace.
+  // The client is late only against their own package's cadence, plus the three days of grace.
   const cycleDays = resolveCheckinCycleDays(client);
   const overdueThresholdDays = cycleDays + Math.round(CHECKIN_GRACE_HOURS / 24);
   const isOverdue = daysElapsed >= overdueThresholdDays;

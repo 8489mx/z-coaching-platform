@@ -16,7 +16,7 @@ test('Overdue Check-in & Ghosting Nudge Engine Suite', async (suite) => {
       full_name: 'أحمد محمود',
       status: 'ACTIVE',
       checkinSubmissions: [
-        { id: 1, created_at: '2026-09-11T10:00:00Z' } // 5 days ago
+        { id: 1, status: 'APPROVED', created_at: '2026-09-11T10:00:00Z' } // 5 days ago, approved
       ]
     };
 
@@ -33,7 +33,7 @@ test('Overdue Check-in & Ghosting Nudge Engine Suite', async (suite) => {
       full_name: 'كريم عادل',
       status: 'ACTIVE',
       checkinSubmissions: [
-        { id: 1, created_at: '2026-09-06T10:00:00Z' } // 10 days ago (3 days overdue)
+        { id: 1, status: 'APPROVED', created_at: '2026-09-06T10:00:00Z' } // 10 days ago (3 days overdue), approved
       ]
     };
 
@@ -51,7 +51,7 @@ test('Overdue Check-in & Ghosting Nudge Engine Suite', async (suite) => {
       full_name: 'محمد إبراهيم',
       status: 'ACTIVE',
       checkinSubmissions: [
-        { id: 1, created_at: '2026-08-31T10:00:00Z' } // 16 days ago (9 days overdue)
+        { id: 1, status: 'APPROVED', created_at: '2026-08-31T10:00:00Z' } // 16 days ago (9 days overdue), approved
       ]
     };
 
@@ -90,14 +90,45 @@ test('Overdue Check-in & Ghosting Nudge Engine Suite', async (suite) => {
 
   await suite.test('6. filterOverdueClients ranks by most overdue first', () => {
     const clients = [
-      { id: 1, client_code: '1', status: 'ACTIVE', checkinSubmissions: [{ created_at: '2026-09-06T10:00:00Z' }] }, // 3 days overdue
-      { id: 2, client_code: '2', status: 'ACTIVE', checkinSubmissions: [{ created_at: '2026-08-31T10:00:00Z' }] }, // 9 days overdue
-      { id: 3, client_code: '3', status: 'ACTIVE', checkinSubmissions: [{ created_at: '2026-09-12T10:00:00Z' }] }, // 4 days ago -> not overdue
+      { id: 1, client_code: '1', status: 'ACTIVE', checkinSubmissions: [{ status: 'APPROVED', created_at: '2026-09-06T10:00:00Z' }] }, // 3 days overdue
+      { id: 2, client_code: '2', status: 'ACTIVE', checkinSubmissions: [{ status: 'APPROVED', created_at: '2026-08-31T10:00:00Z' }] }, // 9 days overdue
+      { id: 3, client_code: '3', status: 'ACTIVE', checkinSubmissions: [{ status: 'APPROVED', created_at: '2026-09-12T10:00:00Z' }] }, // 4 days ago -> not overdue
     ];
 
     const overdue = filterOverdueClients(clients, mockNow);
     assert.equal(overdue.length, 2);
     assert.equal(overdue[0].client.id, 2); // 9 days overdue comes first
     assert.equal(overdue[1].client.id, 1);
+  });
+
+  // P1-B10: ONE lateness clock — a PENDING submission is not evidence of
+  // compliance, so it must not reset the overdue clock; and the grace is
+  // 72h (the schedule service's submission window), not 48h.
+  await suite.test('7. A pending submission does not reset the overdue clock', () => {
+    const client = {
+      id: 107,
+      status: 'ACTIVE',
+      subscription_package: 'MAX',
+      checkinSubmissions: [
+        { id: 1, status: 'APPROVED', created_at: '2026-08-27T10:00:00Z' }, // 20 days ago
+        { id: 2, status: 'PENDING_REVIEW', created_at: '2026-09-11T10:00:00Z' }, // 5 days ago, still pending
+      ],
+    };
+    const res = evaluateClientCheckinOverdue(client, mockNow);
+    assert.equal(res.isOverdue, true);
+    assert.equal(res.daysElapsed, 20);
+  });
+
+  await suite.test('8. A client 9 days out is NOT overdue under the 72h grace (10-day threshold)', () => {
+    const client = {
+      id: 108,
+      status: 'ACTIVE',
+      checkinSubmissions: [
+        { id: 1, status: 'APPROVED', created_at: '2026-09-07T10:00:00Z' }, // 9 days ago
+      ],
+    };
+    const res = evaluateClientCheckinOverdue(client, mockNow);
+    assert.equal(res.isOverdue, false);
+    assert.equal(res.daysElapsed, 9);
   });
 });

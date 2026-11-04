@@ -2,17 +2,23 @@
  * Adaptive (observed) energy expenditure from real check-in data.
  *
  * Energy balance: intake - expenditure = change in body energy stores. Over a few weeks the weekly
- * weight trend (least-squares slope of the weekly average weights) converts to an energy balance at
- * ~7700 kcal per kg of tissue (Hall 2008; Thomas et al. 2014), so
+ * weight trend (Theil-Sen slope of the weekly weights — the median of all
+ * pairwise slopes, so one bad weigh-in cannot drag the trend) converts to
+ * an energy balance at ~7700 kcal per kg of tissue (Hall 2008; Thomas et
+ * al. 2014), so
  *
  *   observed TDEE = mean daily intake - (weight slope kg/week x 7700 / 7)
  *
  * This replaces the prediction formulas (Mifflin-St Jeor / Katch-McArdle, error +-10-15% per person) as
  * soon as enough reliable weeks exist, the same principle used by expenditure-tracking apps.
  *
- * Intake per week: the client's reported average daily calories when given; otherwise the planned target
- * for weeks with adherence >= 80% (lower-adherence weeks without a report are excluded, their intake is
- * unknown). Weekly weights are the average of the daily morning weigh-ins when provided.
+ * Intake per week: the client's reported average daily calories when given
+ * AND the week's adherence is >= 80% (a report from a week the client did
+ * not follow is not reliable intake — it is flagged as a disagreement and
+ * the week contributes no intake); otherwise the planned target for weeks
+ * with adherence >= 80% (lower-adherence weeks without a reliable report
+ * are excluded, their intake is unknown). Weekly weights are the median of
+ * the daily morning weigh-ins when provided.
  */
 
 export const KCAL_PER_KG_TISSUE = 7700;
@@ -35,28 +41,56 @@ const GOAL_ENERGY_FACTOR = Object.freeze({
 });
 
 function slopePerWeek(points) {
-  // points: [{ week, weight }], least squares slope in kg per week
-  const n = points.length;
-  const meanX = points.reduce((s, p) => s + p.week, 0) / n;
-  const meanY = points.reduce((s, p) => s + p.weight, 0) / n;
-  let num = 0;
-  let den = 0;
-  for (const p of points) {
-    num += (p.week - meanX) * (p.weight - meanY);
-    den += (p.week - meanX) ** 2;
+  // points: [{ week, weight }]. Theil-Sen slope in kg per week: the median
+  // of all pairwise slopes. Least squares let one bad weigh-in (a water
+  // drop, a scale error) drag the whole trend and move the next target by
+  // the full step; a single outlier can move at most half the pairwise
+  // slopes, so the median stays near the true trend. On clean linear data
+  // Theil-Sen equals least squares exactly.
+  const slopes = [];
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      const dx = points[j].week - points[i].week;
+      if (dx !== 0) slopes.push((points[j].weight - points[i].weight) / dx);
+    }
   }
-  return den === 0 ? 0 : num / den;
+  if (slopes.length === 0) return 0;
+  slopes.sort((a, b) => a - b);
+  const mid = Math.floor(slopes.length / 2);
+  return slopes.length % 2 === 1 ? slopes[mid] : (slopes[mid - 1] + slopes[mid]) / 2;
 }
 
 function weekIntake(week) {
+  // P1-B10: a reported intake is trusted only when the week's adherence
+  // is reliable (>= 80%). A client at 40% adherence reporting 1200 kcal
+  // while their weight is flat is not eating 1200 — the report disagrees
+  // with the adherence signal, so the week contributes no intake and the
+  // trend waits for reliable weeks instead of cutting on a false deficit.
   const reported = Number(week.reported_intake_kcal);
-  if (Number.isFinite(reported) && reported >= 800 && reported <= 6000) return { kcal: reported, source: "REPORTED" };
-  const planned = Number(week.planned_target_kcal);
   const adherence = Number(week.adherence_percent);
-  if (Number.isFinite(planned) && planned > 0 && Number.isFinite(adherence) && adherence >= RELIABLE_ADHERENCE_PERCENT) {
+  const adherenceReliable = Number.isFinite(adherence) && adherence >= RELIABLE_ADHERENCE_PERCENT;
+  if (Number.isFinite(reported) && reported >= 800 && reported <= 6000 && adherenceReliable) {
+    return { kcal: reported, source: "REPORTED" };
+  }
+  const planned = Number(week.planned_target_kcal);
+  if (Number.isFinite(planned) && planned > 0 && adherenceReliable) {
     return { kcal: planned, source: "PLANNED_HIGH_ADHERENCE" };
   }
   return null;
+}
+
+// Weeks whose in-range reported intake was refused for low adherence: the
+// disagreement is named in the not-ready reason so the coach sees WHY the
+// trend paused instead of a generic "no reliable data" message.
+function intakeDisagreementWeeks(weeks) {
+  return weeks
+    .filter((w) => {
+      const reported = Number(w.reported_intake_kcal);
+      const adherence = Number(w.adherence_percent);
+      return Number.isFinite(reported) && reported >= 800 && reported <= 6000
+        && !(Number.isFinite(adherence) && adherence >= RELIABLE_ADHERENCE_PERCENT);
+    })
+    .map((w) => Number(w.week_number));
 }
 
 /**
@@ -83,6 +117,7 @@ export function estimateAdaptiveTdee({ weeks = [], formula_tdee_kcal, current_ta
     recommended_target_kcal: Number.isFinite(currentTarget) ? Math.round(currentTarget) : null,
     calorie_delta: 0,
     clamped: false,
+    intake_disagreement_weeks: [],
     reason_ar: null,
   };
 
@@ -102,7 +137,15 @@ export function estimateAdaptiveTdee({ weeks = [], formula_tdee_kcal, current_ta
   // Intake of the weeks that produced the weight change (every week after the first point).
   const intakes = ordered.slice(1).map(weekIntake);
   if (intakes.some((i) => i === null)) {
-    return Object.freeze({ ...base, weeks_used: ordered.length, reason_ar: "أسبوع أو أكثر بدون بيانات أكل موثوقة (التزام أقل من 80% بدون تسجيل السعرات)، لذلك لم يُحسب الحرق الفعلي هذا الأسبوع." });
+    const disagreementWeeks = intakeDisagreementWeeks(ordered.slice(1));
+    return Object.freeze({
+      ...base,
+      weeks_used: ordered.length,
+      intake_disagreement_weeks: disagreementWeeks,
+      reason_ar: disagreementWeeks.length > 0
+        ? `تسجيل سعرات (أسبوع ${disagreementWeeks.join("، ")}) مع التزام أقل من 80% غير موثوق — الرقم لا يتفق مع الالتزام — لذلك لم يُحسب الحرق الفعلي هذا الأسبوع حتى تتوفر أسابيع موثوقة.`
+        : "أسبوع أو أكثر بدون بيانات أكل موثوقة (التزام أقل من 80% بدون تسجيل سعرات)، لذلك لم يُحسب الحرق الفعلي هذا الأسبوع.",
+    });
   }
 
   const points = ordered.map((w) => ({ week: Number(w.week_number), weight: Number(w.average_weight_kg) }));

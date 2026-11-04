@@ -7,9 +7,12 @@ import { normalizeLoggedExercise, evaluateDeloadTrigger } from "../../training-e
 import { loadProgressionState, buildDeloadDecision } from "../services/progressionService.js";
 import { saveProgressPhotoToDisk } from "../utils/photoStorage.js";
 import { buildAdaptedPlan } from "../../adaptation-engine/build-adapted-plan.js";
-import { mergeAdaptedPlanIntoProgram } from "../utils/planMergeEngine.js";
+import { mergeAdaptedPlanIntoProgram, buildTrainingWeekDiff } from "../utils/planMergeEngine.js";
+import { medianOfNumbers } from "../../checkin-engine/median.js";
+import { buildReevaluationInput } from "../../checkin-engine/build-reevaluation-input.js";
+import { buildLateWindowOverride, isValidLateWindowOverride } from "../services/checkinLateWindow.js";
 import { resolveClientPrimaryGoal, resolveClientIsFemale, resolveIntakeMedicalReview } from "./program.controller.js";
-import { resolveTrainingCycleStatus } from "../services/trainingCycleService.js";
+import { resolveTrainingCycleStatus, CYCLE_STATUS } from "../services/trainingCycleService.js";
 import { mealCountNoteForCheckin } from "../../checkin-engine/meal-count-note.js";
 import { evaluateClientCheckinSchedule } from "../services/checkinScheduleService.js";
 import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
@@ -191,10 +194,11 @@ export async function submitCheckin(req, res) {
       targetWeekNumber = (Number(lastWeek) || 0) + 1;
     }
 
-    // Weekly weight = average of the 7 morning weigh-ins when given (less water noise), else the single entry.
+    // P1-B10: weekly weight = MEDIAN of the 7 morning weigh-ins when given
+    // (one bad scale day no longer drags the week), else the single entry.
     const dailyWeights = validDailyWeights ? req.body.daily_weights_kg.map((w) => Number(w)) : null;
     const weeklyWeight = dailyWeights
-      ? Math.round((dailyWeights.reduce((sum, w) => sum + w, 0) / dailyWeights.length) * 100) / 100
+      ? Math.round((medianOfNumbers(dailyWeights) ?? parsedWeight) * 100) / 100
       : parsedWeight;
     // Optional: the client's own average daily calories this week (feeds the adaptive TDEE).
     const reportedIntake = Number(req.body.average_daily_calories);
@@ -244,6 +248,26 @@ export async function submitCheckin(req, res) {
     }
 
 
+    // P1-B10: cross-check the reported workout count against logged
+    // sessions for this week. Only sessions with at least one logged
+    // exercise count as verified (a quick-complete with zero exercises is
+    // not a verified session). When no verifiable session exists at all —
+    // the client does not log, or only quick-completes — nothing is
+    // passed, so a non-logger is never forced to review for not logging.
+    // A lookup failure never fails the check-in; the report stands alone.
+    let loggedWorkoutsCompleted = null;
+    try {
+      const workoutLogs = await WorkoutLog.findAll({
+        where: { user_id: targetUserId, week_number: targetWeekNumber },
+      });
+      const verifiedLogs = (workoutLogs || []).filter(
+        (log) => Array.isArray(log.logged_exercises) && log.logged_exercises.length > 0,
+      );
+      loggedWorkoutsCompleted = verifiedLogs.length > 0 ? verifiedLogs.length : null;
+    } catch (workoutLogError) {
+      console.error("P1-B10 workout-log cross-check skipped:", workoutLogError?.message || workoutLogError);
+    }
+
     // 2. Evaluate with Auto-Regulation Engine
     // The plan's own goal wins when the engine changed it (bulking with high body fat -> recomposition).
     const planForGoal = await findPlanInUse(targetUserId);
@@ -252,6 +276,8 @@ export async function submitCheckin(req, res) {
     const evalInput = {
       primary_goal: primaryGoal,
       weight_kg: weeklyWeight,
+      daily_weights_kg: dailyWeights,
+      logged_workouts_completed: loggedWorkoutsCompleted,
       previous_weight_kg: prevWeight,
       waist_circumference_cm: waist_circumference_cm ? Number(waist_circumference_cm) : null,
       previous_waist_circumference_cm: prevWaist,
@@ -310,7 +336,12 @@ export async function submitCheckin(req, res) {
           week_number: c.week_number,
           average_weight_kg: c.average_weight_kg,
           adherence_percent: c.nutrition_adherence_percent,
-          planned_target_kcal: c.analysis_output?.plan_target_kcal ?? planTargetKcal,
+          // P1-B10: no backfill. A past row without a stored target
+          // contributes null intake (trend not ready) instead of silently
+          // borrowing today's target — the target at submit time is the
+          // only honest intake for that week. Clients with pre-fix history
+          // need 3 fresh check-ins before observed TDEE activates.
+          planned_target_kcal: c.analysis_output?.plan_target_kcal ?? null,
           reported_intake_kcal: c.analysis_output?.reported_intake_kcal ?? null,
         })),
         {
@@ -367,6 +398,11 @@ export async function submitCheckin(req, res) {
           }
         : {}),
       deload_recommendation: { ...deloadRecommendation, generated_at: new Date().toISOString() },
+      // P1-B10: chain logging at submit time. The streak is computed here
+      // by walking past check-ins; storing it means the adaptation reads
+      // the streak the check-in actually earned, and approval later uses
+      // this stored value instead of recomputing from changed history.
+      consecutive_high_compliance_weeks: consecutiveHighComplianceWeeks,
       plan_target_kcal: planTargetKcal,
       reported_intake_kcal: reportedIntakeKcal,
       adaptive_tdee: adaptiveTdee,
@@ -509,11 +545,25 @@ export async function submitCheckin(req, res) {
     // the 201 response; the program is only updated after the gate passes,
     // and the check-in is only marked AUTO_APPLIED after that update.
     try {
-      if (analysisOutput.triage?.tier === "GREEN" && activeProgram && !checkin.adapted_program_id) {
+      // P1-B10: no adaptation after a cycle ends. Submission still works
+      // as review + notes (the 201 above already saved it); only the
+      // adaptation is held, with a flag naming the new cycle the coach
+      // must start. Without this, the last week was rewritten forever.
+      const cycleForEndedCheck = activeProgram ? resolveTrainingCycleStatus(activeProgram) : null;
+      const cycleEnded = cycleForEndedCheck?.status === CYCLE_STATUS.ENDED;
+      if (analysisOutput.triage?.tier === "GREEN" && activeProgram && !checkin.adapted_program_id && cycleEnded) {
+        analysisOutput.cycle_ended_hold = {
+          needs_new_cycle: true,
+          status: cycleForEndedCheck.status,
+          message_ar: cycleForEndedCheck.message_ar || "انتهت الدورة التدريبية الحالية؛ لا يمكن تكييف أسبوع جديد حتى يبدأ الكوتش دورة جديدة.",
+        };
+        await checkin.update({ analysis_output: { ...analysisOutput } });
+      }
+      if (analysisOutput.triage?.tier === "GREEN" && activeProgram && !checkin.adapted_program_id && !cycleEnded) {
         const progData = typeof activeProgram.program_data === "string"
           ? JSON.parse(activeProgram.program_data)
           : JSON.parse(JSON.stringify(activeProgram.program_data || {}));
-        const cycle = resolveTrainingCycleStatus(activeProgram);
+        const cycle = cycleForEndedCheck;
         const cycleWeek = Math.min(cycle.current_week, Math.max(1, cycle.total_weeks - 1));
         const bio = checkin.biofeedback || {};
         const painReports = Array.isArray(checkin.pain_reports) ? checkin.pain_reports : [];
@@ -526,6 +576,13 @@ export async function submitCheckin(req, res) {
           checkinAnalysis: analysisOutput,
           options: {
             currentWeekNumber: cycleWeek,
+            // P1-B10: the current check weight (never a default), ALL
+            // pain reports (never just the first), and the streak stored
+            // at submit time — the adaptation must see what the check-in
+            // actually measured.
+            weight_kg: checkin.average_weight_kg,
+            pain_reports: painReports,
+            consecutive_high_compliance_weeks: consecutiveHighComplianceWeeks,
             joint_pain_location: jointLocation,
             pain_score: painScore,
             accumulated_fatigue_score: fatigueScore,
@@ -880,6 +937,58 @@ export async function updateCheckinMeasurements(req, res) {
     if (parsedWaist !== undefined) analysisObj.waist_circumference_cm = checkin.waist_circumference_cm;
     if (parsedHip !== undefined) analysisObj.hip_circumference_cm = parsedHip;
 
+    // P1-B10: re-evaluate on correction. A typo fix used to change the
+    // stored weight while the stored verdict (status, deltas, alerts,
+    // triage input) kept describing the typo — the coach saw a corrected
+    // number with a stale conclusion. The corrected numbers now run
+    // through the evaluation again, and the check-in is flagged for
+    // re-review: triage computed from the old numbers is stale by
+    // definition. SAFETY INVARIANT: if the original analysis carried a
+    // clinical lock or a cardiac flag, the re-evaluation must NOT clear
+    // it — the original notes/cardiac inputs are not stored on the row,
+    // so a re-run cannot reconstruct them, and a weight typo fix must
+    // never unlock a cardiac client. In that case the original status,
+    // lock and directive are preserved and only the measurement fields
+    // are refreshed. For an AUTO_APPLIED row the flag is all that
+    // happens: the applied program is never silently rewritten by a
+    // correction (owner Q5 — whether re-running should update an applied
+    // program — stays open).
+    const originallyLocked = analysisObj.training_locked === true
+      || analysisObj.analysis_status === "CRITICAL_CARDIAC_FLAG";
+    try {
+      const reevalInput = buildReevaluationInput({
+        checkin,
+        prevCheckin,
+        primaryGoal: await resolveClientPrimaryGoal(checkin.user_id).catch(() => analysisObj.primary_goal || null),
+        isFemale: await resolveClientIsFemale(checkin.user_id).catch(() => (analysisObj.is_female ?? null)),
+      });
+      const reevaluated = evaluateCheckin(reevalInput);
+      analysisObj.weight_change_kg = reevaluated.weight_change_kg;
+      analysisObj.weight_change_percent = reevaluated.weight_change_percent;
+      analysisObj.waist_change_cm = reevaluated.waist_change_cm;
+      analysisObj.hip_change_cm = reevaluated.hip_change_cm;
+      analysisObj.is_rapid_loss = reevaluated.is_rapid_loss;
+      if (!originallyLocked) {
+        analysisObj.analysis_status = reevaluated.analysis_status;
+        analysisObj.suggested_calorie_delta = reevaluated.suggested_calorie_delta;
+        analysisObj.suggested_carb_delta_g = reevaluated.suggested_carb_delta_g;
+        analysisObj.suggested_steps_delta = reevaluated.suggested_steps_delta;
+        analysisObj.biofeedback_alerts = reevaluated.biofeedback_alerts;
+        analysisObj.flagged_pains = reevaluated.flagged_pains;
+        analysisObj.recommendations_ar = reevaluated.recommendations_ar;
+        analysisObj.recommendations_en = reevaluated.recommendations_en;
+        analysisObj.training_locked = reevaluated.training_locked;
+        analysisObj.emergency_directive_ar = reevaluated.emergency_directive_ar;
+        analysisObj.emergency_directive_en = reevaluated.emergency_directive_en;
+      }
+    } catch (reevalError) {
+      console.error("P1-B10 correction re-evaluation failed (flags still set):", reevalError?.message || reevalError);
+    }
+    analysisObj.requires_coach_review = true;
+    analysisObj.measurement_corrected_re_review = true;
+    analysisObj.re_review_required = true;
+    analysisObj.triage_stale_after_correction = true;
+
     checkin.analysis_output = analysisObj;
     checkin.changed('analysis_output', true);
     await checkin.save();
@@ -891,6 +1000,12 @@ export async function updateCheckinMeasurements(req, res) {
         ? JSON.parse(nextCheckin.analysis_output)
         : (nextCheckin.analysis_output || {});
       nextAnalysis.weight_change_kg = nextCheckin.weight_change_kg;
+      // P1-B10: the percent moves with the kg delta (same formula as the
+      // evaluation), otherwise the next check-in keeps a percent computed
+      // against the uncorrected weight.
+      nextAnalysis.weight_change_percent = effectiveWeight > 0
+        ? Math.round((nextCheckin.weight_change_kg / effectiveWeight) * 10000) / 100
+        : nextAnalysis.weight_change_percent;
       nextCheckin.analysis_output = nextAnalysis;
       nextCheckin.changed('analysis_output', true);
       await nextCheckin.save();
@@ -996,7 +1111,10 @@ export async function approveCheckin(req, res) {
     const {
       coach_notes,
       custom_macros,
-      apply_program_adaptation
+      apply_program_adaptation,
+      // P1-B10: coach "apply despite lateness" action. The requester is
+      // already restricted to COACH/ADMIN by the guard above.
+      apply_despite_staleness
     } = req.body;
 
     const checkin = await CheckinSubmission.findByPk(checkinId);
@@ -1038,6 +1156,7 @@ export async function approveCheckin(req, res) {
     // merge is blocked. A missing user or missing cadence fails safe in
     // the classifier (no stale flag), so it does not block here.
     let staleApproval = null;
+    let staleCheckFailed = false;
     try {
       const approvalUser = await User.findByPk(checkin.user_id);
       const stale = classifyStalePending(
@@ -1058,18 +1177,24 @@ export async function approveCheckin(req, res) {
       );
       if (stale.is_stale) staleApproval = stale;
     } catch (staleCheckError) {
-      // A failed stale check must not silently allow a stale merge, and
-      // must not silently block a fresh approval either: fail the whole
-      // approval so the coach can retry, exactly like a failed adaptation.
+      // P1-B10: a failed stale check used to 500 the whole approval, so
+      // the coach could not even save notes. The failure is recorded and
+      // the approval proceeds as review-only below (notes saved, no
+      // merge): failing closed on the merge, not on the coach's work.
       console.error("Stale check failed in approveCheckin:", staleCheckError.message);
-      return res.status(500).json({
-        success: false,
-        error: "فشل فحص حداثة المتابعة، لم يتم اعتماد المتابعة ولم يتغير البرنامج",
-        code: "STALE_CHECK_FAILED",
-      });
+      staleCheckFailed = true;
     }
-    const blockedStaleAdaptation = Boolean(staleApproval && requestedAdaptation);
-    const shouldAdaptProgram = requestedAdaptation && !blockedStaleAdaptation;
+    // P1-B10: the coach may explicitly override a stale block, and the
+    // override is audited below. Without the flag, a stale check-in — or
+    // one whose staleness could not even be checked — is review-only.
+    const staleOverrideApplied = apply_despite_staleness === true && Boolean(staleApproval) && requestedAdaptation;
+    const blockedStaleAdaptation = Boolean((staleApproval || staleCheckFailed) && requestedAdaptation && !staleOverrideApplied);
+    // P1-B10: no adaptation after a cycle ends. The submission is still
+    // approved as review + notes; only the program merge is blocked,
+    // because adapting the last week again would rewrite it forever.
+    const approveCycle = latestProgram ? resolveTrainingCycleStatus(latestProgram) : null;
+    const blockedCycleEndedAdaptation = approveCycle?.status === CYCLE_STATUS.ENDED && requestedAdaptation;
+    const shouldAdaptProgram = requestedAdaptation && !blockedStaleAdaptation && !blockedCycleEndedAdaptation;
 
     // P0-A12: carried out of the adaptation block into the transaction
     // below (null when this approval merges nothing).
@@ -1083,6 +1208,8 @@ export async function approveCheckin(req, res) {
 
       let adapted = null;
       let adaptationFailed = false;
+      let adaptationErrorCode = null;
+      let adaptationErrorMessage = null;
       try {
         const bio = checkin.biofeedback || {};
         const painReports = Array.isArray(checkin.pain_reports) ? checkin.pain_reports : [];
@@ -1103,6 +1230,12 @@ export async function approveCheckin(req, res) {
           checkinAnalysis: checkin.analysis_output || {},
           options: {
             currentWeekNumber: cycleWeek,
+            // P1-B10: same three inputs as Phase-2 — current check
+            // weight, ALL pain reports, and the streak stored at submit
+            // (never recomputed from possibly-changed history).
+            weight_kg: checkin.average_weight_kg,
+            pain_reports: painReports,
+            consecutive_high_compliance_weeks: checkin.analysis_output?.consecutive_high_compliance_weeks,
             joint_pain_location: jointLocation,
             pain_score: painScore,
             accumulated_fatigue_score: fatigueScore,
@@ -1123,6 +1256,20 @@ export async function approveCheckin(req, res) {
       } catch (e) {
         console.warn("buildAdaptedPlan fallback in checkin.controller:", e.message);
         adaptationFailed = true;
+        adaptationErrorCode = e?.code || null;
+        adaptationErrorMessage = e?.message || null;
+      }
+
+      // P1-B10: unreadable base targets fail closed with a clear 409, not
+      // a generic 500: the check-in stays PENDING_REVIEW and the coach
+      // fixes the program targets in the editor, then re-approves. The
+      // program is never computed against invented bases.
+      if (adaptationErrorCode === "BASE_TARGETS_UNREADABLE" && !alreadyAdaptedForThisCheckin) {
+        return res.status(409).json({
+          success: false,
+          error: adaptationErrorMessage || "أهداف الخطة الحالية غير مقروءة؛ لا يمكن اعتماد التكييف على أرقام مخترعة.",
+          code: "BASE_TARGETS_UNREADABLE",
+        });
       }
 
       // S3-6: a failed adaptation engine fails the approval instead of
@@ -1224,6 +1371,26 @@ export async function approveCheckin(req, res) {
     // not a manual change and is not logged here. This sits after the
     // transaction, so a stale-blocked approval (no merge) logs nothing,
     // exactly as before, and a rolled-back merge logs nothing either.
+    // P1-B10: a stale override is audited with coach identity, check-in,
+    // and the stale reasons that were overridden — the same pattern as
+    // the macro override above.
+    if (staleOverrideApplied && pendingMerge) {
+      recordAuditEvent({
+        event: "STALE_ADAPTATION_OVERRIDE",
+        req,
+        status: "SUCCESS",
+        userId: req.user?.id || "COACH",
+        userRole: req.user?.role || "COACH",
+        details: {
+          source: "checkin_approval",
+          checkin_id: checkin.id,
+          target_user_id: checkin.user_id,
+          program_id: latestProgram.id,
+          stale_reasons: [...(staleApproval?.stale_reasons || [])],
+        },
+      });
+    }
+
     if (pendingMerge && hasCustomMacros) {
       recordAuditEvent({
         event: "COACH_MACRO_OVERRIDE",
@@ -1262,11 +1429,22 @@ export async function approveCheckin(req, res) {
     const trainingWeekHeld = lastAdaptation?.training_week_held === true ? {
       message_ar: lastAdaptation.cardiac_lockout_message_ar || "لم يتقدم رقم الأسبوع التدريبي لأن الأسبوع المعدل كان فارغاً أو موقوفاً.",
     } : null;
-    const approvalMessage = blockedStaleAdaptation
-      ? "تم اعتماد المتابعة كمراجعة وملاحظات فقط دون تعديل البرنامج لأن المتابعة راكدة"
-      : shouldAdaptProgram
-        ? "تم اعتماد المتابعة وتحديث البرنامج التدريبي والغذائي بنجاح"
-        : "تم اعتماد المتابعة وحفظ الملاحظات بنجاح دون تعديل البرنامج";
+    // P1-B10: the structural merge decision (REPLACED / IN_PLACE /
+    // APPENDED) and its diff travel in the approval response, so the
+    // coach sees what the merge actually did to the training week.
+    const trainingWeekMerge = lastAdaptation?.training_week_merge_mode ? {
+      mode: lastAdaptation.training_week_merge_mode,
+      diff: lastAdaptation.training_week_diff || null,
+    } : null;
+    const approvalMessage = blockedCycleEndedAdaptation
+      ? "تم اعتماد المتابعة كمراجعة وملاحظات فقط دون تعديل البرنامج لأن الدورة التدريبية انتهت ويجب بدء دورة جديدة"
+      : blockedStaleAdaptation
+        ? (staleCheckFailed
+          ? "تم اعتماد المتابعة كمراجعة وملاحظات فقط دون تعديل البرنامج لأن فحص حداثة المتابعة فشل ولم يمكن التأكد من حداثتها"
+          : "تم اعتماد المتابعة كمراجعة وملاحظات فقط دون تعديل البرنامج لأن المتابعة راكدة")
+        : shouldAdaptProgram
+          ? "تم اعتماد المتابعة وتحديث البرنامج التدريبي والغذائي بنجاح"
+          : "تم اعتماد المتابعة وحفظ الملاحظات بنجاح دون تعديل البرنامج";
     return res.status(200).json({
       success: true,
       message: safetyCorrectionApplied
@@ -1280,12 +1458,220 @@ export async function approveCheckin(req, res) {
       ...(blockedStaleAdaptation
         ? {
             stale_approval_review_only: true,
-            stale_reasons: [...staleApproval.stale_reasons],
+            stale_reasons: [...(staleApproval?.stale_reasons || [])],
           }
         : {}),
+      ...(staleOverrideApplied
+        ? {
+            stale_override_applied: true,
+            stale_reasons: [...(staleApproval?.stale_reasons || [])],
+          }
+        : {}),
+      ...(staleCheckFailed ? { stale_check_failed: true } : {}),
+      ...(blockedCycleEndedAdaptation
+        ? {
+            cycle_ended_review_only: true,
+            cycle_ended_message_ar: approveCycle?.message_ar || "انتهت الدورة التدريبية الحالية؛ لا يمكن تكييف أسبوع جديد حتى يبدأ الكوتش دورة جديدة.",
+          }
+        : {}),
+      ...(trainingWeekMerge ? { training_week_merge: trainingWeekMerge } : {}),
     });
   } catch (error) {
     console.error("Error approving check-in:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
+
+/**
+ * P1-B10: coach opens a late submission window for one cycle. Until now
+ * the schedule reader honored program_data.checkin_overrides but nothing
+ * ever wrote one, so a late client had no path at all. Coaches and
+ * admins only. The window defaults to 72 hours (the submission window
+ * length) and is judged by the same rule the reader uses.
+ */
+export async function openLateWindow(req, res) {
+  try {
+    if ('user' in req || req.headers) {
+      const requester = req.user?.role
+        ? req.user
+        : (req.user?.id ? await User.findByPk(req.user.id) : null);
+      if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
+        return res.status(403).json({ success: false, error: "فتح نافذة متأخرة متاح للكوتش فقط" });
+      }
+    }
+
+    const rawTarget = req.params.userId;
+    if (!rawTarget) {
+      return res.status(400).json({ success: false, error: "معرف المتدرب مطلوب" });
+    }
+    const cleanCode = String(rawTarget).replace("#", "").trim();
+    let userObj = await User.findOne({ where: { client_code: cleanCode } });
+    if (!userObj && !isNaN(cleanCode)) {
+      userObj = await User.findByPk(parseInt(cleanCode, 10));
+    }
+    if (!userObj) {
+      userObj = await User.findOne({ where: { phone_number: cleanCode } });
+    }
+    if (!userObj) {
+      return res.status(404).json({ success: false, error: "المتدرب غير موجود" });
+    }
+
+    const program = await findPlanInUse(userObj.id);
+    if (!program) {
+      return res.status(404).json({ success: false, error: "لا يوجد برنامج نشط لهذا المتدرب" });
+    }
+
+    let override;
+    try {
+      override = buildLateWindowOverride({
+        cycleSequence: req.body.cycle_sequence ?? req.body.cycleSequence,
+        windowHours: req.body.window_hours ?? req.body.windowHours,
+        coachId: req.user?.id || null,
+        reason: req.body.reason,
+      });
+    } catch (overrideError) {
+      return res.status(400).json({ success: false, error: overrideError.message });
+    }
+
+    const progData = typeof program.program_data === "string"
+      ? JSON.parse(program.program_data)
+      : (program.program_data || {});
+    if (!progData.checkin_overrides || typeof progData.checkin_overrides !== "object") {
+      progData.checkin_overrides = {};
+    }
+    progData.checkin_overrides[String(override.cycle_sequence)] = override;
+    program.program_data = progData;
+    program.changed('program_data', true);
+    await program.save();
+
+    recordAuditEvent({
+      event: "LATE_WINDOW_OPENED",
+      req,
+      status: "SUCCESS",
+      userId: req.user?.id || "COACH",
+      userRole: req.user?.role || "COACH",
+      details: {
+        target_user_id: userObj.id,
+        program_id: program.id,
+        cycle_sequence: override.cycle_sequence,
+        expires_at: override.expires_at,
+        reason: override.reason,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "تم فتح نافذة متأخرة للمتابعة بنجاح",
+      late_window: override,
+    });
+  } catch (error) {
+    console.error("Error opening late window:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
+
+/**
+ * P1-B10: read-only adaptation preview for the coach review screen. Runs
+ * the same adaptation approval would run (same weight, pains, streak,
+ * cycle week, fatigue, experience) and returns the adapted plan plus the
+ * structural week diff — so the coach sees a replacement BEFORE
+ * approving, not after. No writes: the check-in stays PENDING_REVIEW
+ * and the program is untouched. Coaches and admins only.
+ */
+export async function previewAdaptation(req, res) {
+  try {
+    if ('user' in req || req.headers) {
+      const requester = req.user?.role
+        ? req.user
+        : (req.user?.id ? await User.findByPk(req.user.id) : null);
+      if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
+        return res.status(403).json({ success: false, error: "معاينة التكييف متاحة للكوتش فقط" });
+      }
+    }
+
+    const { checkinId } = req.params;
+    const checkin = await CheckinSubmission.findByPk(checkinId);
+    if (!checkin) {
+      return res.status(404).json({ success: false, error: "Check-in not found" });
+    }
+    if (checkin.status !== "PENDING_REVIEW") {
+      return res.status(409).json({
+        success: false,
+        error: "المعاينة متاحة للمتابعات قيد المراجعة فقط",
+        code: "CHECKIN_NOT_PENDING",
+        checkin_status: checkin.status,
+      });
+    }
+
+    const program = await findPlanInUse(checkin.user_id);
+    if (!program || !program.program_data) {
+      return res.status(404).json({ success: false, error: "لا يوجد برنامج نشط لهذه المتابعة" });
+    }
+    const progData = typeof program.program_data === "string"
+      ? JSON.parse(program.program_data)
+      : JSON.parse(JSON.stringify(program.program_data));
+    const analysisOutput = typeof checkin.analysis_output === "string"
+      ? JSON.parse(checkin.analysis_output)
+      : (checkin.analysis_output || {});
+    const bio = checkin.biofeedback || {};
+    const painReports = Array.isArray(checkin.pain_reports) ? checkin.pain_reports : [];
+    const firstPain = painReports[0] || {};
+    const cycle = resolveTrainingCycleStatus(program);
+    const cycleWeek = Math.min(cycle.current_week, Math.max(1, cycle.total_weeks - 1));
+
+    let adapted;
+    try {
+      adapted = buildAdaptedPlan({
+        currentMasterProgram: progData,
+        checkinAnalysis: analysisOutput,
+        options: {
+          currentWeekNumber: cycleWeek,
+          weight_kg: checkin.average_weight_kg,
+          pain_reports: painReports,
+          consecutive_high_compliance_weeks: analysisOutput.consecutive_high_compliance_weeks,
+          joint_pain_location: firstPain.location || firstPain.joint || bio.joint_pain_location || bio.joint_location || analysisOutput.joint_pain_location,
+          pain_score: firstPain.score || firstPain.severity || bio.pain_score || analysisOutput.pain_score,
+          accumulated_fatigue_score: bio.fatigue_score || bio.fatigue || analysisOutput.fatigue_score,
+          weeks_of_accumulated_training: cycle.current_week,
+          experience:
+            progData.training_program?.experience ||
+            progData.training_program?.experience_level ||
+            progData.training?.experience ||
+            progData.training?.experience_level ||
+            progData.client_profile?.experience ||
+            progData.client_profile?.experience_level ||
+            progData.client?.experience ||
+            progData.client?.experience_level ||
+            progData.intake_decision?.profile?.experience ||
+            undefined,
+        },
+      });
+    } catch (e) {
+      if (e?.code === "BASE_TARGETS_UNREADABLE") {
+        return res.status(409).json({ success: false, error: e.message, code: "BASE_TARGETS_UNREADABLE" });
+      }
+      return res.status(500).json({ success: false, error: "فشل حساب التكييف للمعاينة", code: "ADAPTATION_ENGINE_FAILED" });
+    }
+
+    // The merge targets the adapted week number, else the next week of
+    // the cycle — the same rule mergeAdaptedPlanIntoProgram uses — so
+    // the diff previews exactly the week approval would rewrite.
+    const targetWeekNumber = Number(adapted.adapted_week_number)
+      || (Number(progData.current_training_week) ? Number(progData.current_training_week) + 1 : 2);
+    const existingWeek = (progData.training_program?.weeks || []).find(
+      (w) => Number(w.week_number) === targetWeekNumber || Number(w.week) === targetWeekNumber,
+    ) || null;
+
+    return res.status(200).json({
+      success: true,
+      checkin_id: checkin.id,
+      adapted,
+      base_targets: baseTargetsFromProgram(progData),
+      training_week_diff: buildTrainingWeekDiff(existingWeek, adapted.adapted_training_week),
+      cycle_ended: cycle.status === CYCLE_STATUS.ENDED,
+    });
+  } catch (error) {
+    console.error("Error previewing adaptation:", error);
     return res.status(500).json({ success: false, error: error.message });
   }
 }

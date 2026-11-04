@@ -40,39 +40,39 @@ test('Phase 7: Client Retention & 1-Click WhatsApp Triage Guard Suite', async (s
     assert.ok(url.includes(encodeURIComponent('رسالة تجديد الاشتراك')));
   });
 
-  await suite.test('2. Overdue Checkin Engine: Respects package cadences (MAX 7 days vs ELITE 14 days) and 48h grace period', () => {
+  await suite.test('2. Overdue Checkin Engine: Respects package cadences (MAX 7 days vs ELITE 14 days) and 72h grace period', () => {
     const now = new Date('2026-10-27T12:00:00Z');
 
-    // 1. MAX Trainee: 7 days cycle + 2 days grace = 9 days threshold
+    // 1. MAX Trainee: 7 days cycle + 3 days grace = 10 days threshold (P1-B10: one 72h lateness clock)
     const maxClient = {
       subscription_package: 'MAX',
       status: 'ACTIVE',
       checkinSubmissions: [
-        { submitted_at: new Date('2026-10-19T12:00:00Z') } // 8 days ago -> not overdue yet (within grace)
+        { status: 'APPROVED', submitted_at: new Date('2026-10-19T12:00:00Z') } // 8 days ago -> not overdue yet (within grace)
       ]
     };
     const maxAuditWithinGrace = evaluateClientCheckinOverdue(maxClient, now);
-    assert.equal(maxAuditWithinGrace.isOverdue, false, 'MAX client at 8 days must not be overdue (48h grace)');
+    assert.equal(maxAuditWithinGrace.isOverdue, false, 'MAX client at 8 days must not be overdue (72h grace)');
 
     // MAX at 10 days ago -> overdue by 3 days
-    maxClient.checkinSubmissions = [{ submitted_at: new Date('2026-10-17T12:00:00Z') }];
+    maxClient.checkinSubmissions = [{ status: 'APPROVED', submitted_at: new Date('2026-10-17T12:00:00Z') }];
     const maxAuditOverdue = evaluateClientCheckinOverdue(maxClient, now);
     assert.equal(maxAuditOverdue.isOverdue, true, 'MAX client at 10 days must be overdue');
     assert.equal(maxAuditOverdue.daysOverdue, 3);
 
-    // 2. ELITE Trainee: 14 days cycle + 2 days grace = 16 days threshold
+    // 2. ELITE Trainee: 14 days cycle + 3 days grace = 17 days threshold (P1-B10)
     const eliteClient = {
       subscription_package: 'ELITE_4M',
       status: 'ACTIVE',
       checkinSubmissions: [
-        { submitted_at: new Date('2026-10-15T12:00:00Z') } // 12 days ago -> well within 14-day cycle
+        { status: 'APPROVED', submitted_at: new Date('2026-10-15T12:00:00Z') } // 12 days ago -> well within 14-day cycle
       ]
     };
     const eliteAuditOnTime = evaluateClientCheckinOverdue(eliteClient, now);
     assert.equal(eliteAuditOnTime.isOverdue, false, 'ELITE client at 12 days must not be overdue');
 
     // ELITE at 17 days ago -> overdue by 3 days
-    eliteClient.checkinSubmissions = [{ submitted_at: new Date('2026-10-10T12:00:00Z') }];
+    eliteClient.checkinSubmissions = [{ status: 'APPROVED', submitted_at: new Date('2026-10-10T12:00:00Z') }];
     const eliteAuditOverdue = evaluateClientCheckinOverdue(eliteClient, now);
     assert.equal(eliteAuditOverdue.isOverdue, true, 'ELITE client at 17 days must be overdue');
     assert.equal(eliteAuditOverdue.daysOverdue, 3);

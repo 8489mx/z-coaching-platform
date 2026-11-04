@@ -83,7 +83,9 @@ test("Check-in Engine Suite", async (t) => {
     const result = evaluateCheckin(input);
     assert.equal(result.analysis_status, CheckinAnalysisStatus.TRUE_PLATEAU);
     assert.equal(result.suggested_calorie_delta, -125);
-    assert.equal(result.suggested_steps_delta, 1000);
+    // P1-B10: ONE plateau step constant (500, the applied value), shared
+    // with the adaptation engine.
+    assert.equal(result.suggested_steps_delta, 500);
     assert.ok(result.recommendations_ar.some((r) => r.includes("ثبات في الميزان ومحيط الخصر")));
   });
 

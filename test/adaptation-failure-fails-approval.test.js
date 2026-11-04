@@ -20,7 +20,10 @@ const src = fs.readFileSync(path.join(root, "src/api/controllers/checkin.control
 test("S3-6: a failed adaptation engine fails the approval instead of falling back to raw analysis output", () => {
   const catchIdx = src.indexOf('console.warn("buildAdaptedPlan fallback in checkin.controller:"');
   assert.ok(catchIdx > 0, "adaptation catch block must exist");
-  const afterCatch = src.slice(catchIdx, catchIdx + 1500);
+  // P1-B10: the window covers the new BASE_TARGETS_UNREADABLE 409 branch
+  // that sits between the catch and the generic 500 block; the guard's
+  // property (a 500 return precedes any merge) is unchanged.
+  const afterCatch = src.slice(catchIdx, catchIdx + 4000);
   // The failure must surface as a 500 before any merge/program write.
   assert.ok(
     afterCatch.includes("ADAPTATION_ENGINE_FAILED") || afterCatch.includes("فشل حساب التكييف"),

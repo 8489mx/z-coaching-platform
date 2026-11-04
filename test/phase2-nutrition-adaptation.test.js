@@ -99,7 +99,13 @@ test('Note 2a. Plateau at Calorie Floor: Does NOT force Refeed or +750 steps aut
   assert.equal(adapted.adaptation_action, AdaptationAction.MAINTAIN_TRAJECTORY, 'Maintains trajectory by default');
   assert.equal(adapted.requires_coach_approval, true, 'Must route to coach review');
   assert.equal(adapted.adapted_nutrition.refeed_config, null, 'Must NOT force Refeed automatically');
-  assert.equal(adapted.adapted_cardio.daily_step_target, 8000, 'Must NOT force step increase automatically');
+  // P1-B10: this fixture nests cardio_program under nutrition_program,
+  // a path the engine never read, so the old 8000 was the invented
+  // fallback. No readable step target means null (no increase forced —
+  // the test's intent holds) + coach review; the merge keeps existing
+  // steps.
+  assert.equal(adapted.adapted_cardio.daily_step_target, null, 'Must NOT force step increase automatically');
+  assert.ok(adapted.adaptation_reasons.some((r) => r.code === "BASE_STEP_TARGET_UNREADABLE"));
 
   const reason = adapted.adaptation_reasons.find(r => r.code === AdaptationReasonCode.DIET_BREAK_PLATEAU_BREAKER_APPLIED);
   assert.ok(reason.floor_locked, 'Reason must flag floor_locked: true');
@@ -128,7 +134,12 @@ test('Note 2b. Plateau at Calorie Floor: Coach-approved Refeed and steps are pro
 
   assert.equal(adapted.adaptation_action, AdaptationAction.SCHEDULE_REFEED_DAY);
   assert.ok(adapted.adapted_nutrition.refeed_config, 'Refeed config active under coach approval');
-  assert.equal(adapted.adapted_cardio.daily_step_target, 8500, 'Steps increased by approved 500');
+  // P1-B10: same misplaced cardio nesting as 2a — no readable step base
+  // exists, so the approved +500 has nothing to add to. Steps stay null
+  // (merge keeps existing) and the plan routes to coach review, instead
+  // of applying +500 to an invented 8000.
+  assert.equal(adapted.adapted_cardio.daily_step_target, null, 'No step base to apply the approved increase to');
+  assert.equal(adapted.requires_coach_approval, true);
 });
 
 test('Note 2c. Female Calorie Floor: 1200 kcal floor strictly maintained on extreme cut attempt', () => {

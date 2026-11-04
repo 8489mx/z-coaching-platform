@@ -3,8 +3,11 @@ import {
   CheckinAnalysisStatus,
   AdherenceTier,
   BiofeedbackAlert,
+  PLATEAU_STEP_INCREASE,
 } from "./domain/enums.js";
 import { evaluateFemaleCycleBuffer } from "../execution-engines/female-cycle-buffer-engine.js";
+import { medianOfNumbers } from "./median.js";
+import { compareWorkoutCompletion } from "./workout-log-agreement.js";
 
 function requireObject(value, name) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -34,6 +37,9 @@ export function evaluateCheckin(submission) {
     nutrition_adherence_percent = 100,
     workouts_completed = 0,
     workouts_scheduled = 4,
+    // P1-B10: logged sessions for the same week, when the caller counted
+    // them (null = no logs available, nothing to cross-check).
+    logged_workouts_completed = null,
     biofeedback = {},
     pain_reports = [],
     is_consecutive_plateau = false,
@@ -55,17 +61,23 @@ export function evaluateCheckin(submission) {
   const isMuscleGainGoal = goal === "MUSCLE_GAIN";
   const isWeightStableGoal = goal === "WEIGHT_MAINTENANCE" || goal === "GENERAL_HEALTH" || goal === "PERFORMANCE";
 
-  // 1. Calculate Current Weight (Single morning weigh-in or rolling average)
+  // 1. Calculate Current Weight. P1-B10: the daily series wins over a
+  // single weigh-in, and it is summarized by its MEDIAN, not its mean —
+  // the comment always promised a "rolling average", but the code
+  // preferred the single weigh-in, and a mean lets one bad scale day drag
+  // the week. A single weigh-in is used only when no daily series exists.
   let currentWeight = null;
-  if (typeof weight_kg === "number" && weight_kg > 20) {
-    currentWeight = Math.round(weight_kg * 100) / 100;
-  } else if (typeof current_weight_kg === "number" && current_weight_kg > 20) {
-    currentWeight = Math.round(current_weight_kg * 100) / 100;
-  } else if (Array.isArray(daily_weights_kg) && daily_weights_kg.length > 0) {
+  if (Array.isArray(daily_weights_kg) && daily_weights_kg.length > 0) {
     const validWeights = daily_weights_kg.filter((w) => typeof w === "number" && Number.isFinite(w) && w > 20);
-    if (validWeights.length > 0) {
-      currentWeight = Math.round((validWeights.reduce((sum, w) => sum + w, 0) / validWeights.length) * 100) / 100;
+    const median = medianOfNumbers(validWeights);
+    if (median !== null) {
+      currentWeight = Math.round(median * 100) / 100;
     }
+  }
+  if (currentWeight === null && typeof weight_kg === "number" && weight_kg > 20) {
+    currentWeight = Math.round(weight_kg * 100) / 100;
+  } else if (currentWeight === null && typeof current_weight_kg === "number" && current_weight_kg > 20) {
+    currentWeight = Math.round(current_weight_kg * 100) / 100;
   }
 
   if (currentWeight === null) {
@@ -396,9 +408,9 @@ export function evaluateCheckin(submission) {
     analysisStatus = is_consecutive_plateau ? CheckinAnalysisStatus.TRUE_PLATEAU : CheckinAnalysisStatus.PLATEAU_DETECTED;
     suggestedCalorieDelta = -125;
     suggestedCarbDeltaGrams = -30;
-    suggestedStepsDelta = 1000;
-    recommendationsAr.push("ثبات في الميزان ومحيط الخصر مع التزام ممتاز بالدايت. يُوصى بتعديل ذكي: إما خفض 125 سعرة حرارية (~30 جم كارب) أو إضافة 1,000 خطوة يومياً لكسر الثبات وتحفيز حرق الدهون.");
-    recommendationsEn.push("Plateau detected across weight and waist measurements under optimal adherence. Apply -125 kcal adjustment or add +1,000 daily steps.");
+    suggestedStepsDelta = PLATEAU_STEP_INCREASE;
+    recommendationsAr.push(`ثبات في الميزان ومحيط الخصر مع التزام ممتاز بالدايت. يُوصى بتعديل ذكي: إما خفض 125 سعرة حرارية (~30 جم كارب) أو إضافة ${PLATEAU_STEP_INCREASE.toLocaleString("en-US")} خطوة يومياً لكسر الثبات وتحفيز حرق الدهون.`);
+    recommendationsEn.push(`Plateau detected across weight and waist measurements under optimal adherence. Apply -125 kcal adjustment or add +${PLATEAU_STEP_INCREASE.toLocaleString("en-US")} daily steps.`);
   }
 
   // RULE G: On Track
@@ -427,6 +439,21 @@ export function evaluateCheckin(submission) {
     recommendationsEn.push("Joint pain was reported without a severity level; unknown severity requires coach review before any progression or auto-apply.");
   }
 
+  // P1-B10: logged workouts cross-check the self-report. When the caller
+  // counted real sessions for this week and the numbers disagree, the
+  // contradiction goes to coach review — the evaluation must not quietly
+  // trust a report the logs contradict. No logs at all means nothing to
+  // cross-check, and the report stands as-is.
+  const workoutLogAgreement = (typeof logged_workouts_completed === "number" && Number.isFinite(logged_workouts_completed))
+    ? compareWorkoutCompletion({ reported: workouts_completed, logged: logged_workouts_completed })
+    : null;
+  if (workoutLogAgreement?.agreement === "MISMATCH") {
+    alerts.push(BiofeedbackAlert.WORKOUT_LOG_MISMATCH);
+    requiresCoachReview = true;
+    recommendationsAr.push(`عدد التمارين المبلّغ عنه (${workoutLogAgreement.reported_workouts}) لا يتطابق مع التمارين المسجلة فعلياً (${workoutLogAgreement.logged_workouts})؛ الحالة تحتاج مراجعة الكوتش قبل أي تقدم.`);
+    recommendationsEn.push(`Reported workout count (${workoutLogAgreement.reported_workouts}) does not match the logged sessions (${workoutLogAgreement.logged_workouts}); coach review required before any progression.`);
+  }
+
   return Object.freeze({
     engine_version: CHECKIN_ENGINE_VERSION,
     analysis_status: analysisStatus,
@@ -445,6 +472,7 @@ export function evaluateCheckin(submission) {
     biofeedback_alerts: Object.freeze(alerts),
     flagged_pains: Object.freeze(flaggedPains),
     pain_without_level: painWithoutLevel,
+    workout_log_agreement: workoutLogAgreement ? Object.freeze(workoutLogAgreement) : null,
     recommendations_ar: Object.freeze(recommendationsAr),
     recommendations_en: Object.freeze(recommendationsEn),
     requires_coach_review: requiresCoachReview,

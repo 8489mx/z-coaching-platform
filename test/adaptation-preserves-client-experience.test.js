@@ -56,6 +56,11 @@ test("FIX-07: Trainee experience level persists through training engine into ada
 
   await t.test("3. Program with training.experience_level or client_profile.experience_level = INTERMEDIATE uses INTERMEDIATE strategic deload (70% volume, RIR 3)", () => {
     const intermediateProgram = {
+      // P1-B10: the engine no longer invents nutrition bases, so the
+      // fixture carries minimal real targets (the test measures deload
+      // behavior, not nutrition).
+      nutrition_program: { macro_targets: { calories_kcal: 2000, protein_g: 160, carbohydrate_g: 200, fat_g: 60 } },
+      cardio_program: { prescription: { daily_step_target: 8000 } },
       client_profile: { experience_level: "INTERMEDIATE" },
       training: {
         experience_level: "INTERMEDIATE",

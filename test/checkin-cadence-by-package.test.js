@@ -15,7 +15,9 @@ const daysAgo = (n) => new Date(NOW.getTime() - n * 24 * 60 * 60 * 1000).toISOSt
 const client = (pkg, lastCheckinDaysAgo) => ({
   status: "ACTIVE",
   subscription_package: pkg,
-  checkinSubmissions: [{ created_at: daysAgo(lastCheckinDaysAgo) }],
+  // P1-B10: only an APPROVED check-in counts as compliance; a
+  // status-less submission no longer resets the clock.
+  checkinSubmissions: [{ status: "APPROVED", created_at: daysAgo(lastCheckinDaysAgo) }],
 });
 
 test("the cadence is read from the client's package, not assumed", () => {
@@ -30,7 +32,7 @@ test("the cadence is read from the client's package, not assumed", () => {
 
 test("an ELITE client on the fortnightly rhythm is not chased as if they had disappeared", () => {
   assert.equal(evaluateClientCheckinOverdue(client("ELITE_4M", 10), NOW).isOverdue, false, "day ten of a fortnight is on schedule");
-  assert.equal(evaluateClientCheckinOverdue(client("ELITE_4M", 15), NOW).isOverdue, false, "the two days of grace still apply");
+  assert.equal(evaluateClientCheckinOverdue(client("ELITE_4M", 15), NOW).isOverdue, false, "the three days of grace still apply (P1-B10: 72h, one lateness clock)");
   const late = evaluateClientCheckinOverdue(client("ELITE_4M", 18), NOW);
   assert.equal(late.isOverdue, true);
   assert.equal(late.daysOverdue, 4, "counted against the fortnight, not against a week");

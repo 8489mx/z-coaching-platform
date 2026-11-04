@@ -66,7 +66,8 @@ test('Trainee Complete Weekly Lifecycle & Auto-Regulation Suite', async (t) => {
     const analysis = evaluateCheckin(week3Checkin);
     assert.equal(analysis.analysis_status, CheckinAnalysisStatus.TRUE_PLATEAU);
     assert.equal(analysis.suggested_calorie_delta, -125);
-    assert.equal(analysis.suggested_steps_delta, 1000);
+    // P1-B10: ONE plateau step constant (500, the applied value).
+    assert.equal(analysis.suggested_steps_delta, 500);
 
     const adaptedCalories = week1Calories + analysis.suggested_calorie_delta;
     assert.equal(adaptedCalories, week1Calories - 125);

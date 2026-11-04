@@ -115,6 +115,27 @@ function validateCustomMacros(merged, finals) {
  * @param {Object} [customMacros=null] - Optional coach overrides { calories, protein, carbs, fats }
  * @returns {Object} A fresh, deeply merged master program
  */
+/**
+ * P1-B10: the structural diff shown to the coach before approval.
+ * Counts + per-session exercise-code lists, before vs after, so a
+ * replacement is visible instead of silent. Pure: no writes.
+ */
+export function buildTrainingWeekDiff(existingWeek, adaptedWeek) {
+  const sessionsOf = (week) => week?.sessions || week?.days || [];
+  const codesOf = (session) => (session?.exercises || []).map((ex) => String(ex.code || ex.exercise_code || ex.id || ""));
+  const existingSessions = sessionsOf(existingWeek);
+  const adaptedSessions = sessionsOf(adaptedWeek);
+  const count = Math.max(existingSessions.length, adaptedSessions.length);
+  return {
+    sessions_before: existingSessions.length,
+    sessions_after: adaptedSessions.length,
+    sessions: Array.from({ length: count }, (_, i) => ({
+      before: codesOf(existingSessions[i] || {}),
+      after: codesOf(adaptedSessions[i] || {}),
+    })),
+  };
+}
+
 export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResult = {}, customMacros = null) {
   if (!currentMasterProgram || typeof currentMasterProgram !== 'object') {
     throw new TypeError('currentMasterProgram must be a valid non-null object');
@@ -427,6 +448,10 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     merged.current_training_week = targetWeekNumber;
   }
 
+  // P1-B10: structural merge mode + diff, recorded in _last_adaptation.
+  let trainingWeekMergeMode = null;
+  let trainingWeekDiff = null;
+
   if (adaptationResult?.adapted_training_week && merged.training_program) {
     if (!Array.isArray(merged.training_program.weeks)) {
       merged.training_program.weeks = [];
@@ -445,13 +470,31 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     };
 
     if (existingIdx !== -1) {
-      // Idempotent In-Place Update: Preserve custom exercise blueprints if present
+      // P1-B10 structural merge decision: in-place mapping walks the
+      // EXISTING sessions only, so it is lossy by construction whenever
+      // the adapted week has a different session count or a reschedule
+      // rewrote the week. In exactly those cases the target week is
+      // replaced wholesale with the adapted sessions, and the diff is
+      // recorded so the coach sees what changed. Otherwise the in-place
+      // path is kept, because it preserves coach custom blueprints.
       const existingWeek = weeks[existingIdx];
       const existingSessions = existingWeek.sessions || existingWeek.days || [];
       const adaptedSessions = formattedAdaptedWeek.sessions || formattedAdaptedWeek.days || [];
-
+      trainingWeekDiff = buildTrainingWeekDiff(existingWeek, formattedAdaptedWeek);
+      const needsReplacement = existingSessions.length !== adaptedSessions.length
+        || Boolean(formattedAdaptedWeek.reschedule_info);
+      if (needsReplacement) {
+        trainingWeekMergeMode = "REPLACED";
+        weeks[existingIdx] = {
+          ...existingWeek,
+          ...formattedAdaptedWeek,
+          [existingWeek.sessions ? 'sessions' : 'days']: adaptedSessions,
+        };
+      } else {
+        trainingWeekMergeMode = "IN_PLACE";
+      }
       let mergedSessions = adaptedSessions;
-      if (existingSessions.length > 0 && adaptedSessions.length > 0) {
+      if (trainingWeekMergeMode === "IN_PLACE" && existingSessions.length > 0 && adaptedSessions.length > 0) {
         mergedSessions = existingSessions.map((exSess, sIdx) => {
           const adaptSess = adaptedSessions[sIdx] || {};
           const exList = exSess.exercises || [];
@@ -489,12 +532,17 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
         });
       }
 
-      weeks[existingIdx] = {
-        ...existingWeek,
-        ...formattedAdaptedWeek,
-        ...(existingSessions.length > 0 && adaptedSessions.length > 0 ? { [existingWeek.sessions ? 'sessions' : 'days']: mergedSessions } : {})
-      };
+      if (trainingWeekMergeMode === "IN_PLACE") {
+        weeks[existingIdx] = {
+          ...existingWeek,
+          ...formattedAdaptedWeek,
+          ...(existingSessions.length > 0 && adaptedSessions.length > 0 ? { [existingWeek.sessions ? 'sessions' : 'days']: mergedSessions } : {})
+        };
+      }
     } else {
+      // New week: nothing to preserve, the adapted week is appended whole.
+      trainingWeekMergeMode = "APPENDED";
+      trainingWeekDiff = buildTrainingWeekDiff(null, formattedAdaptedWeek);
       // Safe insertion: Append and sort chronologically by week_number to preserve all existing weeks (handles gaps & out-of-order)
       weeks.push(formattedAdaptedWeek);
       weeks.sort((a, b) => (Number(a.week_number) || 0) - (Number(b.week_number) || 0));
@@ -543,6 +591,10 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     // cardiac hold carries its own message instead of falling through
     // to an "on track" reading.
     training_week_held: trainingWeekHeld,
+    // P1-B10: how the week was merged and what changed, shown to the
+    // coach before approval (preview endpoint) and after (approve reply).
+    training_week_merge_mode: trainingWeekMergeMode,
+    training_week_diff: trainingWeekDiff,
     ...(trainingWeekHeldForCardiac ? {
       cardiac_lockout_message_ar: "تم إيقاف التدريب بموجب قفل السلامة السريرية (أعراض قلبية أو إغماء)؛ لم يتقدم رقم الأسبوع التدريبي لأن الأسبوع المعدل فارغ وموقوف، وسيستأنف العميل من نفس الأسبوع بعد التصريح الطبي وموافقة الكوتش.",
       cardiac_lockout_message_en: "Training suspended under the clinical safety lockout (cardiac symptoms or syncope); the training week counter did not advance because the adapted week is empty and locked.",

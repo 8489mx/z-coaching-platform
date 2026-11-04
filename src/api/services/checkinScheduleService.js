@@ -9,6 +9,7 @@
  */
 
 import { CheckinSubmission, Program, User } from "../models/index.js";
+import { isValidLateWindowOverride } from "./checkinLateWindow.js";
 
 export const CADENCE_DAYS = Object.freeze({
   MAX: 7,
@@ -240,7 +241,10 @@ export async function evaluateClientCheckinSchedule(userId, now = new Date()) {
     : activeProgram.program_data || {};
   const overrides = progData.checkin_overrides || {};
   const cycleOverride = overrides[String(targetCycle)] || overrides[targetCycle];
-  const hasValidOverride = cycleOverride && (!cycleOverride.expires_at || new Date(cycleOverride.expires_at).getTime() > nowMs);
+  // P1-B10: the override-validity rule is shared with the writer
+  // (openLateWindow), so a window the coach opens is judged by exactly
+  // the rule the reader already honored: object + unexpired expires_at.
+  const hasValidOverride = isValidLateWindowOverride(cycleOverride, nowMs);
 
   let status = "UPCOMING";
   let allowed = false;

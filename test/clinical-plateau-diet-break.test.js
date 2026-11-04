@@ -75,7 +75,12 @@ test('Milestone 1: Clinical Plateau Breaker & Auto Diet-Break Engine Suite', asy
 
     assert.equal(adapted.adaptation_action, AdaptationAction.REDUCE_CALORIES_FOR_PLATEAU);
     assert.equal(adapted.adapted_nutrition.target_calories_kcal, baseCalories - 125);
-    assert.equal(adapted.adapted_cardio.daily_step_target, (baseProgram.cardio_program?.daily_step_target || 8000) + 500);
+    // P1-B10: the master-engine program carries no step target, so the
+    // old 8000+500 expectation was the invented fallback. Missing step
+    // target is null + coach review; the merge keeps existing steps.
+    assert.equal(adapted.adapted_cardio.daily_step_target, null);
+    assert.equal(adapted.requires_coach_approval, true);
+    assert.ok(adapted.adaptation_reasons.some((r) => r.code === "BASE_STEP_TARGET_UNREADABLE"));
 
     const reason = adapted.adaptation_reasons.find(
       r => r.code === AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED

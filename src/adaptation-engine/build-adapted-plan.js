@@ -3,7 +3,7 @@ import {
   AdaptationAction,
   AdaptationReasonCode,
 } from "./domain/enums.js";
-import { CheckinAnalysisStatus } from "../checkin-engine/index.js";
+import { CheckinAnalysisStatus, PLATEAU_STEP_INCREASE } from "../checkin-engine/index.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 import { evaluateJointPainAndFirewall } from "../execution-engines/biomechanics-firewall-engine.js";
 import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
@@ -18,6 +18,17 @@ function requireObject(value, name) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     throw new TypeError(`${name} must be an object.`);
   }
+}
+
+// First finite positive number across the known schema shapes, or null.
+// Unlike an || chain, a non-numeric string never passes through as a
+// "target" (Math.round("abc") is NaN, which used to poison the plan).
+function firstFinite(values) {
+  for (const v of values) {
+    const n = Number(v);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
 }
 
 /**
@@ -83,6 +94,34 @@ export function alignMacrosWithCalories(targetCalories, proteinG, carbsG, fatG, 
   };
 }
 
+
+// P1-B10: every flagged pain, not just the first. Sources in order: the
+// controller's full pain_reports, then the evaluation's flagged_pains,
+// then the legacy single joint (kept for direct callers). The form sends
+// `area` in canonical ids, so area is read first — the old
+// location/joint-only read missed web-form injuries entirely. Pains below
+// the firewall's own threshold (3) and pains with unknown severity are
+// excluded from swaps (unknown severity already forces coach review).
+function resolvePainInputsForFirewall(options, checkinAnalysis, status) {
+  const fromArray = (arr) => (Array.isArray(arr) ? arr : [])
+    .map((pain) => ({
+      joint: pain?.area || pain?.location || pain?.body_part || pain?.joint || null,
+      score: Number(pain?.pain_level ?? pain?.score ?? pain?.severity),
+    }))
+    .filter((pain) => pain.joint && Number.isFinite(pain.score) && pain.score >= 3);
+  if (Array.isArray(options.pain_reports) && options.pain_reports.length > 0) {
+    const pains = fromArray(options.pain_reports);
+    if (pains.length > 0) return pains;
+  }
+  if (Array.isArray(checkinAnalysis.flagged_pains) && checkinAnalysis.flagged_pains.length > 0) {
+    const pains = fromArray(checkinAnalysis.flagged_pains);
+    if (pains.length > 0) return pains;
+  }
+  const legacyJoint = options.joint_pain_location || options.joint_location || checkinAnalysis.joint_pain_location || checkinAnalysis.joint_pain || (status === CheckinAnalysisStatus.INJURY_FLAGGED ? "LOWER_BACK" : null);
+  const legacyScore = Number(options.pain_score || checkinAnalysis.pain_score || (status === CheckinAnalysisStatus.INJURY_FLAGGED ? 6 : 0));
+  return legacyJoint && Number.isFinite(legacyScore) && legacyScore >= 3 ? [{ joint: legacyJoint, score: legacyScore }] : [];
+}
+
 export function buildAdaptedPlan(inputs) {
   requireObject(inputs, "inputs");
 
@@ -93,42 +132,49 @@ export function buildAdaptedPlan(inputs) {
   const currentWeekNumber = options.currentWeekNumber || 1;
   const nextWeekNumber = currentWeekNumber + 1;
 
-  // Base Nutrition extraction
+  // Base Nutrition extraction. P1-B10: no invented bases. When the program
+  // carries no readable nutrition targets, the adaptation FAILS CLOSED
+  // (throws BASE_TARGETS_UNREADABLE) instead of computing deltas against
+  // 2000/160/200/60 — a real delta of -300 used to look like +200 and pass
+  // the cap. The gate already blocks null bases (P1-B3); this stops the
+  // adaptation itself from ever running on invented numbers. Steps are
+  // different: a missing step target cannot corrupt calories, so it
+  // becomes null + coach review, and the merge keeps the existing steps.
   const energyTargetStage = currentMasterProgram.nutrition_program?.stages?.energy_target;
   const macroTargetsStage = currentMasterProgram.nutrition_program?.stages?.macro_targets;
 
-  const baseEnergy =
-    currentMasterProgram.nutrition_program?.macro_targets?.calories_kcal ||
-    currentMasterProgram.nutrition_program?.targets?.calories_kcal ||
-    currentMasterProgram.nutrition_program?.targets?.target_calories_kcal ||
-    currentMasterProgram.nutrition_program?.targets?.target_calories ||
-    currentMasterProgram.nutrition_program?.target_calories_kcal ||
-    currentMasterProgram.nutrition?.targets?.calories ||
-    energyTargetStage?.target_calories ||
-    energyTargetStage?.target_calories_kcal ||
-    2000;
-  const baseProtein =
-    currentMasterProgram.nutrition_program?.macro_targets?.protein_g ||
-    currentMasterProgram.nutrition_program?.targets?.protein_g ||
-    currentMasterProgram.nutrition?.targets?.protein ||
-    macroTargetsStage?.protein?.target_g ||
-    macroTargetsStage?.protein_g ||
-    160;
-  const baseCarbs =
-    currentMasterProgram.nutrition_program?.macro_targets?.carbohydrate_g ||
-    currentMasterProgram.nutrition_program?.macro_targets?.carb_g ||
-    currentMasterProgram.nutrition_program?.targets?.carbohydrate_g ||
-    currentMasterProgram.nutrition?.targets?.carbs ||
-    macroTargetsStage?.carbohydrate?.target_g ||
-    macroTargetsStage?.carbohydrate_g ||
-    200;
-  const baseFat =
-    currentMasterProgram.nutrition_program?.macro_targets?.fat_g ||
-    currentMasterProgram.nutrition_program?.targets?.fat_g ||
-    currentMasterProgram.nutrition?.targets?.fats ||
-    macroTargetsStage?.fat?.target_g ||
-    macroTargetsStage?.fat_g ||
-    60;
+  const baseEnergy = firstFinite([
+    currentMasterProgram.nutrition_program?.macro_targets?.calories_kcal,
+    currentMasterProgram.nutrition_program?.targets?.calories_kcal,
+    currentMasterProgram.nutrition_program?.targets?.target_calories_kcal,
+    currentMasterProgram.nutrition_program?.targets?.target_calories,
+    currentMasterProgram.nutrition_program?.target_calories_kcal,
+    currentMasterProgram.nutrition?.targets?.calories,
+    energyTargetStage?.target_calories,
+    energyTargetStage?.target_calories_kcal,
+  ]);
+  const baseProtein = firstFinite([
+    currentMasterProgram.nutrition_program?.macro_targets?.protein_g,
+    currentMasterProgram.nutrition_program?.targets?.protein_g,
+    currentMasterProgram.nutrition?.targets?.protein,
+    macroTargetsStage?.protein?.target_g,
+    macroTargetsStage?.protein_g,
+  ]);
+  const baseCarbs = firstFinite([
+    currentMasterProgram.nutrition_program?.macro_targets?.carbohydrate_g,
+    currentMasterProgram.nutrition_program?.macro_targets?.carb_g,
+    currentMasterProgram.nutrition_program?.targets?.carbohydrate_g,
+    currentMasterProgram.nutrition?.targets?.carbs,
+    macroTargetsStage?.carbohydrate?.target_g,
+    macroTargetsStage?.carbohydrate_g,
+  ]);
+  const baseFat = firstFinite([
+    currentMasterProgram.nutrition_program?.macro_targets?.fat_g,
+    currentMasterProgram.nutrition_program?.targets?.fat_g,
+    currentMasterProgram.nutrition?.targets?.fats,
+    macroTargetsStage?.fat?.target_g,
+    macroTargetsStage?.fat_g,
+  ]);
   const baseFiber =
     macroTargetsStage?.fiber_target_g ||
     macroTargetsStage?.fiber_g ||
@@ -136,10 +182,17 @@ export function buildAdaptedPlan(inputs) {
     30;
 
   // Base Cardio extraction
-  const baseDailySteps =
-    currentMasterProgram.cardio_program?.prescription?.daily_step_target || 8000;
+  const baseDailySteps = firstFinite([
+    currentMasterProgram.cardio_program?.prescription?.daily_step_target,
+  ]);
   const baseCardioSessions =
     currentMasterProgram.cardio_program?.weekly_schedule?.sessions || [];
+
+  if (baseEnergy === null || baseProtein === null || baseCarbs === null || baseFat === null) {
+    const err = new Error("أهداف الخطة الحالية غير مقروءة (سعرات/بروتين/كارب/دهون)؛ لا يمكن حساب التكييف على أرقام مخترعة. راجع أهداف البرنامج في المحرر ثم أعد الاعتماد.");
+    err.code = "BASE_TARGETS_UNREADABLE";
+    throw err;
+  }
 
   // Default targets for next week
   let adaptedCalories = Math.round(baseEnergy);
@@ -152,6 +205,18 @@ export function buildAdaptedPlan(inputs) {
   let adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
   const reasons = [];
   let requiresCoachApproval = false;
+
+  // P1-B10: a missing step target is not 8000. The plan keeps its existing
+  // steps (the merge falls back to them) and the adaptation goes to coach
+  // review instead of prescribing an invented step count.
+  if (adaptedDailySteps === null) {
+    requiresCoachApproval = true;
+    reasons.push({
+      code: "BASE_STEP_TARGET_UNREADABLE",
+      message_ar: "هدف الخطوات اليومي للخطة الحالية غير مقروء؛ تم الاحتفاظ بالخطوات الحالية وتوجيه الخطة لمراجعة الكوتش بدلاً من افتراض رقم.",
+      message_en: "Current daily step target is unreadable; existing steps are kept and the plan is routed for coach review instead of assuming a number.",
+    });
+  }
 
   const status = checkinAnalysis.analysis_status;
 
@@ -354,8 +419,8 @@ export function buildAdaptedPlan(inputs) {
       });
       }
 
-      if (shouldIncreaseSteps) {
-        adaptedDailySteps += Number(options.step_increase || 500);
+      if (shouldIncreaseSteps && adaptedDailySteps !== null) {
+        adaptedDailySteps += Number(options.step_increase || PLATEAU_STEP_INCREASE);
       }
       reasons.push({
         code: AdaptationReasonCode.DIET_BREAK_PLATEAU_BREAKER_APPLIED,
@@ -365,7 +430,7 @@ export function buildAdaptedPlan(inputs) {
         effective_delta: 0,
         suggested_coach_options: {
           discretionary_refeed: true,
-          discretionary_step_increase: 500,
+          discretionary_step_increase: PLATEAU_STEP_INCREASE,
           verify_measurement_quality: true
         }
       });
@@ -385,17 +450,19 @@ export function buildAdaptedPlan(inputs) {
 
 
 
-      adaptedDailySteps += 500;
+      if (adaptedDailySteps !== null) {
+        adaptedDailySteps += PLATEAU_STEP_INCREASE;
+      }
       if (effectiveCalDelta < requestedCutMagnitude) {
         requiresCoachApproval = true;
       }
       reasons.push({
         code: AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED,
         message_ar: effectiveCalDelta < requestedCutMagnitude
-          ? `ثبات في الوزن مع التزام تام. تم تقييد الخفض عند ${effectiveCalDelta} سعرة يومياً (بدلاً من ${requestedCutMagnitude}) احتراماً لحد الأمان الأدنى (${calorieFloor} سعرة)، مع زيادة النشاط 500 خطوة لكسر الثبات.`
+          ? `ثبات في الوزن مع التزام تام. تم تقييد الخفض عند ${effectiveCalDelta} سعرة يومياً (بدلاً من ${requestedCutMagnitude}) احتراماً لحد الأمان الأدنى (${calorieFloor} سعرة)، مع زيادة النشاط ${PLATEAU_STEP_INCREASE.toLocaleString("en-US")} خطوة لكسر الثبات.`
           : `ثبات في الوزن مع التزام تام. تم خفض ${effectiveCalDelta} سعرة يومياً وزيادة النشاط لكسر الثبات.`,
         message_en: effectiveCalDelta < requestedCutMagnitude
-          ? `Plateau deficit capped at ${effectiveCalDelta} kcal (instead of requested ${requestedCutMagnitude}) to respect caloric floor (${calorieFloor} kcal). Increased daily steps (+500).`
+          ? `Plateau deficit capped at ${effectiveCalDelta} kcal (instead of requested ${requestedCutMagnitude}) to respect caloric floor (${calorieFloor} kcal). Increased daily steps (+${PLATEAU_STEP_INCREASE.toLocaleString("en-US")}).`
           : `Weight plateau broken with a moderate ${effectiveCalDelta} kcal reduction.`,
         requested_delta: -requestedCutMagnitude,
         effective_delta: effectiveSignedDelta
@@ -498,16 +565,25 @@ export function buildAdaptedPlan(inputs) {
     }
   }
 
-  // Clinical Lab Biomarkers Evaluation during Weekly Adaptation
-  const clientWeight = Number(
-    options.weight_kg ||
-    options.weight ||
-    checkinAnalysis.weight_kg ||
-    checkinAnalysis.current_weight ||
-    currentMasterProgram.client?.weight_kg ||
-    currentMasterProgram.client?.weight ||
-    75
-  );
+  // Clinical Lab Biomarkers Evaluation during Weekly Adaptation.
+  // P1-B10: the current check weight comes first — the controller passes
+  // checkin.average_weight_kg, and the evaluation output carries
+  // current_average_weight_kg (the old code read checkinAnalysis.weight_kg,
+  // a field the evaluation never outputs, so it always fell through).
+  // There is NO 75 kg default anymore: a protein cap is weight-based, so
+  // capping a 110 kg client at 75 kg numbers (or a 55 kg client at 75 kg
+  // numbers, the unsafe direction) is wrong in both directions. When no
+  // weight exists anywhere, no cap is applied and the plan goes to coach
+  // review instead.
+  const clientWeight = firstFinite([
+    options.weight_kg,
+    options.weight,
+    checkinAnalysis.current_average_weight_kg,
+    checkinAnalysis.weight_kg,
+    checkinAnalysis.current_weight,
+    currentMasterProgram.client?.weight_kg,
+    currentMasterProgram.client?.weight,
+  ]);
   const clientGender = options.gender || (options.isFemale ? 'FEMALE' : (currentMasterProgram.client?.gender || 'MALE'));
 
   const activeBiomarkers = {
@@ -521,7 +597,18 @@ export function buildAdaptedPlan(inputs) {
   };
 
   let adaptationBiomarkersResult = null;
-  if (Object.keys(activeBiomarkers).length > 0) {
+  if (Object.keys(activeBiomarkers).length > 0 && clientWeight === null) {
+    // P1-B10: biomarkers present but no weight anywhere. A weight-based
+    // cap computed on an invented weight is worse than no cap: it either
+    // over-restricts or under-restricts. No cap is applied, and the plan
+    // is routed to coach review with the reason stated.
+    requiresCoachApproval = true;
+    reasons.push({
+      code: "BIOMARKER_CAP_NEEDS_WEIGHT",
+      message_ar: "فحوصات طبية جديدة موجودة لكن وزن الفحص الحالي غير متوفر؛ لم يُطبق أي سقف بروتين لأن السقف يعتمد على الوزن، والخطة تحتاج مراجعة الكوتش.",
+      message_en: "New biomarkers present but no current check weight is available; no protein cap applied because caps are weight-based. Coach review required.",
+    });
+  } else if (Object.keys(activeBiomarkers).length > 0) {
     adaptationBiomarkersResult = analyzeBloodworkBiomarkers({
       body_weight_kg: clientWeight,
       gender: clientGender,
@@ -569,6 +656,7 @@ export function buildAdaptedPlan(inputs) {
   }
 
   let isDeloadRecommended = false;
+  let forwardLookingApplied = null;
 
   if (adaptedTrainingWeek) {
     // 1. Differentiated Deload & Autoregulation
@@ -701,14 +789,17 @@ export function buildAdaptedPlan(inputs) {
       });
     }
 
-    // 2. Biomechanical Joint Pain Firewall & Exercise Swapping
-    const rawJoint = options.joint_pain_location || options.joint_location || checkinAnalysis.joint_pain_location || checkinAnalysis.joint_pain || (status === CheckinAnalysisStatus.INJURY_FLAGGED ? 'LOWER_BACK' : null);
-    const painScore = Number(options.pain_score || checkinAnalysis.pain_score || (status === CheckinAnalysisStatus.INJURY_FLAGGED ? 6 : 0));
-
+    // 2. Biomechanical Joint Pain Firewall & Exercise Swapping — ALL pains.
+    // P1-B10: the old code passed only the FIRST pain report, so a client
+    // reporting knee AND shoulder pain got swaps for one joint only. Every
+    // flagged pain now runs its own firewall pass; forbidden movements
+    // union, and an exercise already swapped by an earlier joint is never
+    // re-swapped.
+    const painInputs = resolvePainInputsForFirewall(options, checkinAnalysis, status);
     let jointSwappedExercises = [];
 
-    if (rawJoint && painScore >= 3) {
-      let normalizedJoint = String(rawJoint).toUpperCase();
+    for (const painInput of painInputs) {
+      let normalizedJoint = String(painInput.joint).toUpperCase();
       if (normalizedJoint.includes('BACK') || normalizedJoint.includes('ظهر') || normalizedJoint.includes('قطنية')) normalizedJoint = 'LOWER_BACK';
       else if (normalizedJoint.includes('SHOULDER') || normalizedJoint.includes('كتف')) normalizedJoint = 'SHOULDER';
       else if (normalizedJoint.includes('KNEE') || normalizedJoint.includes('ركبة')) normalizedJoint = 'KNEE_PATELLAR';
@@ -716,64 +807,108 @@ export function buildAdaptedPlan(inputs) {
 
       const firewallResult = evaluateJointPainAndFirewall({
         jointLocation: normalizedJoint,
-        painScore
+        painScore: painInput.score
       });
 
-      if (firewallResult.firewall_active && Array.isArray(firewallResult.forbidden_movements)) {
-        const forbiddenSet = new Set(firewallResult.forbidden_movements.map(m => String(m).toUpperCase()));
-        const availableSwaps = firewallResult.immediate_swaps || [];
+      if (!firewallResult.firewall_active || !Array.isArray(firewallResult.forbidden_movements)) continue;
+      const forbiddenSet = new Set(firewallResult.forbidden_movements.map(m => String(m).toUpperCase()));
+      const availableSwaps = firewallResult.immediate_swaps || [];
+      const swappedThisJoint = [];
 
-        for (const session of (adaptedTrainingWeek.sessions || [])) {
-          session.exercises = (session.exercises || []).map((ex, exIdx) => {
-            const code = String(ex.code || ex.exercise_code || ex.id || '').toUpperCase();
-            const isForbidden = forbiddenSet.has(code) || Array.from(forbiddenSet).some(f => code.includes(f) || f.includes(code));
-            if (isForbidden && availableSwaps.length > 0) {
-              const swapIdx = exIdx % availableSwaps.length;
-              const chosenSwap = availableSwaps[swapIdx];
+      for (const session of (adaptedTrainingWeek.sessions || [])) {
+        session.exercises = (session.exercises || []).map((ex, exIdx) => {
+          if (ex.is_biomechanical_swap) return ex;
+          const code = String(ex.code || ex.exercise_code || ex.id || '').toUpperCase();
+          const isForbidden = forbiddenSet.has(code) || Array.from(forbiddenSet).some(f => code.includes(f) || f.includes(code));
+          if (isForbidden && availableSwaps.length > 0) {
+            const swapIdx = exIdx % availableSwaps.length;
+            const chosenSwap = availableSwaps[swapIdx];
+            const swapRecord = {
+              joint: normalizedJoint,
+              original_code: code,
+              original_name: ex.name_ar || ex.name || code,
+              swapped_code: chosenSwap.id,
+              swapped_name_ar: chosenSwap.name_ar,
+              biomechanical_advantage_ar: chosenSwap.biomechanical_advantage_ar
+            };
+            swappedThisJoint.push(swapRecord);
+            jointSwappedExercises.push(swapRecord);
 
-              jointSwappedExercises.push({
-                original_code: code,
-                original_name: ex.name_ar || ex.name || code,
-                swapped_code: chosenSwap.id,
-                swapped_name_ar: chosenSwap.name_ar,
-                biomechanical_advantage_ar: chosenSwap.biomechanical_advantage_ar
-              });
+            return {
+              ...ex,
+              id: `swap_${chosenSwap.id}_${exIdx}`,
+              code: chosenSwap.id.toUpperCase(),
+              name: chosenSwap.name_ar,
+              name_ar: chosenSwap.name_ar,
+              name_en: chosenSwap.name_ar,
+              is_biomechanical_swap: true,
+              original_exercise_code: code,
+              biomechanical_advantage_ar: chosenSwap.biomechanical_advantage_ar,
+              safetyNote: `بديل بيوميكانيكي آمن لحماية المفصل: ${chosenSwap.biomechanical_advantage_ar}`,
+              prescription: {
+                ...(ex.prescription || {}),
+                sets: ex.sets || 3,
+                target_rir: Math.max(2, Number(ex.rir || 2)),
+                clinical_notes_ar: chosenSwap.biomechanical_advantage_ar
+              }
+            };
+          }
+          return ex;
+        });
+      }
 
-              return {
-                ...ex,
-                id: `swap_${chosenSwap.id}_${exIdx}`,
-                code: chosenSwap.id.toUpperCase(),
-                name: chosenSwap.name_ar,
-                name_ar: chosenSwap.name_ar,
-                name_en: chosenSwap.name_ar,
-                is_biomechanical_swap: true,
-                original_exercise_code: code,
-                biomechanical_advantage_ar: chosenSwap.biomechanical_advantage_ar,
-                safetyNote: `بديل بيوميكانيكي آمن لحماية المفصل: ${chosenSwap.biomechanical_advantage_ar}`,
-                prescription: {
-                  ...(ex.prescription || {}),
-                  sets: ex.sets || 3,
-                  target_rir: Math.max(2, Number(ex.rir || 2)),
-                  clinical_notes_ar: chosenSwap.biomechanical_advantage_ar
-                }
-              };
-            }
-            return ex;
-          });
-        }
-
-        if (jointSwappedExercises.length > 0) {
-          adaptationAction = AdaptationAction.SUBSTITUTE_INJURED_EXERCISE;
-          requiresCoachApproval = true;
-          reasons.push({
-            code: AdaptationReasonCode.BIOMECHANICAL_INJURY_FIREWALL_SWAPPED,
-            message_ar: `تفعيل جدار حماية المفصل (${normalizedJoint}): تم استبدال ${jointSwappedExercises.length} تمرين ذي حمل قصي بالبدائل البيوميكانيكية الآمنة لحماية المفصل وتسريع الاستشفاء.`,
-            message_en: `Biomechanical firewall activated for ${normalizedJoint}: safely substituted ${jointSwappedExercises.length} contraindicated exercises.`,
-            swaps: jointSwappedExercises
-          });
-        }
+      if (swappedThisJoint.length > 0) {
+        adaptationAction = AdaptationAction.SUBSTITUTE_INJURED_EXERCISE;
+        requiresCoachApproval = true;
+        reasons.push({
+          code: AdaptationReasonCode.BIOMECHANICAL_INJURY_FIREWALL_SWAPPED,
+          message_ar: `تفعيل جدار حماية المفصل (${normalizedJoint}): تم استبدال ${swappedThisJoint.length} تمرين ذي حمل قصي بالبدائل البيوميكانيكية الآمنة لحماية المفصل وتسريع الاستشفاء.`,
+          message_en: `Biomechanical firewall activated for ${normalizedJoint}: safely substituted ${swappedThisJoint.length} contraindicated exercises.`,
+          swaps: swappedThisJoint
+        });
       }
     }
+
+    // 3. Forward-looking answers (P1-B10): the client is asked about next
+    // week, so next week must listen. Realistic days cap the session
+    // count (a 2-day client no longer gets a 4-day week); travel or no
+    // gym next week holds the plan for coach review, because this engine
+    // works from template weeks and cannot honestly rewrite a gym week
+    // into a home/bodyweight week by itself — the hold guarantees the
+    // travelling client never silently receives a gym plan. A full
+    // home-week auto-conversion is a later package, not a silent guess.
+    const forwardLooking = checkinAnalysis.forward_looking || options.forward_looking || {};
+    const realisticDays = Number(forwardLooking.next_week_realistic_days);
+    const sessionsBeforeForwardLooking = Array.isArray(adaptedTrainingWeek.sessions) ? adaptedTrainingWeek.sessions.length : 0;
+    if (Number.isFinite(realisticDays) && realisticDays >= 1 && realisticDays < sessionsBeforeForwardLooking) {
+      adaptedTrainingWeek.sessions = adaptedTrainingWeek.sessions.slice(0, realisticDays);
+      reasons.push({
+        code: "FORWARD_LOOKING_DAYS_APPLIED",
+        message_ar: `عدد أيام التمرين الواقعية للأسبوع القادم ${realisticDays} بدلاً من ${sessionsBeforeForwardLooking}؛ تم تقليص أسبوع التدريب لعدد الأيام الواقعية بدلاً من وصف أسبوع لا يستطيع العميل تنفيذه.`,
+        message_en: `Next week's realistic training days are ${realisticDays} instead of ${sessionsBeforeForwardLooking}; the training week was trimmed to the realistic day count instead of prescribing a week the client cannot complete.`,
+      });
+    }
+    const travelsNextWeek = forwardLooking.next_week_travel === true;
+    const noGymNextWeek = forwardLooking.next_week_gym_available === false;
+    if (travelsNextWeek || noGymNextWeek) {
+      requiresCoachApproval = true;
+      reasons.push({
+        code: "FORWARD_LOOKING_TRAVEL_HOLD",
+        message_ar: travelsNextWeek
+          ? "العميل مسافر الأسبوع القادم؛ الأسبوع المعدل ما زال مبنياً على الجيم، فتم توجيه الخطة لمراجعة الكوتش لاعتماد نسخة مناسبة للسفر بدلاً من وصف خطة جيم لمسافر."
+          : "العميل بلا جيم متاح الأسبوع القادم؛ الأسبوع المعدل ما زال مبنياً على الجيم، فتم توجيه الخطة لمراجعة الكوتش لاعتماد نسخة مناسبة بدلاً من وصف خطة جيم لمن لا يملك جيماً.",
+        message_en: travelsNextWeek
+          ? "Client travels next week; the adapted week is still gym-based, so the plan is routed for coach review to approve a travel-suitable version instead of prescribing a gym week to a travelling client."
+          : "Client has no gym available next week; the adapted week is still gym-based, so the plan is routed for coach review instead of prescribing a gym week to a client without a gym.",
+      });
+    }
+    forwardLookingApplied = {
+      next_week_travel: travelsNextWeek,
+      next_week_gym_available: !noGymNextWeek,
+      next_week_realistic_days: Number.isFinite(realisticDays) ? realisticDays : null,
+      sessions_before: sessionsBeforeForwardLooking,
+      sessions_after: Array.isArray(adaptedTrainingWeek.sessions) ? adaptedTrainingWeek.sessions.length : 0,
+    };
   }
 
   // Post-Adjustment Invariant: Strict Calorie Floor Guard & Exact Macro Alignment
@@ -826,6 +961,7 @@ export function buildAdaptedPlan(inputs) {
       clinical_safety_shield: (adaptationBiomarkersResult?.has_biomarker_flags ? adaptationBiomarkersResult : currentMasterProgram.clinical_safety_shield) || null,
     }),
     adapted_training_week: adaptedTrainingWeek ? Object.freeze(adaptedTrainingWeek) : null,
+    forward_looking_applied: forwardLookingApplied ? Object.freeze(forwardLookingApplied) : null,
     adapted_cardio: Object.freeze({
       daily_step_target: adaptedDailySteps,
       sessions: Object.freeze(baseCardioSessions),

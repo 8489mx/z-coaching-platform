@@ -37,7 +37,17 @@ export const BiofeedbackAlert = Object.freeze({
   // S3-7 Option C: rapid loss flagged independently of the analysis else-if
   // chain position, so a low-adherence rapid loss is never hidden.
   RAPID_LOSS_DETECTED: "RAPID_LOSS_DETECTED",
+  // P1-B10: self-reported workout count contradicts the logged sessions.
+  WORKOUT_LOG_MISMATCH: "WORKOUT_LOG_MISMATCH",
 });
+
+// P1-B10: ONE plateau step constant, shared by the evaluation (what the
+// coach is told) and the adaptation (what the client actually gets). The
+// applied value is canonical: build-adapted-plan already increased steps
+// by 500 in every plateau path, while the evaluation display said 1000.
+// The green auto-apply cap (1000 steps) is a different concept — a ceiling,
+// not a prescription — and stays untouched.
+export const PLATEAU_STEP_INCREASE = 500;
 
 // Deep check-in v3: Lifestyle Variance classification
 export const LifestyleVariance = Object.freeze({

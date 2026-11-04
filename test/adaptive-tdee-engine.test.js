@@ -49,15 +49,17 @@ test('recommended target follows the goal on the observed TDEE, at most 150 kcal
   assert.equal(onTrack.recommended_target_kcal, 2040);
 });
 
-test('low-adherence weeks without reported calories block the estimate; reported calories are used', () => {
+test('low-adherence weeks without reported calories block the estimate; a low-adherence report does NOT rescue it', () => {
   const weeks = losingWeeks(3);
   weeks[2].adherence_percent = 60;
   assert.equal(estimateAdaptiveTdee({ weeks, formula_tdee_kcal: 2500, current_target_kcal: 2000 }).ready, false);
   weeks[2].reported_intake_kcal = 2300;
+  // P1-B10: a report from a week the client did not follow is not
+  // reliable intake — it disagrees with the adherence signal, so the
+  // trend waits for reliable weeks instead of trusting the report.
   const r = estimateAdaptiveTdee({ weeks, formula_tdee_kcal: 2500, current_target_kcal: 2000 });
-  assert.equal(r.ready, true);
-  assert.deepEqual(r.intake_sources, ['PLANNED_HIGH_ADHERENCE', 'REPORTED']);
-  assert.equal(r.mean_intake_kcal, 2150);
+  assert.equal(r.ready, false);
+  assert.deepEqual(r.intake_disagreement_weeks, [3]);
 });
 
 test('implausible readings are clamped to +-30% of the formula TDEE', () => {
