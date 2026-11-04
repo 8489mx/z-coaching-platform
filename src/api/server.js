@@ -473,7 +473,6 @@ app.use("/api/v1/subscriptions", subscriptionRoutes);
 app.use("/api/v1/photos", photoRoutes);
 app.use("/api/v1/exercises", exerciseRoutes);
 app.use("/api/v1/admin-settings", adminSettingsRoutes);
-app.use("/api/v1/admin", adminSettingsRoutes);
 app.use("/api/v1/checkin", checkinRoutes);
 app.use("/api/v1/legal", legalRoutes);
 app.use("/api/v1/admin/backup", backupRoutes);

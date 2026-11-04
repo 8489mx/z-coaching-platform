@@ -108,7 +108,7 @@
 12. `onboarding-plan-generator-engine.js`: توليد الخطة المبدئية
 13. `subscription-lifecycle-engine.js`: حالات الاشتراك والتجديد والتجميد
 14. `habit-neat-tracker-engine.js + daily-habits-adherence-engine.js`: العادات اليومية والنشاط غير الرياضي
-15. `coach-capacity-business-analytics-engine.js + coach-capacity-engine.js + coach-triage-engine.js`: سعة الكوتش والفرز اليومي
+15. `coach-triage-engine.js`: سعة الكوتش والفرز اليومي
 
 **نسخ خادم لمحركات تعمل في الواجهة** (المصدر في `frontend/src/utils`، ونسخة الخادم إما تعيد التصدير أو مطابقة لها ويحرسها `test/engine-copy-drift-guard.test.js`): `biomechanical-swap-engine.js`، `cardio-interference-engine.js`، `cardio-zones-engine.js`، `checkin-approval-whatsapp.js`، `circadian-lab-trigger-engine.js`، `client-retention-radar-engine.js`، `clinical-supplement-safety-engine.js`، `emergency-scenario-engine.js`، `kitchen-yield-engine.js`، `mesocycle-debrief-engine.js`، `metabolic-macro-engine.js`، `offline-sync-engine.js`، `overdue-checkin-engine.js`، `pdf-export-engine.js`، `plan-quality-preflight-shield.js`.
 
@@ -175,7 +175,6 @@
   - `FreeGuidesModal.jsx`: دليل المشروبات الحرة والتوابل وقوائم المطاعم.
   - `MasterPdfModal.jsx`: توليد واستعراض وثيقة الخطة الرسمية.
   - `ExerciseSwapModal.jsx`: استبدال الأجهزة المشغولة بالجيم ببدائل ميكانيكية مطابقة.
-  - `TravelModals.jsx`: نوافذ تفعيل وضع السفر والعودة منه.
   - `EmergencyScenarioModal.jsx`: تكييف الخطة لحالات الطوارئ والمرض والامتحانات.
   - `components/index.js`: ملف التصدير المركزي الموحد (Barrel Export).
 - **`hooks/useClientInteractiveData.js`**: خطاف البيانات المركزي الشامل، ومحرك التزامن الأوفلاين (`kz_offline_queue`) مع ميزة الهجرة التلقائية الآمنة.

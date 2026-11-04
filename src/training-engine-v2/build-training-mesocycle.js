@@ -235,53 +235,6 @@ export function resolveMesocycleWeekConfigs({
   return configs;
 }
 
-const DEFAULT_MESOCYCLE_CONFIG = Object.freeze([
-  {
-    week_number: 1,
-    phase: MesoCyclePhase.INTRO_ACCUMULATION,
-    phase_ar: "الأسبوع 1 (تأسيس وتكيف حركي)",
-    target_rir: 3,
-    volume_modifier: 1.0,
-    set_delta: 0,
-    focus_note: "الأسبوع 1 (تأسيس): RIR 3 — التعود على النمط الحركي وضبط الأوزان الابتدائية.",
-  },
-  {
-    week_number: 2,
-    phase: MesoCyclePhase.PROGRESSIVE_OVERLOAD,
-    phase_ar: "الأسبوع 2 (تحميل وزيادة الحمل التدريجي)",
-    target_rir: 2,
-    volume_modifier: 1.0,
-    set_delta: 0,
-    focus_note: "الأسبوع 2 (تحميل): RIR 2 — زيادة الحمل التدريجي مع الحفاظ على تكرارين في الاحتياط.",
-  },
-  {
-    week_number: 3,
-    phase: MesoCyclePhase.PROGRESSIVE_OVERLOAD,
-    phase_ar: "الأسبوع 3 (تكثيف الجهد العضلي)",
-    target_rir: 1,
-    volume_modifier: 1.15,
-    set_delta: 1,
-    focus_note: "الأسبوع 3 (تكثيف): RIR 1 — رفع الشدة والاقتراب من الفشل العضلي مع إضافة مجموعة للحركات الأساسية.",
-  },
-  {
-    week_number: 4,
-    phase: MesoCyclePhase.PEAK_OVERLOAD,
-    phase_ar: "الأسبوع 4 (القمة والأوفرلود الأقصى)",
-    target_rir: 1,
-    volume_modifier: 1.25,
-    set_delta: 1,
-    focus_note: "الأسبوع 4 (القمة والأوفرلود الأقصى): RIR 1 — الوصول لأقصى أداء وتحدي عضلي كامل بتكنيك محكم.",
-  },
-  {
-    week_number: 5,
-    phase: MesoCyclePhase.DELOAD,
-    phase_ar: "الأسبوع 5 (تفريغ أحمال تلقائي - Deload)",
-    target_rir: 4,
-    volume_modifier: 0.60,
-    set_delta: -1,
-    focus_note: "الأسبوع 5 (تفريغ أحمال - Deload): خفض عدد المجموعات بنسبة 40% وضبط RIR 3-4 لتجديد الجهاز العصبي والمفاصل.",
-  },
-]);
 
 
 const HEAVY_PRIMARY_COMPOUNDS = new Set([

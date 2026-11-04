@@ -24,13 +24,11 @@ const listOf = (value) => (Array.isArray(value) ? value : []).map((item) => Stri
 
 export const OUTSIDE_SERVICE_SCOPE = "OUTSIDE_SERVICE_SCOPE";
 
-// Underweight: WHO thinness is a BMI under 18.5, and a BMI under 16 is severe thinness.
-export const UNDERWEIGHT_BMI = 18.5;
+// Severe thinness is a BMI under 16 (the only underweight refusal; see assessServiceScope).
 // Owner's decision (2026-09-25): trainees from 12 years old, with the guardian's consent. Younger
 // than that is a different job (growth and puberty), not a setting on this engine.
 export const MIN_TRAINEE_AGE = 12;
 export const SEVERE_UNDERWEIGHT_BMI = 16;
-const WEIGHT_LOSS_GOALS = new Set(["fat_loss", "recomposition", "weight_loss"]);
 
 /**
  * @param {object} intake raw intake answers (or a wrapper holding them)

@@ -5,7 +5,7 @@ import { generateInitialPlan } from '../src/execution-engines/onboarding-plan-ge
 import { evaluateExerciseProgression, evaluateDeloadNeed, compileDeloadSession } from '../src/execution-engines/progressive-overload-deload-engine.js';
 import { calculateCalorieCycling, evaluateDietBreakNeed } from '../src/execution-engines/calorie-cycling-diet-break-engine.js';
 import { evaluateDailyHabits, calculateStreakStatus } from '../src/execution-engines/habit-neat-tracker-engine.js';
-import { evaluateCoachCapacity, generateDailyCoachTriage } from '../src/execution-engines/coach-capacity-business-analytics-engine.js';
+import { evaluateCoachCapacity, generateDailyCoachTriage } from '../src/execution-engines/coach-triage-engine.js';
 
 test('Z Coaching Platform - Expanded 5-Engines Battery', async (t) => {
 

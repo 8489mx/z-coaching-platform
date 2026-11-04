@@ -8,8 +8,6 @@ export {
 export {
   EXERCISE_CATALOG_V2,
   getExerciseV2ByCode,
-  listExercisesV2ForSlot,
-  listExercisesV2ForMuscle,
 } from "./exercise-catalog-v2.js";
 
 export {

@@ -1317,20 +1317,3 @@ export function getExerciseV2ByCode(exerciseCode) {
   return null;
 }
 
-/**
- * @param {string} slotCode
- * @returns {import("./domain/contracts.js").ExerciseRecordV2[]}
- */
-export function listExercisesV2ForSlot(slotCode) {
-  return EXERCISE_CATALOG_V2.exercises.filter((exercise) => exercise.slot_code === slotCode);
-}
-
-/**
- * @param {string} muscle
- * @returns {import("./domain/contracts.js").ExerciseRecordV2[]}
- */
-export function listExercisesV2ForMuscle(muscle) {
-  return EXERCISE_CATALOG_V2.exercises.filter(
-    (exercise) => exercise.primary_muscle === muscle || exercise.secondary_muscles.includes(muscle),
-  );
-}

@@ -13,8 +13,6 @@ import {
   FoodSwapModal,
   ExerciseSwapModal,
   EmergencyScenarioModal,
-  TravelConfirmModal,
-  ReturnTravelModal,
   ClientBottomNav
 } from './ClientInteractiveApp/components';
 import { useClientInteractiveData } from './ClientInteractiveApp/hooks/useClientInteractiveData';
@@ -54,9 +52,6 @@ export default function ClientInteractiveApp() {
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
   const [_activeScenario, setActiveScenario] = useState(null);
-  const [travelConfirmTarget, setTravelConfirmTarget] = useState(null);
-  const [_travelChosenTier, setTravelChosenTier] = useState(null);
-  const [returnTravelModalOpen, setReturnTravelModalOpen] = useState(false);
   const [exerciseSwapTarget, setExerciseSwapTarget] = useState(null);
   const [activeVideoExercise, setActiveVideoExercise] = useState(null);
 
@@ -310,29 +305,6 @@ export default function ClientInteractiveApp() {
           clientCode={clientData?.code || '882'}
           packageTier={clientData?.package || 'MAX'}
           currentWeek={currentTrainingWeek}
-        />
-
-        {/* CONFIRMATION MODAL FOR TRAVEL MODE */}
-        <TravelConfirmModal
-          travelConfirmTarget={travelConfirmTarget}
-          onClose={() => setTravelConfirmTarget(null)}
-          onConfirm={() => {
-            if (travelConfirmTarget?.action) travelConfirmTarget.action();
-            setTravelChosenTier(travelConfirmTarget);
-            setTravelConfirmTarget(null);
-            setEmergencyModalOpen(false);
-          }}
-        />
-
-        {/* RETURN FROM TRAVEL MODAL (POST-VACATION REFLECTION) */}
-        <ReturnTravelModal
-          isOpen={returnTravelModalOpen}
-          onClose={() => setReturnTravelModalOpen(false)}
-          onReset={() => {
-            setActiveScenario(null);
-            setTravelChosenTier(null);
-            setReturnTravelModalOpen(false);
-          }}
         />
 
         {/* SMART EXERCISE SWAP MODAL (FOR BUSY GYM MACHINES) */}

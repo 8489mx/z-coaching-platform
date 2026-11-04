@@ -5,7 +5,7 @@ import {
   evaluateCoachCapacity,
   calculateRetentionAndChurn,
   generateDailyCoachTriage
-} from '../src/execution-engines/coach-capacity-engine.js';
+} from '../src/execution-engines/coach-triage-engine.js';
 
 test('Coach Capacity, Retention Analytics & Daily Triage Engine Suite', async (t) => {
 

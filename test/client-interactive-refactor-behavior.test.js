@@ -430,7 +430,6 @@ test('ClientInteractiveApp Refactor: Behavioral Verification Suite', async (suit
       'components/FreeGuidesModal.jsx',
       'components/MasterPdfModal.jsx',
       'components/ExerciseSwapModal.jsx',
-      'components/TravelModals.jsx',
       'components/EmergencyScenarioModal.jsx',
       'components/index.js',
       'hooks/useClientInteractiveData.js',
@@ -498,8 +497,6 @@ test('ClientInteractiveApp Refactor: Behavioral Verification Suite', async (suit
       'FoodSwapModal',
       'ExerciseSwapModal',
       'EmergencyScenarioModal',
-      'TravelConfirmModal',
-      'ReturnTravelModal',
       'ClientBottomNav'
     ];
 

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { evaluateDietBreakNeed } from '../src/execution-engines/calorie-cycling-diet-break-engine.js';
-import { generateDailyCoachTriage } from '../src/execution-engines/coach-capacity-business-analytics-engine.js';
+import { generateDailyCoachTriage } from '../src/execution-engines/coach-triage-engine.js';
 import { evaluateJointPainAndFirewall } from '../src/execution-engines/biomechanics-firewall-engine.js';
 import { evaluateExerciseProgression } from '../src/execution-engines/progressive-overload-deload-engine.js';
 

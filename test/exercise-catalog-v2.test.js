@@ -8,8 +8,6 @@ import {
   MovementSlotCodeV2,
   MuscleGroup,
   getExerciseV2ByCode,
-  listExercisesV2ForSlot,
-  listExercisesV2ForMuscle,
 } from "../src/exercise-catalog-v2/index.js";
 
 test("Exercise Catalog V2 Suite", async (t) => {
@@ -65,22 +63,6 @@ test("Exercise Catalog V2 Suite", async (t) => {
 
     const nonExistent = getExerciseV2ByCode("NON_EXISTENT_CODE");
     assert.equal(nonExistent, null);
-  });
-
-  await t.test("listExercisesV2ForSlot returns all exercises for a given slot", () => {
-    const pushExercises = listExercisesV2ForSlot(MovementSlotCodeV2.HORIZONTAL_PUSH);
-    assert.ok(pushExercises.length >= 3);
-    assert.ok(pushExercises.every((e) => e.slot_code === MovementSlotCodeV2.HORIZONTAL_PUSH));
-  });
-
-  await t.test("listExercisesV2ForMuscle returns exercises targeting primary or secondary muscle", () => {
-    const quadExercises = listExercisesV2ForMuscle(MuscleGroup.QUADS);
-    assert.ok(quadExercises.length >= 4);
-    assert.ok(
-      quadExercises.every(
-        (e) => e.primary_muscle === MuscleGroup.QUADS || e.secondary_muscles.includes(MuscleGroup.QUADS),
-      ),
-    );
   });
 
   await t.test("catalog and exercises are deeply frozen and immutable", () => {

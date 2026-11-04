@@ -15,13 +15,10 @@ class ApiConstants {
   // نفس مسار استمارة المتابعة في الويب (وزن واحد، والخادم يحدد رقم الأسبوع تلقائياً)
   static const String submitCheckin = '/api/v1/checkin';
   static const String checkinHistory = '/api/v1/programs/checkin/history';
-  static const String uploadPhotos = '/api/v1/photos/upload';
   static const String swapCandidates = '/api/v1/programs/swap-candidates';
   static const String swapFood = '/api/v1/programs/swap-food';
   static const String logWorkout = '/api/v1/checkin/workout-logs';
   static const String deleteAccount = '/api/v1/auth/delete-account';
-  static const String privacyPolicy = '/privacy-policy';
-  static const String termsOfService = '/terms-of-service';
 
   // مفاتيح التخزين المحلي (Storage Keys)
   static const String tokenKey = 'z_auth_token';

@@ -1739,7 +1739,6 @@ export function buildMasterEngineV2(inputs) {
     // The client's declared sugar in tea/coffee: not added to the targets, shown to the coach so the
     // extra 20-60 kcal a day is a decision and not a surprise.
     beverage_sugar_intake: effectiveIntake?.beverage_sugar_intake || null,
-    sanitized_plan: sanitizedMealPlan,
     quantized_plan: enhancedQuantizedPlan,
     culinary_meals: culinaryRecipeMeals,
     // P0-A7: the served-plate check. Generate handlers save the program DRAFT
