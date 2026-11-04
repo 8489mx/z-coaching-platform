@@ -14,7 +14,7 @@ const Notification = sequelize.define("Notification", {
   user_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: { model: "Users", key: "id" },
+    references: { model: "users", key: "id" },
   },
   client_code: {
     type: DataTypes.STRING,
