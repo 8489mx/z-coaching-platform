@@ -19,28 +19,32 @@ test("Nutrition Smart Swap Engine V2 Suite", async (t) => {
   await t.test("swaps chicken breast for lean beef sirloin with correct portion math", () => {
     const swap = calculateSmartSwap({
       current_food_code: "CHICKEN_BREAST_COOKED",
-      current_portion_g: 180, // 180 * 0.31 = 55.8g protein
-      target_food_code: "BEEF_TOP_SIRLOIN_LEAN", // 29g protein / 100g -> ~192g beef
+      current_portion_g: 180, // 180 * 0.3102 = 55.836g protein
+      // P2-C2: the sirloin density is no longer the registry's own 29; it is the
+      // canonical LEAN_BEEF protein 26.3 (the value the plan and liveSwap already
+      // used), so 55.836 / 26.3 * 100 = 212 g.
+      target_food_code: "BEEF_TOP_SIRLOIN_LEAN", // 26.3g protein / 100g -> ~212g beef
       meal_category: MealTimeCategory.MAIN_MEAL,
     });
 
     assert.equal(swap.macro_type, FoodMacroType.PROTEIN_DOMINANT);
-    assert.equal(swap.target_food.portion_g, 192);
+    assert.equal(swap.target_food.portion_g, 212);
     assert.ok(swap.target_food.serving_display_ar.includes("لحم بقري"));
   });
 
   await t.test("swaps whole eggs for cottage cheese in breakfast context", () => {
     const swap = calculateSmartSwap({
       current_food_code: "WHOLE_EGG",
-      current_portion_g: 100, // 2 eggs = 13g protein
+      current_portion_g: 100, // 2 eggs = 12.58g protein (canonical hard-boiled egg)
       // P1-B7: cottage density corrected 12.0 -> 10.45 (base table
-      // COTTAGE_CHEESE_LOW_FAT_2_PERCENT), so 13 / 10.45 * 100 = 124 g.
-      target_food_code: "CHEESE_COTTAGE_LOW_FAT", // 10.45g protein / 100g -> ~124g cottage cheese
+      // COTTAGE_CHEESE_LOW_FAT_2_PERCENT). P2-C2: the egg density is no longer
+      // the registry's own 13; it is the canonical 12.58, so 12.58 / 10.45 * 100 = 120 g.
+      target_food_code: "CHEESE_COTTAGE_LOW_FAT", // 10.45g protein / 100g -> ~120g cottage cheese
       meal_category: MealTimeCategory.BREAKFAST,
     });
 
     assert.equal(swap.macro_type, FoodMacroType.PROTEIN_DOMINANT);
-    assert.equal(swap.target_food.portion_g, 124);
+    assert.equal(swap.target_food.portion_g, 120);
     assert.ok(swap.target_food.serving_display_ar.includes("جبن قريش"));
   });
 
@@ -164,11 +168,13 @@ test("Nutrition Smart Swap Engine V2 Suite", async (t) => {
     const swap = calculateSmartSwap({
       current_food_code: "BALADI_BREAD",
       current_portion_g: 85, // 85 * 0.52 = 44.2g carbs
-      target_food_code: "TAMEES_BREAD_WHOLEWHEAT", // 54g carbs / 100g -> ~82g
+      // P2-C2: the tamees density is no longer the registry's own 54; it is the
+      // canonical culinary value 55.9, so 44.2 / 55.9 * 100 = 79 g.
+      target_food_code: "TAMEES_BREAD_WHOLEWHEAT", // 55.9g carbs / 100g -> ~79g
       meal_category: MealTimeCategory.BREAKFAST,
     });
 
-    assert.equal(swap.target_food.portion_g, 82);
+    assert.equal(swap.target_food.portion_g, 79);
     assert.ok(swap.target_food.name_ar.includes("تميس"));
   });
 });

@@ -1,26 +1,29 @@
 /**
  * Whether a mobile-app food swap is eaten the same way and carries about the same energy as the
  * food it replaces (frontend/src/utils/swapExchangeRules.js). The swap registry only knows each
- * food's main nutrient, so the full macros come from the meal generator's food data; a food with
- * no macros there cannot be judged and is refused.
+ * food's main nutrient, so the full macros come from the one canonical food table; a food with
+ * no canonical row cannot be judged and is refused.
  */
-import { FOOD_SWAP_DATABASE } from "../../nutrition-meal-context-v2/build-culinary-meals.js";
 import { isEquivalentSwap } from "../../../frontend/src/utils/swapExchangeRules.js";
-import { REGISTRY_TO_PLAN_FOOD } from "./liveFoodSwapSafety.js";
+import { canonicalMacros } from "../../nutrition-food-catalog/canonical-food-table.js";
 
-// Registry foods whose closest meal-generator food is another preparation (egg and egg white map to
-// an omelette cooked with fat) or that it lacks (peanut butter). USDA FoodData Central, SR Legacy:
-// egg, whole, hard-boiled (01129); egg, white, raw (01124); peanut butter, smooth (16098).
-const REGISTRY_OWN_MACROS = Object.freeze({
-  WHOLE_EGG: { protein_per_100g: 12.6, carb_per_100g: 1.1, fat_per_100g: 10.6 },
-  EGG_WHITE: { protein_per_100g: 10.9, carb_per_100g: 0.7, fat_per_100g: 0.2 },
-  PEANUT_BUTTER: { protein_per_100g: 25.1, carb_per_100g: 19.6, fat_per_100g: 50.4 },
-});
-
-/** Per-100 g macros of a swap-registry food: its own entry, else the meal generator's food. */
+/**
+ * Per-100 g macros of a swap-registry food, from the canonical table (P2-C2).
+ * The old hand maps are gone: REGISTRY_OWN_MACROS (egg, egg white, peanut butter) and
+ * REGISTRY_TO_PLAN_FOOD now live as links on canonical rows. Egg white resolves to
+ * the plan's cooked egg white (the codebase's reference agrees); whole egg resolves
+ * to the hard-boiled selection row. Peanut butter keeps its USDA 16098 protein, carb,
+ * and fat; its kcal is computed from those macros below, as before.
+ */
 function foodMacros(registryCode) {
-  const code = String(registryCode || "").toUpperCase();
-  return REGISTRY_OWN_MACROS[code] || FOOD_SWAP_DATABASE[REGISTRY_TO_PLAN_FOOD[code] || code] || null;
+  const macros = canonicalMacros(registryCode);
+  if (!macros) return null;
+  return {
+    protein_per_100g: macros.protein_g,
+    carb_per_100g: macros.carbohydrate_g,
+    fat_per_100g: macros.fat_g,
+    kcal_per_100g: macros.calories_kcal,
+  };
 }
 
 const MAIN_NUTRIENT = Object.freeze({
@@ -28,10 +31,9 @@ const MAIN_NUTRIENT = Object.freeze({
 });
 
 /**
- * Grams of the target that carry the same main nutrient as the original portion, from the same food
- * data the value check uses. (P1-B7 corrected the registry's own densities to the same values —
- * tuna 19.44, cottage 10.45, salmon 22.1 — so the override below is now a single-source
- * guarantee, not a patch over a disagreement.)
+ * Grams of the target that carry the same main nutrient as the original portion, from the same
+ * food data the value check uses (P2-C2: both come from the canonical table, so the density
+ * and the portion math can no longer disagree).
  * Null when either food's data is missing.
  */
 export function liveSwapTargetGrams(fromCode, fromGrams, toCode, macroType) {

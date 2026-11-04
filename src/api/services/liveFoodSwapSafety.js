@@ -11,59 +11,23 @@ import {
   DIABETIC_POTATO_PORTION_G,
 } from "../../nutrition-meal-context-v2/build-culinary-meals.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engine/adapters/intake-adapter.js";
+import { canonicalSafetyMap, canonicalPlanMap } from "../../nutrition-food-catalog/canonical-food-table.js";
 
-/** Swap-registry code -> the meal generator's food (same code when absent). */
-export const REGISTRY_TO_PLAN_FOOD = Object.freeze({
-  WHOLE_EGG: "EGGS_OMELETTE",
-  EGG_WHITE: "EGGS_OMELETTE",
-  CHEESE_COTTAGE_LOW_FAT: "COTTAGE_CHEESE",
-  YOGURT_GREEK_PLAIN_NONFAT: "GREEK_YOGURT",
-  WHEY_PROTEIN_POWDER: "WHEY_PROTEIN",
-  CHICKEN_BREAST_COOKED: "CHICKEN_BREAST",
-  BEEF_TOP_SIRLOIN_LEAN: "LEAN_BEEF",
-  TILAPIA_COOKED: "TILAPIA_FISH",
-  SALMON_ATLANTIC_COOKED: "SALMON_FISH",
-  TUNA_CANNED_IN_WATER: "CANNED_TUNA",
-  OATS_ROLLED_RAW: "ROLLED_OATS",
-  BREAD_WHOLE_WHEAT: "BROWN_TOAST",
-  BANANA_RAW: "BANANA_FRESH",
-  // White rice cooked Egyptian-style: the same high glycemic classification.
-  RICE_WHITE_COOKED: "EGYPTIAN_RICE",
-  POTATO_BAKED: "ROASTED_POTATOES",
-  SWEET_POTATO_BAKED: "SWEET_POTATO",
-  PASTA_WHOLE_WHEAT_COOKED: "WHOLE_WHEAT_PASTA",
-  ALMONDS_RAW: "RAW_ALMONDS",
-});
+/** Swap-registry code -> the meal generator's food (same code when absent). P2-C2:
+ * derived from the canonical table's value_for/plan_food links, including direct-code
+ * identities (identical to the old `|| code` fallback at the use site). */
+export const REGISTRY_TO_PLAN_FOOD = canonicalSafetyMap();
 
-/** The meal generator's codes the app sends -> the swap registry's codes. */
-export const PLAN_FOOD_TO_REGISTRY = Object.freeze({
-  EGGS_OMELETTE: "WHOLE_EGG",
-  COTTAGE_CHEESE: "CHEESE_COTTAGE_LOW_FAT",
-  GREEK_YOGURT: "YOGURT_GREEK_PLAIN_NONFAT",
-  WHEY_PROTEIN: "WHEY_PROTEIN_POWDER",
-  CHICKEN_BREAST: "CHICKEN_BREAST_COOKED",
-  LEAN_BEEF: "BEEF_TOP_SIRLOIN_LEAN",
-  TILAPIA_FISH: "TILAPIA_COOKED",
-  SALMON_FISH: "SALMON_ATLANTIC_COOKED",
-  CANNED_TUNA: "TUNA_CANNED_IN_WATER",
-  ROLLED_OATS: "OATS_ROLLED_RAW",
-  BROWN_TOAST: "BREAD_WHOLE_WHEAT",
-  BASMATI_RICE: "KABSA_SPICED_RICE",
-  ROASTED_POTATOES: "POTATO_BAKED",
-  SWEET_POTATO: "SWEET_POTATO_BAKED",
-  WHOLE_WHEAT_PASTA: "PASTA_WHOLE_WHEAT_COOKED",
-  RAW_ALMONDS: "ALMONDS_RAW",
-  // P1-B7: exact resolution for foods that used to mis-resolve through the Arabic keyword
-  // fallback (oat milk -> dry oats) or resolve to nothing (veggie sides). The milks and
-  // veggie sides below ARE registry codes; the entries pin the resolution before keywords.
-  // P1-B7: the duplicate registry banana is gone; the culinary code still resolves.
-  BANANA_FRESH: "BANANA_RAW",
-  OAT_MILK: "OAT_MILK",
-  RICE_MILK: "RICE_MILK",
-  ALMOND_MILK_UNSWEETENED: "ALMOND_MILK_UNSWEETENED",
-  MEDITERRANEAN_SALAD: "MEDITERRANEAN_SALAD",
-  SAUTEED_VEGGIES: "SAUTEED_VEGGIES",
+/** The meal generator's codes the app sends -> the swap registry's codes. P2-C2:
+ * the exact entries are derived from the canonical table's plan_registry_twin links
+ * (including the P1-B7 pins for the milks, veggie sides, and banana, which used to
+ * mis-resolve through the Arabic keyword fallback or resolve to nothing). */
+const PLAN_FOOD_TO_REGISTRY_FALLBACK = Object.freeze({
   // No twin in the swap list: listed from a food of the same macro type.
+  // These are approximations, NOT identities, and stay explicit until P2-C3
+  // replaces the swap system. Basmati rice has no registry twin either; the old
+  // entry pointed at kabsa spiced rice (a dish, not plain rice), so it is
+  // reclassified here as an approximation instead of an exact entry.
   FRESH_GUAVA: "APPLE_FRESH",
   FREEKEH_COOKED: "PASTA_WHOLE_WHEAT_COOKED",
   DARK_CHOCOLATE_85: "ALMONDS_RAW",
@@ -72,6 +36,12 @@ export const PLAN_FOOD_TO_REGISTRY = Object.freeze({
   SMOKED_TURKEY: "CHICKEN_BREAST_COOKED",
   MIXED_LEGUMES_STEW: "FOUL_MUDAMMAS",
   LOW_FAT_MOZZARELLA: "HALLOUMI_LIGHT",
+  BASMATI_RICE: "KABSA_SPICED_RICE",
+});
+
+export const PLAN_FOOD_TO_REGISTRY = Object.freeze({
+  ...canonicalPlanMap(),
+  ...PLAN_FOOD_TO_REGISTRY_FALLBACK,
 });
 
 const isPotato = (code) => /POTATO/.test(String(code || ""));

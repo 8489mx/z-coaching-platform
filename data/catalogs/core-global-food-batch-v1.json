@@ -61,7 +61,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:171477 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Chicken, broilers or fryers, breast, meat only, cooked, roasted | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": "CHICKEN_BREAST",
+      "plan_registry_twin": "CHICKEN_BREAST_COOKED",
+      "value_for_registry_codes": [
+        "CHICKEN_BREAST_COOKED"
+      ],
+      "plan_food_code": "CHICKEN_BREAST"
     },
     {
       "food_code": "TUNA_LIGHT_CANNED_WATER_DRAINED",
@@ -122,7 +128,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:173709 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Fish, tuna, light, canned in water, drained solids (Includes foods for USDA's Food Distribution Program) | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": "CANNED_TUNA",
+      "plan_registry_twin": "TUNA_CANNED_IN_WATER",
+      "value_for_registry_codes": [
+        "TUNA_CANNED_IN_WATER"
+      ],
+      "plan_food_code": "CANNED_TUNA"
     },
     {
       "food_code": "BEEF_GROUND_90_LEAN_COOKED",
@@ -181,7 +193,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:171794 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Beef, ground, 90% lean meat / 10% fat, crumbles, cooked, pan-browned | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "EGG_WHOLE_HARD_BOILED",
@@ -243,7 +259,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:173424 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Egg, whole, cooked, hard-boiled | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "WHOLE_EGG"
+      ],
+      "plan_food_code": "EGGS_OMELETTE"
     },
     {
       "food_code": "EGG_WHITE_COOKED",
@@ -305,7 +327,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:2707170 | DATA_TYPE:FNDDS | DESCRIPTION:Egg, white, cooked, no added fat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "EGG_WHITE"
+      ],
+      "plan_food_code": "EGGS_OMELETTE"
     },
     {
       "food_code": "YOGURT_PLAIN_LOW_FAT",
@@ -371,7 +399,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:170886 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Yogurt, plain, low fat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "GREEK_YOGURT_PLAIN_NONFAT",
@@ -437,7 +469,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:170894 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Yogurt, Greek, plain, nonfat (Includes foods for USDA's Food Distribution Program) | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": "GREEK_YOGURT",
+      "plan_registry_twin": "YOGURT_GREEK_PLAIN_NONFAT",
+      "value_for_registry_codes": [
+        "YOGURT_GREEK_PLAIN_NONFAT"
+      ],
+      "plan_food_code": "GREEK_YOGURT"
     },
     {
       "food_code": "COTTAGE_CHEESE_LOW_FAT_2_PERCENT",
@@ -503,7 +541,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:172182 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Cheese, cottage, lowfat, 2% milkfat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": "COTTAGE_CHEESE",
+      "plan_registry_twin": "CHEESE_COTTAGE_LOW_FAT",
+      "value_for_registry_codes": [
+        "CHEESE_COTTAGE_LOW_FAT"
+      ],
+      "plan_food_code": "COTTAGE_CHEESE"
     },
     {
       "food_code": "LENTILS_MATURE_COOKED",
@@ -560,7 +604,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:172421 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Lentils, mature seeds, cooked, boiled, without salt | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "CHICKPEAS_MATURE_COOKED",
@@ -617,7 +665,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:173757 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "FAVA_BEANS_MATURE_COOKED",
@@ -674,7 +726,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:173753 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Broadbeans (fava beans), mature seeds, cooked, boiled, without salt | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "RICE_WHITE_LONG_GRAIN_COOKED",
@@ -738,7 +794,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:169757 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Rice, white, long-grain, regular, unenriched, cooked without salt | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "POTATO_BOILED_WITHOUT_SKIN",
@@ -802,7 +862,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:170440 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Potatoes, boiled, cooked without skin, flesh, without salt | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "OATS_ROLLED_DRY",
@@ -866,7 +930,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:2346396 | DATA_TYPE:FOUNDATION_FOOD | DESCRIPTION:Oats, whole grain, rolled, old fashioned | ENERGY_NUTRIENT_ID:2048 | FIBER_NUTRIENT_ID:2033",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": "ROLLED_OATS",
+      "plan_registry_twin": "OATS_ROLLED_RAW",
+      "value_for_registry_codes": [
+        "OATS_ROLLED_RAW"
+      ],
+      "plan_food_code": "ROLLED_OATS"
     },
     {
       "food_code": "BREAD_WHOLE_WHEAT",
@@ -935,7 +1005,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:172688 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Bread, whole-wheat, commercially prepared | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": "BROWN_TOAST",
+      "plan_registry_twin": "BREAD_WHOLE_WHEAT",
+      "value_for_registry_codes": [
+        "BREAD_WHOLE_WHEAT"
+      ],
+      "plan_food_code": "BROWN_TOAST"
     },
     {
       "food_code": "PASTA_SPAGHETTI_COOKED",
@@ -1003,7 +1079,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:2708357 | DATA_TYPE:FNDDS | DESCRIPTION:Pasta, cooked | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "BANANA_RAW",
@@ -1060,7 +1140,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:1105314 | DATA_TYPE:FOUNDATION_FOOD | DESCRIPTION:Bananas, ripe and slightly ripe, raw | ENERGY_NUTRIENT_ID:2048 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": "BANANA_FRESH",
+      "plan_registry_twin": "BANANA_RAW",
+      "value_for_registry_codes": [
+        "BANANA_RAW"
+      ],
+      "plan_food_code": "BANANA_FRESH"
     },
     {
       "food_code": "APPLE_RAW_WITH_SKIN",
@@ -1117,7 +1203,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:171688 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Apples, raw, with skin (Includes foods for USDA's Food Distribution Program) | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": "APPLE_FRESH",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "APPLE_FRESH"
+      ],
+      "plan_food_code": "APPLE_FRESH"
     },
     {
       "food_code": "ORANGE_RAW",
@@ -1174,7 +1266,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:169097 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Oranges, raw, all commercial varieties | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": "ORANGE_FRESH",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "ORANGE_FRESH"
+      ],
+      "plan_food_code": "ORANGE_FRESH"
     },
     {
       "food_code": "TOMATO_RED_RAW",
@@ -1234,7 +1332,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:170457 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Tomatoes, red, ripe, raw, year round average | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "CUCUMBER_WITH_PEEL_RAW",
@@ -1294,7 +1396,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:168409 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Cucumber, with peel, raw | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "CARROT_RAW",
@@ -1354,7 +1460,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:2258586 | DATA_TYPE:FOUNDATION_FOOD | DESCRIPTION:Carrots, mature, raw | ENERGY_NUTRIENT_ID:2048 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "OLIVE_OIL",
@@ -1418,7 +1528,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:171413 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Oil, olive, salad or cooking | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
+      },
+      "culinary_code": "OLIVE_OIL",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "OLIVE_OIL"
+      ],
+      "plan_food_code": "OLIVE_OIL"
     },
     {
       "food_code": "SUNFLOWER_OIL",
@@ -1482,9 +1598,12 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:171025 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Oil, sunflower, linoleic, (approx. 65%) | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-07-17"
-      }
-    }
-,
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
+    },
     {
       "food_code": "SALMON_ATLANTIC_COOKED",
       "name_ar": "سلمون أطلسي مطبوخ",
@@ -1544,7 +1663,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:175168 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Fish, salmon, Atlantic, farmed, cooked, dry heat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-11-04"
-      }
+      },
+      "culinary_code": "SALMON_FISH",
+      "plan_registry_twin": "SALMON_ATLANTIC_COOKED",
+      "value_for_registry_codes": [
+        "SALMON_ATLANTIC_COOKED"
+      ],
+      "plan_food_code": "SALMON_FISH"
     },
     {
       "food_code": "TILAPIA_COOKED",
@@ -1605,7 +1730,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:175177 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Fish, tilapia, cooked, dry heat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-11-04"
-      }
+      },
+      "culinary_code": "TILAPIA_FISH",
+      "plan_registry_twin": "TILAPIA_COOKED",
+      "value_for_registry_codes": [
+        "TILAPIA_COOKED"
+      ],
+      "plan_food_code": "TILAPIA_FISH"
     },
     {
       "food_code": "KING_MACKEREL_COOKED",
@@ -1666,7 +1797,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:174236 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Fish, mackerel, king, cooked, dry heat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-11-04"
-      }
+      },
+      "culinary_code": "KANAAD_KINGFISH",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "KANAAD_KINGFISH"
+      ],
+      "plan_food_code": "KANAAD_KINGFISH"
     },
     {
       "food_code": "CHICKEN_THIGH_COOKED",
@@ -1725,7 +1862,11 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:172388 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Chicken, broilers or fryers, thigh, meat only, cooked, roasted | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-11-04"
-      }
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null
     },
     {
       "food_code": "SKIM_MILK",
@@ -1791,7 +1932,13 @@
         "name": "USDA FoodData Central",
         "reference": "FDC:171269 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Milk, nonfat, fluid, with added vitamin A and vitamin D (fat free or skim) | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
         "checked_date": "2026-11-04"
-      }
+      },
+      "culinary_code": "SKIM_MILK",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "SKIM_MILK"
+      ],
+      "plan_food_code": "SKIM_MILK"
     }
   ],
   "swap_groups": [
@@ -1869,5 +2016,1624 @@
         "ORANGE_RAW"
       ]
     }
-  ]
+  ],
+  "reference_items": [
+    {
+      "food_code": "LEAN_BEEF",
+      "name_ar": "لحم بقري مفروم/ستيك قليل الدسم (95/5)",
+      "name_en": "Lean Beef (95/5)",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 174,
+        "protein_g": 26.3,
+        "fat_g": 6.8,
+        "carbohydrate_g": 0,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "BEEF",
+          "RED_MEAT"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "LEAN_BEEF",
+      "plan_registry_twin": "BEEF_TOP_SIRLOIN_LEAN",
+      "value_for_registry_codes": [
+        "BEEF_TOP_SIRLOIN_LEAN"
+      ],
+      "plan_food_code": "LEAN_BEEF",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry LEAN_BEEF"
+      }
+    },
+    {
+      "food_code": "EGGS_OMELETTE",
+      "name_ar": "أومليت بيض كامل بالخضار (كامل بدون هدر الصفار)",
+      "name_en": "Whole Egg Omelette with Vegetables",
+      "food_class": "EGG",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 154,
+        "protein_g": 10.6,
+        "fat_g": 11.7,
+        "carbohydrate_g": 0.6,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "EGG"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "EGGS_OMELETTE",
+      "plan_registry_twin": "WHOLE_EGG",
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry EGGS_OMELETTE"
+      }
+    },
+    {
+      "food_code": "SMOKED_TURKEY",
+      "name_ar": "شرائح صدور رومي مدخن فاخرة",
+      "name_en": "Smoked Turkey Breast Slices",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 106,
+        "protein_g": 14.8,
+        "fat_g": 3.8,
+        "carbohydrate_g": 2.2,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "TURKEY",
+          "POULTRY"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "SMOKED_TURKEY",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry SMOKED_TURKEY"
+      }
+    },
+    {
+      "food_code": "WHEY_PROTEIN",
+      "name_ar": "سكوب واي بروتين معزول (Whey Isolate)",
+      "name_en": "Whey Protein Isolate Scoop",
+      "food_class": "DAIRY_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 360,
+        "protein_g": 80,
+        "fat_g": 1.5,
+        "carbohydrate_g": 3,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": [
+          "LACTOSE"
+        ]
+      },
+      "culinary_code": "WHEY_PROTEIN",
+      "plan_registry_twin": "WHEY_PROTEIN_POWDER",
+      "value_for_registry_codes": [
+        "WHEY_PROTEIN_POWDER"
+      ],
+      "plan_food_code": "WHEY_PROTEIN",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry WHEY_PROTEIN"
+      }
+    },
+    {
+      "food_code": "PEA_RICE_PROTEIN_POWDER",
+      "name_ar": "سكوب بروتين نباتي معزول من البازلاء والأرز (Plant Protein Isolate)",
+      "name_en": "Organic Pea & Rice Protein Isolate Scoop",
+      "food_class": null,
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 350,
+        "protein_g": 80,
+        "fat_g": 1.5,
+        "carbohydrate_g": 3,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "PEA_RICE_PROTEIN_POWDER",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry PEA_RICE_PROTEIN_POWDER"
+      }
+    },
+    {
+      "food_code": "MIXED_LEGUMES_STEW",
+      "name_ar": "يخنة البقوليات المشكلة (حمص، عدس بني، فاصوليا حمراء متبلة بالكمون وزيت الزيتون)",
+      "name_en": "Mixed Legumes Stew (Chickpeas, Brown Lentils, Red Kidney Beans)",
+      "food_class": "LEGUME",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 130,
+        "protein_g": 9,
+        "fat_g": 1.5,
+        "carbohydrate_g": 20,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "LEGUME"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "MIXED_LEGUMES_STEW",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry MIXED_LEGUMES_STEW"
+      }
+    },
+    {
+      "food_code": "BASMATI_RICE",
+      "name_ar": "أرز بسمتي أبيض أو حبة طويلة مطبوخ",
+      "name_en": "Cooked Basmati Rice",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 130,
+        "protein_g": 2.7,
+        "fat_g": 0.3,
+        "carbohydrate_g": 28.2,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "RICE"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "BASMATI_RICE",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry BASMATI_RICE"
+      }
+    },
+    {
+      "food_code": "COOKED_QUINOA",
+      "name_ar": "كينوا مسلوقة",
+      "name_en": "Cooked Quinoa",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 120,
+        "protein_g": 4.4,
+        "fat_g": 1.9,
+        "carbohydrate_g": 21.3,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "COOKED_QUINOA",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "COOKED_QUINOA"
+      ],
+      "plan_food_code": "COOKED_QUINOA",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry COOKED_QUINOA"
+      }
+    },
+    {
+      "food_code": "ROASTED_POTATOES",
+      "name_ar": "بطاطس ودجز مشوية بالأعشاب في الإيرفراير",
+      "name_en": "Air-Fryer Herb Roasted Potatoes",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 93,
+        "protein_g": 2.5,
+        "fat_g": 0.1,
+        "carbohydrate_g": 21.2,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "POTATO"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "ROASTED_POTATOES",
+      "plan_registry_twin": "POTATO_BAKED",
+      "value_for_registry_codes": [
+        "POTATO_BAKED"
+      ],
+      "plan_food_code": "ROASTED_POTATOES",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry ROASTED_POTATOES"
+      }
+    },
+    {
+      "food_code": "SWEET_POTATO",
+      "name_ar": "بطاطا حلوة مشوية في الفرن",
+      "name_en": "Baked Sweet Potato",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 90,
+        "protein_g": 2,
+        "fat_g": 0.2,
+        "carbohydrate_g": 20.7,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "SWEET_POTATO"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "SWEET_POTATO",
+      "plan_registry_twin": "SWEET_POTATO_BAKED",
+      "value_for_registry_codes": [
+        "SWEET_POTATO_BAKED"
+      ],
+      "plan_food_code": "SWEET_POTATO",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry SWEET_POTATO"
+      }
+    },
+    {
+      "food_code": "WHOLE_WHEAT_PASTA",
+      "name_ar": "مكرونة مسلوقة (قمح كامل)",
+      "name_en": "Cooked Whole Wheat Pasta",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 149,
+        "protein_g": 6,
+        "fat_g": 1.7,
+        "carbohydrate_g": 30.1,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "PASTA",
+          "WHEAT"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "WHOLE_WHEAT_PASTA",
+      "plan_registry_twin": "PASTA_WHOLE_WHEAT_COOKED",
+      "value_for_registry_codes": [
+        "PASTA_WHOLE_WHEAT_COOKED"
+      ],
+      "plan_food_code": "WHOLE_WHEAT_PASTA",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry WHOLE_WHEAT_PASTA"
+      }
+    },
+    {
+      "food_code": "BALADI_BREAD",
+      "name_ar": "خبز بلدي مصري بالردة (قمح كامل)",
+      "name_en": "Egyptian Baladi Bread",
+      "food_class": "STARCH",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 260,
+        "protein_g": 9,
+        "fat_g": 1.2,
+        "carbohydrate_g": 52,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "BREAD",
+          "WHEAT"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "BALADI_BREAD",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "BALADI_BREAD"
+      ],
+      "plan_food_code": "BALADI_BREAD",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry BALADI_BREAD"
+      }
+    },
+    {
+      "food_code": "LABNEH_LIGHT",
+      "name_ar": "لبنة لايت قليلة الدسم بالزعتر وزيت الزيتون",
+      "name_en": "Low-Fat Labneh with Thyme",
+      "food_class": "DAIRY_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 101,
+        "protein_g": 10,
+        "fat_g": 5,
+        "carbohydrate_g": 4,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": [
+          "LACTOSE"
+        ]
+      },
+      "culinary_code": "LABNEH_LIGHT",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "LABNEH_LIGHT"
+      ],
+      "plan_food_code": "LABNEH_LIGHT",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry LABNEH_LIGHT"
+      }
+    },
+    {
+      "food_code": "HALLOUMI_LIGHT",
+      "name_ar": "جبن حلوم لايت مشوي قليل الدسم والصوديوم",
+      "name_en": "Grilled Light Halloumi Cheese",
+      "food_class": "DAIRY_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 186,
+        "protein_g": 22,
+        "fat_g": 10,
+        "carbohydrate_g": 2,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": [
+          "LACTOSE"
+        ]
+      },
+      "culinary_code": "HALLOUMI_LIGHT",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "HALLOUMI_LIGHT"
+      ],
+      "plan_food_code": "HALLOUMI_LIGHT",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry HALLOUMI_LIGHT"
+      }
+    },
+    {
+      "food_code": "LABAN_RAYEB_LOWFAT",
+      "name_ar": "لبن رائب قليل الدسم (مراعي / نادك / الصافي)",
+      "name_en": "Low-Fat Laban Rayeb Drink",
+      "food_class": "DAIRY_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 40,
+        "protein_g": 3.3,
+        "fat_g": 1.1,
+        "carbohydrate_g": 4.8,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": [
+          "LACTOSE"
+        ]
+      },
+      "culinary_code": "LABAN_RAYEB_LOWFAT",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "LABAN_RAYEB_LOWFAT"
+      ],
+      "plan_food_code": "LABAN_RAYEB_LOWFAT",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry LABAN_RAYEB_LOWFAT"
+      }
+    },
+    {
+      "food_code": "HAMOUR_FISH",
+      "name_ar": "سمك هامور خليجي طازج مشوي بالتوابل والليمون",
+      "name_en": "Fresh Grilled Hamour Fish (Grouper)",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 118,
+        "protein_g": 24.8,
+        "fat_g": 1.3,
+        "carbohydrate_g": 0,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "HAMOUR",
+          "FISH"
+        ],
+        "allergen_tags": [
+          "FISH"
+        ],
+        "intolerance_tags": []
+      },
+      "culinary_code": "HAMOUR_FISH",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "HAMOUR_FISH"
+      ],
+      "plan_food_code": "HAMOUR_FISH",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry HAMOUR_FISH"
+      }
+    },
+    {
+      "food_code": "BOURI_FISH",
+      "name_ar": "سمك بوري مصري مشوي بالردة والليمون",
+      "name_en": "Egyptian Grilled Bouri Fish",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 24.8,
+        "fat_g": 4.9,
+        "carbohydrate_g": 0,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "BOURI",
+          "FISH"
+        ],
+        "allergen_tags": [
+          "FISH"
+        ],
+        "intolerance_tags": []
+      },
+      "culinary_code": "BOURI_FISH",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "BOURI_FISH"
+      ],
+      "plan_food_code": "BOURI_FISH",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry BOURI_FISH"
+      }
+    },
+    {
+      "food_code": "CAMEL_MEAT_LEAN",
+      "name_ar": "لحم حاشي (إبل) هبرة خالي الشحم متبل بالبهارات العربية",
+      "name_en": "Extra Lean Camel Meat (Hashi)",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 140,
+        "protein_g": 28,
+        "fat_g": 3,
+        "carbohydrate_g": 0,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "CAMEL",
+          "RED_MEAT"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "CAMEL_MEAT_LEAN",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "CAMEL_MEAT_LEAN"
+      ],
+      "plan_food_code": "CAMEL_MEAT_LEAN",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry CAMEL_MEAT_LEAN"
+      }
+    },
+    {
+      "food_code": "FOUL_MUDAMMAS",
+      "name_ar": "فول مدمس متبل بالليمون والكمون وزيت الزيتون",
+      "name_en": "Seasoned Foul Mudammas (Fava Beans)",
+      "food_class": "LEGUME",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 122,
+        "protein_g": 8,
+        "fat_g": 2,
+        "carbohydrate_g": 18,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "FAVA_BEANS"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "FOUL_MUDAMMAS",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "FOUL_MUDAMMAS"
+      ],
+      "plan_food_code": "FOUL_MUDAMMAS",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry FOUL_MUDAMMAS"
+      }
+    },
+    {
+      "food_code": "LUPINI_BEANS",
+      "name_ar": "ترمس مسلوق بالليمون والكمون (سناك عالي البروتين والألياف)",
+      "name_en": "Boiled Lupini Beans with Lemon & Cumin",
+      "food_class": "LEGUME",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 119,
+        "protein_g": 15.6,
+        "fat_g": 2.9,
+        "carbohydrate_g": 9.9,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "LUPINI"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "LUPINI_BEANS",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "LUPINI_BEANS"
+      ],
+      "plan_food_code": "LUPINI_BEANS",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry LUPINI_BEANS"
+      }
+    },
+    {
+      "food_code": "SHAKSHOUKA_EGGS",
+      "name_ar": "بيض شكشوكة بالخضار والطماطم وزيت الزيتون",
+      "name_en": "Traditional Arabic Shakshouka Eggs",
+      "food_class": "EGG",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 128,
+        "protein_g": 11,
+        "fat_g": 8,
+        "carbohydrate_g": 3,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "EGG"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "SHAKSHOUKA_EGGS",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "SHAKSHOUKA_EGGS"
+      ],
+      "plan_food_code": "SHAKSHOUKA_EGGS",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry SHAKSHOUKA_EGGS"
+      }
+    },
+    {
+      "food_code": "TAMEES_BREAD_WHOLEWHEAT",
+      "name_ar": "خبز تميس بر أسمر بالنخالة (مخبوز حجري)",
+      "name_en": "Whole Wheat Tamees Bread",
+      "food_class": "STARCH",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 262,
+        "protein_g": 9.8,
+        "fat_g": 1.7,
+        "carbohydrate_g": 55.9,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "TAMEES_BREAD_WHOLEWHEAT",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "TAMEES_BREAD_WHOLEWHEAT"
+      ],
+      "plan_food_code": "TAMEES_BREAD_WHOLEWHEAT",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry TAMEES_BREAD_WHOLEWHEAT"
+      }
+    },
+    {
+      "food_code": "SAJ_BREAD_WHOLEWHEAT",
+      "name_ar": "خبز صاج بر / رقاق أسمر خفيف",
+      "name_en": "Whole Wheat Saj / Markouk Bread",
+      "food_class": "STARCH",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 262,
+        "protein_g": 9.8,
+        "fat_g": 1.7,
+        "carbohydrate_g": 55.9,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "SAJ_BREAD_WHOLEWHEAT",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "SAJ_BREAD_WHOLEWHEAT"
+      ],
+      "plan_food_code": "SAJ_BREAD_WHOLEWHEAT",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry SAJ_BREAD_WHOLEWHEAT"
+      }
+    },
+    {
+      "food_code": "EGYPTIAN_RICE",
+      "name_ar": "أرز مصري مطبوخ بالشعرية الخفيفة",
+      "name_en": "Cooked Egyptian Rice",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 130,
+        "protein_g": 2.4,
+        "fat_g": 0.2,
+        "carbohydrate_g": 28.7,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "RICE"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "EGYPTIAN_RICE",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "RICE_WHITE_COOKED",
+        "EGYPTIAN_RICE"
+      ],
+      "plan_food_code": "EGYPTIAN_RICE",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry EGYPTIAN_RICE"
+      }
+    },
+    {
+      "food_code": "KABSA_SPICED_RICE",
+      "name_ar": "أرز بسمتي نثري بنكهة الكبسة/البخاري خفيف الزيت",
+      "name_en": "Lightly Spiced Kabsa Basmati Rice",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 134,
+        "protein_g": 2.9,
+        "fat_g": 1.2,
+        "carbohydrate_g": 28,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "RICE"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "KABSA_SPICED_RICE",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "KABSA_SPICED_RICE"
+      ],
+      "plan_food_code": "KABSA_SPICED_RICE",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry KABSA_SPICED_RICE"
+      }
+    },
+    {
+      "food_code": "DATES_KHALAS",
+      "name_ar": "تمر خلاص / سكري / عجوة فاخر (طاقة طبيعية قبل التمرين)",
+      "name_en": "Saudi Dates (Khalas / Sukkari / Ajwa)",
+      "food_class": "FRUIT",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 282,
+        "protein_g": 2.5,
+        "fat_g": 0.4,
+        "carbohydrate_g": 75,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "DATES_KHALAS",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "DATES_KHALAS"
+      ],
+      "plan_food_code": "DATES_KHALAS",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry DATES_KHALAS"
+      }
+    },
+    {
+      "food_code": "STRAWBERRY_FRESH",
+      "name_ar": "فراولة / توتيات طازجة (حجم شبع ضخم وأقل سعرات)",
+      "name_en": "Fresh Strawberries / Berries",
+      "food_class": "FRUIT",
+      "food_state": "RAW",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 32,
+        "protein_g": 0.7,
+        "fat_g": 0.3,
+        "carbohydrate_g": 7.7,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "STRAWBERRY_FRESH",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "STRAWBERRY_FRESH"
+      ],
+      "plan_food_code": "STRAWBERRY_FRESH",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry STRAWBERRY_FRESH"
+      }
+    },
+    {
+      "food_code": "WATERMELON_FRESH",
+      "name_ar": "بطيخ صيفي منعش (ترطيب فائق ومؤشر إشباع عالي)",
+      "name_en": "Fresh Summer Watermelon",
+      "food_class": "FRUIT",
+      "food_state": "RAW",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 30,
+        "protein_g": 0.6,
+        "fat_g": 0.2,
+        "carbohydrate_g": 7.6,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "WATERMELON_FRESH",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "WATERMELON_FRESH"
+      ],
+      "plan_food_code": "WATERMELON_FRESH",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry WATERMELON_FRESH"
+      }
+    },
+    {
+      "food_code": "AIR_POPPED_POPCORN",
+      "name_ar": "فشار ذرة محضر بالهواء الساخن / رذاذ زيت خفيف (سناك حجم عملاق)",
+      "name_en": "Air-Popped Whole Grain Popcorn",
+      "food_class": "STARCH",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 387,
+        "protein_g": 12.9,
+        "fat_g": 4.5,
+        "carbohydrate_g": 77.8,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "AIR_POPPED_POPCORN",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "AIR_POPPED_POPCORN"
+      ],
+      "plan_food_code": "AIR_POPPED_POPCORN",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry AIR_POPPED_POPCORN"
+      }
+    },
+    {
+      "food_code": "RICE_CAKES",
+      "name_ar": "كعك الأرز المقرمش (Rice Cakes / رايس كيك)",
+      "name_en": "Crispy Rice Cakes",
+      "food_class": "STARCH",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 387,
+        "protein_g": 8.2,
+        "fat_g": 2.8,
+        "carbohydrate_g": 81.5,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "RICE_CAKES",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "RICE_CAKES"
+      ],
+      "plan_food_code": "RICE_CAKES",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry RICE_CAKES"
+      }
+    },
+    {
+      "food_code": "RAW_TAHINI",
+      "name_ar": "طحينة سمسم خام نقية 100% (غنية بالكالسيوم والدهون المفيدة)",
+      "name_en": "Pure 100% Sesame Tahini",
+      "food_class": "ADDED_FAT",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 595,
+        "protein_g": 17,
+        "fat_g": 53.8,
+        "carbohydrate_g": 21.2,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "SESAME",
+          "TAHINI"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "RAW_TAHINI",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "RAW_TAHINI"
+      ],
+      "plan_food_code": "RAW_TAHINI",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry RAW_TAHINI"
+      }
+    },
+    {
+      "food_code": "FRESH_AVOCADO",
+      "name_ar": "أفوكادو طازج (دهون أحادية غير مشبعة وألياف ذائبة)",
+      "name_en": "Fresh Hass Avocado",
+      "food_class": "FRUIT",
+      "food_state": "RAW",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 160,
+        "protein_g": 2,
+        "fat_g": 14.7,
+        "carbohydrate_g": 8.5,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "AVOCADO"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "FRESH_AVOCADO",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "FRESH_AVOCADO"
+      ],
+      "plan_food_code": "FRESH_AVOCADO",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry FRESH_AVOCADO"
+      }
+    },
+    {
+      "food_code": "NATURAL_BUTTER_GHEE",
+      "name_ar": "سمن بلدي فلاحي / زبدة طبيعية نيوزيلندي (بديل دهون الطهي الشرقي)",
+      "name_en": "Pure Grass-Fed Ghee / Natural Butter",
+      "food_class": "ADDED_FAT",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 876,
+        "protein_g": 0.3,
+        "fat_g": 99.5,
+        "carbohydrate_g": 0,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": [
+          "LACTOSE"
+        ]
+      },
+      "culinary_code": "NATURAL_BUTTER_GHEE",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "NATURAL_BUTTER_GHEE"
+      ],
+      "plan_food_code": "NATURAL_BUTTER_GHEE",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry NATURAL_BUTTER_GHEE"
+      }
+    },
+    {
+      "food_code": "DARK_CHOCOLATE_85",
+      "name_ar": "شوكولاتة داكنة 85% كاكاو (حصة مرونة محسوبة الماكروز)",
+      "name_en": "85% Dark Chocolate (Flexible IIFYM Slot)",
+      "food_class": "ADDED_FAT",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 598,
+        "protein_g": 7.8,
+        "fat_g": 42.6,
+        "carbohydrate_g": 45.9,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "DARK_CHOCOLATE_85",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry DARK_CHOCOLATE_85"
+      }
+    },
+    {
+      "food_code": "OAT_MILK",
+      "name_ar": "حليب شوفان عضوي غير محلى (خالي من الصويا والمكسرات)",
+      "name_en": "Unsweetened Oat Milk",
+      "food_class": null,
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 45,
+        "protein_g": 1,
+        "fat_g": 1.5,
+        "carbohydrate_g": 6.5,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "OAT_MILK",
+      "plan_registry_twin": "OAT_MILK",
+      "value_for_registry_codes": [
+        "OAT_MILK"
+      ],
+      "plan_food_code": "OAT_MILK",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry OAT_MILK"
+      }
+    },
+    {
+      "food_code": "RICE_MILK",
+      "name_ar": "حليب أرز عضوي غير محلى (خالي من الجلوتين والصويا والمكسرات)",
+      "name_en": "Unsweetened Rice Milk",
+      "food_class": null,
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 47,
+        "protein_g": 0.3,
+        "fat_g": 1,
+        "carbohydrate_g": 9,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "RICE_MILK",
+      "plan_registry_twin": "RICE_MILK",
+      "value_for_registry_codes": [
+        "RICE_MILK"
+      ],
+      "plan_food_code": "RICE_MILK",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry RICE_MILK"
+      }
+    },
+    {
+      "food_code": "HEMP_CHIA_SEEDS",
+      "name_ar": "بذور الشيا وبذور القنب ودوار الشمس المطحونة",
+      "name_en": "Chia & Hemp Seed Blend",
+      "food_class": "ADDED_FAT",
+      "food_state": "RAW",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 486,
+        "protein_g": 16.5,
+        "fat_g": 30.7,
+        "carbohydrate_g": 42.1,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "HEMP_CHIA_SEEDS",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry HEMP_CHIA_SEEDS"
+      }
+    },
+    {
+      "food_code": "RAW_ALMONDS",
+      "name_ar": "لوز نيء أو مكسرات مشكلة غير مملحة",
+      "name_en": "Raw Unsalted Almonds / Mixed Nuts",
+      "food_class": "ADDED_FAT",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 579,
+        "protein_g": 21.2,
+        "fat_g": 49.9,
+        "carbohydrate_g": 21.6,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "ALMOND",
+          "NUTS"
+        ],
+        "allergen_tags": [
+          "ALMOND"
+        ],
+        "intolerance_tags": []
+      },
+      "culinary_code": "RAW_ALMONDS",
+      "plan_registry_twin": "ALMONDS_RAW",
+      "value_for_registry_codes": [
+        "ALMONDS_RAW"
+      ],
+      "plan_food_code": "RAW_ALMONDS",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry RAW_ALMONDS"
+      }
+    },
+    {
+      "food_code": "FREEKEH_COOKED",
+      "name_ar": "فريك مصري / برغل مسلوق بالبهارات",
+      "name_en": "Cooked Freekeh / Bulgur",
+      "food_class": "STARCH",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 150,
+        "protein_g": 5.5,
+        "fat_g": 1,
+        "carbohydrate_g": 31,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "FREEKEH_COOKED",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry FREEKEH_COOKED"
+      }
+    },
+    {
+      "food_code": "LACTOSE_FREE_MILK",
+      "name_ar": "حليب بقري خالي من اللاكتوز (لايت / قليل الدسم)",
+      "name_en": "Lactose-Free Milk (Low-Fat / Skim)",
+      "food_class": "DAIRY_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 38,
+        "protein_g": 3.4,
+        "fat_g": 0.5,
+        "carbohydrate_g": 4.8,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": []
+      },
+      "culinary_code": "LACTOSE_FREE_MILK",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "LACTOSE_FREE_MILK"
+      ],
+      "plan_food_code": "LACTOSE_FREE_MILK",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry LACTOSE_FREE_MILK"
+      }
+    },
+    {
+      "food_code": "ALMOND_MILK_UNSWEETENED",
+      "name_ar": "حليب لوز غير محلى (خالي من السكر واللاكتوز)",
+      "name_en": "Unsweetened Almond Milk",
+      "food_class": null,
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 13,
+        "protein_g": 0.5,
+        "fat_g": 1.1,
+        "carbohydrate_g": 0.3,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "ALMOND_MILK_UNSWEETENED",
+      "plan_registry_twin": "ALMOND_MILK_UNSWEETENED",
+      "value_for_registry_codes": [
+        "ALMOND_MILK_UNSWEETENED"
+      ],
+      "plan_food_code": "ALMOND_MILK_UNSWEETENED",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry ALMOND_MILK_UNSWEETENED"
+      }
+    },
+    {
+      "food_code": "LOW_FAT_MOZZARELLA",
+      "name_ar": "جبن موزاريلا طبيعي قليل الدسم لايت",
+      "name_en": "Part-Skim Mozzarella Cheese",
+      "food_class": "DAIRY_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 254,
+        "protein_g": 24.3,
+        "fat_g": 15.9,
+        "carbohydrate_g": 2.8,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": [
+          "LACTOSE"
+        ]
+      },
+      "culinary_code": "LOW_FAT_MOZZARELLA",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry LOW_FAT_MOZZARELLA"
+      }
+    },
+    {
+      "food_code": "FRESH_GUAVA",
+      "name_ar": "جوافة طازجة غنية بفيتامين C والألياف",
+      "name_en": "Fresh Guava",
+      "food_class": "FRUIT",
+      "food_state": "RAW",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 68,
+        "protein_g": 2.6,
+        "fat_g": 1,
+        "carbohydrate_g": 14.3,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "FRESH_GUAVA",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry FRESH_GUAVA"
+      }
+    },
+    {
+      "food_code": "CHIA_SEEDS",
+      "name_ar": "بذور الشيا الطبيعية الكاملة",
+      "name_en": "Organic Whole Chia Seeds",
+      "food_class": "ADDED_FAT",
+      "food_state": "RAW",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 486,
+        "protein_g": 16.5,
+        "fat_g": 30.7,
+        "carbohydrate_g": 42.1,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "CHIA_SEEDS",
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [],
+      "plan_food_code": null,
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry CHIA_SEEDS"
+      }
+    },
+    {
+      "food_code": "MEDITERRANEAN_SALAD",
+      "name_ar": "طبق سلطة خضراء طازجة (خيار، طماطم، جرجير، بقدونس، رشة ليمون)",
+      "name_en": "Fresh Mediterranean Green Salad",
+      "food_class": "NON_STARCH_VEGETABLE",
+      "food_state": "RAW",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 20,
+        "protein_g": 1.5,
+        "fat_g": 0.2,
+        "carbohydrate_g": 3,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "MEDITERRANEAN_SALAD",
+      "plan_registry_twin": "MEDITERRANEAN_SALAD",
+      "value_for_registry_codes": [
+        "MEDITERRANEAN_SALAD"
+      ],
+      "plan_food_code": "MEDITERRANEAN_SALAD",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry MEDITERRANEAN_SALAD"
+      }
+    },
+    {
+      "food_code": "SAUTEED_VEGGIES",
+      "name_ar": "طبق خضار سوتيه/مشوي (كوسة، بروكلي، جزر، فلفل ألوان)",
+      "name_en": "Sautéed Garden Veggies",
+      "food_class": "NON_STARCH_VEGETABLE",
+      "food_state": "COOKED",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": 25,
+        "protein_g": 2,
+        "fat_g": 0.2,
+        "carbohydrate_g": 4,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "culinary_code": "SAUTEED_VEGGIES",
+      "plan_registry_twin": "SAUTEED_VEGGIES",
+      "value_for_registry_codes": [
+        "SAUTEED_VEGGIES"
+      ],
+      "plan_food_code": "SAUTEED_VEGGIES",
+      "source": {
+        "type": "EXISTING_LIST",
+        "name": "FOOD_SWAP_DATABASE",
+        "reference": "culinary entry SAUTEED_VEGGIES"
+      }
+    },
+    {
+      "food_code": "PEANUT_BUTTER",
+      "name_ar": "زبدة فول سوداني طبيعية",
+      "name_en": "Natural Peanut Butter",
+      "food_class": "ADDED_FAT",
+      "food_state": "READY_TO_EAT",
+      "is_active": false,
+      "available_markets": null,
+      "logistics": null,
+      "nutrition_per_100g": {
+        "calories_kcal": null,
+        "protein_g": 25.1,
+        "fat_g": 50.4,
+        "carbohydrate_g": 19.6,
+        "fiber_g": null
+      },
+      "tags": {
+        "identity_tags": [
+          "PEANUT",
+          "NUTS"
+        ],
+        "allergen_tags": [
+          "PEANUT"
+        ],
+        "intolerance_tags": []
+      },
+      "culinary_code": null,
+      "plan_registry_twin": null,
+      "value_for_registry_codes": [
+        "PEANUT_BUTTER"
+      ],
+      "plan_food_code": null,
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:16098 | DATA_TYPE:SR_LEGACY | DESCRIPTION:peanut butter, smooth | VIA:REGISTRY_OWN_MACROS (protein/carb/fat only; kcal/fiber not stated there)"
+      }
+    }
+  ],
+  "reference_items_count": 47
 }

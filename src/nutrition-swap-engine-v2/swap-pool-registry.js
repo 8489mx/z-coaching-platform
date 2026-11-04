@@ -1,10 +1,11 @@
 import { MealTimeCategory, FoodMacroType } from "./domain/enums.js";
+import { canonicalMacros } from "../nutrition-food-catalog/canonical-food-table.js";
 
 /**
  * Verified Swap Registry linking foods to macro classifications, meal suitability,
  * primary nutrient density per 100g, and bilingual display names.
  */
-export const SMART_SWAP_REGISTRY = Object.freeze([
+const SMART_SWAP_REGISTRY_ENTRIES = [
   // --- BREAKFAST PROTEINS ---
   {
     food_code: "WHOLE_EGG",
@@ -12,7 +13,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Whole Boiled Egg",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 13.0, // 13g Protein / 100g
     grams_per_household_unit: 50,
     unit_label_ar: "بيضة كاملة",
     unit_label_en: "Whole egg",
@@ -23,7 +23,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Egg White",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 11.0,
     grams_per_household_unit: 33,
     unit_label_ar: "بياض بيضة",
     unit_label_en: "Egg white",
@@ -35,7 +34,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
     // P1-B7: was 12.0; base table COTTAGE_CHEESE_LOW_FAT_2_PERCENT = 10.45 (USDA).
-    primary_nutrient_per_100g: 10.45,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام جبن قريش",
     unit_label_en: "g Cottage Cheese",
@@ -46,7 +44,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Non-fat Greek Yogurt",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 10.0,
     grams_per_household_unit: 170,
     unit_label_ar: "علبة زبادي يوناني",
     unit_label_en: "Greek yogurt cup",
@@ -57,7 +54,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Whey Protein Powder",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 75.0,
     grams_per_household_unit: 30,
     unit_label_ar: "سكوب واي بروتين",
     unit_label_en: "Scoop Whey Protein",
@@ -70,7 +66,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Grilled Chicken Breast",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 31.0,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام دجاج مشوي",
     unit_label_en: "g Grilled Chicken",
@@ -81,7 +76,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Lean Beef Sirloin",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 29.0,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام لحم بقري",
     unit_label_en: "g Lean Beef",
@@ -92,7 +86,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Grilled Tilapia Fillet",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 26.0,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام سمك فيليه",
     unit_label_en: "g Tilapia Fillet",
@@ -104,7 +97,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
     // P1-B7: was 25.0; culinary SALMON_FISH + JSON39 SALMON_ATLANTIC_COOKED = 22.1 (USDA).
-    primary_nutrient_per_100g: 22.1,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام سلمون مشوي",
     unit_label_en: "g Grilled Salmon",
@@ -116,7 +108,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
     // P1-B7: was 26.0; base table TUNA_LIGHT_CANNED_WATER_DRAINED = 19.44 (USDA).
-    primary_nutrient_per_100g: 19.44,
     grams_per_household_unit: 120,
     unit_label_ar: "علبة تونة مصفاة",
     unit_label_en: "Can drained Tuna",
@@ -130,7 +121,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
     // P1-B7: was 66.0; base table OATS_ROLLED_DRY 68.65755 rounded to 2dp = 68.66.
-    primary_nutrient_per_100g: 68.66, // 68.66g Carbs / 100g
     grams_per_household_unit: 40,
     unit_label_ar: "ملعقة كبيرة شوفان",
     unit_label_en: "tbsp Oats",
@@ -141,7 +131,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Whole Wheat Toast",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 43.0,
     grams_per_household_unit: 35,
     unit_label_ar: "شريحة توست أسمر",
     unit_label_en: "Slice whole wheat toast",
@@ -152,7 +141,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Fresh Banana",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 23.0,
     grams_per_household_unit: 120,
     unit_label_ar: "حبة موز متوسطة",
     unit_label_en: "Medium Banana",
@@ -165,7 +153,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Cooked White Rice",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 28.0,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام أرز مطبوخ",
     unit_label_en: "g Cooked Rice",
@@ -176,7 +163,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Baked / Boiled Potato",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 21.0,
     grams_per_household_unit: 150,
     unit_label_ar: "حبة بطاطس متوسطة",
     unit_label_en: "Medium Potato",
@@ -188,7 +174,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Cooked Quinoa",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL, MealTimeCategory.BREAKFAST]),
-    primary_nutrient_per_100g: 21.3,
     grams_per_household_unit: 185,
     unit_label_ar: "كوب كينوا مسلوقة",
     unit_label_en: "Cup of cooked quinoa",
@@ -199,7 +184,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Baked Sweet Potato",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL, MealTimeCategory.BREAKFAST]),
-    primary_nutrient_per_100g: 21.0,
     grams_per_household_unit: 150,
     unit_label_ar: "حبة بطاطا حلوة متوسطة",
     unit_label_en: "Medium Sweet Potato",
@@ -211,7 +195,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
     // P1-B7: was 26.0; JSON39 WHOLE_WHEAT_PASTA_COOKED = 30.1 (base spaghetti 30.7 corroborates).
-    primary_nutrient_per_100g: 30.1,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام مكرونة مطبوخة",
     unit_label_en: "g Cooked Pasta",
@@ -224,7 +207,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Low-Fat Labneh with Thyme",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 10.0,
     grams_per_household_unit: 30,
     unit_label_ar: "ملعقة كبيرة لبنة لايت",
     unit_label_en: "tbsp Labneh",
@@ -235,7 +217,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Grilled Light Halloumi Cheese",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 22.0,
     grams_per_household_unit: 50,
     unit_label_ar: "شريحة حلوم مشوي",
     unit_label_en: "Slice Halloumi",
@@ -246,7 +227,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Low-Fat Laban Rayeb Drink",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 3.5,
     grams_per_household_unit: 200,
     unit_label_ar: "كوب لبن رائب",
     unit_label_en: "Cup Laban Rayeb",
@@ -258,7 +238,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Skim Milk",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 3.4,
     grams_per_household_unit: 240,
     unit_label_ar: "كوب لبن",
     unit_label_en: "Cup of milk",
@@ -269,7 +248,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Lactose-Free Milk",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 3.4,
     grams_per_household_unit: 240,
     unit_label_ar: "كوب لبن",
     unit_label_en: "Cup of milk",
@@ -280,7 +258,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Arabic Shakshouka Eggs",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 11.0,
     grams_per_household_unit: 150,
     unit_label_ar: "طبق شكشوكة بالبيض",
     unit_label_en: "Dish Shakshouka",
@@ -291,7 +268,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Foul Mudammas",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 8.0,
     grams_per_household_unit: 150,
     unit_label_ar: "طبق فول مدمس",
     unit_label_en: "Bowl Foul Mudammas",
@@ -302,7 +278,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Boiled Lupini Beans",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.SNACK, MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 16.0,
     grams_per_household_unit: 100,
     unit_label_ar: "كوب ترمس مسلوق",
     unit_label_en: "Cup Lupini Beans",
@@ -315,7 +290,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Grilled Hamour Fish",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 26.0,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام هامور مشوي",
     unit_label_en: "g Grilled Hamour",
@@ -326,7 +300,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Grilled Kingfish (Kanaad)",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 25.0,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام كنعد مشوي",
     unit_label_en: "g Grilled Kingfish",
@@ -337,7 +310,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Egyptian Grilled Bouri Fish",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 24.0,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام بوري مشوي",
     unit_label_en: "g Grilled Bouri",
@@ -348,7 +320,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Lean Camel Meat (Hashi)",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 28.0,
     grams_per_household_unit: 100,
     unit_label_ar: "جرام لحم حاشي",
     unit_label_en: "g Lean Camel Meat",
@@ -361,7 +332,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Egyptian Baladi Bread",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 52.0,
     grams_per_household_unit: 85,
     unit_label_ar: "رغيف بلدي مصري",
     unit_label_en: "Baladi Bread Loaf",
@@ -372,7 +342,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Whole Wheat Tamees Bread",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 54.0,
     grams_per_household_unit: 75,
     unit_label_ar: "ربع رغيف تميس بر",
     unit_label_en: "Quarter Tamees Bread",
@@ -384,7 +353,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL]),
     // P1-B7: was 50.0; culinary SAJ_BREAD_WHOLEWHEAT = 55.9.
-    primary_nutrient_per_100g: 55.9,
     grams_per_household_unit: 50,
     unit_label_ar: "رغيف صاج بر",
     unit_label_en: "Saj Bread Loaf",
@@ -395,7 +363,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Kabsa Spiced Basmati Rice",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 28.0,
     grams_per_household_unit: 25,
     unit_label_ar: "ملعقة كبيرة أرز كبسة",
     unit_label_en: "tbsp Kabsa Rice",
@@ -406,7 +373,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Cooked Egyptian Rice",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 28.5,
     grams_per_household_unit: 25,
     unit_label_ar: "ملعقة كبيرة أرز مصري",
     unit_label_en: "tbsp Egyptian Rice",
@@ -417,7 +383,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Saudi Dates (Khalas / Sukkari)",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.SNACK, MealTimeCategory.BREAKFAST]),
-    primary_nutrient_per_100g: 75.0,
     grams_per_household_unit: 8,
     unit_label_ar: "حبة تمر",
     unit_label_en: "Date Piece",
@@ -433,7 +398,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Fresh Apple",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.SNACK, MealTimeCategory.BREAKFAST]),
-    primary_nutrient_per_100g: 14.0,
     grams_per_household_unit: 140,
     unit_label_ar: "ثمرة تفاح متوسطة",
     unit_label_en: "Medium Apple",
@@ -444,7 +408,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Fresh Strawberries",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.SNACK, MealTimeCategory.BREAKFAST]),
-    primary_nutrient_per_100g: 8.0,
     grams_per_household_unit: 150,
     unit_label_ar: "كوب فراولة كبير",
     unit_label_en: "Large Strawberry Cup",
@@ -455,7 +418,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Fresh Summer Watermelon",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.SNACK, MealTimeCategory.BREAKFAST]),
-    primary_nutrient_per_100g: 7.5,
     grams_per_household_unit: 200,
     unit_label_ar: "شريحة بطيخ كبيرة",
     unit_label_en: "Large Watermelon Slice",
@@ -466,7 +428,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Fresh Orange",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.SNACK, MealTimeCategory.BREAKFAST]),
-    primary_nutrient_per_100g: 12.0,
     grams_per_household_unit: 150,
     unit_label_ar: "ثمرة برتقال متوسطة",
     unit_label_en: "Medium Orange",
@@ -478,7 +439,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.SNACK]),
     // P1-B7: was 74.0; culinary AIR_POPPED_POPCORN = 77.8.
-    primary_nutrient_per_100g: 77.8,
     grams_per_household_unit: 25,
     unit_label_ar: "بولة فشار ضخمة (~25g جاف)",
     unit_label_en: "Jumbo Popcorn Bowl",
@@ -489,7 +449,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Crispy Rice Cakes",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.SNACK, MealTimeCategory.BREAKFAST]),
-    primary_nutrient_per_100g: 82.0,
     grams_per_household_unit: 9,
     unit_label_ar: "قرص رايس كيك",
     unit_label_en: "Rice Cake",
@@ -502,7 +461,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Pure Sesame Tahini",
     macro_type: FoodMacroType.FAT_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 54.0,
     grams_per_household_unit: 15,
     unit_label_ar: "ملعقة كبيرة طحينة",
     unit_label_en: "tbsp Tahini",
@@ -513,7 +471,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Fresh Avocado",
     macro_type: FoodMacroType.FAT_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 15.0,
     grams_per_household_unit: 75,
     unit_label_ar: "نصف ثمرة أفوكادو",
     unit_label_en: "Half Avocado",
@@ -524,7 +481,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Pure Ghee / Butter",
     macro_type: FoodMacroType.FAT_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 99.0,
     grams_per_household_unit: 10,
     unit_label_ar: "ملعقة طعام سمن بلدي",
     unit_label_en: "tbsp Ghee",
@@ -537,7 +493,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Extra Virgin Olive Oil",
     macro_type: FoodMacroType.FAT_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL]),
-    primary_nutrient_per_100g: 100.0,
     grams_per_household_unit: 10,
     unit_label_ar: "ملعقة طعام زيت زيتون",
     unit_label_en: "tbsp Olive Oil",
@@ -548,7 +503,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Natural Peanut Butter",
     macro_type: FoodMacroType.FAT_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 50.0,
     grams_per_household_unit: 15,
     unit_label_ar: "ملعقة طعام زبدة فول سوداني",
     unit_label_en: "tbsp Peanut Butter",
@@ -559,7 +513,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Raw Unsalted Almonds",
     macro_type: FoodMacroType.FAT_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 50.0,
     grams_per_household_unit: 15,
     unit_label_ar: "حبة لوز (~15g)",
     unit_label_en: "Almonds (~15g)",
@@ -576,7 +529,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Unsweetened Oat Milk",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 1.0,
     grams_per_household_unit: 240,
     unit_label_ar: "كوب حليب شوفان",
     unit_label_en: "Cup Oat Milk",
@@ -587,7 +539,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Unsweetened Rice Milk",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 0.3,
     grams_per_household_unit: 240,
     unit_label_ar: "كوب حليب أرز",
     unit_label_en: "Cup Rice Milk",
@@ -598,7 +549,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Unsweetened Almond Milk",
     macro_type: FoodMacroType.PROTEIN_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 0.5,
     grams_per_household_unit: 240,
     unit_label_ar: "كوب حليب لوز",
     unit_label_en: "Cup Almond Milk",
@@ -609,7 +559,6 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Fresh Mediterranean Green Salad",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 3.0,
     grams_per_household_unit: 150,
     unit_label_ar: "طبق سلطة متوسط",
     unit_label_en: "Medium Salad Bowl",
@@ -620,12 +569,32 @@ export const SMART_SWAP_REGISTRY = Object.freeze([
     name_en: "Sautéed Garden Veggies",
     macro_type: FoodMacroType.CARBOHYDRATE_DOMINANT,
     meal_categories: Object.freeze([MealTimeCategory.MAIN_MEAL, MealTimeCategory.SNACK]),
-    primary_nutrient_per_100g: 4.0,
     grams_per_household_unit: 150,
     unit_label_ar: "طبق خضار سوتيه متوسط",
     unit_label_en: "Medium Sautéed Veggies Bowl",
   },
-]);
+];
+// P2-C2: densities are NOT literals. Each entry's primary nutrient is filled from
+// the one canonical food table at import time (protein, carb, or fat per the entry's
+// macro_type), so a fix in the canonical table reaches swap ranking and portions.
+// Names, meal categories, household units, and labels stay here: they are swap
+// display metadata, not nutritional data. An entry with no canonical row fails the
+// import loudly instead of ranking on a stale density.
+const PRIMARY_NUTRIENT_KEY = {
+  PROTEIN_DOMINANT: "protein_g",
+  CARBOHYDRATE_DOMINANT: "carbohydrate_g",
+  FAT_DOMINANT: "fat_g",
+};
+for (const entry of SMART_SWAP_REGISTRY_ENTRIES) {
+  const macros = canonicalMacros(entry.food_code);
+  const key = PRIMARY_NUTRIENT_KEY[entry.macro_type];
+  if (!macros || !key) {
+    throw new Error("canonical-food-table: no canonical density for registry code " + entry.food_code);
+  }
+  entry.primary_nutrient_per_100g = macros[key];
+}
+
+export const SMART_SWAP_REGISTRY = Object.freeze(SMART_SWAP_REGISTRY_ENTRIES);
 
 export function getSmartFoodRegistryItem(foodCode) {
   return SMART_SWAP_REGISTRY.find((item) => item.food_code === foodCode) || null;
