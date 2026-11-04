@@ -1,8 +1,8 @@
 {
   "food_catalog_version": "nutrition-food-catalog-v1",
   "catalog_policy": "Z_COACHING_FOOD_CATALOG_V1",
-  "items_count": 24,
-  "active_items_count": 24,
+  "items_count": 29,
+  "active_items_count": 29,
   "items": [
     {
       "food_code": "CHICKEN_BREAST_ROASTED_SKINLESS",
@@ -837,10 +837,10 @@
         "requires_reheating": false
       },
       "nutrition_per_100g": {
-        "calories_kcal": 378.866123,
-        "protein_g": 13.49645,
+        "calories_kcal": 378.87,
+        "protein_g": 13.5,
         "fat_g": 5.89,
-        "carbohydrate_g": 68.65755,
+        "carbohydrate_g": 68.66,
         "fiber_g": 10.42
       },
       "portion_rule_g": {
@@ -1326,11 +1326,11 @@
         "requires_reheating": false
       },
       "nutrition_per_100g": {
-        "calories_kcal": 44.978589,
-        "protein_g": 0.94125,
-        "fat_g": 0.3506,
-        "carbohydrate_g": 10.26755,
-        "fiber_g": 3.095
+        "calories_kcal": 44.98,
+        "protein_g": 0.94,
+        "fat_g": 0.35,
+        "carbohydrate_g": 10.27,
+        "fiber_g": 3.1
       },
       "portion_rule_g": {
         "minimum_g": 50,
@@ -1484,6 +1484,315 @@
         "checked_date": "2026-07-17"
       }
     }
+,
+    {
+      "food_code": "SALMON_ATLANTIC_COOKED",
+      "name_ar": "سلمون أطلسي مطبوخ",
+      "name_en": "Cooked Atlantic Salmon",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 40,
+      "compatible_pattern_codes": [
+        "MAIN_CLASSIC",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "HIGH",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 206,
+        "protein_g": 22.1,
+        "fat_g": 12.35,
+        "carbohydrate_g": 0,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 250,
+        "step_g": 10,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "SALMON",
+          "FISH"
+        ],
+        "allergen_tags": [
+          "FISH"
+        ],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "LEAN_ANIMAL_PROTEIN"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:175168 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Fish, salmon, Atlantic, farmed, cooked, dry heat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-11-04"
+      }
+    },
+    {
+      "food_code": "TILAPIA_COOKED",
+      "name_ar": "بلطي مطبوخ",
+      "name_en": "Cooked Tilapia",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 50,
+      "compatible_pattern_codes": [
+        "MAIN_CLASSIC",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 128,
+        "protein_g": 26.15,
+        "fat_g": 2.65,
+        "carbohydrate_g": 0,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 250,
+        "step_g": 10,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "TILAPIA",
+          "FISH"
+        ],
+        "allergen_tags": [
+          "FISH"
+        ],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "LEAN_ANIMAL_PROTEIN"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:175177 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Fish, tilapia, cooked, dry heat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-11-04"
+      }
+    },
+    {
+      "food_code": "KING_MACKEREL_COOKED",
+      "name_ar": "كنعد مطبوخ",
+      "name_en": "Cooked King Mackerel (Kanaad)",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 60,
+      "compatible_pattern_codes": [
+        "MAIN_CLASSIC",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "MEDIUM",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 134,
+        "protein_g": 26.0,
+        "fat_g": 2.56,
+        "carbohydrate_g": 0,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 250,
+        "step_g": 10,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "MACKEREL",
+          "FISH"
+        ],
+        "allergen_tags": [
+          "FISH"
+        ],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "LEAN_ANIMAL_PROTEIN"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:174236 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Fish, mackerel, king, cooked, dry heat | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-11-04"
+      }
+    },
+    {
+      "food_code": "CHICKEN_THIGH_COOKED",
+      "name_ar": "أفخاذ دجاج مشوية بدون جلد",
+      "name_en": "Roasted Skinless Chicken Thighs",
+      "food_class": "ANIMAL_PROTEIN",
+      "food_state": "COOKED",
+      "is_active": true,
+      "selection_priority": 70,
+      "compatible_pattern_codes": [
+        "MAIN_CLASSIC",
+        "EVENING_CLASSIC",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": true
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 179,
+        "protein_g": 24.84,
+        "fat_g": 8.24,
+        "carbohydrate_g": 0,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 50,
+        "maximum_g": 250,
+        "step_g": 10,
+        "default_g": 150
+      },
+      "tags": {
+        "identity_tags": [
+          "CHICKEN",
+          "POULTRY"
+        ],
+        "allergen_tags": [],
+        "intolerance_tags": []
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "LEAN_ANIMAL_PROTEIN"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:172388 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Chicken, broilers or fryers, thigh, meat only, cooked, roasted | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-11-04"
+      }
+    },
+    {
+      "food_code": "SKIM_MILK",
+      "name_ar": "حليب خالي الدسم",
+      "name_en": "Skim Milk (Nonfat Fluid Milk)",
+      "food_class": "DAIRY_PROTEIN",
+      "food_state": "READY_TO_EAT",
+      "is_active": true,
+      "selection_priority": 40,
+      "compatible_pattern_codes": [
+        "BREAKFAST_SAVORY",
+        "BREAKFAST_DAIRY_FRUIT",
+        "BREAKFAST_LEGUME",
+        "MAIN_LEGUME",
+        "EVENING_LIGHT_SAVORY",
+        "SNACK_DAIRY_FRUIT",
+        "SNACK_PROTEIN_CARB"
+      ],
+      "available_markets": [
+        "EG",
+        "SA",
+        "KW",
+        "BH",
+        "QA",
+        "AE"
+      ],
+      "budget_level": "LOW",
+      "logistics": {
+        "requires_storage": true,
+        "requires_reheating": false
+      },
+      "nutrition_per_100g": {
+        "calories_kcal": 34,
+        "protein_g": 3.37,
+        "fat_g": 0.08,
+        "carbohydrate_g": 4.96,
+        "fiber_g": 0
+      },
+      "portion_rule_g": {
+        "minimum_g": 100,
+        "maximum_g": 400,
+        "step_g": 25,
+        "default_g": 200
+      },
+      "tags": {
+        "identity_tags": [
+          "MILK",
+          "DAIRY"
+        ],
+        "allergen_tags": [
+          "MILK"
+        ],
+        "intolerance_tags": [
+          "LACTOSE"
+        ]
+      },
+      "swap": {
+        "is_swappable": true,
+        "group_code": "PLAIN_DAIRY_PROTEIN"
+      },
+      "source": {
+        "type": "FOOD_COMPOSITION_DATABASE",
+        "name": "USDA FoodData Central",
+        "reference": "FDC:171269 | DATA_TYPE:SR_LEGACY | DESCRIPTION:Milk, nonfat, fluid, with added vitamin A and vitamin D (fat free or skim) | ENERGY_NUTRIENT_ID:1008 | FIBER_NUTRIENT_ID:1079",
+        "checked_date": "2026-11-04"
+      }
+    }
   ],
   "swap_groups": [
     {
@@ -1525,6 +1834,10 @@
       "food_class": "ANIMAL_PROTEIN",
       "active_item_codes": [
         "CHICKEN_BREAST_ROASTED_SKINLESS",
+        "CHICKEN_THIGH_COOKED",
+        "KING_MACKEREL_COOKED",
+        "SALMON_ATLANTIC_COOKED",
+        "TILAPIA_COOKED",
         "TUNA_LIGHT_CANNED_WATER_DRAINED"
       ]
     },
@@ -1534,6 +1847,7 @@
       "active_item_codes": [
         "COTTAGE_CHEESE_LOW_FAT_2_PERCENT",
         "GREEK_YOGURT_PLAIN_NONFAT",
+        "SKIM_MILK",
         "YOGURT_PLAIN_LOW_FAT"
       ]
     },

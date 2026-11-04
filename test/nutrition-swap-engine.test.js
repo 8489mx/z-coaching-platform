@@ -1177,26 +1177,104 @@ test("real closed meals expose only the approved safe Core swaps", () => {
   // P1-B6: totals and residuals recalibrated for the relative-tolerance
   // objective (the swap itself — pasta at 175 g, and only pasta — is
   // unchanged, as are the no-swap assertions below).
+  // P1-B7: totals shifted by 0.01-0.02 from the 2-decimal rounding fix
+  // (oats/carrot base values rounded; the swap itself is unchanged).
   assert.deepEqual(riceAlternative.projected_meal_totals, {
-    calories_kcal: 703.55,
+    calories_kcal: 703.56,
     protein_g: 46.98,
-    fat_g: 21.48,
-    carbohydrate_g: 79.74,
-    fiber_g: 11.01,
+    fat_g: 21.47,
+    carbohydrate_g: 79.75,
+    fiber_g: 11.03,
   });
+  // P1-B7: residuals shifted with the totals (same 2-decimal rounding
+  // fix; targets unchanged, so each residual moves by its total's delta).
   assert.deepEqual(riceAlternative.projected_meal_residual, {
-    calories_kcal: -13.45,
+    calories_kcal: -13.44,
     protein_g: 3.98,
-    fat_g: 0.48,
-    carbohydrate_g: -9.26,
-    fiber_g: 2.01,
+    fat_g: 0.47,
+    carbohydrate_g: -9.25,
+    fiber_g: 2.03,
   });
   // The fixed breakfast (egg, oats, salad) exposes no swaps.
   assert.deepEqual(findItem(result, "TOMATO_RED_RAW").alternatives, []);
   assert.deepEqual(findItem(result, "CUCUMBER_WITH_PEEL_RAW").alternatives, []);
 
+  // P1-B7 growth (Q26, proteins first): the main-meal chicken now gains
+  // exactly the two new LEAN fish alternatives. Both stay within every
+  // relative tolerance (all five nutrients true, residuals under ~11 kcal),
+  // so this is the intended variety effect, not a regression: tuna is
+  // still refused (239 g would exceed its 200 g portion cap) and salmon
+  // and chicken thighs are still refused (their fat would breach the
+  // meal's energy/fat tolerance) — the engine's own gating, working.
   assert.deepEqual(findItem(result,
-    "CHICKEN_BREAST_ROASTED_SKINLESS", 1).alternatives, []);
+    "CHICKEN_BREAST_ROASTED_SKINLESS", 1).alternatives, [
+    {
+      food_code: "KING_MACKEREL_COOKED",
+      grams: 130,
+      nutrition: {
+        calories_kcal: 174.2,
+        protein_g: 33.8,
+        fat_g: 3.33,
+        carbohydrate_g: 0,
+        fiber_g: 0,
+      },
+      projected_meal_totals: {
+        calories_kcal: 714.01,
+        protein_g: 42.63,
+        fat_g: 19.9,
+        carbohydrate_g: 89.41,
+        fiber_g: 8.78,
+      },
+      projected_meal_residual: {
+        calories_kcal: -2.99,
+        protein_g: -0.37,
+        fat_g: -1.1,
+        carbohydrate_g: 0.41,
+        fiber_g: -0.22,
+      },
+      projected_within_tolerance: {
+        calories_kcal: true,
+        protein_g: true,
+        fat_g: true,
+        carbohydrate_g: true,
+        fiber_g: true,
+      },
+      objective_score: 0.17,
+    },
+    {
+      food_code: "TILAPIA_COOKED",
+      grams: 130,
+      nutrition: {
+        calories_kcal: 166.4,
+        protein_g: 34,
+        fat_g: 3.45,
+        carbohydrate_g: 0,
+        fiber_g: 0,
+      },
+      projected_meal_totals: {
+        calories_kcal: 706.21,
+        protein_g: 42.82,
+        fat_g: 20.01,
+        carbohydrate_g: 89.41,
+        fiber_g: 8.78,
+      },
+      projected_meal_residual: {
+        calories_kcal: -10.79,
+        protein_g: -0.18,
+        fat_g: -0.99,
+        carbohydrate_g: 0.41,
+        fiber_g: -0.22,
+      },
+      projected_within_tolerance: {
+        calories_kcal: true,
+        protein_g: true,
+        fat_g: true,
+        carbohydrate_g: true,
+        fiber_g: true,
+      },
+      objective_score: 0.19,
+    },
+  ]);
   // P1-B6: the main meal no longer carries cucumber — under the relative-
   // tolerance objective the optimizer fits the target with carrot and
   // tomato alone (all five nutrients within tolerance), so there is no

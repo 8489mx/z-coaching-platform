@@ -123,6 +123,14 @@ const PORTION_RULE_FIELDS = Object.freeze([
 
 const DISPLAY_TOLERANCE = 0.01;
 const FLOAT_EPSILON = 1e-12;
+// Each reported nutrition value is stored rounded to 2dp (half-up), so a
+// sum over N items can differ from the raw recomputed sum by up to
+// 0.005 * N. Scale the comparison tolerance by the summed item count so
+// rounding alone never trips the mismatch check, while real solver
+// errors (far larger than the rounding bound) still fail. The previous
+// 0.01 display allowance is kept as a floor, so single-item comparisons
+// keep exactly their old tolerance.
+const ROUNDING_TOLERANCE_PER_ITEM = 0.005;
 const CANONICAL_ID = /^[A-Z][A-Z0-9_]*$/;
 
 function isObject(value) {
@@ -927,12 +935,15 @@ function isLegalGrams(grams, portionRule) {
     (grams - portionRule.minimum_g) % portionRule.step_g === 0;
 }
 
-function displayMismatchFields(reported, expected) {
+function displayMismatchFields(reported, expected, itemCount = 1) {
+  const tolerance = Math.max(
+    DISPLAY_TOLERANCE,
+    ROUNDING_TOLERANCE_PER_ITEM * Math.max(1, itemCount),
+  ) + FLOAT_EPSILON;
   return NUTRIENTS
     .map(({ key }) => key)
     .filter((key) =>
-      Math.abs(reported[key] - expected[key]) >
-      DISPLAY_TOLERANCE + FLOAT_EPSILON);
+      Math.abs(reported[key] - expected[key]) > tolerance);
 }
 
 function toleranceResult(actual, target, tolerance) {
@@ -1168,10 +1179,15 @@ function auditPortionCalculations({
     }
 
     const mealMismatchFields = [
-      ...displayMismatchFields(meal.totals, analysis.rawTotals),
+      ...displayMismatchFields(
+        meal.totals,
+        analysis.rawTotals,
+        itemMetadata.length,
+      ),
       ...displayMismatchFields(
         meal.residual,
         subtractNutrients(analysis.rawTotals, analysis.target),
+        itemMetadata.length,
       ),
       ...NUTRIENTS
         .map(({ key }) => key)
@@ -1203,6 +1219,10 @@ function auditPortionCalculations({
     portionSolver.meal_count !== null &&
     analyses.every((analysis) => analysis.calculable)
   ) {
+    const totalItemCount = portionMeals.reduce(
+      (count, metadata) => count + metadata.itemMetadata.length,
+      0,
+    );
     const rawDaily = analyses.reduce(
       (total, analysis) => addNutrients(total, analysis.rawTotals),
       zeroNutrients(),
@@ -1212,10 +1232,15 @@ function auditPortionCalculations({
       portionSolver.daily_target,
     );
     const dailyMismatchFields = [
-      ...displayMismatchFields(portionSolver.daily_totals, rawDaily),
+      ...displayMismatchFields(
+        portionSolver.daily_totals,
+        rawDaily,
+        totalItemCount,
+      ),
       ...displayMismatchFields(
         portionSolver.daily_residual,
         expectedDailyResidual,
+        totalItemCount,
       ),
     ];
     if (dailyMismatchFields.length > 0) {
@@ -1358,10 +1383,12 @@ function auditSwapSafety({
             fields.push(...displayMismatchFields(
               alternative.projected_meal_totals,
               projected,
+              itemMetadata.length,
             ));
             fields.push(...displayMismatchFields(
               alternative.projected_meal_residual,
               subtractNutrients(projected, analysis.target),
+              itemMetadata.length,
             ));
             const expectedWithin = toleranceResult(
               projected,

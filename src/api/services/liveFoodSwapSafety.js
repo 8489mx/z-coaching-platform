@@ -53,6 +53,16 @@ export const PLAN_FOOD_TO_REGISTRY = Object.freeze({
   SWEET_POTATO: "SWEET_POTATO_BAKED",
   WHOLE_WHEAT_PASTA: "PASTA_WHOLE_WHEAT_COOKED",
   RAW_ALMONDS: "ALMONDS_RAW",
+  // P1-B7: exact resolution for foods that used to mis-resolve through the Arabic keyword
+  // fallback (oat milk -> dry oats) or resolve to nothing (veggie sides). The milks and
+  // veggie sides below ARE registry codes; the entries pin the resolution before keywords.
+  // P1-B7: the duplicate registry banana is gone; the culinary code still resolves.
+  BANANA_FRESH: "BANANA_RAW",
+  OAT_MILK: "OAT_MILK",
+  RICE_MILK: "RICE_MILK",
+  ALMOND_MILK_UNSWEETENED: "ALMOND_MILK_UNSWEETENED",
+  MEDITERRANEAN_SALAD: "MEDITERRANEAN_SALAD",
+  SAUTEED_VEGGIES: "SAUTEED_VEGGIES",
   // No twin in the swap list: listed from a food of the same macro type.
   FRESH_GUAVA: "APPLE_FRESH",
   FREEKEH_COOKED: "PASTA_WHOLE_WHEAT_COOKED",

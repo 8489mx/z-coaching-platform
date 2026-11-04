@@ -111,8 +111,10 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
   },
   COTTAGE_CHEESE: {
     code: "COTTAGE_CHEESE",
-    name_ar: "جبن قريش طبيعي متبل بزيت الزيتون والزعتر",
-    name_en: "Natural Cottage Cheese with Olive Oil",
+    // P1-B7: was "with Olive Oil" in both names, but the macros are plain cottage
+    // (F 2.3, matching the base table 2.27); oil is added separately as an exchange.
+    name_ar: "جبن قريش طبيعي",
+    name_en: "Natural Cottage Cheese",
     protein_per_100g: 10.5,
     carb_per_100g: 4.8,
     fat_per_100g: 2.3,
@@ -128,8 +130,11 @@ export const FOOD_SWAP_DATABASE = Object.freeze({
   },
   EGGS_OMELETTE: {
     code: "EGGS_OMELETTE",
-    name_ar: "بيض كامل مسلوق أو أومليت بالخضار (كامل بدون هدر الصفار)",
-    name_en: "Whole Eggs (Boiled / Omelette)",
+    // P1-B7: was "Boiled / Omelette" (two preparations, one macro set). The macro set
+    // (P 10.6, diluted by vegetables) is the omelette preparation; boiled whole egg
+    // already exists in the base table as EGG_WHOLE_HARD_BOILED (P 12.58).
+    name_ar: "أومليت بيض كامل بالخضار (كامل بدون هدر الصفار)",
+    name_en: "Whole Egg Omelette with Vegetables",
     protein_per_100g: 10.6,
     carb_per_100g: 0.6,
     fat_per_100g: 11.7,

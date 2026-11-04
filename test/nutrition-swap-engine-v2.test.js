@@ -33,12 +33,14 @@ test("Nutrition Smart Swap Engine V2 Suite", async (t) => {
     const swap = calculateSmartSwap({
       current_food_code: "WHOLE_EGG",
       current_portion_g: 100, // 2 eggs = 13g protein
-      target_food_code: "CHEESE_COTTAGE_LOW_FAT", // 12g protein / 100g -> ~108g cottage cheese
+      // P1-B7: cottage density corrected 12.0 -> 10.45 (base table
+      // COTTAGE_CHEESE_LOW_FAT_2_PERCENT), so 13 / 10.45 * 100 = 124 g.
+      target_food_code: "CHEESE_COTTAGE_LOW_FAT", // 10.45g protein / 100g -> ~124g cottage cheese
       meal_category: MealTimeCategory.BREAKFAST,
     });
 
     assert.equal(swap.macro_type, FoodMacroType.PROTEIN_DOMINANT);
-    assert.equal(swap.target_food.portion_g, 108);
+    assert.equal(swap.target_food.portion_g, 124);
     assert.ok(swap.target_food.serving_display_ar.includes("جبن قريش"));
   });
 

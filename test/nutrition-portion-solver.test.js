@@ -1469,9 +1469,13 @@ test("real integration preserves mandatory foods and uses only legal candidates"
       assert.ok(item.grams <= rule.maximum_g);
       assert.equal((item.grams - rule.minimum_g) % rule.step_g, 0);
       for (const field of Object.keys(ZERO_NUTRITION)) {
-        const expected = Math.round(
-          food.nutrition_per_100g[field] * item.grams,
-        ) / 100;
+        // P1-B7: mirror the solver's roundForDisplay (half-up with an
+        // epsilon nudge), not plain Math.round. The growth day serves a
+        // 75 g carrot at 44.98 kcal/100 g = exactly 33.735 kcal, which the
+        // solver displays as 33.74 while the naive formula gives 33.73
+        // (float 3373.4999... rounds down). The solver's value is correct.
+        const raw = food.nutrition_per_100g[field] * item.grams / 100;
+        const expected = Math.round((raw + Number.EPSILON * raw) * 100) / 100;
         assert.equal(item.nutrition[field], expected);
       }
     }

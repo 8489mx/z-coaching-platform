@@ -28,6 +28,8 @@ const CRUNCH_SNACK = "CRUNCH_SNACK";
 const LEGUME_SNACK = "LEGUME_SNACK";
 const COOKING_FAT = "COOKING_FAT";
 const NUT_SPREAD = "NUT_SPREAD";
+// P1-B7: veggie sides swap with each other only (a salad is not a starch, fruit, or protein).
+const VOLUME_VEG = "VOLUME_VEG";
 
 // Plan codes (FOOD_SWAP_DATABASE) and mobile registry codes (SMART_SWAP_REGISTRY) side by side.
 export const SWAP_FAMILIES = Object.freeze({
@@ -75,6 +77,10 @@ export const SWAP_FAMILIES = Object.freeze({
   FRESH_GUAVA: [SWEET_CARB], DATES_KHALAS: [SWEET_CARB],
 
   AIR_POPPED_POPCORN: [CRUNCH_SNACK],
+
+  // P1-B7: veggie sides (previously no family, so never offered as a swap at all).
+  MEDITERRANEAN_SALAD: [VOLUME_VEG],
+  SAUTEED_VEGGIES: [VOLUME_VEG],
 
   // Fats: what the food is cooked in, and what is eaten as it is.
   OLIVE_OIL: [COOKING_FAT], NATURAL_BUTTER_GHEE: [COOKING_FAT],

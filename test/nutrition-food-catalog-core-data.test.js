@@ -52,12 +52,19 @@ const EXPECTED_FOOD_CODES = Object.freeze([
   "CARROT_RAW",
   "OLIVE_OIL",
   "SUNFLOWER_OIL",
+  // P1-B7 growth tranche (Q26, proteins first): verified USDA SR Legacy records.
+  "SALMON_ATLANTIC_COOKED",
+  "TILAPIA_COOKED",
+  "KING_MACKEREL_COOKED",
+  "CHICKEN_THIGH_COOKED",
+  "SKIM_MILK",
 ]);
 
 const EXPECTED_CLASS_COUNTS = Object.freeze({
-  ANIMAL_PROTEIN: 3,
+  // P1-B7: +4 animal proteins, +1 dairy protein.
+  ANIMAL_PROTEIN: 7,
   EGG: 2,
-  DAIRY_PROTEIN: 3,
+  DAIRY_PROTEIN: 4,
   LEGUME: 3,
   STARCH: 5,
   FRUIT: 3,
@@ -142,7 +149,8 @@ const EXPECTED_NUTRITION = Object.freeze({
   FAVA_BEANS_MATURE_COOKED: [110, 7.6, 0.4, 19.65, 5.4],
   RICE_WHITE_LONG_GRAIN_COOKED: [130, 2.69, 0.28, 28.17, 0.4],
   POTATO_BOILED_WITHOUT_SKIN: [86, 1.71, 0.1, 20.01, 1.8],
-  OATS_ROLLED_DRY: [378.866123, 13.49645, 5.89, 68.65755, 10.42],
+  // P1-B7: rounded to <= 2 decimals (was 378.866123 / 13.49645 / 68.65755).
+  OATS_ROLLED_DRY: [378.87, 13.5, 5.89, 68.66, 10.42],
   BREAD_WHOLE_WHEAT: [252, 12.45, 3.5, 42.71, 6],
   PASTA_SPAGHETTI_COOKED: [157, 5.76, 0.92, 30.7, 1.8],
   BANANA_RAW: [88, 0.74, 0.29, 23, 1.7],
@@ -150,9 +158,16 @@ const EXPECTED_NUTRITION = Object.freeze({
   ORANGE_RAW: [47, 0.94, 0.12, 11.75, 2.4],
   TOMATO_RED_RAW: [18, 0.88, 0.2, 3.89, 1.2],
   CUCUMBER_WITH_PEEL_RAW: [15, 0.65, 0.11, 3.63, 0.5],
-  CARROT_RAW: [44.978589, 0.94125, 0.3506, 10.26755, 3.095],
+  // P1-B7: rounded to <= 2 decimals (was 44.978589 / 0.94125 / 0.3506 / 10.26755 / 3.095).
+  CARROT_RAW: [44.98, 0.94, 0.35, 10.27, 3.1],
   OLIVE_OIL: [884, 0, 100, 0, 0],
   SUNFLOWER_OIL: [884, 0, 100, 0, 0],
+  // P1-B7 growth: [kcal, protein, fat, carbs, fiber] per 100g, USDA SR Legacy.
+  SALMON_ATLANTIC_COOKED: [206, 22.1, 12.35, 0, 0],
+  TILAPIA_COOKED: [128, 26.15, 2.65, 0, 0],
+  KING_MACKEREL_COOKED: [134, 26.0, 2.56, 0, 0],
+  CHICKEN_THIGH_COOKED: [179, 24.84, 8.24, 0, 0],
+  SKIM_MILK: [34, 3.37, 0.08, 4.96, 0],
 });
 
 const EXPECTED_PORTIONS = Object.freeze({
@@ -180,6 +195,12 @@ const EXPECTED_PORTIONS = Object.freeze({
   CARROT_RAW: [50, 400, 25, 150],
   OLIVE_OIL: [5, 40, 5, 10],
   SUNFLOWER_OIL: [5, 40, 5, 10],
+  // P1-B7 growth: cooked proteins mirror chicken breast; skim milk mirrors yogurt.
+  SALMON_ATLANTIC_COOKED: [50, 250, 10, 150],
+  TILAPIA_COOKED: [50, 250, 10, 150],
+  KING_MACKEREL_COOKED: [50, 250, 10, 150],
+  CHICKEN_THIGH_COOKED: [50, 250, 10, 150],
+  SKIM_MILK: [100, 400, 25, 200],
 });
 
 const EXPECTED_SOURCES = Object.freeze({
@@ -207,6 +228,12 @@ const EXPECTED_SOURCES = Object.freeze({
   CARROT_RAW: [2258586, "FOUNDATION_FOOD", "Carrots, mature, raw", 2048, 1079],
   OLIVE_OIL: [171413, "SR_LEGACY", "Oil, olive, salad or cooking", 1008, 1079],
   SUNFLOWER_OIL: [171025, "SR_LEGACY", "Oil, sunflower, linoleic, (approx. 65%)", 1008, 1079],
+  // P1-B7 growth: verified 2026-11-04 against USDA-derived sources (see report).
+  SALMON_ATLANTIC_COOKED: [175168, "SR_LEGACY", "Fish, salmon, Atlantic, farmed, cooked, dry heat", 1008, 1079],
+  TILAPIA_COOKED: [175177, "SR_LEGACY", "Fish, tilapia, cooked, dry heat", 1008, 1079],
+  KING_MACKEREL_COOKED: [174236, "SR_LEGACY", "Fish, mackerel, king, cooked, dry heat", 1008, 1079],
+  CHICKEN_THIGH_COOKED: [172388, "SR_LEGACY", "Chicken, broilers or fryers, thigh, meat only, cooked, roasted", 1008, 1079],
+  SKIM_MILK: [171269, "SR_LEGACY", "Milk, nonfat, fluid, with added vitamin A and vitamin D (fat free or skim)", 1008, 1079],
 });
 
 const EXPECTED_TAGS = Object.freeze({
@@ -234,6 +261,12 @@ const EXPECTED_TAGS = Object.freeze({
   CARROT_RAW: [["CARROT"], [], []],
   OLIVE_OIL: [["OLIVE_OIL", "OIL"], [], []],
   SUNFLOWER_OIL: [["SUNFLOWER_OIL", "OIL"], [], []],
+  // P1-B7 growth: fish carry the FISH allergen; skim milk carries MILK/LACTOSE like yogurt.
+  SALMON_ATLANTIC_COOKED: [["SALMON", "FISH"], ["FISH"], []],
+  TILAPIA_COOKED: [["TILAPIA", "FISH"], ["FISH"], []],
+  KING_MACKEREL_COOKED: [["MACKEREL", "FISH"], ["FISH"], []],
+  CHICKEN_THIGH_COOKED: [["CHICKEN", "POULTRY"], [], []],
+  SKIM_MILK: [["MILK", "DAIRY"], ["MILK"], ["LACTOSE"]],
 });
 
 const EXPECTED_SWAP_GROUPS = Object.freeze([
@@ -241,8 +274,8 @@ const EXPECTED_SWAP_GROUPS = Object.freeze([
   ["COOKED_LEGUMES", "LEGUME", ["CHICKPEAS_MATURE_COOKED", "FAVA_BEANS_MATURE_COOKED", "LENTILS_MATURE_COOKED"]],
   ["COOKED_STARCHES", "STARCH", ["PASTA_SPAGHETTI_COOKED", "POTATO_BOILED_WITHOUT_SKIN", "RICE_WHITE_LONG_GRAIN_COOKED"]],
   ["COOKING_OILS", "ADDED_FAT", ["OLIVE_OIL", "SUNFLOWER_OIL"]],
-  ["LEAN_ANIMAL_PROTEIN", "ANIMAL_PROTEIN", ["CHICKEN_BREAST_ROASTED_SKINLESS", "TUNA_LIGHT_CANNED_WATER_DRAINED"]],
-  ["PLAIN_DAIRY_PROTEIN", "DAIRY_PROTEIN", ["COTTAGE_CHEESE_LOW_FAT_2_PERCENT", "GREEK_YOGURT_PLAIN_NONFAT", "YOGURT_PLAIN_LOW_FAT"]],
+  ["LEAN_ANIMAL_PROTEIN", "ANIMAL_PROTEIN", ["CHICKEN_BREAST_ROASTED_SKINLESS", "CHICKEN_THIGH_COOKED", "KING_MACKEREL_COOKED", "SALMON_ATLANTIC_COOKED", "TILAPIA_COOKED", "TUNA_LIGHT_CANNED_WATER_DRAINED"]],
+  ["PLAIN_DAIRY_PROTEIN", "DAIRY_PROTEIN", ["COTTAGE_CHEESE_LOW_FAT_2_PERCENT", "GREEK_YOGURT_PLAIN_NONFAT", "SKIM_MILK", "YOGURT_PLAIN_LOW_FAT"]],
   ["RAW_VEGETABLES", "NON_STARCH_VEGETABLE", ["CARROT_RAW", "CUCUMBER_WITH_PEEL_RAW", "TOMATO_RED_RAW"]],
   ["WHOLE_FRUITS", "FRUIT", ["APPLE_RAW_WITH_SKIN", "BANANA_RAW", "ORANGE_RAW"]],
 ]);
@@ -261,9 +294,20 @@ const STORAGE_REQUIRED = new Set([
   "RICE_WHITE_LONG_GRAIN_COOKED",
   "POTATO_BOILED_WITHOUT_SKIN",
   "PASTA_SPAGHETTI_COOKED",
+  // P1-B7 growth: all five need storage.
+  "SALMON_ATLANTIC_COOKED",
+  "TILAPIA_COOKED",
+  "KING_MACKEREL_COOKED",
+  "CHICKEN_THIGH_COOKED",
+  "SKIM_MILK",
 ]);
 
 const REHEATING_REQUIRED = new Set([
+  // P1-B7 growth: the four cooked proteins need reheating; skim milk does not.
+  "SALMON_ATLANTIC_COOKED",
+  "TILAPIA_COOKED",
+  "KING_MACKEREL_COOKED",
+  "CHICKEN_THIGH_COOKED",
   "CHICKEN_BREAST_ROASTED_SKINLESS",
   "BEEF_GROUND_90_LEAN_COOKED",
   "LENTILS_MATURE_COOKED",
@@ -374,12 +418,12 @@ test("the imported workbook catalog deep-equals the committed JSON", async () =>
   assert.deepEqual(await importedCatalog(), await committedCatalog());
 });
 
-test("the production catalog contains exactly 24 items", async () => {
-  assert.equal((await committedCatalog()).items_count, 24);
+test("the production catalog contains exactly 29 items", async () => {
+  assert.equal((await committedCatalog()).items_count, 29);
 });
 
-test("the production catalog contains exactly 24 active items", async () => {
-  assert.equal((await committedCatalog()).active_items_count, 24);
+test("the production catalog contains exactly 29 active items", async () => {
+  assert.equal((await committedCatalog()).active_items_count, 29);
 });
 
 test("food class counts match the required eight-class distribution", async () => {
@@ -393,7 +437,7 @@ test("food class counts match the required eight-class distribution", async () =
   assert.deepEqual(counts, EXPECTED_CLASS_COUNTS);
 });
 
-test("the 24 food codes retain the required exact order", async () => {
+test("the 29 food codes retain the required exact order", async () => {
   assert.deepEqual(
     (await committedCatalog()).items.map(({ food_code }) => food_code),
     EXPECTED_FOOD_CODES,
@@ -422,9 +466,23 @@ test("every production source names USDA FoodData Central", async () => {
   }
 });
 
+// P1-B7 growth items were verified 2026-11-04; the original 24 keep 2026-07-17.
+// Dates are per-item and honest, never backdated to the original batch date.
+const P1B7_GROWTH_CODES = new Set([
+  "SALMON_ATLANTIC_COOKED",
+  "TILAPIA_COOKED",
+  "KING_MACKEREL_COOKED",
+  "CHICKEN_THIGH_COOKED",
+  "SKIM_MILK",
+]);
+
 test("every production source uses the required checked date", async () => {
   for (const item of (await committedCatalog()).items) {
-    assert.equal(item.source.checked_date, "2026-07-17", item.food_code);
+    assert.equal(
+      item.source.checked_date,
+      P1B7_GROWTH_CODES.has(item.food_code) ? "2026-11-04" : "2026-07-17",
+      item.food_code,
+    );
   }
 });
 
@@ -440,9 +498,9 @@ test("every source reference includes exact FDC, type, description, energy, and 
   }
 });
 
-test("all 24 FDC IDs are unique", async () => {
+test("all 29 FDC IDs are unique", async () => {
   const ids = (await committedCatalog()).items.map((item) => sourceParts(item).fdcId);
-  assert.equal(new Set(ids).size, 24);
+  assert.equal(new Set(ids).size, 29);
 });
 
 test("the batch contains no branded or manufacturer-label record", async () => {

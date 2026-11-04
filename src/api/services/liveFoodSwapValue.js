@@ -29,7 +29,9 @@ const MAIN_NUTRIENT = Object.freeze({
 
 /**
  * Grams of the target that carry the same main nutrient as the original portion, from the same food
- * data the value check uses (the registry's own densities disagreed: tuna 26 vs 19.4 g protein).
+ * data the value check uses. (P1-B7 corrected the registry's own densities to the same values —
+ * tuna 19.44, cottage 10.45, salmon 22.1 — so the override below is now a single-source
+ * guarantee, not a patch over a disagreement.)
  * Null when either food's data is missing.
  */
 export function liveSwapTargetGrams(fromCode, fromGrams, toCode, macroType) {
