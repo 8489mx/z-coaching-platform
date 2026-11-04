@@ -27,6 +27,9 @@ const INTAKE = {
   dangerous_symptoms: ["NONE"],
   medical_conditions: { has_conditions: false, selected: ["none"] },
   injuries_map: { has_injuries: false, selected_areas: ["none"] },
+  // P1-B4: walking declared explicitly — a missing answer now holds cardio for
+  // coach review instead of silently passing as EASY.
+  cardio: { walkingAbility: "EASY" },
   religion: "MUSLIM", strict_allergies: ["none"],
   meal_structure: { meals_count: "3_meals_snack", intermittent_fasting: "none" },
   training_logistics: { days_per_week: 4, experience_level: "intermediate" },

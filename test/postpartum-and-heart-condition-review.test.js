@@ -24,6 +24,9 @@ const intake = (selected = [], femaleCases = {}, extra = {}) => ({
     female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false, ...femaleCases },
   },
   injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: ["none"],
+  // P1-B4: walking declared explicitly — a missing answer now holds cardio for
+  // coach review instead of silently passing as EASY.
+  cardio: { walkingAbility: "EASY" },
   meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
   training_logistics: { days_per_week: 4, training_age: "1_2_years" }, recent_training: "ACTIVE", ...extra,
 });

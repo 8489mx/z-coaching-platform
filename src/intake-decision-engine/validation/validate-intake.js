@@ -841,7 +841,9 @@ function validateTraining(input, issues) {
       issues,
     );
     requiredString(injury.area, `${path}.area`, issues);
-    numberInRange(injury.painLevel, `${path}.painLevel`, issues, 0, 10);
+    // P1-B4: unknown pain (null) is a review matter, not a shape error — the
+    // existing ACTIVE_INJURY coach-review branch holds such injuries.
+    numberInRange(injury.painLevel, `${path}.painLevel`, issues, 0, 10, { nullable: true });
     enumValue(injury.movementImpact, MovementImpact, `${path}.movementImpact`, issues);
     requiredBoolean(injury.worsening, `${path}.worsening`, issues);
     requiredBoolean(injury.numbnessOrWeakness, `${path}.numbnessOrWeakness`, issues);

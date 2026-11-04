@@ -9,6 +9,25 @@ import { resolveDailySteps } from "../../steps-source/resolve-daily-steps.js";
 import { IntakeValidationError } from "../validation/intake-validation-error.js";
 import { dislikedFoodCodes } from "./disliked-foods.js";
 
+// P1-B4: medication-list honesty. 'none' is not a medication, and free-text
+// entries are medications too (previously they were dropped unless they
+// mentioned insulin). Returns trimmed, de-duplicated entries in first-seen order.
+function normalizeMedicationList(list, freeText) {
+  const out = [];
+  const seen = new Set();
+  const push = (v) => {
+    const s = String(v ?? "").trim();
+    if (!s || s.toUpperCase() === "NONE") return;
+    const key = s.toUpperCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(s);
+  };
+  (Array.isArray(list) ? list : []).forEach(push);
+  String(freeText || "").split(/[,;،\n]+/).forEach(push);
+  return out;
+}
+
 export function parseCleanNumber(val, fallback = null) {
   if (val === null || val === undefined || val === '') return fallback;
   if (typeof val === 'number') return Number.isFinite(val) ? val : fallback;
@@ -381,7 +400,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       dangerousSymptomsList: dangerousList,
       pregnancyStatus: intake.female_pregnancy || (intake.medical_conditions?.female_cases?.is_lactating ? 'BREASTFEEDING' : (intake.medical_conditions?.female_cases?.is_postpartum ? 'POSTPARTUM' : 'NOT_PREGNANT')),
       menstrualStatus: intake.female_menstrual || undefined,
-      medications: intake.current_meds_supplements_list || []
+      medications: normalizeMedicationList(intake.current_meds_supplements_list, intake.current_meds_supplements)
     };
   }
 
@@ -407,6 +426,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       shoulder: 'SHOULDER',
       core: 'LOWER_BACK',
       other_joints: 'ELBOW_WRIST',
+      elbow: 'ELBOW',
+      wrist: 'WRIST',
+      elbow_wrist: 'ELBOW_WRIST',
       LOWER_BACK: 'LOWER_BACK',
       KNEE: 'KNEE',
       SHOULDER: 'SHOULDER',
@@ -416,15 +438,27 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     };
     // Deep intake form v2: injury_severity maps to painLevel
     const severityPainMap = { MILD: 3, MODERATE: 5, SEVERE: 8 };
-    // Intake form: an acute (traumatic) injury starts at a higher pain estimate than a chronic one, and
-    // pain that does not settle with rest is a non-mechanical red flag that needs medical review.
-    const isAcuteInjury = String(intake.injuries_map?.injury_nature || '').toLowerCase() === 'acute';
+    // P1-B4: a reported pain level (0-10) wins over any derivation. Without a
+    // reported level and without an explicit severity, pain is unknown (null)
+    // — never an invented acute-5 / chronic-4 — and the injury still reaches
+    // coach review through the existing ACTIVE_INJURY branch. Pain that does
+    // not settle with rest is a non-mechanical red flag that needs medical review.
+    const reportedPain = Number(intake.injuries_map?.pain_level ?? intake.injuries_map?.painLevel);
+    const hasReportedPain = Number.isFinite(reportedPain) && reportedPain >= 0 && reportedPain <= 10;
+    const injPainLevel = hasReportedPain ? reportedPain : (severityPainMap[intake.injury_severity] ?? null);
     const painNotRelievedByRest = intake.injuries_map?.pain_relieved_by_rest === false;
-    const injPainLevel = severityPainMap[intake.injury_severity] || (isAcuteInjury ? 5 : 4);
+    // P1-B4: numbness or weakness, reported directly on the form.
+    const numbnessOrWeakness = intake.injuries_map?.numbness === true || intake.injuries_map?.weakness === true
+      || intake.injuries_map?.numbness_or_weakness === true || intake.injuries_map?.numbnessOrWeakness === true;
     injAreas.forEach(a => {
       if (a && a !== 'none' && a !== 'NONE') {
         const canonicalArea = AREA_MAP[a] || String(a).toUpperCase();
-        trainingInjuries.push({ area: canonicalArea, painLevel: injPainLevel, movementImpact: injPainLevel >= 8 ? 'PREVENTS' : (injPainLevel >= 5 ? 'LIMITS' : 'NONE'), worsening: painNotRelievedByRest });
+        // P1-B4: 'other joints' / elbow_wrist is two joints, not one — the
+        // wrist half was silently lost when ELBOW matched first.
+        const areas = canonicalArea === 'ELBOW_WRIST' ? ['ELBOW', 'WRIST'] : [canonicalArea];
+        areas.forEach(area => {
+          trainingInjuries.push({ area, painLevel: injPainLevel, movementImpact: injPainLevel === null ? 'LIMITS' : (injPainLevel >= 8 ? 'PREVENTS' : (injPainLevel >= 5 ? 'LIMITS' : 'NONE')), worsening: painNotRelievedByRest, numbnessOrWeakness });
+        });
       }
     });
 
@@ -462,7 +496,10 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     const rawAllergyDislikes = Array.isArray(intake.allergies_and_dislikes)
       ? intake.allergies_and_dislikes.filter(v => v !== 'NONE')
       : [];
-    const allergens = (intake.strict_allergies || rawAllergyDislikes).map(a => ({ substance: String(a).toUpperCase(), medicallyConfirmed: true }));
+    // P1-B4: 'none' means no allergy — it must not create a phantom allergy
+    // entry (previously it did, stamped confirmed, and only stayed silent
+    // because the false flag now routes to review).
+    const allergens = (intake.strict_allergies || rawAllergyDislikes).filter(a => a && String(a).toUpperCase() !== "NONE").map(a => ({ substance: String(a).toUpperCase(), medicallyConfirmed: false }));
     intake.nutrition = {
       preferredMealCount: Number(intake.preferred_meal_count) || mealCountMap[intake.meal_structure?.meals_count] || 3,
       allergies: allergens,
@@ -820,7 +857,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const canonicalMedical = {
     conditions,
     dangerousSymptoms,
-    medications: Array.isArray(medical.medications) ? medical.medications : [],
+    medications: normalizeMedicationList(medical.medications, intake.current_meds_supplements),
     eatingDisorderHistory: ["NONE", "PAST", "ACTIVE", "SUSPECTED", "UNKNOWN"].includes(medical.eatingDisorderHistory)
       ? medical.eatingDisorderHistory
       : (["NONE", "PAST", "ACTIVE", "SUSPECTED", "UNKNOWN"].includes(intake.eating_disorder_history)
@@ -860,14 +897,19 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
   const excludedFoods = Array.from(new Set(rawExcluded.map(x => (typeof x === "string" ? x.toUpperCase() : ""))));
 
-  // Format Allergies: [{ substance: "EGG", medicallyConfirmed: true }]
+  // Format Allergies: [{ substance: "EGG", medicallyConfirmed: false }]
+  // P1-B4: a form tick is self-reported, never medically confirmed. Only an
+  // explicit true (a clinician source) stays true; the substance still stays
+  // excluded, and the unconfirmed flag routes the plan to coach review.
   const allergies = [];
   if (Array.isArray(nutrition.allergies)) {
     nutrition.allergies.forEach(a => {
       if (typeof a === 'string' && a.trim()) {
-        allergies.push({ substance: a.trim().toUpperCase(), medicallyConfirmed: true });
+        const sub = a.trim().toUpperCase();
+        if (sub !== "NONE") allergies.push({ substance: sub, medicallyConfirmed: false });
       } else if (a && a.substance) {
-        allergies.push({ substance: a.substance.toUpperCase(), medicallyConfirmed: Boolean(a.medicallyConfirmed !== false) });
+        const sub = a.substance.toUpperCase();
+        if (sub !== "NONE") allergies.push({ substance: sub, medicallyConfirmed: a.medicallyConfirmed === true });
       }
     });
   }
@@ -875,16 +917,16 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     intake.allergies.forEach(a => {
       if (typeof a === 'string' && a.trim()) {
         const sub = a.trim().toUpperCase();
-        if (!allergies.some(ex => ex.substance === sub)) {
-          allergies.push({ substance: sub, medicallyConfirmed: true });
+        if (sub !== "NONE" && !allergies.some(ex => ex.substance === sub)) {
+          allergies.push({ substance: sub, medicallyConfirmed: false });
         }
       }
     });
   }
 
   const addAllergy = (sub) => {
-    if (!allergies.some(a => a.substance === sub.toUpperCase())) {
-      allergies.push({ substance: sub.toUpperCase(), medicallyConfirmed: true });
+    if (sub.toUpperCase() !== "NONE" && !allergies.some(a => a.substance === sub.toUpperCase())) {
+      allergies.push({ substance: sub.toUpperCase(), medicallyConfirmed: false });
     }
   };
 
@@ -1059,15 +1101,14 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   };
 
   // Format Injuries: [{ area: "LOWER_BACK", painLevel: 4, movementImpact: "NONE", worsening: false, numbnessOrWeakness: false, affectedMovements: [], medicalRestrictions: [] }]
+  // P1-B4: painLevel may be null here (unknown, never invented); the existing
+  // ACTIVE_INJURY coach-review branch holds such injuries.
   const injuries = [];
   if (Array.isArray(training.injuries)) {
     training.injuries.forEach(inj => {
       const rawArea = typeof inj === 'string' ? inj : (inj.area || inj.bodyPart || "");
       if (rawArea) {
         const norm = normalizeInjuryArea(rawArea);
-        const affectedMovements = (typeof inj === 'object' && Array.isArray(inj.affectedMovements) && inj.affectedMovements.length > 0)
-          ? inj.affectedMovements
-          : norm.movements;
 
         const formattedRestrictions = (typeof inj === 'object' && Array.isArray(inj.medicalRestrictions) ? inj.medicalRestrictions : [])
           .map(r => {
@@ -1076,17 +1117,27 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
           })
           .filter(Boolean);
 
-        if (!injuries.some(i => i.area === norm.area)) {
-          injuries.push({
-            area: norm.area,
-            painLevel: (typeof inj === 'object' && Number(inj.painLevel)) || 4,
-            movementImpact: (typeof inj === 'object' && ["NONE", "LIMITS", "PREVENTS"].includes(inj.movementImpact)) ? inj.movementImpact : "LIMITS",
-            worsening: Boolean(typeof inj === 'object' && inj.worsening),
-            numbnessOrWeakness: Boolean(typeof inj === 'object' && inj.numbnessOrWeakness),
-            affectedMovements,
-            medicalRestrictions: formattedRestrictions
-          });
-        }
+        // P1-B4: a combined elbow_wrist area is two injuries, and a missing
+        // pain level stays null (unknown) instead of an invented 4.
+        const expandAreas = String(rawArea).toUpperCase() === "ELBOW_WRIST" ? ["ELBOW", "WRIST"] : [norm.area];
+        // Note: Number(null) is 0, so null must be excluded explicitly or
+        // unknown pain would silently become "no pain".
+        const painValue = (typeof inj === 'object' && inj.painLevel !== null && inj.painLevel !== undefined && Number.isFinite(Number(inj.painLevel))) ? Number(inj.painLevel) : null;
+        expandAreas.forEach(area => {
+          if (!injuries.some(i => i.area === area)) {
+            injuries.push({
+              area,
+              painLevel: painValue,
+              movementImpact: (typeof inj === 'object' && ["NONE", "LIMITS", "PREVENTS"].includes(inj.movementImpact)) ? inj.movementImpact : "LIMITS",
+              worsening: Boolean(typeof inj === 'object' && inj.worsening),
+              numbnessOrWeakness: Boolean(typeof inj === 'object' && inj.numbnessOrWeakness),
+              affectedMovements: (typeof inj === 'object' && Array.isArray(inj.affectedMovements) && inj.affectedMovements.length > 0)
+                ? inj.affectedMovements
+                : (area === "WRIST" ? ["PUSH"] : norm.movements),
+              medicalRestrictions: formattedRestrictions
+            });
+          }
+        });
       }
     });
   }
@@ -1096,17 +1147,26 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     const inj = String(rawStr).toUpperCase();
     if (inj && inj !== "NONE") {
       const norm = normalizeInjuryArea(inj);
-      if (!injuries.some(i => i.area === norm.area)) {
-        injuries.push({
-          area: norm.area,
-          painLevel: 4,
-          movementImpact: "LIMITS",
-          worsening: false,
-          numbnessOrWeakness: false,
-          affectedMovements: norm.movements,
-          medicalRestrictions: []
-        });
-      }
+      // P1-B4: a combined elbow_wrist area is two injuries; records here carry
+      // no pain data, so pain stays null (unknown) instead of an invented 4,
+      // and the existing ACTIVE_INJURY coach-review branch holds them.
+      const expandAreas = inj === "ELBOW_WRIST" ? ["ELBOW", "WRIST"] : [norm.area];
+      const poolPain = (typeof rawInj === 'object' && rawInj.painLevel !== null && rawInj.painLevel !== undefined && Number.isFinite(Number(rawInj.painLevel))) ? Number(rawInj.painLevel) : null;
+      expandAreas.forEach(area => {
+        if (!injuries.some(i => i.area === area)) {
+          injuries.push({
+            area,
+            painLevel: poolPain,
+            movementImpact: "LIMITS",
+            worsening: Boolean(typeof rawInj === 'object' && rawInj.worsening),
+            numbnessOrWeakness: Boolean(typeof rawInj === 'object' && rawInj.numbnessOrWeakness),
+            affectedMovements: (typeof rawInj === 'object' && Array.isArray(rawInj.affectedMovements) && rawInj.affectedMovements.length > 0)
+              ? rawInj.affectedMovements
+              : (area === "WRIST" ? ["PUSH"] : norm.movements),
+            medicalRestrictions: []
+          });
+        }
+      });
     }
   });
 
@@ -1249,7 +1309,11 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const canonicalCardio = {
     additionalSports: sports,
     averageDailySteps: stepResolution.value,
-    walkingAbility: ["EASY", "MODERATE", "PAINFUL"].includes(cardio.walkingAbility) ? cardio.walkingAbility : "EASY",
+    // P1-B4: map onto the real WalkingAbility enum. Any difficulty (PAINFUL,
+    // MODERATE) is LIMITED so the cardio review branch can fire; unknown or
+    // missing is UNKNOWN, never EASY — the old allow-list destroyed exactly
+    // the two values the cardio rule watches for.
+    walkingAbility: { EASY: "EASY", MODERATE: "LIMITED", PAINFUL: "LIMITED", LIMITED: "LIMITED", UNKNOWN: "UNKNOWN" }[String(cardio.walkingAbility || "").toUpperCase()] || "UNKNOWN",
     maxSessionsPerWeek: Math.min(7, Math.max(0, !isNaN(Number(cardio.maxSessionsPerWeek)) ? Number(cardio.maxSessionsPerWeek) : 2)),
     maxDurationMinutes: Math.min(120, Math.max(10, !isNaN(Number(cardio.maxDurationMinutes)) ? Number(cardio.maxDurationMinutes) : 30))
   };

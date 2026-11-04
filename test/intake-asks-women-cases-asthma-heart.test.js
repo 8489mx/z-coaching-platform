@@ -43,6 +43,9 @@ const answers = (femalePregnancy, femaleCases, selected = ["none"]) => ({
   medical_conditions: { has_conditions: !selected.includes("none"), selected,
     female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false, answered: true, ...femaleCases } },
   injuries_map: { has_injuries: false, selected_areas: ["none"] }, strict_allergies: ["none"],
+  // P1-B4: walking declared explicitly — a missing answer now holds cardio for
+  // coach review instead of silently passing as EASY.
+  cardio: { walkingAbility: "EASY" },
   training_logistics: { days_per_week: 3, training_age: "never" }, female_pregnancy: femalePregnancy,
 });
 const canonical = (a) => adaptIntakePayloadToCanonicalEngine(structuredClone(a));

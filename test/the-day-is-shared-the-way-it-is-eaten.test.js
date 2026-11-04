@@ -114,6 +114,9 @@ test("a plan after stomach surgery waits for a person before it is approved", as
       bariatric: { is_operated: operated, meal_capacity_grams: "150_200", dumping_syndrome: false },
     },
     injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: ["none"],
+    // P1-B4: walking declared explicitly — a missing answer now holds cardio for
+    // coach review instead of silently passing as EASY.
+    cardio: { walkingAbility: "EASY" },
     meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
     training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
   });

@@ -21,6 +21,10 @@ const intake = (disliked, extra = {}) => ({
   medical_conditions: { has_conditions: false, selected: ["none"] }, injuries_map: { has_injuries: false, selected_areas: ["none"] },
   religion: "MUSLIM", strict_allergies: ["none"], meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" },
   training_environment: "commercial_gym", training_logistics: { days_per_week: 3, training_age: "never" }, recent_training: "ACTIVE",
+  // P1-B4: walking declared explicitly — a missing answer now holds cardio for
+  // coach review instead of silently passing as EASY, and this test is about
+  // dislikes, not walking.
+  cardio: { walkingAbility: "EASY" },
   disliked_foods: disliked, ...extra,
 });
 const plan = (disliked, extra) => buildMasterEngineV2({ intake: intake(disliked, extra), evaluationContext: CONTEXT, nutritionFoodCatalog: CATALOG, options: {} });

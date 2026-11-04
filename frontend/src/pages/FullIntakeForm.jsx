@@ -48,8 +48,17 @@ const DEFAULT_MASTER_INTAKE = {
     core: [],
     other_joints: [],
     injury_nature: 'chronic',
-    pain_relieved_by_rest: true
+    pain_relieved_by_rest: true,
+    // P1-B4: reported pain level (0-10, null = not answered yet, never invented),
+    // numbness and weakness flags for the medical-review rules.
+    pain_level: null,
+    numbness: false,
+    weakness: false
   },
+  // P1-B4: walking ability on the real enum (EASY / LIMITED / UNKNOWN).
+  // UNKNOWN is the default: an unanswered question must hold cardio for
+  // coach review, never pass as EASY.
+  cardio: { walkingAbility: 'UNKNOWN' },
   current_meds_supplements_list: [],
   current_meds_supplements: '',
 
@@ -1083,6 +1092,44 @@ export default function FullIntakeForm() {
                 </div>
               </div>
 
+              {/* P1-B4: walking ability on the real enum — difficulty or "don't know"
+                  holds formal cardio for coach review, never passes as EASY. */}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
+                  هل تقدر تمشي 10 دقايق بسهولة؟
+                </label>
+                <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 8px 0', lineHeight: 1.4 }}>
+                  لو بتمشي بصعوبة أو مش عارف، الكارديو الرسمي هيتأجل لمراجعة المدرب.
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    { id: 'EASY', title: 'أمشي بسهولة' },
+                    { id: 'LIMITED', title: 'أمشي بصعوبة' },
+                    { id: 'UNKNOWN', title: 'مش عارف' }
+                  ].map((opt) => {
+                    const isSelected = (formData.cardio?.walkingAbility ?? 'UNKNOWN') === opt.id;
+                    return (
+                      <div
+                        key={opt.id}
+                        onClick={() => setFormData(p => ({ ...p, cardio: { ...(p.cardio || {}), walkingAbility: opt.id } }))}
+                        style={{
+                          padding: '8px 14px',
+                          borderRadius: '8px',
+                          border: isSelected ? '2px solid #0F172A' : '1px solid #E2E8F0',
+                          background: isSelected ? '#F1F5F9' : '#FFFFFF',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: '#0F172A'
+                        }}
+                      >
+                        {opt.title}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Occupation Type (نوع وظيفتك أو عملك الأساسي لضبط النشاط المهني) */}
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
@@ -1461,7 +1508,8 @@ export default function FullIntakeForm() {
                         { key: 'spine_back', label: 'العمود الفقري (انزلاق غضروفي قطني / عنقي)' },
                         { key: 'shoulder', label: 'الكتف (اختناق أوتار / كفة مدورة)' },
                         { key: 'core', label: 'الجدار البطني (انفصال عضلي / فتق)' },
-                        { key: 'elbow_wrist', label: 'الكوع أو المعصم' }
+                        { key: 'elbow', label: 'الكوع' },
+                        { key: 'wrist', label: 'المعصم' }
                       ].map((inj) => {
                         const isChecked = injuriesSelected.includes(inj.key);
                         return (
@@ -1524,6 +1572,58 @@ export default function FullIntakeForm() {
                               onClick={() => updateNested('injuries_map', 'pain_relieved_by_rest', false)}
                               style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: !(injuriesMap.pain_relieved_by_rest ?? true) ? '#DC2626' : '#FFFFFF', color: !(injuriesMap.pain_relieved_by_rest ?? true) ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
                             >لا يستمر</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* P1-B4: reported pain level + numbness / weakness (medical-review signals) */}
+                    <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '8px', padding: '12px 14px', marginBottom: '12px' }}>
+                      <strong style={{ display: 'block', fontSize: '12px', color: '#9A3412', marginBottom: '8px', fontWeight: 800 }}>
+                        مستوى الألم والتنميل / الضعف:
+                      </strong>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>مستوى الألم (0 = مفيش ألم، 10 = أقصى ألم)</label>
+                          <CurvedSelect
+                            value={injuriesMap.pain_level ?? ''}
+                            onChange={(e) => updateNested('injuries_map', 'pain_level', e.target.value === '' ? null : Number(e.target.value))}
+                            style={{ width: '100%', height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', padding: '0 8px', fontSize: '12px' }}
+                          >
+                            <option value="">اختر مستوى الألم</option>
+                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                              <option key={n} value={n}>{n}</option>
+                            ))}
+                          </CurvedSelect>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>هل فيه تنميل؟</label>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => updateNested('injuries_map', 'numbness', true)}
+                              style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: injuriesMap.numbness === true ? '#DC2626' : '#FFFFFF', color: injuriesMap.numbness === true ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
+                            >نعم</button>
+                            <button
+                              type="button"
+                              onClick={() => updateNested('injuries_map', 'numbness', false)}
+                              style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: injuriesMap.numbness !== true ? '#16A34A' : '#FFFFFF', color: injuriesMap.numbness !== true ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
+                            >لا</button>
+                          </div>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', color: '#0F172A', marginBottom: '4px', fontWeight: 700 }}>هل فيه ضعف؟</label>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => updateNested('injuries_map', 'weakness', true)}
+                              style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: injuriesMap.weakness === true ? '#DC2626' : '#FFFFFF', color: injuriesMap.weakness === true ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
+                            >نعم</button>
+                            <button
+                              type="button"
+                              onClick={() => updateNested('injuries_map', 'weakness', false)}
+                              style={{ height: '36px', borderRadius: '6px', border: '1px solid #CBD5E1', background: injuriesMap.weakness !== true ? '#16A34A' : '#FFFFFF', color: injuriesMap.weakness !== true ? '#FFFFFF' : '#0F172A', fontWeight: 800, fontSize: '11.5px', cursor: 'pointer' }}
+                            >لا</button>
                           </div>
                         </div>
                       </div>
