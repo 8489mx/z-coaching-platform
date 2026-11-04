@@ -71,7 +71,13 @@ export function resolveMesocycleWeekConfigs({
   coachDeloadPreference = null,
 } = {}) {
   if (Array.isArray(customWeeksConfig) && customWeeksConfig.length > 0) {
-    return customWeeksConfig.slice(0, weeksCount);
+    // P1-B9: a custom config bypassed every floor, so a coach input of RIR 0 reached
+    // delivery (audit S22). Custom targets are clamped to the global RIR floor 1 here;
+    // the lifter/exercise floors are still applied at dosing time.
+    return customWeeksConfig.slice(0, weeksCount).map((config) => ({
+      ...config,
+      target_rir: Math.max(1, Number(config.target_rir) || 1),
+    }));
   }
 
   const exp = String(experience).toUpperCase();
@@ -119,7 +125,8 @@ export function resolveMesocycleWeekConfigs({
       });
     } else if (w === 4) {
       // Week 4 target RIR: customizable, never forced to 0 for advanced lifters
-      let w4Rir = targetRirWeek4 !== null ? Number(targetRirWeek4) : null;
+      // P1-B9: clamp any coach input to the global RIR floor 1 (audit S22).
+      let w4Rir = targetRirWeek4 !== null ? Math.max(1, Number(targetRirWeek4) || 1) : null;
       if (w4Rir === null) {
         if (isBeginner) {
           w4Rir = 2;
@@ -127,7 +134,9 @@ export function resolveMesocycleWeekConfigs({
           w4Rir = 1;
         } else {
           // Advanced lifter: default RIR 1; if fatigued or poor recovery, RIR 2; never forced RIR 0
-          const fatigued = (fatigueScore !== null && Number(fatigueScore) >= 6) ||
+          // P1-B9: one fatigue threshold everywhere — 7, matching the week-5 deload rule and
+          // the P1-B5 deload table (audit C11: week 4 used 6, week 5 used 7).
+          const fatigued = (fatigueScore !== null && Number(fatigueScore) >= 7) ||
                            (recoveryScore !== null && Number(recoveryScore) <= 2);
           w4Rir = fatigued ? 2 : 1;
         }
@@ -151,10 +160,12 @@ export function resolveMesocycleWeekConfigs({
         shouldDeload = false;
       } else if (plannedDeload === true || coachDeloadPreference === 'DELOAD') {
         shouldDeload = true;
+      } else if (Number(fatigueScore) >= 7 || performanceTrend === 'DROPPING') {
+        // P1-B9: fatigue deloads even when data is insufficient (audit S21). The client
+        // we know least about, who is also fatigued, used to get the hardest week-5 option.
+        shouldDeload = true;
       } else if (dataQuality === 'INSUFFICIENT') {
         shouldDeload = false;
-      } else if (Number(fatigueScore) >= 7 || performanceTrend === 'DROPPING') {
-        shouldDeload = true;
       } else if (Number(recoveryScore) >= 4 && performanceTrend === 'PROGRESSING') {
         shouldDeload = false;
       } else {
@@ -193,15 +204,31 @@ export function resolveMesocycleWeekConfigs({
         });
       }
     } else {
-      configs.push({
-        week_number: w,
-        phase: MesoCyclePhase.PROGRESSIVE_OVERLOAD,
-        phase_ar: 'الأسبوع ' + w + ' (تحميل مستمر)',
-        target_rir: 2,
-        volume_modifier: 1.0,
-        set_delta: 0,
-        focus_note: 'الأسبوع ' + w + ': استمرار الحمل التدريجي المنتظم.',
-      });
+      // P1-B9: week 6 after a deload ramps back in (W1-like volume) instead of jumping
+      // straight back to heavy loading (audit C12). After consolidation it continues
+      // progressively, exactly as before.
+      const previousWasDeload = configs[4] && configs[4].phase === MesoCyclePhase.DELOAD;
+      if (previousWasDeload) {
+        configs.push({
+          week_number: w,
+          phase: MesoCyclePhase.PROGRESSIVE_OVERLOAD,
+          phase_ar: 'الأسبوع ' + w + ' (عودة بعد الاستشفاء)',
+          target_rir: isAdvanced ? 2 : 3,
+          volume_modifier: 1.0,
+          set_delta: 0,
+          focus_note: 'الأسبوع ' + w + ' (عودة بعد الاستشفاء): حجم مثل الأسبوع الأول — إعادة إدخال تدريجي بعد أسبوع التفريغ بدل القفز المباشر للحمل الثقيل.',
+        });
+      } else {
+        configs.push({
+          week_number: w,
+          phase: MesoCyclePhase.PROGRESSIVE_OVERLOAD,
+          phase_ar: 'الأسبوع ' + w + ' (تحميل مستمر)',
+          target_rir: 2,
+          volume_modifier: 1.0,
+          set_delta: 0,
+          focus_note: 'الأسبوع ' + w + ': استمرار الحمل التدريجي المنتظم.',
+        });
+      }
     }
   }
 
@@ -499,6 +526,16 @@ export function evaluateFinalTrainingWeeks(weeks, context = {}) {
     for (const session of week?.sessions || []) {
       const seenInSession = new Set();
       for (const exercise of session?.exercises || []) {
+        // P1-B9: a slot the mesocycle held (dedup or equipment exhausted) stays in the
+        // session flagged for review instead of vanishing silently (audit C2). A held
+        // slot withholds the plan exactly like any other final-check violation.
+        if (exercise?.held_for_review) {
+          push(exercise.held_reason === "EQUIPMENT_EXHAUSTED" ? "EQUIPMENT_SLOT_HELD_FOR_REVIEW" : "DEDUP_SLOT_HELD_FOR_REVIEW",
+            week.week_number ?? null, session.session_code ?? null, exercise.slot_code || null,
+            `Final weeks hold slot ${exercise.slot_code || "?"} for coach review (${exercise.held_reason || "DEDUP_EXHAUSTED"}).`,
+            `الخطة النهائية فيها خانة ${exercise.slot_code || "?"} محجوزة لمراجعة المدرب — لازم المدرب يملاها قبل التسليم.`);
+          continue;
+        }
         const code = exercise?.exercise_code || exercise?.code;
         if (!code) continue;
         for (const [joint, active, forbidden] of forbiddenByJoint) {
@@ -593,11 +630,29 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
   }
 
   // Detect Client Experience Level
+  // P1-B9: unknown experience fails toward safer training, never harder (audit S23).
+  // The old fallback dosed a client with no experience recorded anywhere as INTERMEDIATE
+  // whenever the intro flag was false and volume was NORMAL.
   const intakeExperience =
     options.experience ||
     (options.rawIntake && options.rawIntake.training && options.rawIntake.training.experience) ||
     intakeDecision.profile?.experience ||
-    (intakeDecision.training_decision?.intro_week_required === false && intakeDecision.training_decision?.volume_start === "NORMAL" ? "INTERMEDIATE" : "BEGINNER");
+    "BEGINNER";
+
+  // P1-B9: a real intro week (audit C10). The decision flag comes from the intake
+  // rules (never trained, returning after a break, or uncertain data). An intro
+  // week caps week-1 sets at 2 and floors week-1 RIR at 3 (technique-first loads).
+  // It only caps sets/RIR — it never replaces exercises, so it cannot conflict with
+  // the P0-A9 elderly/high-BMI intro guard, which swaps exercises and caps sets too.
+  // Separately, a CONSERVATIVE volume start (poor sleep, high stress, high sport
+  // load, physical work, or the intro itself) also caps week-1 sets at 2, honouring
+  // the V1 prescription's 2-set promise that the mesocycle used to ignore — but it
+  // does NOT impose the intro RIR floor, because it is not an intro week.
+  const introWeekRequired =
+    intakeDecision.training_decision?.intro_week_required === true ||
+    options.introWeekRequired === true;
+  const conservativeVolumeStart =
+    intakeDecision.training_decision?.volume_start === "CONSERVATIVE";
   const isAdvanced = intakeExperience === "ADVANCED";
   const isIntermediate = intakeExperience === "INTERMEDIATE";
   // Volume by training age (never lifted ... 4+ years); older intakes follow their level exactly.
@@ -773,6 +828,46 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     }));
   }
 
+  // P1-B9: helpers for slots the mesocycle cannot fill (dedup or equipment exhausted)
+  // and slots it refills from an upstream REVIEW. Plan-level flags dedupe by
+  // reason+slot+code (the P0-A9 precedent); the session itself keeps one held entry
+  // per week, so the gap stays visible week by week.
+  const reviewFlagKeys = new Set();
+  const flagReviewSlot = (flag) => {
+    const key = flag.type + "|" + (flag.slot_code || "") + "|" + (flag.excluded_exercise || flag.refilled_exercise || "");
+    if (reviewFlagKeys.has(key)) return;
+    reviewFlagKeys.add(key);
+    guardReviewFlags.push(Object.freeze(flag));
+  };
+  const heldEntryFor = (ex, reason, codeBefore, weekNumber, sessionCode) => {
+    const noteAr = reason === "EQUIPMENT_EXHAUSTED"
+      ? "الخانة دي ملهاش تمرين مناسب بمعدات العميل المعلنة — لازم المدرب يختار بديل قبل التسليم."
+      : "الخانة دي اتكرر تمرينها في نفس الجلسة وملهاش بديل متاح — لازم المدرب يختار بديل قبل التسليم.";
+    flagReviewSlot({
+      type: reason,
+      week_number: weekNumber,
+      session_code: sessionCode,
+      slot_code: ex.slot_code,
+      excluded_exercise: codeBefore,
+      note_ar: noteAr,
+    });
+    return Object.freeze({
+      order: ex.order ?? null,
+      slot_code: ex.slot_code,
+      exercise_code: null,
+      code: null,
+      name: null,
+      name_en: null,
+      name_ar: null,
+      selection_status: "REVIEW_REQUIRED",
+      reason_code: reason,
+      prescription: null,
+      held_for_review: true,
+      held_reason: reason,
+      held_note_ar: noteAr,
+    });
+  };
+
   // 2. Generate Periodized Weeks
   const weekConfigs = resolveMesocycleWeekConfigs({
     experience: intakeExperience,
@@ -788,12 +883,22 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     coachDeloadPreference: options.coachDeloadPreference,
   });
 
+  // P1-B9: label the intro week so the coach sees why week 1 is light.
+  if (introWeekRequired && weekConfigs.length > 0) {
+    weekConfigs[0] = { ...weekConfigs[0], focus_note: (weekConfigs[0].focus_note || "") + " (أسبوع تمهيدي: مجموعتين كحد أقصى وأحمال تقنية بـ RIR 3 على الأقل.)" };
+  }
+
   const periodizedWeeks = weekConfigs.map((config) => {
     const isBeginner = !isAdvanced && !isIntermediate;
+    // P1-B9: the week title is the maximum AFTER floors (audit C7), so the header
+    // matches the delivered dose — including the training-age floor (a never-trained
+    // client is dosed at RIR 3 while the old title said 2) and the global floor 1.
     const weekTargetRir = Math.max(
       config.target_rir,
       hasHypertensionOrHeart ? CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR : 0,
       isBeginner ? BEGINNER_MIN_RIR : 0,
+      agePolicy.minRir || 0,
+      1,
     );
     const periodizedSessions = basePlan.sessions.map((baseSession, sessionIdx) => {
       // Create session-specific exercise layout to prevent repetitive duplicates
@@ -839,12 +944,12 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             { slot_code: "HORIZONTAL_PUSH", exercise_code: isHome ? "PUSH_UP" : "MACHINE_CHEST_PRESS", custom_rest: 90, target_min: 10, target_max: 12, base_rir: 1 },
             { slot_code: "HORIZONTAL_PULL", exercise_code: isHome ? "ONE_ARM_DUMBBELL_ROW" : "SEATED_CABLE_ROW", custom_rest: 90, target_min: 10, target_max: 12, base_rir: 1 },
             { slot_code: "KNEE_FLEXION", exercise_code: isHome ? "NORDIC_HAMSTRING_CURL" : "LYING_LEG_CURL_MACHINE", custom_rest: 90, target_min: 10, target_max: 12, base_rir: 1 },
-            { slot_code: "SHOULDER_ABDUCTION", exercise_code: "DUMBBELL_LATERAL_RAISE", custom_rest: 60, target_min: 12, target_max: 15, base_rir: isAdvanced ? 0 : 1, sets_override: isAdvanced ? 4 : 3 },
+            { slot_code: "SHOULDER_ABDUCTION", exercise_code: "DUMBBELL_LATERAL_RAISE", custom_rest: 60, target_min: 12, target_max: 15, base_rir: 1, sets_override: isAdvanced ? 4 : 3 },
           ];
 
           if (isAdvanced) {
             sessionExerciseTemplates.push(
-              { slot_code: "POSTERIOR_DELTOID", exercise_code: isHome ? "DUMBBELL_LATERAL_RAISE" : "FACE_PULL", custom_rest: 60, target_min: 12, target_max: 15, base_rir: 1, sets_override: 3 },
+              { slot_code: "REAR_DELT", exercise_code: isHome ? "DUMBBELL_LATERAL_RAISE" : "FACE_PULL", custom_rest: 60, target_min: 12, target_max: 15, base_rir: 1, sets_override: 3 },
               { slot_code: "CORE_STABILITY", exercise_code: isHome ? "DEAD_BUG" : "HANGING_LEG_RAISE", custom_rest: 60, target_min: 12, target_max: 15, base_rir: 1 },
             );
           } else {
@@ -1016,15 +1121,26 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           const alternative = equipmentSafeAlternative(code, own?.slot_code || ex.slot_code, availableEquipment, usedSessionCodes);
           return alternative ? alternative.exercise_code : null;
         };
+        // P1-B9: a slot the equipment guard empties stays held for review instead of
+        // vanishing silently. An injury hold (already null + flagged above) still returns
+        // null exactly as before — only a code the guard itself drops becomes a held entry.
+        const codeBeforeFit = finalCode;
         finalCode = fitHomeEquipment(finalCode);
-        if (!finalCode) return null;
+        if (!finalCode) {
+          if (codeBeforeFit) return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", codeBeforeFit, config.week_number, baseSession.session_code);
+          return null;
+        }
 
         // Never repeat an exercise inside one session after substitutions.
+        // P1-B9: when dedup exhausts its alternatives, the slot stays held for review
+        // instead of being silently deleted (audit C2).
         if (usedSessionCodes.has(finalCode)) {
+          const duplicateCode = finalCode;
           const alternative = DUPLICATE_ALTERNATIVES[finalCode];
-          if (!alternative || usedSessionCodes.has(alternative)) return null;
+          if (!alternative || usedSessionCodes.has(alternative)) return heldEntryFor(ex, "DEDUP_EXHAUSTED", duplicateCode, config.week_number, baseSession.session_code);
           finalCode = fitHomeEquipment(alternative);
-          if (!finalCode || usedSessionCodes.has(finalCode)) return null;
+          if (!finalCode) return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", alternative, config.week_number, baseSession.session_code);
+          if (usedSessionCodes.has(finalCode)) return heldEntryFor(ex, "DEDUP_EXHAUSTED", finalCode, config.week_number, baseSession.session_code);
         }
         usedSessionCodes.add(finalCode);
 
@@ -1116,17 +1232,25 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         // P0-A9: elderly / high-BMI intro week is technique-first: at most 2 sets in week 1.
         // Placed after the muscle-bias block so the cap wins over any +1 set.
         if (elderlyHighBmi && config.week_number === 1) calculatedSets = Math.min(calculatedSets, 2);
+        // P1-B9: a real intro week (2 sets, technique loads) and a CONSERVATIVE volume
+        // start (the V1 2-set promise) both cap week-1 sets at 2, after the bias block
+        // so the cap wins over any +1 set.
+        if ((introWeekRequired || conservativeVolumeStart) && config.week_number === 1) calculatedSets = Math.min(calculatedSets, 2);
 
-        // Adjust RIR across weeks (Intro RIR 3 -> Loading RIR 2 -> Intensify RIR 1 -> Peak RIR 0 -> Deload RIR 4),
+        // Adjust RIR across weeks (Intro RIR 3 -> Loading RIR 2 -> Intensify RIR 1 -> Peak RIR 1 -> Deload RIR 4),
         // never below the proximity-to-failure floor for this lifter and exercise class.
+        // P1-B9: RIR 0 is never prescribed (global floor 1); an intro week floors
+        // week-1 RIR at 3 (technique-first loads).
         let effectiveRir = Math.max(
           weekTargetRir !== undefined ? weekTargetRir : baseRir,
           resolveRirFloor(finalCode, ex.slot_code, isAdvanced, isIntermediate),
+          1,
         );
         if (hasHypertensionOrHeart) {
           effectiveRir = Math.max(effectiveRir, CLINICAL_GUIDELINES.HYPERTENSION.MIN_RIR);
         }
         if (agePolicy.minRir) effectiveRir = Math.max(effectiveRir, agePolicy.minRir);
+        if (introWeekRequired && config.week_number === 1) effectiveRir = Math.max(effectiveRir, 3);
 
         const isFirstExerciseInSession = exIdx === 0;
         const isPrimaryHeavy = isFirstExerciseInSession || HEAVY_PRIMARY_COMPOUNDS.has(finalCode);
@@ -1183,14 +1307,43 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           ? `استراتيجية قفزة الدمبل: استهدف الوصول لـ ${targetMax + 3} تكراراً بـ RIR ${effectiveRir} أولاً، أو تحكم بالنزول في 4 ثوانٍ (Tempo 4-1-1-0) لتجاوز قفزة الوزن (${microBridge?.percentage_jump_to_next || 16.7}%) بأمان.`
           : null;
 
+        // P1-B9: a slot upstream marked REVIEW_REQUIRED that the mesocycle filled gets
+        // a distinct state — SELECTED plus a refilled marker — instead of carrying the
+        // stale REVIEW forward (the old spread kept selection_status REVIEW_REQUIRED on
+        // a delivered exercise). The refill is also recorded on the plan flags so the
+        // coach sees it at approval time. No downstream gate reads selection_status,
+        // so this is honest labeling, not a gate change.
+        const refillMarker = ex.selection_status === "REVIEW_REQUIRED" ? {
+          selection_status: "SELECTED",
+          refilled_from_review: true,
+          reason_code: "MESOCYCLE_REFILLED",
+          ...(ex.reason_code ? { upstream_reason_code: ex.reason_code } : {}),
+          refill_note_ar: "الخانة دي كانت محتاجة مراجعة واتملت تلقائياً ببديل آمن — راجعها قبل الاعتماد.",
+        } : {};
+        if (refillMarker.refilled_from_review) {
+          flagReviewSlot({
+            type: "SLOT_REFILLED_FROM_REVIEW",
+            week_number: config.week_number,
+            session_code: baseSession.session_code,
+            slot_code: ex.slot_code,
+            refilled_exercise: finalCode,
+            note_ar: refillMarker.refill_note_ar,
+          });
+        }
+
         return Object.freeze({
           ...ex,
+          ...refillMarker,
           exercise_code: finalCode,
           code: finalCode,
           name: resolvedNameAr || resolvedNameEn || finalCode,
           name_en: resolvedNameEn,
           name_ar: resolvedNameAr,
           primary_muscle: v2Exercise ? v2Exercise.primary_muscle : null,
+          // P1-B9: progression must know this exercise was clinically substituted, so
+          // the next-session suggestion does not auto-increase it like a healthy lift
+          // (audit S15). Additive field; consumers ignore unknown fields.
+          clinically_substituted: clinicallySubstituted,
           specific_warmup_protocol: specificWarmupProtocol,
           micro_progression_bridge: microBridge ? Object.freeze(microBridge) : null,
           target_sets: calculatedSets,

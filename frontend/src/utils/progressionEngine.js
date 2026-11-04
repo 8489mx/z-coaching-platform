@@ -85,6 +85,11 @@ export function normalizeLoggedExercise(raw = {}) {
     rep_min: repMin,
     rep_max: repMax,
     sets: Number.isFinite(Number(raw.sets)) ? Math.round(Number(raw.sets)) : null,
+    // P1-B9: safety flags ride through the log schema (audit S15/S16). The write path
+    // (check-in controller) sanitises through this same function, so preserving them
+    // here is what lets them reach storage and then the progression state.
+    joint_pain_reported: raw.joint_pain_reported === true,
+    clinically_substituted: raw.clinically_substituted === true,
   };
 }
 
@@ -102,6 +107,7 @@ export function evaluateExercise({
   stall_count = 0,
   is_unreliable_data = false,
   joint_pain_reported = false,
+  clinically_substituted = false,
 }) {
   const increment = resolveIncrementKg(exercise_code);
   const weight = Number(weight_kg) || 0;
@@ -130,6 +136,19 @@ export function evaluateExercise({
       next_rep_target: rep_min,
       requires_coach_review: true,
       directive_ar: 'تم رصد ألم أو إجهاد مفصلي في المتابعة: حظر زيادة الوزن للحفاظ على سلامة المفصل ومراجعة المدرب.',
+    };
+  }
+
+  // P1-B9 guard: a clinically substituted exercise never auto-increases like a healthy
+  // lift (audit S15). The substitute was chosen because the original hurt; its
+  // progression needs coach confirmation, so it holds at the same weight.
+  if (clinically_substituted) {
+    return {
+      ...base,
+      decision: PROGRESSION_DECISIONS.HOLD_CONSOLIDATE,
+      next_rep_target: rep_min,
+      requires_coach_review: true,
+      directive_ar: 'التمرين ده بديل علاجي لحركة كانت بتوجع: حظر زيادة الوزن التلقائية — ثبت نفس الوزن وخلي المدرب يراجع التقدم.',
     };
   }
 
@@ -237,9 +256,11 @@ export function buildProgressionState({ logs = [], deload_windows = [], now = ne
 
   for (const log of ordered) {
     const window = inDeloadWindow(log.created_at, deload_windows);
-    const isDeloadEntry = Boolean(log.is_deload) ||
-      (Number(log.week_number) === 5 && log.phase !== 'CONSOLIDATION' && log.is_consolidation !== true && log.is_deload !== false) ||
-      Boolean(window);
+    // P1-B9: the week-number heuristic is deleted (audit C4). A beginner finishing a
+    // normal week 5 used to be recorded as a deload even though their plan said
+    // consolidation. A deload entry now requires an explicit is_deload flag or a
+    // coach-approved deload window — nothing else.
+    const isDeloadEntry = Boolean(log.is_deload) || Boolean(window);
     if (isDeloadEntry) lastDeload = { reason: window?.reason || DELOAD_REASONS.SCHEDULED, affected: window?.affected_exercises || [], at: log.created_at };
 
     for (const raw of Array.isArray(log.logged_exercises) ? log.logged_exercises : []) {
@@ -272,12 +293,15 @@ export function buildProgressionState({ logs = [], deload_windows = [], now = ne
       if (!isConsolidation) {
         s.drop_streak = previous?.e1rm && e1rm && e1rm < previous.e1rm * PERFORMANCE_DROP_RATIO ? s.drop_streak + 1 : 0;
       }
+      // P1-B9: the pain/substitution flags recorded in the log reach the decision
+      // (audit S16). Before this, normalize dropped them and the state always saw a
+      // healthy lift, so a painful top-of-range set still suggested more weight.
       const decision = evaluateExercise({ ...entry, stall_count: s.stall_count });
       if (entry.last_set_reps >= entry.rep_min) s.last_success_weight_kg = entry.weight_kg;
       if (entry.last_set_reps < entry.rep_min) s.stall_weight_kg = entry.weight_kg;
       s.stall_count = decision.stall_count;
       if (e1rm && (!s.best_e1rm || e1rm > s.best_e1rm)) s.best_e1rm = e1rm;
-      s.target = { weight_kg: decision.next_weight_kg, rep_min: decision.next_rep_min, rep_max: decision.next_rep_max, rep_target: decision.next_rep_target, directive_ar: decision.directive_ar, decision: decision.decision };
+      s.target = { weight_kg: decision.next_weight_kg, rep_min: decision.next_rep_min, rep_max: decision.next_rep_max, rep_target: decision.next_rep_target, directive_ar: decision.directive_ar, decision: decision.decision, requires_coach_review: Boolean(decision.requires_coach_review) };
       s.history.push({ date: log.created_at, week_number: log.week_number, ...entry, e1rm, is_deload: false, decision: decision.decision });
     }
   }
@@ -362,9 +386,17 @@ export function evaluateDeloadTrigger({ state, biofeedback = {}, sleep_stress_co
   return { recommended: false, reasons_ar: [], affected_exercises: [] };
 }
 
-/** Deload version of a session: ~40% fewer sets, RIR 4, same technique. */
-export function applyDeloadToSession(workoutSession) {
+/**
+ * Deload version of a session: ~40% fewer sets, RIR 4, same technique.
+ * P1-B9 internal guard (audit C5): the rewrite applies ONLY when the caller passes
+ * an active deload window ({ deload: { status: 'ACTIVE', ... } }). Without it the
+ * session is returned unchanged — a future caller forgetting the ACTIVE check can
+ * no longer silently deload a normal session. Both existing callers (server
+ * controller, client hook) already check ACTIVE and now pass their window through.
+ */
+export function applyDeloadToSession(workoutSession, { deload = null } = {}) {
   if (!workoutSession || !workoutSession.exercises) return workoutSession;
+  if (!deload || deload.status !== 'ACTIVE') return workoutSession;
   const adjustedExercises = workoutSession.exercises.map((ex) => ({
     ...ex,
     sets: Math.max(1, Math.round((Number(ex.sets) || 0) * 0.6)),

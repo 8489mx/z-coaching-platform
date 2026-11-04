@@ -60,7 +60,10 @@ test("Training Engine V2 Meso-Cycle Suite", async (t) => {
   });
 
   await t.test("deload week reduces sets appropriately across exercises", () => {
-    const meso = buildTrainingMesoCycle(decision);
+    // P1-B9: experience is passed explicitly — the old no-experience fallback dosed
+    // unknown clients as INTERMEDIATE (audit S23); it now correctly falls back to
+    // BEGINNER, whose week 5 defaults to consolidation, not deload.
+    const meso = buildTrainingMesoCycle(decision, { experience: validIntake.training.experience });
     const deloadWeek = meso.weeks[4];
 
     for (const session of deloadWeek.sessions) {

@@ -95,7 +95,7 @@ test('post-deload reset: last success after a scheduled deload, -10% under the s
     logs: [
       log('2026-09-20', 3, [bench(70, 9), { ...bench(80, 5), exercise_code: 'BARBELL_OVERHEAD_PRESS' }]),
       log('2026-09-24', 4, [bench(70, 10), { ...bench(80, 5), exercise_code: 'BARBELL_OVERHEAD_PRESS' }]),
-      log('2026-10-01', 5, [bench(60, 10), { ...bench(60, 10), exercise_code: 'BARBELL_OVERHEAD_PRESS' }]), // deload week
+      { ...log('2026-10-01', 5, [bench(60, 10), { ...bench(60, 10), exercise_code: 'BARBELL_OVERHEAD_PRESS' }]), is_deload: true }, // deload week (P1-B9: explicit flag, not the deleted week-5 inference)
     ],
   });
   assert.equal(state.exercises.BARBELL_BENCH_PRESS.target.decision, 'POST_DELOAD_RESET');
@@ -117,7 +117,8 @@ test('approved deload windows mark the state active and deload sessions', () => 
     deload_windows: [{ starts_at: '2026-10-01', ends_at: '2026-10-08', reason: DELOAD_REASONS.PERFORMANCE_FATIGUE }],
   });
   assert.equal(state.deload.status, 'ACTIVE');
-  const session = applyDeloadToSession({ exercises: [{ sets: 4, target_rir: 1 }] });
+  // P1-B9: the internal deload guard requires the active window itself.
+  const session = applyDeloadToSession({ exercises: [{ sets: 4, target_rir: 1 }] }, { deload: state.deload });
   assert.equal(session.exercises[0].sets, 2);
   assert.equal(session.exercises[0].target_rir, 4);
   assert.equal(legacyCompile, applyDeloadToSession);

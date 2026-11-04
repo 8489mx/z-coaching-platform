@@ -1288,6 +1288,21 @@ export const EXERCISE_CODE_ALIASES = Object.freeze({
   OVERHEAD_CABLE_TRICEPS_EXTENSION: "CABLE_OVERHEAD_TRICEPS_EXTENSION",
   OVERHEAD_PRESS: "BARBELL_OVERHEAD_PRESS",
   DUMBBELL_SHOULDER_PRESS: "STANDING_DUMBBELL_SHOULDER_PRESS",
+  // P1-B9: V1 passthrough codes that had no V2 record (audit C14). Without these,
+  // the mesocycle output primary_muscle: null for them and muscle-bias matching
+  // silently skipped them. Each alias is the closest same-pattern V2 movement:
+  // HIP_THRUST is the loaded barbell thrust; DUMBBELL_BICEPS_CURL the supinated
+  // incline dumbbell curl; CLOSE_GRIP_PUSH_UP the standard push-up; DUMBBELL_CALF_RAISE
+  // the bodyweight standing raise (same pattern; equipment understated, never overstated);
+  // SPLIT_SQUAT the bodyweight split squat; DUMBBELL_REVERSE_LUNGE the deficit
+  // reverse lunge; PUSH_UP the standard push-up.
+  HIP_THRUST: "BARBELL_HIP_THRUST",
+  DUMBBELL_BICEPS_CURL: "INCLINE_DUMBBELL_CURL",
+  CLOSE_GRIP_PUSH_UP: "PUSH_UPS_STANDARD",
+  DUMBBELL_CALF_RAISE: "BODYWEIGHT_STANDING_CALF_RAISE",
+  SPLIT_SQUAT: "BODYWEIGHT_SPLIT_SQUAT",
+  DUMBBELL_REVERSE_LUNGE: "DEFICIT_REVERSE_LUNGE",
+  PUSH_UP: "PUSH_UPS_STANDARD",
 });
 
 /**

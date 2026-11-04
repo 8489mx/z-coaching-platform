@@ -721,10 +721,11 @@ export function useClientInteractiveData() {
   const isDeloadActive = progression?.deload?.status === 'ACTIVE';
   const displayedWorkoutSession = useMemo(() => {
     if (!isDeloadActive || !workoutSession?.exercises) return workoutSession;
+    // P1-B9: the internal deload guard requires the active window itself.
     const deloaded = applyDeloadToSession({
       ...workoutSession,
       exercises: workoutSession.exercises.map((ex) => ({ ...ex, sets: Number(ex.targetSets) || 3, target_rir: Number(ex.targetRir) || 2 })),
-    });
+    }, { deload: progression?.deload });
     return {
       ...deloaded,
       exercises: deloaded.exercises.map((ex) => ({ ...ex, targetSets: ex.sets, targetRir: ex.target_rir, safetyNote: ex.cue })),

@@ -123,13 +123,14 @@ test('8. evaluateDeloadNeed & compileDeloadSession: Detects accumulated fatigue 
   assert.equal(deloadDecision.status, 'DELOAD_RECOMMENDED');
   assert.equal(deloadDecision.protocol.volume_reduction_pct, 40);
 
+  // P1-B9: the internal deload guard requires the active window itself.
   const compiledSession = compileDeloadSession({
     title_ar: 'يوم الدفع العلوي',
     exercises: [
       { name_ar: 'ضغط بار مستوي', sets: 4, target_rir: 2 },
       { name_ar: 'رفرفة جانبي', sets: 3, target_rir: 2 }
     ]
-  });
+  }, { deload: { status: 'ACTIVE' } });
 
   assert.equal(compiledSession.is_deload, true);
   assert.ok(compiledSession.title_ar.includes('Deload'));

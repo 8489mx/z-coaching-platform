@@ -77,7 +77,10 @@ test('Milestone 11: Full Mesocycle Clinical PDF Audit Suite', async (suite) => {
     const validIntake = completeIntake();
     const evaluationContext = { assessmentDate: '2026-08-16' };
     const decision = evaluateIntake(validIntake, evaluationContext);
-    const mesocycle = buildTrainingMesoCycle(decision, { weeksCount: 5 });
+    // P1-B9: experience is passed explicitly — the old no-experience fallback dosed
+    // unknown clients as INTERMEDIATE (audit S23); it now correctly falls back to
+    // BEGINNER, whose week 5 defaults to consolidation, not deload.
+    const mesocycle = buildTrainingMesoCycle(decision, { weeksCount: 5, experience: validIntake.training.experience });
 
     assert.equal(mesocycle.weeks.length, 5);
     assert.equal(mesocycle.weeks[0].week_number, 1);

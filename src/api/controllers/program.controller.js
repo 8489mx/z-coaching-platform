@@ -1575,7 +1575,8 @@ export const getActiveProgramByUserId = async (req, res) => {
     
     let training_session = sessionRaw ? JSON.parse(JSON.stringify(sessionRaw)) : null;
     if (training_session && progression?.deload?.status === "ACTIVE") {
-       training_session = applyDeloadToSession(training_session);
+       // P1-B9: the internal deload guard requires the active window itself.
+       training_session = applyDeloadToSession(training_session, { deload: progression.deload });
     }
 
     if (training_session) {
