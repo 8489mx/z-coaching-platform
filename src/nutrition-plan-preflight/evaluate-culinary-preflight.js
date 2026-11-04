@@ -133,27 +133,32 @@ export function evaluateCulinaryMeal(meal = {}, { isSafe = null } = {}) {
       issue(
         CulinaryPreflightIssueCode.MEAL_KCAL_OUTSIDE_TOLERANCE,
         `الوجبة ${mealNumber ?? ""}: السعرات ${Math.round(totalKcal)} مقابل هدف ${Math.round(targetKcal)} (فرق أكتر من 20%).`,
-        { actual_kcal: Math.round(totalKcal), target_kcal: Math.round(targetKcal) },
+        { actual_kcal: Math.round(totalKcal), target_kcal: Math.round(targetKcal),
+          relative_difference: Math.round(((totalKcal - targetKcal) / targetKcal) * 1000) / 1000 },
       );
     }
     if (targetP > 0 && totalP < targetP * (1 - CULINARY_PROTEIN_SHORTFALL_TOLERANCE)) {
       issue(
         CulinaryPreflightIssueCode.MEAL_PROTEIN_SHORTFALL,
         `الوجبة ${mealNumber ?? ""}: البروتين ${Math.round(totalP * 10) / 10} جم مقابل هدف ${targetP} جم (ناقص أكتر من 20%).`,
-        { actual_protein_g: Math.round(totalP * 10) / 10, target_protein_g: targetP },
+        { actual_protein_g: Math.round(totalP * 10) / 10, target_protein_g: targetP,
+          relative_difference: Math.round(((totalP - targetP) / targetP) * 1000) / 1000 },
       );
     }
   }
 
   // Gross fat overshoot is a coach-visible note, never a silent pass and
-  // never a block on its own (fat rebalancing is separate scheduled work).
+  // never a block on its own. P1-B6 gave trim a fat direction, so most fat
+  // drift is now corrected before this check; what reaches here survived
+  // every correction pass and stays visible rather than blocked.
   if (meal.fixed_portions !== true) {
     const targetF = num(target.fat_g);
     if (targetF > 0 && Math.abs(totalF - targetF) / targetF > CULINARY_FAT_NOTE_TOLERANCE) {
       note(
         CulinaryPreflightIssueCode.MEAL_FAT_OUTSIDE_TOLERANCE,
         `الوجبة ${mealNumber ?? ""}: الدهون ${Math.round(totalF * 10) / 10} جم مقابل هدف ${targetF} جم (فرق أكتر من 30% — ملحوظة للمدرب، مش منع).`,
-        { actual_fat_g: Math.round(totalF * 10) / 10, target_fat_g: targetF },
+        { actual_fat_g: Math.round(totalF * 10) / 10, target_fat_g: targetF,
+          relative_difference: Math.round(((totalF - targetF) / targetF) * 1000) / 1000 },
       );
     }
   }

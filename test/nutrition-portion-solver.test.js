@@ -363,13 +363,16 @@ test("nutrition, totals, residual, and daily vectors are calculated", () => {
   assert.deepEqual(result.daily_residual, ZERO_NUTRITION);
 });
 
-test("tolerance floors are applied to smaller meal targets", () => {
+test("tolerances scale with meal size (P1-B6: no absolute floors)", () => {
+  // The old absolute floors (50 kcal / 5 g protein / 5 g fat / 10 g carbs /
+  // 3 g fiber) blessed a small meal 25% under on protein. Tolerance is now
+  // purely relative to the target, with only a 1-unit rounding floor.
   assert.deepEqual(buildFrom().meals[0].tolerance, {
-    calories_kcal: 50,
-    protein_g: 5,
-    fat_g: 5,
-    carbohydrate_g: 10,
-    fiber_g: 3,
+    calories_kcal: 10,
+    protein_g: 1.5,
+    fat_g: 1,
+    carbohydrate_g: 1.5,
+    fiber_g: 1,
   });
 });
 
@@ -404,12 +407,14 @@ test("objective score uses the weighted squared normalized errors", () => {
     },
   });
   const result = buildFrom({ selection: makeFoodSelection({ meals: [meal] }) });
+  // P1-B6: denominators are the relative tolerances for this target
+  // (200 kcal / P20 / F10 / C30 / fiber 5): 20 / 3 / 2 / 4.5 / 1.25.
   const expected =
-    3 * (100 / 50) ** 2 +
-    4 * (10 / 5) ** 2 +
-    2 * (8 / 5) ** 2 +
-    2 * (20 / 10) ** 2 +
-    (4 / 3) ** 2;
+    3 * (100 / 20) ** 2 +
+    4 * (10 / 3) ** 2 +
+    2 * (8 / 2) ** 2 +
+    2 * (20 / 4.5) ** 2 +
+    (4 / 1.25) ** 2;
   assert.equal(result.meals[0].objective_score, Math.round(expected * 100) / 100);
 });
 
@@ -1113,17 +1118,25 @@ test("outside-tolerance fields produce the structured meal issue", () => {
     },
   });
   const result = buildFrom({ selection: makeFoodSelection({ meals: [meal] }) });
-  assert.deepEqual(result.meals[0].issues, [{
-    code: "PORTION_TARGET_OUTSIDE_TOLERANCE",
-    fields: [
-      "calories_kcal",
-      "protein_g",
-      "fat_g",
-      "carbohydrate_g",
-      "fiber_g",
-    ],
-    message: "One or more meal nutrition targets remain outside tolerance.",
-  }]);
+  // P1-B6: the issue now also carries the relative residual, so the shape
+  // is asserted field by field instead of by exact deep equality.
+  assert.equal(result.meals[0].issues.length, 1);
+  assert.equal(result.meals[0].issues[0].code, "PORTION_TARGET_OUTSIDE_TOLERANCE");
+  assert.deepEqual(result.meals[0].issues[0].fields, [
+    "calories_kcal",
+    "protein_g",
+    "fat_g",
+    "carbohydrate_g",
+    "fiber_g",
+  ]);
+  assert.equal(result.meals[0].issues[0].message, "One or more meal nutrition targets remain outside tolerance.");
+  assert.deepEqual(Object.keys(result.meals[0].issues[0].relative_residual).sort(), [
+    "calories_kcal",
+    "carbohydrate_g",
+    "fat_g",
+    "fiber_g",
+    "protein_g",
+  ]);
   assert.equal(
     result.status,
     NutritionPortionSolverStatus.PROVISIONAL_REVIEW_REQUIRED,
@@ -1143,17 +1156,30 @@ test("outside-tolerance general reason appears only once across meals", () => {
 });
 
 test("tolerance boundaries are inclusive", () => {
+  // P1-B6: residuals sit exactly at the RELATIVE boundaries for this target
+  // (200 kcal / P20 / F10 / C20 / fiber 4): the fixed 100 g item carries
+  // 180 kcal / P17 / F8 / C17 / fiber 3, i.e. exactly -10% / -15% / -20% /
+  // -15% / -25% — the tolerance rates themselves.
   const meal = makeMeal({
     target: {
-      planned_calories: 150,
-      protein_g: 15,
-      fat_g: 7,
+      planned_calories: 200,
+      protein_g: 20,
+      fat_g: 10,
       carbohydrate_g: 20,
       fiber_g: 4,
     },
   });
   const within = buildFrom({
     selection: makeFoodSelection({ meals: [meal] }),
+    items: [makeItem({
+      nutrition: {
+        calories_kcal: 180,
+        protein_g: 17,
+        fat_g: 8,
+        carbohydrate_g: 17,
+        fiber_g: 3,
+      },
+    })],
   }).meals[0].within_tolerance;
   assert.deepEqual(within, {
     calories_kcal: true,
@@ -1399,11 +1425,14 @@ test("real Intake through Food Selection completes Portion Solver with Core data
   // low 7 g fiber target is marginally overshot (10.73 g) by the oats-based
   // breakfast; the meal itself is coherent and the solver still flags the
   // plan PROVISIONAL_REVIEW_REQUIRED with exactly one such reason.
-  assert.deepEqual(result.meals[0].issues, [{
-    code: "PORTION_TARGET_OUTSIDE_TOLERANCE",
-    fields: ["fiber_g"],
-    message: "One or more meal nutrition targets remain outside tolerance.",
-  }]);
+  // P1-B6: the issue now also carries the relative residual (a fiber
+  // overshoot here), so the shape is asserted field by field.
+  assert.equal(result.meals[0].issues.length, 1);
+  assert.equal(result.meals[0].issues[0].code, "PORTION_TARGET_OUTSIDE_TOLERANCE");
+  assert.deepEqual(result.meals[0].issues[0].fields, ["fiber_g"]);
+  assert.equal(result.meals[0].issues[0].message, "One or more meal nutrition targets remain outside tolerance.");
+  assert.equal(typeof result.meals[0].issues[0].relative_residual.fiber_g, "number");
+  assert.ok(result.meals[0].issues[0].relative_residual.fiber_g > 0);
   assert.deepEqual(result.meals[2].issues, []);
   assert.equal(reasonCodes(result).filter((code) =>
     code === "PORTION_SOLVER_MEAL_TARGET_OUTSIDE_TOLERANCE").length, 1);

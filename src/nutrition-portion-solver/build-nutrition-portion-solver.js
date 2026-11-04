@@ -16,35 +16,40 @@ const NUTRIENTS = Object.freeze([
   Object.freeze({
     key: "calories_kcal",
     targetKey: "planned_calories",
-    minimumTolerance: 50,
+    // P1-B6: tolerance is relative to meal size. The old absolute floors
+    // (50 kcal / 5 g protein / 5 g fat / 10 g carbs / 3 g fiber) blessed a
+    // small meal 25% under on protein and 60% under on fiber. The only floor
+    // left is 1 unit of display rounding, so a small meal is judged by the
+    // same percentages as a large one.
+    minimumTolerance: 1,
     toleranceRate: 0.1,
     weight: 3,
   }),
   Object.freeze({
     key: "protein_g",
     targetKey: "protein_g",
-    minimumTolerance: 5,
+    minimumTolerance: 1,
     toleranceRate: 0.15,
     weight: 4,
   }),
   Object.freeze({
     key: "fat_g",
     targetKey: "fat_g",
-    minimumTolerance: 5,
+    minimumTolerance: 1,
     toleranceRate: 0.2,
     weight: 2,
   }),
   Object.freeze({
     key: "carbohydrate_g",
     targetKey: "carbohydrate_g",
-    minimumTolerance: 10,
+    minimumTolerance: 1,
     toleranceRate: 0.15,
     weight: 2,
   }),
   Object.freeze({
     key: "fiber_g",
     targetKey: "fiber_g",
-    minimumTolerance: 3,
+    minimumTolerance: 1,
     toleranceRate: 0.25,
     weight: 1,
   }),
@@ -763,6 +768,18 @@ function residualNutrients(actual, target) {
   ]));
 }
 
+// P1-B6: the relative residual is always shown next to the absolute one, so
+// a meal 25% under on protein is never presented as "within tolerance"
+// without qualification. Null when the target is zero or missing.
+function relativeResidualNutrients(actual, target) {
+  return Object.fromEntries(NUTRIENTS.map(({ key }) => [
+    key,
+    target[key] > 0
+      ? Math.round(((actual[key] - target[key]) / target[key]) * 1000) / 1000
+      : null,
+  ]));
+}
+
 function withinTolerance(actual, target, tolerance) {
   return Object.fromEntries(NUTRIENTS.map(({ key }) => [
     key,
@@ -795,6 +812,7 @@ function unavailableMealOutput(meal) {
       items: [],
       totals: displayNutrients(totals),
       residual: displayNutrients(residualNutrients(totals, target)),
+      relative_residual: relativeResidualNutrients(totals, target),
       tolerance: displayNutrients(tolerance),
       within_tolerance: within,
       all_targets_within_tolerance: false,
@@ -843,8 +861,18 @@ const DOMINANCE_TOLERANCE_MARGIN = 0.05;
 // so a 100 g dry cap would be meaningless for them.
 const DRY_GRAIN_CODES = new Set(["OATS_ROLLED_DRY"]);
 
+// P1-B6: a dominant food that stands whole is never silent. The solver and
+// the culinary splitter keep different shapes (computed portions vs template
+// caps), so they are not forced into one function — but they share one rule:
+// an oversized portion stands only with a warning. The solver side gains the
+// culinary side's warning-on-unsplit, a DOMINANCE_UNSPLIT issue, and a
+// user-facing split note on split items (culinary already has split_note_ar).
+const DOMINANCE_SPLIT_NOTE_AR = "جزء من حصة الصنف في الوجبة، مقسومة على أكتر من صنف علشان الكمية تبقى معقولة في الطبق.";
+const DOMINANCE_UNSPLIT_NOTE_AR = "حصة كبيرة في وجبة واحدة ولا يوجد بديل آمن لتقسيمها مع قيود العميل؛ راجع توزيع الوجبات أو زوّد عددها.";
+
 function splitDominantSingleFoods(items, selectionMeal, itemsByCode, target, tolerance) {
   const inMeal = new Set(items.map((item) => item.food_code));
+  const unsplit = [];
   let result = items;
   for (const original of items) {
     const food = itemsByCode.get(original.food_code)?.item;
@@ -874,6 +902,7 @@ function splitDominantSingleFoods(items, selectionMeal, itemsByCode, target, tol
         candidate.food_class === food.food_class &&
         candidate.is_active !== false);
     if (partners.length === 0) {
+      unsplit.push({ food_code: original.food_code, grams: original.grams, cap, reason: "NO_PARTNER" });
       continue;
     }
     const current = result.find((item) => item.food_code === original.food_code);
@@ -924,25 +953,38 @@ function splitDominantSingleFoods(items, selectionMeal, itemsByCode, target, tol
       }
     }
     if (best === null) {
+      unsplit.push({ food_code: original.food_code, grams: current.grams, cap, reason: "NO_PRESERVING_SPLIT" });
       continue;
     }
-    const partnerItem = solvedItemOutput(
-      {
-        food: best.partner,
-        foodCode: best.partner.food_code,
-        slotSequence: original.slot_sequence,
-        slot: original.slot,
-        selectionSource: SELECTION_SOURCE.PORTION_SOLVER_ADDITION,
-      },
-      best.partnerGrams,
-    );
+    const partnerItem = {
+      ...solvedItemOutput(
+        {
+          food: best.partner,
+          foodCode: best.partner.food_code,
+          slotSequence: original.slot_sequence,
+          slot: original.slot,
+          selectionSource: SELECTION_SOURCE.PORTION_SOLVER_ADDITION,
+        },
+        best.partnerGrams,
+      ),
+      split_note_ar: DOMINANCE_SPLIT_NOTE_AR,
+    };
     result = result.flatMap((item) =>
       item.food_code === original.food_code
-        ? [{ ...item, grams: cap, nutrition: displayNutrients(nutritionAtGrams(food, cap)) }, partnerItem]
+        ? [{ ...item, grams: cap, nutrition: displayNutrients(nutritionAtGrams(food, cap)), split_note_ar: DOMINANCE_SPLIT_NOTE_AR }, partnerItem]
         : [item]);
     inMeal.add(best.partner.food_code);
   }
-  return result;
+  if (unsplit.length > 0) {
+    const unsplitByCode = new Map(unsplit.map((entry) => [entry.food_code, entry]));
+    result = result.map((item) => {
+      const entry = unsplitByCode.get(item.food_code);
+      return entry && item.grams > entry.cap
+        ? { ...item, dominance_warning_ar: DOMINANCE_UNSPLIT_NOTE_AR }
+        : item;
+    });
+  }
+  return { items: result, unsplit };
 }
 
 function solveMeal(meal, itemsByCode) {
@@ -953,7 +995,7 @@ function solveMeal(meal, itemsByCode) {
   const solution = solveWithCandidateAdditions(meal, itemsByCode);
   const target = targetNutrients(meal.target);
   const tolerance = toleranceForTarget(meal.target);
-  const items = splitDominantSingleFoods(
+  const split = splitDominantSingleFoods(
     solution.assignments.map((assignment) =>
       solvedItemOutput(
         assignment,
@@ -964,6 +1006,7 @@ function solveMeal(meal, itemsByCode) {
     target,
     tolerance,
   );
+  const items = split.items;
   const totals = zeroNutrients();
   for (const item of items) {
     addNutrients(
@@ -975,13 +1018,46 @@ function solveMeal(meal, itemsByCode) {
   const outsideFields = NUTRIENTS
     .map(({ key }) => key)
     .filter((key) => !within[key]);
-  const issues = outsideFields.length === 0
-    ? []
-    : [{
-        code: "PORTION_TARGET_OUTSIDE_TOLERANCE",
-        fields: outsideFields,
-        message: OUTSIDE_TOLERANCE_MESSAGE,
-      }];
+  const issues = [];
+  if (outsideFields.length > 0) {
+    issues.push({
+      code: "PORTION_TARGET_OUTSIDE_TOLERANCE",
+      fields: outsideFields,
+      message: OUTSIDE_TOLERANCE_MESSAGE,
+      relative_residual: relativeResidualNutrients(totals, target),
+    });
+  }
+  if (split.unsplit.length > 0) {
+    issues.push({
+      code: "DOMINANCE_UNSPLIT",
+      foods: split.unsplit.map(({ food_code, grams, cap, reason }) => ({ food_code, grams, cap, reason })),
+      message: "A dominant portion stands whole because no safe split exists for it; review the meal distribution.",
+    });
+  }
+  // P1-B6 (S3-29): a minimum portion that alone already breaks the meal's
+  // tolerance is infeasible at this share — it must be flagged, never blessed.
+  // A pattern change lives in food selection, not here; the flag is what stops
+  // the silent pass.
+  for (const item of items) {
+    const rule = itemsByCode.get(item.food_code)?.item?.portion_rule_g;
+    const minimumG = Number(rule?.minimum_g);
+    if (!(minimumG > 0) || !(item.grams <= minimumG + 1e-6)) continue;
+    const food = itemsByCode.get(item.food_code)?.item;
+    if (!food) continue;
+    const atMinimum = nutritionAtGrams(food, item.grams);
+    const broken = NUTRIENTS
+      .map(({ key }) => key)
+      .filter((key) => atMinimum[key] > target[key] + tolerance[key] + SCORE_EPSILON);
+    if (broken.length > 0) {
+      issues.push({
+        code: "MINIMUM_PORTION_INFEASIBLE",
+        food_code: item.food_code,
+        grams: item.grams,
+        fields: broken,
+        message: "This food at its minimum portion alone already breaks the meal's tolerance; the share needs a pattern change.",
+      });
+    }
+  }
 
   return {
     output: {
@@ -994,6 +1070,7 @@ function solveMeal(meal, itemsByCode) {
       residual: displayNutrients(
         residualNutrients(totals, target),
       ),
+      relative_residual: relativeResidualNutrients(totals, target),
       tolerance: displayNutrients(tolerance),
       within_tolerance: within,
       all_targets_within_tolerance: outsideFields.length === 0,

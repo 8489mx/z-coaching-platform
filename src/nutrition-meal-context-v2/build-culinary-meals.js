@@ -2322,6 +2322,58 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
 
 
 
+// P1-B6: short title phrases for the proteins and carbohydrates the CASE D
+// chains actually serve. Anything unmapped falls back to the item's own
+// name_ar, so an unmapped food still names itself truthfully.
+const TITLE_PROTEIN_SHORT_AR = Object.freeze({
+  CHICKEN_BREAST: "صدور دجاج مشوية",
+  LEAN_BEEF: "لحم بقري قليل الدسم",
+  EGGS_OMELETTE: "بيض",
+  CANNED_TUNA: "تونة",
+  TILAPIA_FISH: "سمك بلطي مشوي",
+  CAMEL_MEAT_LEAN: "لحم جملي قليل الدسم",
+  COTTAGE_CHEESE: "جبن قريش",
+  GREEK_YOGURT: "زبادي يوناني",
+  MIXED_LEGUMES_STEW: "يخنة بقوليات",
+});
+const TITLE_CARB_SHORT_AR = Object.freeze({
+  BALADI_BREAD: "خبز بلدي",
+  BASMATI_RICE: "أرز بسمتي",
+  ROASTED_POTATOES: "بطاطس مشوية",
+  SWEET_POTATO: "بطاطا حلوة مشوية",
+});
+
+// A CASE D title names the protein actually on the plate, not the protein
+// the branch guessed before it ran. Returns null when no protein item is
+// served, so the caller keeps the original title (the P0-A7 fallback and the
+// culinary preflight cover that plate separately).
+export function titleFromServedItems(mealNum, items = []) {
+  if (!Array.isArray(items)) return null;
+  const proteins = [];
+  const seenProteins = new Set();
+  const carbs = [];
+  const seenCarbs = new Set();
+  let hasVeg = false;
+  for (const item of items) {
+    const category = String(item?.category || "").toUpperCase();
+    if (category === "PROTEIN" && (Number(item.protein_g) || 0) > 0 && !seenProteins.has(item.food_code)) {
+      seenProteins.add(item.food_code);
+      proteins.push(TITLE_PROTEIN_SHORT_AR[item.food_code] || item.name_ar || item.food_code);
+    } else if (category === "CARBS" && !seenCarbs.has(item.food_code)) {
+      seenCarbs.add(item.food_code);
+      carbs.push(TITLE_CARB_SHORT_AR[item.food_code] || item.name_ar || item.food_code);
+    } else if (category === "VEGGIES") {
+      hasVeg = true;
+    }
+  }
+  if (proteins.length === 0) return null;
+  const sides = [...carbs, ...(hasVeg ? ["سلطة"] : [])].join(" و");
+  const proteinPhrase = proteins.join(" و");
+  if (mealNum >= 4) return sides ? `سناك ${proteinPhrase} مع ${sides}` : `سناك ${proteinPhrase}`;
+  const mealWord = mealNum === 1 ? "الإفطار" : mealNum === 2 ? "الغداء" : mealNum === 3 ? "العشاء" : `الوجبة ${mealNum}`;
+  return sides ? `وجبة ${mealWord} (${proteinPhrase} مع ${sides})` : `وجبة ${mealWord} (${proteinPhrase})`;
+}
+
 export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {}, rawIntake = {}) {
   const { meal_distribution = [] } = universalTargets;
   const nutrition = canonicalIntake.nutrition || {};
@@ -2348,6 +2400,11 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
     let recipeNameAr = "";
     let recipeConceptDesc = "";
+    // P1-B6: CASE D titles are derived from the protein actually served (see
+    // titleFromServedItems at assembly); other cases name their content when
+    // they set the title, so they keep it.
+    let deriveTitleFromProtein = false;
+    let droppedCheeseNoteAr = null;
     // The plates written for an operated stomach are the prescription itself - 165 to 175 g a
     // sitting - so nothing downstream resizes them to hit a macro target.
     let fixedPortions = false;
@@ -3441,6 +3498,10 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
     // COTTAGE CHEESE HARD CAP: 150g (MAX 180g). COMBINES WITH EGGS/CHICKEN/TUNA.
     // =========================================================================
     else {
+      // P1-B6: CASE D titles used to be fixed before the protein branch, so
+      // dinner served eggs under a "grilled chicken breast" title. The title
+      // is now derived at assembly from the protein actually served.
+      deriveTitleFromProtein = true;
       if (mealNum === 1) {
         // BREAKFAST
         let currentP = 0;
@@ -3530,7 +3591,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             name_en: "Seasoned Cottage Cheese (150g Cap)",
             category: "PROTEIN",
             portion_g: cheeseGrams,
-            household_measurement: "150 جم (نصف كوب متبل بالنعناع والزعتر - حجم مثالي مستساغ)",
+            household_measurement: `${cheeseGrams} جم (نصف كوب متبل بالنعناع والزعتر)`,
             protein_g: cheeseP,
             carb_g: cheeseC,
             fat_g: cheeseF,
@@ -3544,6 +3605,10 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             cheeseP = 0;
             cheeseF = 0;
             cheeseC = 0;
+            // P1-B6: a cheese portion under 40 g used to vanish with no note.
+            // The plate is unchanged, but the coach is told the cheese was
+            // dropped for being too small to count as a portion.
+            droppedCheeseNoteAr = `الجبن القريش اتشالت من الإفطار لأن حصتها كانت ${cheeseGrams} جم بس، أقل من 40 جم اللي تتعدّ حصة.`;
           }
         }
 
@@ -4313,7 +4378,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
       meal_number: mealNum,
       meal_name_ar: mealDist.meal_name_ar,
       fixed_portions: fixedPortions,
-      recipe_title_ar: recipeNameAr,
+      recipe_title_ar: deriveTitleFromProtein ? (titleFromServedItems(mealNum, enrichedItems) || recipeNameAr) : recipeNameAr,
+      ...(droppedCheeseNoteAr ? { meal_notes_ar: [droppedCheeseNoteAr] } : {}),
       recipe_description_ar: recipeConceptDesc,
       target_macros: {
         protein_g: targetP,
@@ -4350,7 +4416,16 @@ export const MAX_MEALS_PER_PROTEIN_FOOD = 2;
  * restrictions, dislikes and budget - that needs no oil change, is not on that plate and is used the
  * least in the day. The original food stays first in the swap list, so the client can switch back.
  * Protein powder is never changed (isNoSwapFood).
+ * P1-B6: the swap is macro-checked. The old code picked the least-used swap
+ * with no macro comparison, so three chicken meals at F5 each ended with a
+ * beef meal at F10 (+100% fat on that item) and no later step could repair
+ * fat. Now the least-fatty eligible swap wins, and a swap that would push
+ * the meal's fat past its band (target + 20%, or the meal's current fat when
+ * it already sits above that band) is rejected; when every swap breaks the
+ * band, the original stays and the meal carries a note.
  */
+const DIVERSIFY_FAT_BAND_RATE = 0.2;
+
 export function diversifyDailyProteins(meals = []) {
   if (!Array.isArray(meals)) return meals;
   const out = meals.map((meal) => ({ ...meal, items: [...(meal.items || [])] }));
@@ -4363,12 +4438,31 @@ export function diversifyDailyProteins(meals = []) {
       if (String(item?.category).toUpperCase() !== "PROTEIN" || isNoSwapFood(item.food_code)) return;
       if (mealsWith(item.food_code) <= MAX_MEALS_PER_PROTEIN_FOOD) return;
       const onPlate = new Set(meal.items.map((i) => i.food_code));
+      const mealFat = meal.items.reduce((sum, i) => sum + (Number(i.fat_g) || 0), 0);
+      const fatTarget = Number(meal.target_macros?.fat_g);
+      // Never make fat worse than it already is, and never push a good meal
+      // past its band. Without a target there is no band, so the least-fatty
+      // swap still wins and a fat jump is noted instead of blessed.
+      const fatBand = fatTarget > 0 ? Math.max(fatTarget * (1 + DIVERSIFY_FAT_BAND_RATE), mealFat) : Infinity;
       const choices = (Array.isArray(item.swaps) ? item.swaps : [])
         .filter((swap) => swap?.food_code && FOOD_SWAP_DATABASE[swap.food_code] && noOilChange(swap)
           && !onPlate.has(swap.food_code) && mealsWith(swap.food_code) < MAX_MEALS_PER_PROTEIN_FOOD)
-        .sort((a, b) => mealsWith(a.food_code) - mealsWith(b.food_code));
+        .filter((swap) => mealFat - (Number(item.fat_g) || 0) + (Number(swap.fat_g) || 0) <= fatBand)
+        .sort((a, b) => (Number(a.fat_g) || 0) - (Number(b.fat_g) || 0)
+          || mealsWith(a.food_code) - mealsWith(b.food_code));
       const chosen = choices[0];
-      if (!chosen) return;
+      if (!chosen) {
+        // Every available swap broke the fat band, so the original stays and
+        // the meal says so. When no swap exists at all there is nothing to
+        // note — the old silent return already covers that case.
+        const eligible = (Array.isArray(item.swaps) ? item.swaps : [])
+          .filter((swap) => swap?.food_code && FOOD_SWAP_DATABASE[swap.food_code] && noOilChange(swap)
+            && !onPlate.has(swap.food_code) && mealsWith(swap.food_code) < MAX_MEALS_PER_PROTEIN_FOOD);
+        if (eligible.length > 0) {
+          meal.diversify_fat_note_ar = `التنويع كان هيزوّد دهون الوجبة عن الحد، فاتساب الصنف الأصلي؛ راجع تنويع البروتين.`;
+        }
+        return;
+      }
       const back = {
         food_code: item.food_code,
         name_ar: item.name_ar,
@@ -4396,6 +4490,11 @@ export function diversifyDailyProteins(meals = []) {
         swaps: [back, ...item.swaps.filter((swap) => swap !== chosen)],
         replaced_for_variety_from: item.food_code,
       };
+      // Without a fat target there is no band to reject against, so a swap
+      // that jumps fat by more than the band rate is noted, never blessed.
+      if (!(fatTarget > 0) && (Number(chosen.fat_g) || 0) > (Number(item.fat_g) || 0) * (1 + DIVERSIFY_FAT_BAND_RATE)) {
+        meal.diversify_fat_note_ar = `التنويع زوّد دهون الوجبة من ${Number(item.fat_g) || 0} لـ ${Number(chosen.fat_g) || 0} جم؛ راجعها.`;
+      }
     });
   }
   return out;
@@ -4827,48 +4926,142 @@ function moveFatBeyondOil(meals, allergenContext, { kidneyProteinCapped = false 
  * third of itself, so the plate stays the meal it was written as. Fat is left alone: the oil is
  * already balanced against what a swap or a fat source brings.
  */
+// P1-B6: trim repairs a plate without breaking it. Three directions, in
+// this order, because each one can move the others:
+// - Trim passes loop (carb, then protein, then fat) until no macro sits 3 g
+//   or more over target or no donor can move. A single pass used to stop at
+//   the per-donor third-cap with the excess still on the plate.
+// - Protein re-add: trimming a carbohydrate food takes its protein down with
+//   it (bread, potato, oats), and the old protein pass only trimmed excess —
+//   a meal that fell under its protein target stayed under. After trimming,
+//   protein is restored from the meal's own PROTEIN items, capped at twice
+//   each item's portion; what cannot be restored is flagged, never silent.
+// - Fat direction (new): the old trim left fat alone, so a diversified or
+//   safety-swapped meal kept its fat overshoot forever. Fat donors are any
+//   item carrying fat, trimmed like the other macros.
+// Under three grams is rounding, not a plate that needs changing. Trim only
+// scales items, never removes them, so running it after a safety swap is safe.
+const TRIM_ROUNDING_G = 3;
+const TRIM_MAX_ROUNDS = 10;
+const TRIM_MAX_DONOR_CUT = 3;
+const TRIM_MAX_SCALE_UP = 2;
+
+const trimScaleItem = (item, factor) => ({
+  ...item,
+  portion_g: scaleNumber(item.portion_g, factor),
+  household_measurement: gramsText(scaleNumber(item.portion_g, factor), item.household_measurement),
+  protein_g: scaleNumber(item.protein_g, factor),
+  carb_g: scaleNumber(item.carb_g, factor),
+  fat_g: scaleNumber(item.fat_g, factor),
+  calories_kcal: scaleNumber(item.calories_kcal, factor),
+  swaps: Array.isArray(item.swaps) ? item.swaps.map((swap) => scaleSwap(swap, factor)) : item.swaps,
+});
+
 export function trimMealsToTarget(meals = []) {
   if (!Array.isArray(meals)) return meals;
   return meals.map((meal) => {
     if (!Array.isArray(meal?.items) || !meal?.target_macros || meal.fixed_portions === true) return meal;
     let items = meal.items;
-    // Carbohydrate first: trimming a carbohydrate food takes its protein down with it, and the
-    // protein pass then sees what is really left.
-    for (const [macro, category] of [["carb_g", "CARBS"], ["protein_g", "PROTEIN"]]) {
+    const totals = (list, macro) => list.reduce((sum, item) => sum + (Number(item[macro]) || 0), 0);
+    // A donor gives at most a third of its ORIGINAL portion in total, across
+    // all rounds. Without this, looping the passes would cut the same donor
+    // by a third of what is left, round after round, until the plate no
+    // longer resembles the meal it was written as.
+    const originalMacros = items.map((item) => ({
+      carb_g: Number(item.carb_g) || 0,
+      protein_g: Number(item.protein_g) || 0,
+      fat_g: Number(item.fat_g) || 0,
+    }));
+    const taken = {
+      carb_g: items.map(() => 0),
+      protein_g: items.map(() => 0),
+      fat_g: items.map(() => 0),
+    };
+    const trimPass = (list, macro, categoryOrNull) => {
       const target = Number(meal.target_macros[macro]);
-      if (!(target > 0)) continue;
-      const actual = items.reduce((sum, item) => sum + (Number(item[macro]) || 0), 0);
-      // Under three grams is rounding, not a plate that needs changing.
-      let excess = Math.round(actual - target);
-      if (excess < 3) continue;
-      const donors = items
+      if (!(target > 0)) return { items: list, moved: false };
+      let excess = Math.round(totals(list, macro) - target);
+      if (excess < TRIM_ROUNDING_G) return { items: list, moved: false };
+      let moved = false;
+      const donors = list
         .map((item, index) => ({ item, index }))
-        .filter(({ item }) => item?.category === category && (Number(item[macro]) || 0) > 0 && (Number(item.portion_g) || 0) > 0)
+        .filter(({ item }) => (Number(item[macro]) || 0) > 0 && (Number(item.portion_g) || 0) > 0
+          && (categoryOrNull === null || item?.category === categoryOrNull))
         .sort((a, b) => (Number(b.item[macro]) || 0) - (Number(a.item[macro]) || 0));
       for (const { item, index } of donors) {
         if (excess <= 0) break;
         const have = Number(item[macro]) || 0;
-        const take = Math.min(excess, Math.floor(have / 3));
+        const cap = Math.floor(originalMacros[index][macro] / TRIM_MAX_DONOR_CUT) - taken[macro][index];
+        const take = Math.min(excess, cap);
         if (take < 1) continue;
         const factor = (have - take) / have;
-        const grams = scaleNumber(item.portion_g, factor);
-        if (!(grams > 0)) continue;
-        const next = items.slice();
-        next[index] = {
-          ...item,
-          portion_g: grams,
-          household_measurement: gramsText(grams, item.household_measurement),
-          protein_g: scaleNumber(item.protein_g, factor),
-          carb_g: scaleNumber(item.carb_g, factor),
-          fat_g: scaleNumber(item.fat_g, factor),
-          calories_kcal: scaleNumber(item.calories_kcal, factor),
-          swaps: Array.isArray(item.swaps) ? item.swaps.map((swap) => scaleSwap(swap, factor)) : item.swaps,
-        };
-        items = next;
+        const scaled = trimScaleItem(item, factor);
+        if (!(scaled.portion_g > 0)) continue;
+        const next = list.slice();
+        next[index] = scaled;
+        list = next;
+        moved = true;
+        taken[macro][index] += take;
         excess -= take;
       }
+      return { items: list, moved };
+    };
+    // Carbohydrate first: trimming a carbohydrate food takes its protein down
+    // with it, and the protein pass then sees what is really left. Fat last
+    // in each round, so a fat trim that clips a protein item is seen by the
+    // next round's protein pass and by the re-add below.
+    for (let round = 0; round < TRIM_MAX_ROUNDS; round += 1) {
+      const carb = trimPass(items, "carb_g", "CARBS");
+      items = carb.items;
+      const protein = trimPass(items, "protein_g", "PROTEIN");
+      items = protein.items;
+      const fat = trimPass(items, "fat_g", null);
+      items = fat.items;
+      if (!carb.moved && !protein.moved && !fat.moved) break;
+      const remaining = [["carb_g"], ["protein_g"], ["fat_g"]]
+        .every(([macro]) => Math.round(totals(items, macro) - (Number(meal.target_macros[macro]) || 0)) < TRIM_ROUNDING_G);
+      if (remaining) break;
     }
-    return items === meal.items ? meal : { ...meal, items };
+    // Protein re-add: restore what trimming took, from the meal's own protein
+    // items, largest first, at most twice each item's portion.
+    const proteinTarget = Number(meal.target_macros.protein_g);
+    if (proteinTarget > 0) {
+      let shortfall = Math.round(proteinTarget - totals(items, "protein_g"));
+      if (shortfall >= TRIM_ROUNDING_G) {
+        const donors = items
+          .map((item, index) => ({ item, index }))
+          .filter(({ item }) => item?.category === "PROTEIN" && (Number(item.protein_g) || 0) > 0 && (Number(item.portion_g) || 0) > 0)
+          .sort((a, b) => (Number(b.item.protein_g) || 0) - (Number(a.item.protein_g) || 0));
+        for (const { item, index } of donors) {
+          if (shortfall <= 0) break;
+          const have = Number(item.protein_g) || 0;
+          const maxAdd = have * (TRIM_MAX_SCALE_UP - 1);
+          const add = Math.min(shortfall, maxAdd);
+          if (add < 1) continue;
+          const factor = (have + add) / have;
+          const next = items.slice();
+          next[index] = trimScaleItem(item, factor);
+          items = next;
+          shortfall -= add;
+        }
+      }
+    }
+    // What is still off after every pass is flagged on the meal, never passed
+    // in silence. The culinary preflight flags the same meals independently.
+    const notes = [];
+    for (const [macro, label] of [["protein_g", "البروتين"], ["carb_g", "الكربوهيدرات"], ["fat_g", "الدهون"]]) {
+      const target = Number(meal.target_macros[macro]);
+      if (!(target > 0)) continue;
+      const actual = totals(items, macro);
+      const diff = Math.round(actual - target);
+      if (macro === "protein_g" && diff <= -TRIM_ROUNDING_G) {
+        notes.push(`البروتين ناقص ${Math.abs(diff)} جم عن الهدف بعد القص؛ راجع الطبق.`);
+      } else if (macro !== "protein_g" && diff >= TRIM_ROUNDING_G) {
+        notes.push(`${label} زايدة ${diff} جم عن الهدف بعد استنفاد القص؛ راجع الطبق.`);
+      }
+    }
+    if (items === meal.items && notes.length === 0) return meal;
+    return { ...meal, items, ...(notes.length > 0 ? { trim_notes_ar: notes } : {}) };
   });
 }
 

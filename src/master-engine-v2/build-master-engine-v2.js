@@ -1576,7 +1576,13 @@ export function buildMasterEngineV2(inputs) {
   // The safety gate runs last (before totals are recomputed) because templates
   // emit some items unconditionally: without it, a refused food the flags
   // forbid could still reach the plate, and its swaps would still offer it.
-  const builtCulinaryMeals = refreshActualMacros(enforceClinicalSafety(trimMealsToTarget(diversifyFatSources(
+  // P1-B6: a final trim runs AFTER the safety gate. The old order (trim, then
+  // safety, then only re-sum) let a safety swap re-break macros with no
+  // correction — a fattier equivalent landing after trim already ran. Trim
+  // only scales items, never removes them, so the final trim cannot undo a
+  // safety replacement; and with its protein re-add direction it cannot
+  // break protein either.
+  const builtCulinaryMeals = refreshActualMacros(trimMealsToTarget(enforceClinicalSafety(trimMealsToTarget(diversifyFatSources(
     splitOversizedPortions(enforceDiabeticCarbChoice(
       buildCulinaryRecipeMeals(universalTargets, canonicalIntake, effectiveIntake),
       isDiabeticClient,
@@ -1585,7 +1591,7 @@ export function buildMasterEngineV2(inputs) {
     {
       kidneyProteinCapped: universalTargets.clinical_guardrails?.kidney_protein_capped === true,
     },
-  )), culinaryAllergenContext));
+  )), culinaryAllergenContext)));
   // P0-A7: the served plate is checked before it reaches anyone. A meal with
   // no protein food gets one safe fallback protein (never a refused food);
   // then the culinary preflight audits every final meal — targets, portions,

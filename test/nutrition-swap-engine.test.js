@@ -608,18 +608,22 @@ test("equal gram objectives use the smaller legal grams", () => {
       foodCode: "B_FOOD",
       portion: {
         minimum_g: 100,
-        maximum_g: 200,
-        step_g: 100,
+        maximum_g: 120,
+        step_g: 20,
         default_g: 100,
       },
     }),
   ];
+  // P1-B6: 100 g and 120 g sit symmetrically around this target (10% off
+  // on every nutrient), both inside the relative tolerances, with equal
+  // objectives — so the smaller legal grams win. The old 100 g / 200 g
+  // pair around 150 is 33% off and now correctly rejected outright.
   const target = {
-    planned_calories: 150,
-    protein_g: 15,
-    fat_g: 3,
-    carbohydrate_g: 15,
-    fiber_g: 1.5,
+    planned_calories: 110,
+    protein_g: 11,
+    fat_g: 2.2,
+    carbohydrate_g: 11,
+    fiber_g: 1.1,
   };
   const inputs = makeInputs({
     items,
@@ -712,25 +716,28 @@ test("objective score uses all five approved nutrient weights", () => {
     makeItem(),
     makeItem({
       foodCode: "B_FOOD",
+      // P1-B6: residuals sit inside the relative tolerances for the 100 kcal
+      // target (10 / 1.5 / 1 / 1.5 / 1) with all five nutrients nonzero, so
+      // all five weights still contribute to the score.
       nutrition: {
-        calories_kcal: 150,
-        protein_g: 15,
-        fat_g: 7,
-        carbohydrate_g: 20,
-        fiber_g: 4,
+        calories_kcal: 105,
+        protein_g: 11,
+        fat_g: 2.5,
+        carbohydrate_g: 11,
+        fiber_g: 1.5,
       },
     }),
   ];
   const alternative = findItem(buildFrom({ items }), "A_FOOD")
     .alternatives[0];
   assert.deepEqual(alternative.projected_meal_residual, {
-    calories_kcal: 50,
-    protein_g: 5,
-    fat_g: 5,
-    carbohydrate_g: 10,
-    fiber_g: 3,
+    calories_kcal: 5,
+    protein_g: 1,
+    fat_g: 0.5,
+    carbohydrate_g: 1,
+    fiber_g: 0.5,
   });
-  assert.equal(alternative.objective_score, 12);
+  assert.equal(alternative.objective_score, 4.17);
 });
 
 test("acceptance uses the Portion Solver tolerance object without rebuilding it", () => {
@@ -738,12 +745,19 @@ test("acceptance uses the Portion Solver tolerance object without rebuilding it"
     makeItem(),
     makeItem({
       foodCode: "B_FOOD",
-      nutrition: { calories_kcal: 120 },
+      nutrition: { calories_kcal: 121 },
     }),
   ];
-  assert.equal(findItem(buildFrom({ items }), "A_FOOD")
+  // P1-B6: the swap is 11 kcal off a 110 kcal target, exactly at the 10%
+  // relative tolerance boundary (11) but outside the mutated 10 kcal
+  // tolerance. The original meal itself (100 kcal) is also inside the
+  // boundary, which the engine requires before offering any alternative.
+  const selection = makeSelection({
+    meals: [makeMeal({ target: { planned_calories: 110 } })],
+  });
+  assert.equal(findItem(buildFrom({ items, selection }), "A_FOOD")
     .alternatives.length, 1);
-  const inputs = makeMutableInputs({ items });
+  const inputs = makeMutableInputs({ items, selection });
   inputs.nutritionPortionSolver.meals[0].tolerance.calories_kcal = 10;
   assert.deepEqual(findItem(
     buildNutritionSwapEngine(inputs),
@@ -805,7 +819,9 @@ test("alternative ordering uses objective before candidate order", () => {
     makeItem(),
     makeItem({
       foodCode: "B_FOOD",
-      nutrition: { calories_kcal: 80 },
+      // P1-B6: 5 kcal off the 100 kcal target, inside the 10% tolerance
+      // (the old 80 kcal value is 20 off and now correctly rejected).
+      nutrition: { calories_kcal: 95 },
     }),
     makeItem({ foodCode: "C_FOOD" }),
   ];
@@ -1157,20 +1173,23 @@ test("real closed meals expose only the approved safe Core swaps", () => {
       alternative.food_code,
       alternative.grams,
       alternative.objective_score,
-    ]), [["PASTA_SPAGHETTI_COOKED", 175, 3.15]]);
+    ]), [["PASTA_SPAGHETTI_COOKED", 175, 3.42]]);
+  // P1-B6: totals and residuals recalibrated for the relative-tolerance
+  // objective (the swap itself — pasta at 175 g, and only pasta — is
+  // unchanged, as are the no-swap assertions below).
   assert.deepEqual(riceAlternative.projected_meal_totals, {
-    calories_kcal: 704.31,
-    protein_g: 47.29,
-    fat_g: 21.49,
-    carbohydrate_g: 79.97,
-    fiber_g: 10.79,
+    calories_kcal: 703.55,
+    protein_g: 46.98,
+    fat_g: 21.48,
+    carbohydrate_g: 79.74,
+    fiber_g: 11.01,
   });
   assert.deepEqual(riceAlternative.projected_meal_residual, {
-    calories_kcal: -12.69,
-    protein_g: 4.29,
-    fat_g: 0.49,
-    carbohydrate_g: -9.03,
-    fiber_g: 1.79,
+    calories_kcal: -13.45,
+    protein_g: 3.98,
+    fat_g: 0.48,
+    carbohydrate_g: -9.26,
+    fiber_g: 2.01,
   });
   // The fixed breakfast (egg, oats, salad) exposes no swaps.
   assert.deepEqual(findItem(result, "TOMATO_RED_RAW").alternatives, []);
@@ -1178,19 +1197,24 @@ test("real closed meals expose only the approved safe Core swaps", () => {
 
   assert.deepEqual(findItem(result,
     "CHICKEN_BREAST_ROASTED_SKINLESS", 1).alternatives, []);
-  assert.deepEqual(findItem(result,
-    "CUCUMBER_WITH_PEEL_RAW", 1).alternatives, []);
+  // P1-B6: the main meal no longer carries cucumber — under the relative-
+  // tolerance objective the optimizer fits the target with carrot and
+  // tomato alone (all five nutrients within tolerance), so there is no
+  // cucumber item in meal 1 to offer swaps for.
+  assert.equal(findItem(result, "CUCUMBER_WITH_PEEL_RAW", 1), undefined);
   assert.deepEqual(findItem(result, "OLIVE_OIL", 1).alternatives.map(
     (alternative) => [alternative.food_code, alternative.grams]), [
     ["SUNFLOWER_OIL", 15],
   ]);
-  // Evening potato carries the same safe starch-for-starch swap.
+  // P1-B6: the evening potato NO LONGER offers its pasta swap. The swap
+  // itself is unchanged, but under relative tolerances its projected fiber
+  // (6.7 g vs the 9 g target, a 2.30 g shortfall) now sits just outside the
+  // 25% fiber tolerance (2.25 g) — a 0.05 g miss — so acceptance correctly
+  // refuses it. This is a visible Q25 consequence, flagged to the owner:
+  // if the swap should survive, that is a follow-up decision about swap
+  // acceptance, not a reason to reintroduce absolute floors here.
   assert.deepEqual(findItem(result,
-    "POTATO_BOILED_WITHOUT_SKIN", 2).alternatives.map((alternative) => [
-      alternative.food_code,
-      alternative.grams,
-      alternative.objective_score,
-    ]), [["PASTA_SPAGHETTI_COOKED", 225, 4.62]]);
+    "POTATO_BOILED_WITHOUT_SKIN", 2).alternatives, []);
 });
 
 // The real evening meal used to be unclosed (egg whites with dry oats,
@@ -1244,3 +1268,5 @@ test("reversing the real Core catalog leaves Swap Engine output unchanged", () =
   const second = buildNutritionSwapEngine(reversed);
   assert.deepEqual(second, first);
 });
+
+

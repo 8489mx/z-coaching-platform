@@ -10,6 +10,8 @@ export {
   enforceClinicalSafety,
   splitOversizedPortions,
   trimMealsToTarget,
+  diversifyDailyProteins,
+  titleFromServedItems,
   diversifyFatSources,
   buildAllergenContext,
   carbPortionLimit,
