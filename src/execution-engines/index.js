@@ -10,7 +10,6 @@ export * from './drug-interaction-firewall.js';
 export * from './biomarker-engine.js';
 
 // 2. Nutrition & Metabolism Engines
-export * from './food-swap-engine.js';
 export * from './kitchen-yield-engine.js';
 export * from './metabolic-macro-engine.js';
 

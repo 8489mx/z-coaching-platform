@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { getActiveProgramByUserId } from "../src/api/controllers/program.controller.js";
 import { isFoodAllowedDuringFast, resolveFastingContext } from "../src/execution-engines/fasting-calendar-engine.js";
-import { FOOD_DATABASE } from "../src/execution-engines/food-swap-engine.js";
+import { FOOD_DATABASE } from "../frontend/src/utils/foodSwapEngine.js";
 import { User, Program, IntakeSubmission } from "../src/api/models/index.js";
 import sequelize from "../src/api/config/database.js";
 

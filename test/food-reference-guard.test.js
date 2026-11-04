@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { FOOD_REFERENCE } from '../frontend/src/data/foodReference.js';
-import { FOOD_DATABASE, GOLD_FOOD_CATALOG } from '../frontend/src/utils/foodSwapEngine.js';
+import { FOOD_DATABASE } from '../frontend/src/utils/foodSwapEngine.js';
 import { FOOD_SWAP_DATABASE } from '../src/nutrition-meal-context-v2/build-culinary-meals.js';
 import { DEFAULT_FOOD_CATALOG } from '../frontend/src/data/defaultFoodsCatalog.js';
 
@@ -18,7 +18,6 @@ const readJson = (rel) => {
 
 const TABLES = [
   { name: 'swap engine FOOD_DATABASE', rows: Object.entries(FOOD_DATABASE).map(([code, v]) => ({ code, p: v.protein_per_100g, c: v.carbs_per_100g, f: v.fat_per_100g, k: v.calories_per_100g })) },
-  { name: 'GOLD_FOOD_CATALOG', rows: GOLD_FOOD_CATALOG.map((v) => ({ code: v.id, p: v.protein_per_100g, c: v.carbs_per_100g, f: v.fats_per_100g ?? v.fat_per_100g, k: v.calories_per_100g })) },
   { name: 'culinary FOOD_SWAP_DATABASE', rows: Object.entries(FOOD_SWAP_DATABASE).map(([code, v]) => ({ code, p: v.protein_per_100g, c: v.carb_per_100g, f: v.fat_per_100g, k: v.kcal_per_100g })) },
   { name: 'frontend DEFAULT_FOOD_CATALOG (macro calculator)', rows: DEFAULT_FOOD_CATALOG.map((v) => ({ code: v.id, p: v.protein_per_100g, c: v.carbs_per_100g, f: v.fat_per_100g, k: v.calories_per_100g })) },
   { name: 'src/data/food-catalog.json', rows: readJson('src/data/food-catalog.json').map((v) => ({ code: v.id, p: v.protein_per_100g, c: v.carbs_per_100g, f: v.fat_per_100g, k: v.calories_per_100g })) },

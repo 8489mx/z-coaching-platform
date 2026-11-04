@@ -279,12 +279,13 @@ export default function ClientInteractiveApp() {
         />
 
         {/* SMART FOOD SWAP POPUP MODAL WITH CLINICAL FILTERS */}
+        {/* P2-C3: the modal asks the server swap engine; it no longer takes a
+            client-side clinical profile or fasting context (the server builds
+            both from the signed-in user). */}
         <FoodSwapModal
           activeSwapItem={activeSwapItem}
           onClose={() => setActiveSwapItem(null)}
           onExecuteSwap={handleExecuteSwap}
-          clinicalProfile={clientData?.clinicalProfile}
-          fastingContext={fastingContext}
         />
 
         {/* ZERO-CALORIE FREE BEVERAGES & SEASONINGS MODAL */}

@@ -270,10 +270,9 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       const {
         FOOD_DATABASE,
         isFoodClinicallySafe,
-        getCompatibleSwaps,
         GLYCEMIC_INDEX_LEVELS,
         FODMAP_LEVELS,
-      } = await import("../src/execution-engines/food-swap-engine.js");
+      } = await import("../frontend/src/utils/foodSwapEngine.js");
 
       // 1. Verify every food item has glycemic_index and fodmap_level populated
       const allFoods = Object.values(FOOD_DATABASE).filter((f) => f && typeof f === "object" && f.code);
@@ -314,7 +313,9 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       assert.equal(isFoodClinicallySafe(FOOD_DATABASE.STRAWBERRIES, diabeticProfile), true, "Strawberries must be safe for diabetes");
 
       // Swapping breakfast carbs for diabetic client MUST NOT return RICE_CAKES or BALADI_BREAD
-      const diabeticCarbSwaps = getCompatibleSwaps("ROLLED_OATS_RAW", diabeticProfile);
+      // P2-C3: getCompatibleSwaps is deleted; same filter applied directly.
+      const oatsBase = FOOD_DATABASE.ROLLED_OATS_RAW;
+      const diabeticCarbSwaps = Object.values(FOOD_DATABASE).filter((f) => f && f.code && f.code !== oatsBase.code && f.macro_type === oatsBase.macro_type && f.taste_profile === oatsBase.taste_profile && isFoodClinicallySafe(f, diabeticProfile));
       assert.ok(diabeticCarbSwaps.length > 0, "Must return compatible carb swaps");
       diabeticCarbSwaps.forEach((swap) => {
         assert.notEqual(swap.glycemic_index, "HIGH", `Swap ${swap.code} must not be HIGH GI for diabetic client`);
@@ -352,7 +353,9 @@ describe("Tier CS Clinical Fixes & Verification", () => {
       assert.equal(isFoodClinicallySafe(FOOD_DATABASE.CHICKEN_BREAST, ibsProfile), true, "Chicken breast must be safe for IBS");
 
       // Main carb swaps for IBS client MUST NOT return High-FODMAP items
-      const ibsCarbSwaps = getCompatibleSwaps("BASMATI_RICE_COOKED", ibsProfile);
+      // P2-C3: getCompatibleSwaps is deleted; same filter applied directly.
+      const basmatiBase = FOOD_DATABASE.BASMATI_RICE_COOKED;
+      const ibsCarbSwaps = Object.values(FOOD_DATABASE).filter((f) => f && f.code && f.code !== basmatiBase.code && f.macro_type === basmatiBase.macro_type && f.taste_profile === basmatiBase.taste_profile && isFoodClinicallySafe(f, ibsProfile));
       assert.ok(ibsCarbSwaps.length > 0, "Must return compatible main carb swaps");
       ibsCarbSwaps.forEach((swap) => {
         assert.notEqual(swap.fodmap_level, "HIGH", `Swap ${swap.code} must not be HIGH FODMAP for IBS client`);

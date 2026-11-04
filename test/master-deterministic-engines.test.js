@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { getPrehabRoutine } from '../src/execution-engines/postural-prehab-engine.js';
-import { calculateEquivalentSwap, getEligibleSwaps } from '../src/execution-engines/food-swap-engine.js';
 import { calculateSubscriptionStatus } from '../src/execution-engines/subscription-lifecycle-engine.js';
 
 // Mock Databases for Deterministic Testing
@@ -25,38 +24,7 @@ const mockMobilityCatalog = [
   }
 ];
 
-const mockFoodCatalog = [
-  {
-    id: 'chicken_breast',
-    name_ar: 'صدور دجاج',
-    primary_macro: 'PROTEIN',
-    taste_profile: 'MAIN_SAVORY_PROTEIN',
-    calories_per_100g: 165,
-    protein_per_100g: 31.0,
-    carbs_per_100g: 0,
-    fats_per_100g: 3.6
-  },
-  {
-    id: 'tilapia_fish',
-    name_ar: 'سمك بلطي',
-    primary_macro: 'PROTEIN',
-    taste_profile: 'MAIN_SAVORY_PROTEIN',
-    calories_per_100g: 125,
-    protein_per_100g: 26.0,
-    carbs_per_100g: 0,
-    fats_per_100g: 2.5
-  },
-  {
-    id: 'oats',
-    name_ar: 'شوفان',
-    primary_macro: 'CARB',
-    taste_profile: 'BREAKFAST_SWEET_CARB',
-    calories_per_100g: 380,
-    protein_per_100g: 13.5,
-    carbs_per_100g: 66.0,
-    fats_per_100g: 6.5
-  }
-];
+
 
 test('Z Coaching Platform - Master Deterministic Engines Suite', async (t) => {
 
@@ -72,33 +40,6 @@ test('Z Coaching Platform - Master Deterministic Engines Suite', async (t) => {
     const routine = getPrehabRoutine(['ROUNDED_SHOULDERS'], 'LEGS', mockMobilityCatalog);
     assert.equal(routine.has_prehab, false);
     assert.equal(routine.exercises.length, 0);
-  });
-
-  // 2. Food Swap Engine Tests
-  await t.test('3. Food Swap Engine: calculates mathematically equivalent grams between chicken and fish', () => {
-    // 150g Chicken (46.5g Protein) -> Tilapia (26g Protein per 100g) -> ~178.8g -> rounded to 180g
-    const result = calculateEquivalentSwap({
-      sourceFoodId: 'chicken_breast',
-      sourceGrams: 150,
-      targetFoodId: 'tilapia_fish',
-      foodCatalog: mockFoodCatalog
-    });
-
-    assert.equal(result.success, true);
-    assert.equal(result.target_food.calculated_grams, 180);
-    assert.ok(Math.abs(result.macros.protein - 46.8) < 0.5);
-  });
-
-  await t.test('4. Food Swap Engine: blocks incompatible swaps (e.g. swapping main chicken with breakfast oats)', () => {
-    const result = calculateEquivalentSwap({
-      sourceFoodId: 'chicken_breast',
-      sourceGrams: 150,
-      targetFoodId: 'oats',
-      foodCatalog: mockFoodCatalog
-    });
-
-    assert.equal(result.success, false);
-    assert.equal(result.error_code, 'INCOMPATIBLE_TASTE_PROFILE');
   });
 
   // 4. Subscription Lifecycle Engine Tests

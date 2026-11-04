@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
-import { getFoodClinicalProperties } from "../src/execution-engines/food-swap-engine.js";
+import { getFoodClinicalProperties } from "../frontend/src/utils/foodSwapEngine.js";
 
 /**
  * The swap engine refused high glycemic foods for a diabetic client, but the meal generator that

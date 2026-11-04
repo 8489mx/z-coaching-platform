@@ -318,7 +318,6 @@ test('Security Audit & Hardening Suite (IDOR, Ownership, Router Coverage & DB Pa
       'server:POST:/api/v1/engines/nutrition/calorie-cycling': 'محرك تدوير السعرات الرياضي للأيام التدريبية',
       'server:POST:/api/v1/engines/nutrition/diet-break-check': 'محرك حساب الحاجة لاستراحة دايت رياضية',
       'server:POST:/api/v1/engines/habits/evaluate-daily': 'محرك قياس العادات الحركية والنشاط اليومي',
-      'server:POST:/api/v1/food-swap/calculate': 'محرك الحساب المكافئ للتبديلات الغذائية',
       'server:POST:/api/v1/checkin/evaluate': 'محرك التقييم الرياضي لبيانات الشيك إن الأسبوعي',
       'server:POST:/api/v1/pdf/export': 'محرك تصدير وتوليد ملف الخطة الرياضية والغذائية كـ HTML للطباعة',
       'server:GET:/privacy-policy': 'مسار امتثال سياسة الخصوصية لمتجر آبل ستور',

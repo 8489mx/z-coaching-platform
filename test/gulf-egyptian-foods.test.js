@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { RECIPES, RECIPE_INGREDIENTS, RECIPE_REFERENCE, computeRecipePer100g } from '../frontend/src/data/recipeReference.js';
 import { FOOD_REFERENCE } from '../frontend/src/data/foodReference.js';
-import { FOOD_DATABASE, calculateDynamicFoodSwap, getCompatibleSwaps, isFoodClinicallySafe } from '../src/execution-engines/food-swap-engine.js';
+import { FOOD_DATABASE, calculateDynamicFoodSwap, isFoodClinicallySafe } from '../frontend/src/utils/foodSwapEngine.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
@@ -57,7 +57,10 @@ test('composite dishes swap calorie for calorie, only with other composite dishe
   assert.ok(Math.abs(r.replacement_food.macros.calories_kcal - kcalBefore) <= 5, `${r.replacement_food.macros.calories_kcal} vs ${kcalBefore}`);
   assert.equal(r.replacement_food.portion_g, 359);
   assert.throws(() => calculateDynamicFoodSwap({ current_food_code: 'KABSA_CHICKEN', current_portion_g: 300, target_food_code: 'BASMATI_RICE_COOKED', clinical_profile: {} }), /Invalid Swap/);
-  const options = getCompatibleSwaps('MACHBOOS_CHICKEN', {}).map((f) => f.code);
+  // P2-C3: getCompatibleSwaps is deleted; the same filter it applied (same macro
+  // type + same taste group + clinically safe) is applied directly to FOOD_DATABASE.
+  const machboos = FOOD_DATABASE.MACHBOOS_CHICKEN;
+  const options = Object.values(FOOD_DATABASE).filter((f) => f && f.code && f.code !== machboos.code && f.macro_type === machboos.macro_type && f.taste_profile === machboos.taste_profile && isFoodClinicallySafe(f, {})).map((f) => f.code);
   assert.ok(options.includes('KABSA_LAMB') && options.includes('MAHSHI_WARAQ_ENAB'));
   assert.ok(options.every((c) => FOOD_DATABASE[c].macro_type === 'MIXED'));
 });

@@ -19,7 +19,7 @@ const LIVE_PAIRS = {
   'clinical-supplement-safety-engine': 'clinicalSupplementSafetyEngine',
   'financial-ledger-engine': 'financialLedgerEngine',
   'emergency-scenario-engine': 'emergencyScenarioEngine',
-  'food-swap-engine': 'foodSwapEngine',
+  // P2-C3: 'food-swap-engine' pair deleted with the backend re-export module.
   'intake-preflight-engine': 'intakePreflightEngine',
   'kitchen-yield-engine': 'kitchenYieldEngine',
   'measurement-sync-engine': 'measurementSyncEngine',

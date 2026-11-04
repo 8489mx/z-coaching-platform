@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { FOOD_DATABASE } from "../src/execution-engines/food-swap-engine.js";
+import { FOOD_DATABASE } from "../frontend/src/utils/foodSwapEngine.js";
 
 /**
  * The Flutter app draws what the server already decided. Any nutrition or training content written

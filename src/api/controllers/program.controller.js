@@ -22,6 +22,7 @@ import { applyDeloadToSession, READINESS_GUIDANCE_AR } from "../../../src/traini
 import { resolveTrainingCycleStatus, CYCLE_STATUS, resolveSubscriptionState, subscriptionNeedsAttention, startCycleOnPublish } from "../services/trainingCycleService.js";
 import { buildNextCycle, resolvePainFlaggedExercises, evaluateAutoPublish } from "../services/nextCycleService.js";
 import { isSwapFoodSafe, resolveSwapContext, PLAN_FOOD_TO_REGISTRY } from "../services/liveFoodSwapSafety.js";
+import { canonicalMacros } from "../../../src/nutrition-food-catalog/canonical-food-table.js";
 import { assessServiceScope, outsideScopeResponse } from "../services/serviceScope.js";
 import { isLiveSwapEquivalent, liveSwapOilAddition, liveSwapValueWithOil, liveSwapOilText, liveSwapTargetGrams, liveSwapServingText } from "../services/liveFoodSwapValue.js";
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from "../../../frontend/src/utils/swapExchangeRules.js";
@@ -514,6 +515,19 @@ function normalizeFoodCode(codeOrName) {
   return null;
 }
 
+/**
+ * P2-C3: grams, oil, and equivalence are judged on the food the client actually has,
+ * not on its approximate registry twin. A code with a canonical row (every plan food,
+ * including the 9 approximation foods like BASMATI_RICE) uses its own row; anything
+ * else keeps the normalized registry code. The twin mapping stays, but only for
+ * candidate listing and engine validation — never for the numbers.
+ */
+function valueCodeFor(originalCode, normalizedCode) {
+  const upper = String(originalCode || "").trim().toUpperCase();
+  if (upper && canonicalMacros(upper)) return upper;
+  return normalizedCode;
+}
+
 /** The clinical restrictions of the client a swap request is for (signed-in client, or client_code from a coach). */
 async function swapContextFor(req) {
   const requester = req.user?.id ? await User.findByPk(req.user.id).catch(() => null) : null;
@@ -662,6 +676,8 @@ export const getSwapCandidatesHandler = async (req, res) => {
       return res.status(200).json({ candidates: [], message_ar: NO_SWAP_NOTE_AR });
     }
     const grams = Number(source_grams) || 100;
+    // P2-C3: the numbers use the food the client actually has (see valueCodeFor).
+    const valueCode = valueCodeFor(food_code, normalizedCode);
     const clinicalContext = await swapContextFor(req);
     const mealCategory = mealCategoryFromContext(meal_context)
       || (req.user?.id ? await mealCategoryFromClientPlan(req.user.id, normalizedCode, grams) : null);
@@ -693,18 +709,21 @@ export const getSwapCandidatesHandler = async (req, res) => {
           targetGrams = swapCalc.target_food.portion_g;
           displayAr = swapCalc.target_food.serving_display_ar;
         } catch (e) {
-          targetGrams = Math.round(grams * (currentItem.primary_nutrient_per_100g / cand.primary_nutrient_per_100g));
-          displayAr = `${cand.name_ar} (${targetGrams} جرام)`;
+          // P2-C3: fail closed. The engine refusing a candidate never falls back to
+          // a hand-computed portion (the old fallback bypassed the meal-category
+          // rule); the candidate is simply not listed.
+          return null;
         }
       }
-      // Portion from the same food data the value check and the plan use.
-      const oneSourceGrams = currentItem ? liveSwapTargetGrams(normalizedCode, grams, cand.food_code, cand.macro_type) : null;
+      // Portion from the same food data the value check and the plan use, judged
+      // on the food the client actually has (P2-C3 valueCode), not its twin.
+      const oneSourceGrams = currentItem ? liveSwapTargetGrams(valueCode, grams, cand.food_code, cand.macro_type) : null;
       if (oneSourceGrams) {
         targetGrams = oneSourceGrams;
         displayAr = liveSwapServingText(cand, oneSourceGrams);
       }
       // A leaner swap comes with the missing fat as olive oil, shown in its line.
-      const oil = currentItem ? liveSwapOilAddition(normalizedCode, grams, cand.food_code, targetGrams) : 0;
+      const oil = currentItem ? liveSwapOilAddition(valueCode, grams, cand.food_code, targetGrams) : 0;
       return {
         food_code: cand.food_code,
         name_ar: cand.name_ar,
@@ -715,13 +734,13 @@ export const getSwapCandidatesHandler = async (req, res) => {
         display_ar: `${displayAr}${liveSwapOilText(oil)}`,
         serving_display_ar: `${displayAr}${liveSwapOilText(oil)}`
       };
-    });
+    }).filter(Boolean);
 
     // Only what the client's own meal plan could contain: allergies, conditions, and the diabetic
     // potato portion.
     // ...and eaten the same way with about the same energy (swapExchangeRules).
     const safeCandidates = enrichedCandidates.filter((cand) => isSwapFoodSafe(cand.food_code, clinicalContext, cand.target_grams)
-      && isLiveSwapEquivalent(normalizedCode, grams, cand.food_code, cand.target_grams));
+      && isLiveSwapEquivalent(valueCode, grams, cand.food_code, cand.target_grams));
     return res.status(200).json({ candidates: safeCandidates });
   } catch (err) {
     console.error("getSwapCandidatesHandler error:", err);
@@ -772,6 +791,9 @@ export const calculateSwapHandler = async (req, res) => {
       return res.status(409).json({ error: NO_SWAP_NOTE_AR, code: "NO_SWAP_FOR_FOOD" });
     }
     const fromGrams = Number(source_grams || current_portion_g) || 100;
+    // P2-C3: the numbers use the food the client actually has (see valueCodeFor).
+    // fromCode stays normalized for engine validation and the post-swap meal match.
+    const valueCode = valueCodeFor(source_food_code || current_food_code, fromCode);
     // No meal named: any meal the target food suits (the candidate list was built the same way).
     const category = meal_category || mealCategoryFromContext(meal_context)
       || getSmartFoodRegistryItem(toCode)?.meal_categories?.[0] || "MAIN_MEAL";
@@ -787,8 +809,9 @@ export const calculateSwapHandler = async (req, res) => {
       meal_category: category,
       isTargetSafe: (code, grams) => isSwapFoodSafe(code, clinicalContext, grams),
     });
-    // Portion from the same food data the value check and the plan use (as in swap-candidates).
-    const oneSourceGrams = liveSwapTargetGrams(fromCode, fromGrams, toCode, computed.macro_type);
+    // Portion from the same food data the value check and the plan use (as in swap-candidates),
+    // judged on the food the client actually has (P2-C3 valueCode), not its twin.
+    const oneSourceGrams = liveSwapTargetGrams(valueCode, fromGrams, toCode, computed.macro_type);
     const targetItem = getSmartFoodRegistryItem(toCode);
     const result = oneSourceGrams && targetItem
       ? {
@@ -806,13 +829,13 @@ export const calculateSwapHandler = async (req, res) => {
     if (!isSwapFoodSafe(toCode, clinicalContext, result.target_food.portion_g)) {
       return res.status(409).json({ error: "البديل ده مش مناسب لحالتك الصحية أو الحساسية المسجلة", code: "SWAP_NOT_CLINICALLY_SAFE" });
     }
-    if (!isLiveSwapEquivalent(fromCode, fromGrams, toCode, result.target_food.portion_g)) {
+    if (!isLiveSwapEquivalent(valueCode, fromGrams, toCode, result.target_food.portion_g)) {
       return res.status(409).json({ error: "البديل ده مش من نفس نوع الأكل أو قيمته مش قريبة؛ اختار بديل من القايمة", code: "SWAP_NOT_EQUIVALENT" });
     }
 
     // The app shows the new item's calories and macros from these fields (it showed 0 without them),
     // including the olive oil a leaner swap adds.
-    const value = liveSwapValueWithOil(fromCode, fromGrams, toCode, result.target_food.portion_g);
+    const value = liveSwapValueWithOil(valueCode, fromGrams, toCode, result.target_food.portion_g);
     const oil = value?.oil || 0;
     const macros = value ? {
       calories: Math.round(value.kcal),

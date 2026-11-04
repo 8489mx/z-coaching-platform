@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { 
   FOOD_DATABASE, 
   UNIFIED_FOOD_CODE_ALIASES, 
-  getCompatibleSwaps, 
+  isFoodClinicallySafe,
   calculateDynamicFoodSwap 
 } from '../frontend/src/utils/foodSwapEngine.js';
 
@@ -33,7 +33,10 @@ test('Tier 2 Item 4: Food Swap Code Unification & 22-Code Full Compatibility Sui
   await t.test('2. Every one of the 22 codes produces non-empty compatible swap candidates and computes dynamic swap', () => {
     for (const code of mealCodes) {
       const foodItem = FOOD_DATABASE[code];
-      const swaps = getCompatibleSwaps(code, {}, { enforce_taste_profile: false });
+      // P2-C3: getCompatibleSwaps is deleted; with taste not enforced its filter
+      // was same macro type + clinically safe, applied directly here.
+      const baseFood = FOOD_DATABASE[code];
+      const swaps = Object.values(FOOD_DATABASE).filter((f) => f && f.code && f.code !== baseFood.code && f.macro_type === baseFood.macro_type && isFoodClinicallySafe(f, {}));
       assert.ok(swaps.length > 0, `Food code "${code}" (${foodItem.name_ar}) must have at least one swap candidate`);
 
       // Pick the first candidate and execute a dynamic swap calculation

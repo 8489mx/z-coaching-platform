@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { FOOD_DATABASE, isFoodClinicallySafe } from "../src/execution-engines/food-swap-engine.js";
+import { FOOD_DATABASE, isFoodClinicallySafe } from "../frontend/src/utils/foodSwapEngine.js";
 import { deriveClinicalConstraints } from "../src/api/controllers/program.controller.js";
 
 // Post-bariatric dumping syndrome: concentrated sugars are the classic trigger of an early

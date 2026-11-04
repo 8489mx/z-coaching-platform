@@ -24,10 +24,15 @@ export const REGISTRY_TO_PLAN_FOOD = canonicalSafetyMap();
  * mis-resolve through the Arabic keyword fallback or resolve to nothing). */
 const PLAN_FOOD_TO_REGISTRY_FALLBACK = Object.freeze({
   // No twin in the swap list: listed from a food of the same macro type.
-  // These are approximations, NOT identities, and stay explicit until P2-C3
-  // replaces the swap system. Basmati rice has no registry twin either; the old
-  // entry pointed at kabsa spiced rice (a dish, not plain rice), so it is
-  // reclassified here as an approximation instead of an exact entry.
+  // These are approximations, NOT identities, and stay explicit by P2-C3 decision:
+  // the 9 foods have canonical rows but no registry entry (no sourced household
+  // unit or meal-category metadata), so inventing registry entries would break the
+  // no-invention rule. The twin is used only for candidate listing and engine
+  // validation; since P2-C3 the grams, oil, and equivalence are judged on the
+  // food the client actually has (valueCode in program.controller.js).
+  // Basmati rice has no registry twin either; the old entry pointed at kabsa
+  // spiced rice (a dish, not plain rice), so it is reclassified here as an
+  // approximation instead of an exact entry.
   FRESH_GUAVA: "APPLE_FRESH",
   FREEKEH_COOKED: "PASTA_WHOLE_WHEAT_COOKED",
   DARK_CHOCOLATE_85: "ALMONDS_RAW",

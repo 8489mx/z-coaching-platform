@@ -5,7 +5,7 @@ import {
   orthodoxEaster, copticFastPeriods, ramadanRange, isRamadanDay, localDay, resolveFastingContext,
   isFoodAllowedDuringFast, applyFastingToMeals, FASTING_MODES, FASTING_DIETS,
 } from '../src/execution-engines/fasting-calendar-engine.js';
-import { FOOD_DATABASE } from '../src/execution-engines/food-swap-engine.js';
+import { FOOD_DATABASE } from '../frontend/src/utils/foodSwapEngine.js';
 import { SEASONAL_FASTING_CALENDAR, getUpcomingFastingAlert } from '../frontend/src/utils/seasonalFastingRadar.js';
 
 const iso = (d) => d.toISOString().slice(0, 10);

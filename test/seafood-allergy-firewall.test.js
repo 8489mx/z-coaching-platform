@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import * as BackendSwap from '../src/execution-engines/food-swap-engine.js';
 import * as FrontendSwap from '../frontend/src/utils/foodSwapEngine.js';
 
 // Intake adapter emits these tokens for a seafood exclusion (intake-adapter.js)
@@ -12,7 +11,8 @@ function seafoodCodes(engine) {
   return Object.keys(engine.FOOD_DATABASE).filter((code) => SEAFOOD_CODE_PATTERN.test(code));
 }
 
-for (const [label, engine] of [['backend', BackendSwap], ['frontend', FrontendSwap]]) {
+// P2-C3: the backend re-export is deleted; one food module remains (frontend).
+for (const [label, engine] of [['frontend', FrontendSwap]]) {
   test(`${label}: seafood allergy tokens block every fish and shellfish item`, () => {
     const codes = seafoodCodes(engine);
     assert.ok(codes.length > 5, 'expected seafood items in catalog');

@@ -1,4 +1,6 @@
-import { getFoodClinicalProperties } from "../execution-engines/food-swap-engine.js";
+// P2-C3: the backend re-export of the frontend food module is deleted; the meal
+// generator imports the shared utility directly (same pattern as swapExchangeRules below).
+import { getFoodClinicalProperties } from "../../frontend/src/utils/foodSwapEngine.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 import { dislikedFoodCodes, applyDislikedNames, expandFoodExclusionCodes } from "../intake-decision-engine/adapters/disliked-foods.js";
 import { isEquivalentSwap, sharesSwapFamily, isNoSwapFood, NO_SWAP_NOTE_AR } from "../../frontend/src/utils/swapExchangeRules.js";

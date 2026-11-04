@@ -10,12 +10,18 @@ import { getTorqueMatchedSwaps } from '../frontend/src/utils/biomechanicalSwapEn
 import { 
   FOOD_DATABASE, 
   isFoodClinicallySafe, 
-  getCompatibleSwaps, 
   calculateDynamicFoodSwap, 
   formatItemPortionDisplay,
   PORTION_DISPLAY_MODES 
 } from '../frontend/src/utils/foodSwapEngine.js';
 import { getPrehabRoutine } from '../frontend/src/utils/posturalPrehabEngine.js';
+  // P2-C3: getCompatibleSwaps is deleted; the same filter it applied (same macro
+  // type + same taste group + clinically safe) is applied directly to FOOD_DATABASE.
+  const compatibleSwaps = (code, profile) => {
+    const base = FOOD_DATABASE[code];
+    if (!base) return []; // old helper's unknown-food behavior, preserved exactly
+    return Object.values(FOOD_DATABASE).filter((f) => f && f.code && f.code !== base.code && f.macro_type === base.macro_type && f.taste_profile === base.taste_profile && isFoodClinicallySafe(f, profile));
+  };
 import { getCaffeineCutoffTime } from '../frontend/src/utils/circadianLabTriggerEngine.js';
 import { applyEmergencyScenarioAdaptation, TRAVEL_EQUIPMENT_TYPES } from '../frontend/src/utils/emergencyScenarioEngine.js';
 import { generateMasterPdfExportData } from '../frontend/src/utils/pdfExportEngine.js';
@@ -138,7 +144,7 @@ test('1. End-to-End Simulation: Persona 1 (Ahmed Tarek - Male, L4-L5 Disc Hernia
   assert.equal(isFoodClinicallySafe(FOOD_DATABASE.WHITE_FISH_FILLET, clientProfile), true, 'White fish fillet must be safe');
 
   // Step 5: Verify Compatible Swaps for Chicken Breast (Protein)
-  const safeSwaps = getCompatibleSwaps('CHICKEN_BREAST', clientProfile);
+  const safeSwaps = compatibleSwaps('CHICKEN_BREAST', clientProfile);
   assert.ok(safeSwaps.length > 0, 'Must provide safe protein swaps');
   for (const s of safeSwaps) {
     assert.ok(!s.is_dairy || s.is_low_lactose, `Dairy item ${s.code} should not appear without lactose clearance`);
@@ -280,7 +286,7 @@ test('2. End-to-End Simulation: Persona 2 (Sara Ibrahim - Female, PCOS & Insulin
   assert.equal(isFoodClinicallySafe(FOOD_DATABASE.CHICKEN_BREAST, clientProfile), true, 'Chicken breast must be safe');
 
   // Step 5: Dynamic Swap Verification (Carb Swap for Rice)
-  const riceSwaps = getCompatibleSwaps('BASMATI_RICE_COOKED', clientProfile);
+  const riceSwaps = compatibleSwaps('BASMATI_RICE_COOKED', clientProfile);
   assert.ok(riceSwaps.length > 0, 'Must have compatible gluten-free carb swaps');
   for (const item of riceSwaps) {
     assert.equal(item.is_gluten_free, true, `Item ${item.code} must be strictly gluten-free`);
@@ -423,7 +429,7 @@ test('3. End-to-End Simulation: Persona 3 (Omar Khaled - Male, Lean Bulk, G6PD /
 
   // Step 5: Check compatible swaps for breakfast savory protein
   // If source is Cottage Cheese, Fava beans must NOT be in the options
-  const cottageSwaps = getCompatibleSwaps('COTTAGE_CHEESE_LIGHT', clientProfile);
+  const cottageSwaps = compatibleSwaps('COTTAGE_CHEESE_LIGHT', clientProfile);
   for (const opt of cottageSwaps) {
     assert.ok(!opt.is_legume, `Option ${opt.code} cannot be a legume for G6PD patient`);
   }

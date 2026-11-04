@@ -5,13 +5,12 @@ import {
   FOOD_DATABASE,
   TASTE_PROFILES,
   isFoodClinicallySafe,
-  getCompatibleSwaps,
   calculateDynamicFoodSwap,
   convertGramsToHandPortions,
   getTravelDiningBlueprints,
   formatItemPortionDisplay,
   PORTION_DISPLAY_MODES
-} from '../src/execution-engines/food-swap-engine.js';
+} from '../frontend/src/utils/foodSwapEngine.js';
 
 test('Contextual Food Swap Engine & Taste Profile Partitioning Tests', async (t) => {
 
@@ -66,8 +65,11 @@ test('Contextual Food Swap Engine & Taste Profile Partitioning Tests', async (t)
     assert.equal(isFoodClinicallySafe(FOOD_DATABASE.WHITE_FISH_FILLET, { is_gout: true }), true);
   });
 
-  await t.test('5. getCompatibleSwaps filters by same taste profile and clinical safety', () => {
-    const safeBreakfastSwaps = getCompatibleSwaps('WHOLE_EGG', { is_lactose_intolerant: true });
+  await t.test('5. breakfast swaps filter by same taste profile and clinical safety', () => {
+    // P2-C3: getCompatibleSwaps is deleted; the same filter it applied is applied
+    // directly to FOOD_DATABASE here.
+    const eggBase = FOOD_DATABASE.WHOLE_EGG;
+    const safeBreakfastSwaps = Object.values(FOOD_DATABASE).filter((f) => f && f.code && f.code !== eggBase.code && f.macro_type === eggBase.macro_type && f.taste_profile === eggBase.taste_profile && isFoodClinicallySafe(f, { is_lactose_intolerant: true }));
     
     // Should include Egg Whites, Turkey, and Fava Beans (if not G6PD)
     const codes = safeBreakfastSwaps.map(s => s.code);

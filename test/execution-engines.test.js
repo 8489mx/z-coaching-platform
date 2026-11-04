@@ -5,7 +5,7 @@ import {
   calculateDynamicFoodSwap,
   isFoodClinicallySafe,
   FOOD_DATABASE
-} from '../src/execution-engines/food-swap-engine.js';
+} from '../frontend/src/utils/foodSwapEngine.js';
 
 test('1. Food Swap Engine - Dynamic Macro Equivalence Math', () => {
   // Swap 150g Chicken Breast (31g protein/100g = 46.5g protein) -> White Fish (22.8g protein/100g, USDA FDC 171956)

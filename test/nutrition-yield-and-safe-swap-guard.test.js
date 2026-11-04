@@ -7,9 +7,7 @@ const { convertPortionCookingYield } = kitchenYield;
 import {
   FOOD_DATABASE,
   isFoodClinicallySafe,
-  getCompatibleSwaps,
   calculateDynamicFoodSwap,
-  listEquivalentFoodSwaps,
   formatItemPortionDisplay,
   PORTION_DISPLAY_MODES,
   COOKING_STATE_MODES,
@@ -108,9 +106,13 @@ test("Axis 2 (Units D & E): Culinary Yield accuracy and strict Allergy & Religio
       fasting_context: { active: true, mode: "CHRISTIAN_FAST", diet: "PESCATARIAN" },
     };
 
-    const chickenSwaps = listEquivalentFoodSwaps("CHICKEN_BREAST", 150, pescatarianFastProfile);
+    // P2-C3: listEquivalentFoodSwaps is deleted; the same filter it applied (same
+    // macro type + same taste group + clinically safe, here under a fast profile)
+    // is applied directly to FOOD_DATABASE.
+    const chickenBase = FOOD_DATABASE.CHICKEN_BREAST;
+    const chickenSwaps = Object.values(FOOD_DATABASE).filter((f) => f && f.code && f.code !== chickenBase.code && f.macro_type === chickenBase.macro_type && f.taste_profile === chickenBase.taste_profile && isFoodClinicallySafe(f, pescatarianFastProfile));
     for (const s of chickenSwaps) {
-      const code = s.replacement_food.code;
+      const code = s.code;
       assert.equal(/CHICKEN|BEEF|VEAL|TURKEY|LAMB|CAMEL|LIVER|EGG|CHEESE|YOGURT|MILK|WHEY|CASEIN/.test(code), false, `Forbidden animal product ${code} offered during Christian Pescatarian fast`);
     }
 

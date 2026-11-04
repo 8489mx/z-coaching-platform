@@ -39,7 +39,6 @@ import { applyFreezeStart, applyFreezeResume } from "../execution-engines/subscr
 
 // Deterministic Clinical Execution Engines
 import { getPrehabRoutine } from "../execution-engines/postural-prehab-engine.js";
-import { calculateEquivalentSwap } from "../execution-engines/food-swap-engine.js";
 import { calculateSubscriptionStatus } from "../execution-engines/subscription-lifecycle-engine.js";
 import { generateInitialPlan } from "../execution-engines/onboarding-plan-generator-engine.js";
 import { evaluateExerciseProgression, evaluateDeloadNeed, compileDeloadSession } from "../execution-engines/progressive-overload-deload-engine.js";
@@ -203,14 +202,10 @@ app.post("/api/v1/engines/coach/triage", requireAuth, requireAdmin, (req, res) =
   }
 });
 
-app.post("/api/v1/food-swap/calculate", engineCalculatorRateLimiter, (req, res) => {
-  try {
-    const result = calculateEquivalentSwap(req.body);
-    res.json({ success: true, data: result });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
-  }
-});
+// P2-C3: the GOLD catalog calculator route is deleted (it lived under /api/v1
+// with the food-swap path). Every swap now runs through the one engine behind
+// /api/v1/programs/swap-candidates and /swap-food; the GOLD path had no UI
+// callers and its numbers came from a second food database.
 
 // S3-4/S4-5: the public check-in calculator endpoint was retired with the
 // parallel weekly-audit calculator. Check-in evaluation lives in the
