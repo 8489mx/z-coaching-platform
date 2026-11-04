@@ -616,8 +616,16 @@ export default function ExerciseLibrary() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedExercise)
       });
+      // P1-B11: a failed save must stay a visible failure. The old code
+      // applied the edit locally and closed the modal on any error, so
+      // the coach believed a change was saved when the server never saw it.
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'فشل حفظ التعديل على الخادم — لم يتم تطبيق أي تغيير.');
+        return;
+      }
       const data = await res.json();
-      
+
       if (data && data.exercises) {
         setAllExercises(data.exercises);
       } else {
@@ -627,8 +635,7 @@ export default function ExerciseLibrary() {
       setEditingExercise(null);
     } catch (err) {
       console.error('Save edited exercise error:', err);
-      setAllExercises(prev => prev.map(e => e.id === editingExercise.id ? { ...e, ...editFormData } : e));
-      setEditingExercise(null);
+      alert('تعذر الاتصال بالخادم — لم يتم حفظ التعديل، والنافذة ما زالت مفتوحة.');
     } finally {
       setSavingEditExercise(false);
     }
@@ -660,6 +667,13 @@ export default function ExerciseLibrary() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      // P1-B11: same rule as the edit path — a failed save never becomes
+      // a local-only exercise, and the modal stays open with the draft.
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'فشل حفظ التمرين الجديد على الخادم — لم تتم الإضافة.');
+        return;
+      }
       const data = await res.json();
       if (data && data.exercises) {
         setAllExercises(data.exercises);
@@ -684,8 +698,7 @@ export default function ExerciseLibrary() {
       });
     } catch (err) {
       console.error('Save custom exercise error:', err);
-      setAllExercises(prev => [payload, ...prev]);
-      setIsAddModalOpen(false);
+      alert('تعذر الاتصال بالخادم — لم تتم إضافة التمرين، والنافذة ما زالت مفتوحة.');
     } finally {
       setSavingNewExercise(false);
     }

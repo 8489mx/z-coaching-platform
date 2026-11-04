@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Flame, Droplet, Activity, Check, Save, RotateCw, MessageCircle, UtensilsCrossed, Search, Plus, Edit2, Trash2, X, Scale, ShieldCheck, Target } from 'lucide-react';
 import { API_BASE } from '../config/api';
+import { formatCardioLine } from '../utils/cardioLine';
 import AdminLayout from '../components/layout/AdminLayout';
 import { copyToClipboard } from '../utils/clipboardUtils';
 import { DEFAULT_FOOD_CATALOG } from '../data/defaultFoodsCatalog';
@@ -59,6 +60,10 @@ export default function MacroCalculator() {
   });
   const [calcCopied, setCalcCopied] = useState(false);
   const [calcSaving, setCalcSaving] = useState(false);
+  // P1-B11: persistent warning after targets are applied without a meal
+  // rebalance. The old flow showed only a one-time alert, so the coach
+  // could approve a plan whose meals no longer match its new targets.
+  const [targetsAppliedWithoutRebalance, setTargetsAppliedWithoutRebalance] = useState(null);
   // S4-7: the numbers come from the backend endpoint (same engine that builds
   // programs). Nothing is computed in the browser anymore.
   const [calcResult, setCalcResult] = useState(null);
@@ -428,7 +433,8 @@ export default function MacroCalculator() {
       });
 
       if (!updateRes.ok) throw new Error('فشل تحديث الخطة في السيرفر');
-      alert(`تم تحديث وتطبيق أهداف السعرات والماكروز الجديدة على خطة المتدرب #${selectedClient} بنجاح!`);
+      setTargetsAppliedWithoutRebalance(selectedClient);
+      alert(`تم تحديث وتطبيق أهداف السعرات والماكروز الجديدة على خطة المتدرب #${selectedClient} بنجاح! تنبيه: الوجبات لم تُعاد موازنتها بعد — راجعها في المحرر قبل الاعتماد.`);
     } catch (e) {
       alert('خطأ: ' + e.message);
     } finally {
@@ -436,10 +442,25 @@ export default function MacroCalculator() {
     }
   };
 
-  const handleCopyCalcSummary = () => {
+  const handleCopyCalcSummary = async () => {
     if (!calcResult || !targetCalories) {
       alert('احسب الأهداف من الباك إند أولاً قبل نسخ الملخص');
       return;
+    }
+    // P1-B11: the cardio line comes from the client's real served cardio
+    // card when known; otherwise the line is omitted entirely — never a
+    // hardcoded invented prescription.
+    let cardioLine = null;
+    if (selectedClient) {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/programs/active/${selectedClient}`);
+        if (res.ok) {
+          const progData = await res.json();
+          cardioLine = formatCardioLine(progData.client_view?.cardio);
+        }
+      } catch {
+        cardioLine = null;
+      }
     }
     const summary = `*خطة السعرات والماكروز المستهدفة*\n\n` +
       `*السعرات المستهدفة:* ${targetCalories} سعرة حرارية\n` +
@@ -447,7 +468,7 @@ export default function MacroCalculator() {
       `*الكاربوهيدرات:* ${targetCarbGrams} جم (${carbsCalories} kcal)\n` +
       `*الدهون الصحية:* ${targetFatGrams} جم (${fatCalories} kcal)\n\n` +
       `*احتياج الماء:* ${waterTargetLiters} لتر / يوم\n` +
-      `*جلسة الكارديو:* 30 دقيقة مشي مائل / عجلة (4 مرات أسبوعياً)\n\n` +
+      (cardioLine ? `*جلسة الكارديو:* ${cardioLine}\n\n` : '') +
       `*معدل الحرق الأساسي (BMR):* ${bmr} kcal\n` +
       `*استهلاك الطاقة اليومي (TDEE):* ${tdee} kcal\n\n` +
       `منظومة Z-Coaching الاحترافية`;
@@ -1374,7 +1395,7 @@ export default function MacroCalculator() {
                   <span style={{ color: '#D0D5DD' }}>|</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Activity size={14} color="#673DE6" />
-                    <span style={{ color: '#475467' }}>جلسة الكارديو: <strong style={{ color: '#101828' }}>30 دقيقة (4 أيام أسبوعياً)</strong></span>
+                    <span style={{ color: '#475467' }}>جلسة الكارديو: <strong style={{ color: '#101828' }}>حسب بروتوكول الكارديو في خطة المتدرب</strong></span>
                   </div>
                 </div>
 
@@ -1387,6 +1408,12 @@ export default function MacroCalculator() {
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#344054', marginBottom: '6px' }}>
                     تطبيق هذه الماكروز فوراً على خطة متدرب:
                   </label>
+                  {targetsAppliedWithoutRebalance && (
+                    <div style={{ background: '#FFFBEB', border: '1px solid #F59E0B', borderRadius: '12px', padding: '10px 12px', marginBottom: '8px', fontSize: '11.5px', fontWeight: 700, color: '#92400E', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <span>تم تطبيق أهداف جديدة على خطة المتدرب #{targetsAppliedWithoutRebalance} — الوجبات لم تُعاد موازنتها بعد، راجعها في المحرر قبل الاعتماد.</span>
+                      <button type="button" onClick={() => setTargetsAppliedWithoutRebalance(null)} style={{ border: 'none', background: 'transparent', color: '#92400E', fontWeight: 800, cursor: 'pointer', fontSize: '12px' }}>إغلاق</button>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <CurvedSelect
                       value={selectedClient}

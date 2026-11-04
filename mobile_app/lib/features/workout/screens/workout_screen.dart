@@ -12,10 +12,12 @@ class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key, required this.storage});
 
   @override
-  State<WorkoutScreen> createState() => _WorkoutScreenState();
+  @override
+  State<WorkoutScreen> createState() => WorkoutScreenState();
 }
 
-class _WorkoutScreenState extends State<WorkoutScreen> {
+// P1-B11: public so the tab host can refresh the screen on return.
+class WorkoutScreenState extends State<WorkoutScreen> {
   late final WorkoutService _workoutService;
 
   List<WorkoutSession> _sessions = [];
@@ -60,6 +62,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     _workoutService = WorkoutService(widget.storage);
     _loadWorkoutSessions();
   }
+
+  /// P1-B11: reload from the cached program. Called by the tab host on
+  /// every return to this tab.
+  void refresh() => _loadWorkoutSessions();
 
   @override
   void dispose() {

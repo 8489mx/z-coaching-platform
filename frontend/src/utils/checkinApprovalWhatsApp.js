@@ -16,6 +16,13 @@ export function generateCheckinApprovalWhatsAppMessage(options = {}) {
     macros = {},
     cardioTarget = '',
     coachNotes = '',
+    // P1-B11: approve-only must not claim applied macros or an updated
+    // plan. When false, the macros line is omitted and the app link
+    // points at the current plan, not an "updated" one.
+    // P1-B11: conservative default. A draft (fill-reply button, direct
+    // WhatsApp) must not claim applied macros or an updated plan; only
+    // the post-approve toast passes true, with proof an adaptation ran.
+    adaptationApplied = false,
     appBaseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://zakaria.fit'
   } = options;
 
@@ -45,9 +52,12 @@ export function generateCheckinApprovalWhatsAppMessage(options = {}) {
     }
   }
 
-  // Target macros
+  // Target macros — only when something was actually applied. An
+  // approve-only review changes no targets, so claiming "approved
+  // goals" here would tell the client macros were approved that never
+  // were.
   let macrosLine = null;
-  if (macros && (macros.calories || macros.protein)) {
+  if (adaptationApplied && macros && (macros.calories || macros.protein)) {
     const cals = macros.calories ? `${macros.calories} سعرة` : '';
     const p = macros.protein ? `بروتين ${macros.protein} جم` : '';
     const c = macros.carbs ? `كارب ${macros.carbs} جم` : '';
@@ -81,7 +91,9 @@ export function generateCheckinApprovalWhatsAppMessage(options = {}) {
   }
 
   parts.push('');
-  parts.push('تقدر تفتح تطبيقك وتشوف كل تفاصيل الخطة المحدثة من هنا:');
+  parts.push(adaptationApplied
+    ? 'تقدر تفتح تطبيقك وتشوف كل تفاصيل الخطة المحدثة من هنا:'
+    : 'تقدر تفتح تطبيقك وتشوف خطتك الحالية من هنا:');
   parts.push(appUrl);
   parts.push('');
   parts.push('استمر بنفس العزيمة والتركيز يا بطل، أسبوع أقوى بإذن الله!');

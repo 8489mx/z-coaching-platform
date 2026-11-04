@@ -39,7 +39,8 @@ export default function WorkoutTab({
   sessionLogStatus = null,
   updateLogDraft,
   repeatLastLog,
-  submitSessionLog
+  submitSessionLog,
+  sessionDayInfo = null
 }) {
   const [showWorkoutGuide, setShowWorkoutGuide] = useState(false);
   const [expandedTechnique, setExpandedTechnique] = useState({});
@@ -209,6 +210,18 @@ export default function WorkoutTab({
         <h2 style={{ fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', margin: '0 0 6px 0' }}>
           {workoutSession.title}
         </h2>
+        {/* P1-B11: the day map used to map day 1-7 onto sessions by
+            modulo with no repeat marking, so a repeated session looked
+            like a distinct day. The hook now exposes which session this
+            day actually shows. Rest days cannot be marked from current
+            data: the split assigns a session to every day, so no
+            rest-day field exists to read. */}
+        {sessionDayInfo && (
+          <div style={{ fontSize: '0.72rem', fontWeight: 800, color: sessionDayInfo.isRepeat ? '#B45309' : '#0284C7', marginBottom: '6px' }}>
+            جلسة {sessionDayInfo.sessionIndex + 1} من {sessionDayInfo.sessionCount}
+            {sessionDayInfo.isRepeat ? ' • مكررة — نفس الجلسة تتكرر في هذا اليوم' : ''}
+          </div>
+        )}
         <div style={{ fontSize: '0.7rem', color: '#475569', lineHeight: 1.4 }}>
           {workoutSession.warmupProtocol}
         </div>

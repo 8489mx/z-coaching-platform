@@ -1112,6 +1112,10 @@ export async function approveCheckin(req, res) {
       coach_notes,
       custom_macros,
       apply_program_adaptation,
+      // P1-B11: the deload decision travels inside the approval payload so
+      // the check-in record traces the combination (deload decided +
+      // approved) instead of leaving it on a separate card decision.
+      deload_decision,
       // P1-B10: coach "apply despite lateness" action. The requester is
       // already restricted to COACH/ADMIN by the guard above.
       apply_despite_staleness
@@ -1361,6 +1365,15 @@ export async function approveCheckin(req, res) {
 
       checkin.status = "APPROVED";
       if (coach_notes) checkin.coach_notes = coach_notes;
+      // P1-B11: trace the deload state known at approval time on the
+      // record itself. Only the three explicit states are stored; anything
+      // else is ignored rather than recorded as a decision.
+      if (["APPROVED", "DISMISSED", "UNDECIDED"].includes(deload_decision)) {
+        const prevAnalysis = (checkin.analysis_output && typeof checkin.analysis_output === "object")
+          ? checkin.analysis_output
+          : {};
+        checkin.analysis_output = { ...prevAnalysis, deload_decision_at_approval: deload_decision };
+      }
       if (pendingMerge && latestProgram) checkin.adapted_program_id = latestProgram.id;
       await checkin.save({ transaction: t });
     });

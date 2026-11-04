@@ -179,7 +179,11 @@ export default function ClientOnlineRenewal() {
               تم إرسال طلب التجديد بنجاح!
             </h3>
             <p style={{ fontSize: '12.5px', color: '#64748B', lineHeight: 1.6, marginBottom: '24px' }}>
-              تم تسجيل بيانات التجديد بنجاح وفتح محادثة الواتساب مع الكابتن لتأكيد التفعيل الفوري لحسابك واستمرار خطتك.
+              {/* P1-B11: honest wording. The old text implied activation
+                  follows automatically, while this screen makes no API call
+                  at all — it only opens WhatsApp. The request is sent;
+                  activation waits for the coach's confirmation. */}
+              تم إرسال طلب التجديد إلى الكابتن عبر واتساب، وهو بانتظار تأكيد الكوتش. لن يتم تفعيل حسابك أو استمرار خطتك تلقائياً قبل هذا التأكيد.
             </p>
 
             <button

@@ -27,6 +27,9 @@ class ApiConstants {
   static const String tokenKey = 'z_auth_token';
   static const String clientDataKey = 'z_client_data';
   static const String activeProgramCacheKey = 'z_cached_program';
+  // P1-B11: cache freshness metadata, kept in a separate key so existing
+  // getCachedActiveProgram callers keep receiving the program map directly.
+  static const String activeProgramCacheMetaKey = 'z_cached_program_meta';
   static const String pendingWorkoutLogsKey = 'z_pending_workout_logs';
   static const String pendingCheckinsKey = 'z_pending_checkins';
 }

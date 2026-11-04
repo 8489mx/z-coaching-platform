@@ -80,8 +80,26 @@ class LocalStorage {
 
   // --- التخزين المؤقت للبرنامج النشط (Active Program Offline Cache) ---
 
+  // P1-B11: every cache write also stamps freshness metadata (when it
+  // was cached + which program version) in a separate key, so the hub
+  // can say how old a served cache is instead of silently serving it.
   Future<void> cacheActiveProgram(Map<String, dynamic> programData) async {
     await _prefs?.setString(ApiConstants.activeProgramCacheKey, jsonEncode(programData));
+    final meta = <String, dynamic>{
+      'cached_at': DateTime.now().toIso8601String(),
+      'version': programData['version']?.toString() ?? programData['updated_at']?.toString(),
+    };
+    await _prefs?.setString(ApiConstants.activeProgramCacheMetaKey, jsonEncode(meta));
+  }
+
+  Map<String, dynamic>? getCachedActiveProgramMeta() {
+    final raw = _prefs?.getString(ApiConstants.activeProgramCacheMetaKey);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
   }
 
   Map<String, dynamic>? getCachedActiveProgram() {

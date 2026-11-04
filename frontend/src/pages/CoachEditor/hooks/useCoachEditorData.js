@@ -13,6 +13,7 @@ import defaultMobilityCatalog from '../../../data/mobilityCatalog.json';
 import { arabicSearchMatch } from '../../../utils/searchUtils';
 import { getExerciseDisplayNames } from '../../../utils/exerciseTranslator';
 import { collectCoachAlerts } from '../../../utils/coachAlerts.js';
+import { cleanMealTitle } from '../../ClientInteractiveApp/utils/programAdapters.js';
 import { evaluateCardioModality } from '../../../utils/cardioModalitySafety.js';
 import { exerciseConflicts } from '../../../utils/exerciseSafety.js';
 import { getClientTier } from '../../../utils/tierBadgeHelper';
@@ -67,6 +68,10 @@ export function useCoachEditorData() {
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [activeVideoModalEx, setActiveVideoModalEx] = useState(null);
   const [autoRippleEnabled, setAutoRippleEnabled] = useState(true);
+  // P1-B11: meal count at load. The load-time alerts (including the
+  // plan-build meal-count note) describe THIS count; any handler that
+  // changes the count recomputes the alerts and warns when they differ.
+  const [loadedMealCount, setLoadedMealCount] = useState(null);
 
   // Clients Queue State & Filters
   const [clientsList, setClientsList] = useState([]);
@@ -229,6 +234,7 @@ export function useCoachEditorData() {
           const userMeta = data.user || {};
           const mapped = mapMasterToEditor(data.master_program, userMeta);
           setProgram(mapped);
+          setLoadedMealCount(mapped?.nutrition?.meals?.length ?? null);
           if (data.master_program.coach_notes) setCoachNotes(data.master_program.coach_notes);
           return;
         }
@@ -574,24 +580,65 @@ export function useCoachEditorData() {
     showToast('تم حذف الصنف وموازنة بقية الوجبات تلقائياً');
   };
 
+  // P1-B11: recompute the coach alerts for the CURRENT meals. The
+  // load-time meal-count note describes the loaded count, so it is
+  // dropped (editor targets never carry it) and replaced by an explicit
+  // count-changed warning; per-item warnings recompute from current items.
+  const refreshCoachAlerts = (meals, targets, rippleApplied) => {
+    const base = collectCoachAlerts({ nutrition: { targets: targets || {}, culinary_meals: meals || [] } });
+    const notes = [...base];
+    if (loadedMealCount != null && meals.length !== loadedMealCount) {
+      notes.push(`عدد الوجبات تغيّر من ${loadedMealCount} إلى ${meals.length} منذ تحميل الخطة — ملاحظة عدد الوجبات الأصلية لم تعد سارية، راجع التوزيع قبل الاعتماد.`);
+    }
+    if (!rippleApplied) {
+      notes.push('الموازنة التلقائية مطفأة — إجماليات الوجبات قد لا تطابق الأهداف بعد هذا التغيير، راجعها قبل الاعتماد.');
+    }
+    return notes;
+  };
+
   const handleAddNewMeal = () => {
     const newMealNumber = (program.nutrition?.meals?.length || 0) + 1;
     const newMealObj = {
       id: `m${Date.now()}`,
-      name: `الوجبة ${newMealNumber}`,
+      // P1-B11: same naming map the client app uses (meal 4 = snack),
+      // not a bare "الوجبة N".
+      name: cleanMealTitle(null, newMealNumber),
       time: '04:00 م',
       macros: { calories: 0, protein: 0, carbs: 0, fats: 0 },
       items: []
     };
 
-    setProgram(prev => ({
-      ...prev,
-      nutrition: {
-        ...prev.nutrition,
-        meals: [...(prev.nutrition?.meals || []), newMealObj]
-      }
-    }));
-    showToast('تمت إضافة وجبة جديدة');
+    setProgram(prev => {
+      const updatedMeals = [...(prev.nutrition?.meals || []), newMealObj];
+      const rebalancedMeals = autoRippleEnabled ? dynamicRippleRebalanceDailyPlan({
+        meals: updatedMeals,
+        supplements: prev.cardio?.supplements || [],
+        targets: {
+          calories: prev.nutrition?.targets?.calories || 2000,
+          protein: prev.nutrition?.targets?.protein || 150,
+          carbs: prev.nutrition?.targets?.carbs || 200,
+          fats: prev.nutrition?.targets?.fats || 50
+        },
+        anchorMealId: null,
+        beverageSugarSpoons: prev.nutrition?.beverage_sugar_spoons || 0,
+        autoRippleEnabled: true
+      }) : updatedMeals;
+      return {
+        ...prev,
+        nutrition: {
+          ...prev.nutrition,
+          meals: rebalancedMeals,
+          coach_alerts: refreshCoachAlerts(rebalancedMeals, prev.nutrition?.targets, autoRippleEnabled)
+        },
+        ...(prev.nutrition_program ? {
+          nutrition_program: {
+            ...prev.nutrition_program,
+            culinary_meals: rebalancedMeals
+          }
+        } : {})
+      };
+    });
+    showToast(autoRippleEnabled ? 'تمت إضافة وجبة وموازنة اليوم تلقائياً' : 'تمت إضافة وجبة — الموازنة التلقائية مطفأة، راجع الإجماليات قبل الاعتماد');
   };
 
   const handleDuplicateMeal = (mealId) => {
@@ -619,7 +666,8 @@ export function useCoachEditorData() {
         ...prev,
         nutrition: {
           ...prev.nutrition,
-          meals: rebalancedMeals
+          meals: rebalancedMeals,
+          coach_alerts: refreshCoachAlerts(rebalancedMeals, prev.nutrition?.targets, autoRippleEnabled)
         },
         ...(prev.nutrition_program ? {
           nutrition_program: {
@@ -629,7 +677,7 @@ export function useCoachEditorData() {
         } : {})
       };
     });
-    showToast('تم نسخ الوجبة بالكامل وموازنتها بنجاح');
+    showToast(autoRippleEnabled ? 'تم نسخ الوجبة بالكامل وموازنتها بنجاح' : 'تم نسخ الوجبة — الموازنة التلقائية مطفأة، راجع الإجماليات قبل الاعتماد');
   };
 
   const handleApplyMealTemplate = (templateKey) => {
@@ -657,7 +705,8 @@ export function useCoachEditorData() {
         ...prev,
         nutrition: {
           ...prev.nutrition,
-          meals: rebalancedMeals
+          meals: rebalancedMeals,
+          coach_alerts: refreshCoachAlerts(rebalancedMeals, prev.nutrition?.targets, autoRippleEnabled)
         },
         ...(prev.nutrition_program ? {
           nutrition_program: {
@@ -667,7 +716,7 @@ export function useCoachEditorData() {
         } : {})
       };
     });
-    showToast('تمت إضافة الوجبة من القالب المعتمد بنجاح');
+    showToast(autoRippleEnabled ? 'تمت إضافة الوجبة من القالب المعتمد بنجاح' : 'تمت إضافة الوجبة من القالب — الموازنة التلقائية مطفأة، راجع الإجماليات قبل الاعتماد');
   };
 
   const handleDeleteMeal = (mealId) => {
@@ -691,11 +740,12 @@ export function useCoachEditorData() {
         ...prev,
         nutrition: {
           ...prev.nutrition,
-          meals: rebalancedMeals
+          meals: rebalancedMeals,
+          coach_alerts: refreshCoachAlerts(rebalancedMeals, prev.nutrition?.targets, autoRippleEnabled)
         }
       };
     });
-    showToast('تم حذف الوجبة وموازنة اليوم بالكامل');
+    showToast(autoRippleEnabled ? 'تم حذف الوجبة وموازنة اليوم بالكامل' : 'تم حذف الوجبة — الموازنة التلقائية مطفأة، راجع الإجماليات قبل الاعتماد');
   };
 
   const handleAddFoodToMeal = (mealId, selectedFood) => {

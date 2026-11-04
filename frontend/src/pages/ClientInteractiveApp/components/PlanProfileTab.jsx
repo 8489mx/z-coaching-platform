@@ -26,7 +26,11 @@ function formatPackageName(pkg) {
 export default function PlanProfileTab({
   clientData,
   setEmergencyModalOpen,
-  _setPdfModalOpen
+  _setPdfModalOpen,
+  // P1-B11: derived values passed in by the app shell. Both are optional:
+  // missing means "غير محدد", never a fixed number.
+  dailyStepsTarget = null,
+  weightKg = null
 }) {
   const navigate = useNavigate();
 
@@ -226,7 +230,11 @@ export default function PlanProfileTab({
                 <span style={{ fontSize: '0.66rem', color: '#64748B' }}>موزعة بانتظام على مدار ساعات الاستيقاظ</span>
               </div>
             </div>
-            <strong style={{ fontSize: '0.82rem', color: '#0284C7', fontWeight: 800 }}>3.5 - 4.0 لتر/اليوم</strong>
+            <strong style={{ fontSize: '0.82rem', color: '#0284C7', fontWeight: 800 }}>
+              {weightKg && Number(weightKg) > 0
+                ? `${(Number(weightKg) * 0.040).toFixed(1)} - ${(Number(weightKg) * 0.040 + 0.5).toFixed(1)} لتر/اليوم (محسوبة من الوزن)`
+                : 'غير محدد'}
+            </strong>
           </div>
 
           {/* Caffeine */}
@@ -270,7 +278,13 @@ export default function PlanProfileTab({
                 <span style={{ fontSize: '0.66rem', color: '#64748B' }}>لتعزيز حساسية الأنسولين وصحة القلب والأوعية الدموية</span>
               </div>
             </div>
-            <strong style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 800 }}>8,500 خطوة</strong>
+            <strong style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 800 }}>
+              {dailyStepsTarget == null
+                ? 'غير محدد'
+                : (typeof dailyStepsTarget === 'number'
+                  ? `${dailyStepsTarget.toLocaleString()} خطوة`
+                  : String(dailyStepsTarget))}
+            </strong>
           </div>
 
           {/* Fasting Protocol Badge if active */}

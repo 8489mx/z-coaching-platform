@@ -319,7 +319,16 @@ export default function MobilityLibrary() {
         body: JSON.stringify(updatedDrill)
       });
 
-      const data = res.ok ? await res.json() : null;
+      // P1-B11: a failed save must stay a visible failure. The old code
+      // applied the edit locally and showed a success toast on any error,
+      // so the coach believed a change was saved when the server never
+      // saw it. The modal stays open with the draft.
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || 'فشل حفظ التعديل على الخادم — لم يتم تطبيق أي تغيير.');
+        return;
+      }
+      const data = await res.json();
       const saved = (data && data.drill) ? data.drill : updatedDrill;
 
       setDrills(prev => prev.map(d => d.id === editingDrill.id ? { ...d, ...saved } : d));
@@ -327,9 +336,7 @@ export default function MobilityLibrary() {
       setEditingDrill(null);
     } catch (err) {
       console.error('Save edited drill error:', err);
-      setDrills(prev => prev.map(d => d.id === editingDrill.id ? { ...d, ...editFormData } : d));
-      showToast('تم حفظ التعديلات محلياً');
-      setEditingDrill(null);
+      showToast('تعذر الاتصال بالخادم — لم يتم حفظ التعديل، والنافذة ما زالت مفتوحة.');
     } finally {
       setSavingEditDrill(false);
     }
@@ -345,12 +352,16 @@ export default function MobilityLibrary() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newDrillData)
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.drill) setDrills(prev => [data.drill, ...prev]);
-      } else {
-        setDrills(prev => [{ id: `MOB_LOCAL_${Date.now()}`, ...newDrillData }, ...prev]);
+      // P1-B11: no local-only fallback id. A server rejection used to
+      // create a local-only drill with a success toast — visible in the
+      // library but absent from every plan that reads the server list.
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || 'فشل إضافة الحركة على الخادم — لم تتم الإضافة.');
+        return;
       }
+      const data = await res.json();
+      if (data.drill) setDrills(prev => [data.drill, ...prev]);
       showToast(`تمت إضافة ${newDrillData.name_ar} بنجاح`);
       setIsAddModalOpen(false);
       setNewDrillData({
@@ -364,8 +375,7 @@ export default function MobilityLibrary() {
         equipment: 'BODYWEIGHT'
       });
     } catch {
-      showToast('تمت إضافة الحركة بنجاح');
-      setIsAddModalOpen(false);
+      showToast('تعذر الاتصال بالخادم — لم تتم إضافة الحركة، والنافذة ما زالت مفتوحة.');
     } finally {
       setSavingNewDrill(false);
     }

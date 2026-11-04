@@ -27,6 +27,7 @@ import { TableSearch } from '@/shared/components/table-search';
 import { RefreshButton } from '@/shared/components/refresh-button';
 import { FormSection } from '@/shared/components/form-section';
 import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
+import { getCheckinAdherencePercent } from '../utils/checkinAdherence';
 import { arabicSearchMatch } from '../utils/searchUtils';
 import { generateWhatsAppUrl } from '../utils/whatsappRemindersEngine';
 import { evaluateClientCheckinOverdue } from '../utils/overdueCheckinEngine';
@@ -300,16 +301,22 @@ export default function CoachCommandCenter() {
         id: actionId,
         clientCode: cleanCode,
         type: 'CHECKIN',
-        adherenceScore: Math.round(Number(chk?.nutrition_adherence_percent ?? 100) * 0.55 + Math.min(100, Math.round((Number(chk?.workouts_completed ?? 4) / Math.max(1, Number(chk?.workouts_scheduled ?? 4))) * 100)) * 0.45),
+        // P1-B11: ONE adherence definition — the raw server nutrition
+        // adherence percent, shared with the review screen. The old
+        // 55/45 blend with workout completion was a different number for
+        // the same client, and its ?? 100 default invented full adherence.
+        adherenceScore: getCheckinAdherencePercent(chk),
         checkinPreview: {
           weightKg: chk?.average_weight_kg || null,
           weightDeltaKg: chk?.weight_change_kg ?? null,
           waistCm: chk?.waist_circumference_cm || null,
-          nutritionAdherence: Number(chk?.nutrition_adherence_percent ?? 100),
-          workoutsCompleted: Number(chk?.workouts_completed ?? 4),
-          workoutsScheduled: Math.max(1, Number(chk?.workouts_scheduled ?? 4))
+          nutritionAdherence: getCheckinAdherencePercent(chk),
+          workoutsCompleted: chk?.workouts_completed ?? null,
+          workoutsScheduled: chk?.workouts_scheduled ?? null
         },
-        hasInjury: isPlateau,
+        // P1-B11: "injuries first" sorting must sort real injuries, not
+        // plateaus. The old line labeled every plateau as an injury.
+        hasInjury: Boolean(chk?.has_joint_pain) || Number(chk?.pain_level) > 0,
         clientName: chk?.user?.full_name || `مشترك #${cleanCode}`,
         country,
         tier: getClientTier(cleanCode || chk),
@@ -381,8 +388,9 @@ export default function CoachCommandCenter() {
     const checkinActionId = `CHECKIN_${cleanCode}`;
     const overdueActionId = `OVERDUE_${cleanCode}`;
 
-    if (actionsMap.has(checkinActionId)) return;
-
+    // P1-B11: an OVERDUE action is NOT suppressed by a CHECKIN action.
+    // The old early-return hid the overdue reminder whenever a check-in
+    // was already waiting, so the two counts disagreed.
     const audit = evaluateClientCheckinOverdue(c);
     if (audit.isOverdue) {
       const phone = c?.phone_number || '';
@@ -1344,8 +1352,8 @@ export default function CoachCommandCenter() {
                           {action.checkinPreview.weightDeltaKg !== null && action.checkinPreview.weightDeltaKg !== undefined && (
                             <span>التغير: <strong style={{ color: Number(action.checkinPreview.weightDeltaKg) <= 0 ? '#16A34A' : '#D97706', fontFamily: 'JetBrains Mono' }}>{Number(action.checkinPreview.weightDeltaKg) > 0 ? `+${action.checkinPreview.weightDeltaKg}` : action.checkinPreview.weightDeltaKg} كجم</strong></span>
                           )}
-                          <span>الدايت: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{action.checkinPreview.nutritionAdherence}%</strong></span>
-                          <span>التمرين: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{action.checkinPreview.workoutsCompleted}/{action.checkinPreview.workoutsScheduled}</strong></span>
+                          <span>الدايت: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{action.checkinPreview.nutritionAdherence == null ? 'غير معروف' : `${action.checkinPreview.nutritionAdherence}%`}</strong></span>
+                          <span>التمرين: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{action.checkinPreview.workoutsCompleted ?? '—'}/{action.checkinPreview.workoutsScheduled ?? '—'}</strong></span>
                         </div>
                       )}
                       </p>

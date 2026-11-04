@@ -5,7 +5,7 @@ import { API_BASE } from '../../config/api';
  * Early-deload recommendation from the progression engine. Never applied automatically:
  * the coach approves (7-day deload starting now) or dismisses with one tap.
  */
-export default function DeloadRecommendationCard({ checkinId, analysisOutput }) {
+export default function DeloadRecommendationCard({ checkinId, analysisOutput, onDecision }) {
   const recommendation = analysisOutput?.deload_recommendation;
   const [decision, setDecision] = useState(analysisOutput?.deload_decision || null);
   const [status, setStatus] = useState(null);
@@ -26,6 +26,10 @@ export default function DeloadRecommendationCard({ checkinId, analysisOutput }) 
         return;
       }
       setDecision(data.deload_decision);
+      // P1-B11: lift the decision so the check-in approval payload carries
+      // it (traceability). The POST above persists it immediately; the
+      // approval-time copy is the audit trail, not a second decision.
+      if (typeof onDecision === 'function') onDecision(data.deload_decision);
       setStatus(null);
     } catch {
       setStatus({ type: 'error', message: 'تعذر الاتصال بالخادم' });

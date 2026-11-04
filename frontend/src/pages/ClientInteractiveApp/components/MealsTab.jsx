@@ -9,11 +9,11 @@ import {
 import { getPrepOptionsForFood } from '../../../utils/culinaryRecipes';
 
 export default function MealsTab({
-  _consumedMacros,
+  consumedMacros = { p: 0, c: 0, f: 0, cal: 0 },
   targetMacros,
   meals,
   fastingContext = null,
-  _handleToggleMealCompleted,
+  handleToggleMealCompleted,
   setActivePrepItem,
   setActiveSwapItem,
   setSwapMealId,
@@ -158,6 +158,27 @@ export default function MealsTab({
         </div>
       )}
 
+      {/* P1-B11: consumed vs target. The tab used to receive the consumed
+          totals and the completion toggle but ignore both (underscored
+          props), so the client never saw what they had actually eaten
+          against the plan. Targets of zero mean "no plan yet" (P0-A14
+          removed the hardcoded fallback), never a target of zero. */}
+      <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '12px 16px', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)' }}>
+        {targetMacros.cal > 0 ? (
+          <div style={{ fontSize: '0.78rem', color: '#334155', lineHeight: 1.7 }}>
+            <div><strong>المتناول اليوم:</strong> {consumedMacros.cal} من {targetMacros.cal} سعرة</div>
+            <div>بروتين {consumedMacros.p} من {targetMacros.p} جم • كارب {consumedMacros.c} من {targetMacros.c} جم • دهون {consumedMacros.f} من {targetMacros.f} جم</div>
+          </div>
+        ) : (
+          <div style={{ fontSize: '0.78rem', color: '#B45309', fontWeight: 700 }}>الأهداف غير متاحة — لا توجد خطة معتمدة بعد لمقارنة المتناول بها.</div>
+        )}
+      </div>
+      {meals.some((m) => m.source === 'legacy') && (
+        <div style={{ fontSize: '0.72rem', color: '#64748B', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '8px 12px' }}>
+          بعض الوجبات معروضة من النسخة القديمة للوجبات — قد تختلف عن الخطة الحالية المعتمدة.
+        </div>
+      )}
+
       {/* Meals List */}
       {meals.map((meal) => (
         <div 
@@ -190,6 +211,16 @@ export default function MealsTab({
               </div>
               <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>{meal.time}</span>
             </div>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', fontWeight: 700, color: meal.completed ? '#027A48' : '#64748B', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              <input
+                type="checkbox"
+                checked={!!meal.completed}
+                onChange={() => handleToggleMealCompleted?.(meal.id)}
+                style={{ width: '16px', height: '16px', accentColor: '#0284C7', cursor: 'pointer' }}
+              />
+              {meal.completed ? 'تم تناولها' : 'تحديد كمتناولة'}
+            </label>
 
             {meal.macros?.calories ? (
               <span 

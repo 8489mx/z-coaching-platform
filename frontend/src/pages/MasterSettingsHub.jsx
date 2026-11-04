@@ -137,8 +137,32 @@ export default function MasterSettingsHub() {
     handleSavePackage({ ...pkg, active: !pkg.active });
   };
 
+  // P1-B11: impact check before a destructive delete. The old code
+  // asked only "are you sure" — with no hint how many clients sit on
+  // the package. The count is fetched on demand (the hub never loads
+  // clients otherwise) and embedded in the confirm; if it cannot be
+  // computed, the delete refuses rather than deleting blind.
   const handleDeletePackage = async (id) => {
-    if (!window.confirm('هل أنت متأكد من رغبتك في حذف هذه الباقة؟')) return;
+    const pkg = (packages || []).find((item) => item.id === id);
+    let impactText = 'تعذر حساب عدد المتأثرين.';
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/clients`);
+      if (!res.ok) throw new Error('clients fetch failed');
+      const data = await res.json();
+      const clients = Array.isArray(data.clients) ? data.clients : [];
+      const needles = [String(id), pkg?.name_ar ? String(pkg.name_ar) : null].filter(Boolean).map((s) => s.toUpperCase());
+      const affected = clients.filter((c) => {
+        const stored = String(c?.subscription_package || '').toUpperCase();
+        return stored && needles.some((n) => stored.includes(n));
+      }).length;
+      impactText = affected === 0
+        ? 'لا يوجد متدرب مسجل على هذه الباقة حسب البيانات الحالية.'
+        : `يوجد ${affected} متدرب مسجل على هذه الباقة حسب البيانات الحالية — حذفها سيؤثر عليهم.`;
+    } catch {
+      alert('تعذر حساب عدد المتأثرين بحذف الباقة — لم يتم الحذف، حاول مرة أخرى.');
+      return;
+    }
+    if (!window.confirm(`هل أنت متأكد من رغبتك في حذف هذه الباقة؟\n\n${impactText}`)) return;
     try {
       setSaving(true);
       const res = await fetch(`${API_BASE}/api/v1/admin-settings/packages/${id}`, {
@@ -196,8 +220,30 @@ export default function MasterSettingsHub() {
     handleSaveQuestion({ ...q, active: !q.active });
   };
 
+  // P1-B11: same impact-check rule for intake questions: count the
+  // submissions whose answers contain this question key, and refuse
+  // when the count cannot be computed.
   const handleDeleteQuestion = async (id) => {
-    if (!window.confirm('هل أنت متأكد من رغبتك في حذف هذا السؤال من الاستمارة؟')) return;
+    const hasKey = (node) => {
+      if (!node || typeof node !== 'object') return false;
+      if (Object.prototype.hasOwnProperty.call(node, id)) return true;
+      return Object.values(node).some((v) => hasKey(v));
+    };
+    let impactText = 'تعذر حساب عدد المتأثرين.';
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/intake/submissions`);
+      if (!res.ok) throw new Error('submissions fetch failed');
+      const data = await res.json();
+      const submissions = Array.isArray(data.submissions) ? data.submissions : [];
+      const affected = submissions.filter((s) => hasKey(s?.answers)).length;
+      impactText = affected === 0
+        ? 'لا توجد استمارة مسجلة تحتوي على هذا السؤال.'
+        : `يوجد ${affected} استمارة مسجلة تحتوي على إجابة لهذا السؤال — حذفها سيؤثر عليها.`;
+    } catch {
+      alert('تعذر حساب عدد المتأثرين بحذف السؤال — لم يتم الحذف، حاول مرة أخرى.');
+      return;
+    }
+    if (!window.confirm(`هل أنت متأكد من رغبتك في حذف هذا السؤال من الاستمارة؟\n\n${impactText}`)) return;
     try {
       setSaving(true);
       const res = await fetch(`${API_BASE}/api/v1/admin-settings/intake-schema/question/${id}`, {

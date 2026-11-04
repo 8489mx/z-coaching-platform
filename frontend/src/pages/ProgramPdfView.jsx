@@ -464,8 +464,19 @@ export default function ProgramPdfView() {
 
   const clientName = sanitizeClientDisplayName(program?.client?.full_name || program?.client_name || user?.full_name || 'المشترك');
   const clientCode = program?.client?.client_code || program?.client_code || user?.client_code || user?.id || targetUserId;
-  const rawTier = program?.client?.subscription_package || program?.client?.package_tier || user?.package_tier || user?.subscription_package || 'ELITE';
-  const packageTier = String(rawTier).toUpperCase().includes('MAX') ? 'باقة MAX الشاملة' : 'باقة ELITE المتقدمة';
+  // P1-B11: ONE package naming with the app tab (which preserves PRO
+  // and VIP). The old line collapsed everything non-MAX to ELITE and
+  // invented ELITE when nothing was stored.
+  const rawTier = program?.client?.subscription_package || program?.client?.package_tier || user?.package_tier || user?.subscription_package || null;
+  const packageTier = (() => {
+    if (!rawTier) return 'باقة التدريب المخصص';
+    const str = String(rawTier).toUpperCase().trim();
+    if (str.includes('MAX')) return 'باقة MAX الشاملة';
+    if (str.includes('ELITE')) return 'باقة ELITE المتقدمة';
+    if (str.includes('PRO')) return 'باقة برو';
+    if (str.includes('VIP')) return 'باقة VIP';
+    return String(rawTier);
+  })();
   const now = new Date();
   const arabicMonths = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
   const _issueDate = `${now.getDate()} ${arabicMonths[now.getMonth()]} ${now.getFullYear()}`;

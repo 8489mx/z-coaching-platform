@@ -19,6 +19,13 @@ export default function SupplementsGuidesTab({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       
+      {/* P1-B11: medical disclaimer. The tab lists supplements with no
+          disclaimer at all; a client must not read a listed supplement
+          as a personal medical recommendation. */}
+      <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '12px', padding: '10px 14px', fontSize: '0.72rem', color: '#92400E', lineHeight: 1.6 }}>
+        إخلاء مسؤولية طبي: المكملات المعروضة هنا إرشادات عامة ضمن خطتك، وليست وصفة طبية شخصية. استشر طبيبك أو الصيدلي قبل بدء أي مكمل جديد، خاصة مع وجود أمراض مزمنة أو أدوية أو حمل أو رضاعة، وأوقف أي مكمل يسبب لك أعراضاً غير معتادة وأبلغ الكوتش فوراً.
+      </div>
+
       {/* Tab Overview Banner */}
       <div 
         style={{

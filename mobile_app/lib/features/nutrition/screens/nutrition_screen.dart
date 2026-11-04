@@ -13,10 +13,14 @@ class NutritionScreen extends StatefulWidget {
   const NutritionScreen({super.key, required this.storage});
 
   @override
-  State<NutritionScreen> createState() => _NutritionScreenState();
+  @override
+  State<NutritionScreen> createState() => NutritionScreenState();
 }
 
-class _NutritionScreenState extends State<NutritionScreen> {
+// P1-B11: public so the tab host can refresh the screen on return.
+// (The old private state type could not be named from another file,
+// which is part of why tab switches never reloaded.)
+class NutritionScreenState extends State<NutritionScreen> {
   DailyMacroTarget _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0);
   List<Meal> _meals = [];
   // P0-A3: true while the client's plan is not coach-approved.
@@ -44,6 +48,11 @@ class _NutritionScreenState extends State<NutritionScreen> {
     super.initState();
     _loadMeals();
   }
+
+  /// P1-B11: reload from the cached program. Called by the tab host on
+  /// every return to this tab (IndexedStack keeps screens mounted, so
+  /// initState alone never re-ran).
+  void refresh() => _loadMeals();
 
   void _loadMeals() {
     final cached = widget.storage.getCachedActiveProgram();

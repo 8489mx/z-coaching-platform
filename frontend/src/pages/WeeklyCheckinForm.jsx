@@ -1378,6 +1378,34 @@ export default function WeeklyCheckinForm() {
               </div>
             </div>
 
+            {/* P1-B11: what the answers flagged. The old success screen
+                was generic, so a client who reported level-10 joint pain
+                saw the same "all received" message as everyone else. This
+                block mirrors the answers back (pain area + level, level
+                8+ emphasized, travel/gym notes) and states what happens
+                next: the coach reviews before anything changes. */}
+            <div style={{ width: '100%', maxWidth: '400px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '8px', padding: '12px 16px', textAlign: 'right', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <strong style={{ color: '#92400E' }}>ما تم رصده من إجاباتك:</strong>
+              {formData.has_joint_pain && formData.pain_area ? (
+                <div style={{ color: Number(formData.pain_level) >= 8 ? '#B91C1C' : '#0F172A', fontWeight: Number(formData.pain_level) >= 8 ? 800 : 400 }}>
+                  ألم مفصلي: {formData.pain_area}{formData.pain_level != null ? ` — شدة ${formData.pain_level}/10` : ' — الشدة غير محددة'}
+                  {Number(formData.pain_level) >= 8 ? ' (شدة مرتفعة — سيُراجعها الكوتش أولاً قبل أي تمرين)' : ''}
+                </div>
+              ) : (
+                <div style={{ color: '#0F172A' }}>لا يوجد ألم مفصلي مبلغ عنه.</div>
+              )}
+              {formData.next_week_travel && (
+                <div style={{ color: '#0F172A' }}>سفر الأسبوع القادم: مبلغ عنه — ستُراجع الخطة وفقاً لذلك.</div>
+              )}
+              {!formData.next_week_gym_available && (
+                <div style={{ color: '#0F172A' }}>الجيم غير متاح الأسبوع القادم: مبلغ عنه — ستُراجع الخطة وفقاً لذلك.</div>
+              )}
+              {formData.next_week_realistic_days != null && (
+                <div style={{ color: '#0F172A' }}>الأيام الواقعية المتاحة الأسبوع القادم: {formData.next_week_realistic_days} أيام.</div>
+              )}
+              <div style={{ color: '#64748B' }}>الكوتش بيراجع إجاباتك قبل اعتماد أي تغيير على خطتك.</div>
+            </div>
+
             {/* Actions Grid */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '400px', marginTop: '6px' }}>
               <a 

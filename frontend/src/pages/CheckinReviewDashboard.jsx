@@ -43,22 +43,24 @@ import { extractClientFastingProfile } from '../utils/seasonalFastingRadar';
 import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 import { evaluateJointPainAndFirewall } from '../utils/biomechanicsFirewallEngine';
 import { generateCheckinApprovalWhatsAppMessage } from '../utils/checkinApprovalWhatsApp';
+import { getCheckinAdherencePercent } from '../utils/checkinAdherence';
+import { formatCardioLine } from '../utils/cardioLine';
 
 import DeloadRecommendationCard from '../components/checkin/DeloadRecommendationCard';
 import { TableSearch } from '@/shared/components/table-search';
 import { RefreshButton } from '@/shared/components/refresh-button';
 import { TierFilter } from '@/shared/components/tier-filter';
 
-const DEFAULT_BASELINE_MACROS = {
-  // P0-A6: display-only starting draft for the macro editor. These numbers
-  // are NEVER sent as an override on their own: handleApprove sends only
-  // the fields the coach actually typed (editedMacroFields). An untouched
-  // approve-with-adaptation therefore runs the engine's adaptation purely
-  // instead of overwriting it with these placeholders.
-  calories: 2000,
-  protein: 140,
-  carbs: 220,
-  fats: 60
+// P1-B11: the macro editor starts EMPTY, never from invented numbers.
+// The old 2000/140/220/60 draft looked like the client's real targets.
+// Real targets arrive from the lazy program fetch below; until then the
+// coach types numbers by hand, and handleApprove still sends only typed
+// fields (P0-A6).
+const EMPTY_MACRO_DRAFT = {
+  calories: '',
+  protein: '',
+  carbs: '',
+  fats: ''
 };
 
 // =========================================================================
@@ -76,9 +78,14 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
 
   const startPoint = history[0];
   const latestPoint = history[history.length - 1];
-  const startWeightVal = Number(client.start_weight || startPoint.weight || 75);
+  // P1-B11: no invented start (was: fallback 75 kg) and no invented
+  // target (was: start minus 6 kg). The start anchor is the first
+  // history point with a real weight; the target is null when unknown,
+  // which hides the target line (its guard is truthiness-based).
+  const firstWeightedPoint = history.find((h) => Number(h.weight) > 0);
+  const startWeightVal = Number(client.start_weight || firstWeightedPoint?.weight || 0);
   const currentWeightVal = Number(latestPoint.weight || startWeightVal);
-  const targetWeightVal = Number(targetWeight || client.target_weight || (startWeightVal - 6));
+  const targetWeightVal = Number(targetWeight || client.target_weight || NaN);
 
   const totalWeightDelta = +(currentWeightVal - startWeightVal).toFixed(1);
   const startWaistVal = Number(startPoint.waist || 0);
@@ -317,9 +324,9 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
 
         {/* Simple Clean Meta Note */}
         <div style={{ fontSize: '11px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>البداية: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{startWeightVal} كجم</strong></span>
+          <span>البداية: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{startWeightVal > 0 ? `${startWeightVal} كجم` : 'غير معروف'}</strong></span>
           <span style={{ color: '#CBD5E1' }}>•</span>
-          <span>المستهدف: <strong style={{ color: '#16A34A', fontFamily: 'JetBrains Mono' }}>{targetWeightVal} كجم</strong></span>
+          <span>المستهدف: <strong style={{ color: '#16A34A', fontFamily: 'JetBrains Mono' }}>{Number.isFinite(targetWeightVal) ? `${targetWeightVal} كجم` : 'غير معروف'}</strong></span>
         </div>
       </div>
 
@@ -576,7 +583,7 @@ function ProgressTrendChart({ history = [], isMaxTier = false, targetWeight = nu
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#16A34A' }} />
-          <span>المتبقي للوصول للهدف: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{Math.abs(currentWeightVal - targetWeightVal).toFixed(1)} كجم</strong></span>
+          <span>المتبقي للوصول للهدف: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{Number.isFinite(targetWeightVal) ? `${Math.abs(currentWeightVal - targetWeightVal).toFixed(1)} كجم` : 'غير معروف'}</strong></span>
         </div>
         <div>
           <span>معدل التغير الأسبوعي: <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono' }}>{Math.abs(totalWeightDelta / (history.length || 1)).toFixed(2)} كجم/أسبوع</strong></span>
@@ -596,7 +603,7 @@ export default function CheckinReviewDashboard() {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState('ALL'); // ALL | MAX | ELITE
-  const [macroAdjustments, setMacroAdjustments] = useState(DEFAULT_BASELINE_MACROS);
+  const [macroAdjustments, setMacroAdjustments] = useState(EMPTY_MACRO_DRAFT);
   // P0-A6: fields the coach actually typed in the macro editor, keyed by
   // field name. Preset buttons and the calorie recompute only change the
   // displayed draft; they do not mark a field edited, so they can never
@@ -607,6 +614,18 @@ export default function CheckinReviewDashboard() {
   const [_approvedCount, setApprovedCount] = useState(0);
   const [showLabModal, setShowLabModal] = useState(false);
   const [approvalToast, setApprovalToast] = useState(null);
+  // P1-B11: explicit queue load state. A failed load used to leave the
+  // queue silently empty, indistinguishable from "no clients waiting".
+  const [queueLoadStatus, setQueueLoadStatus] = useState('idle');
+  // P1-B11: deload decision lifted from the card so the approval payload
+  // carries it (see handleApprove). Null = undecided.
+  const [deloadDecision, setDeloadDecision] = useState(null);
+  // P1-B11: adaptation preview (POST adaptation-preview) for the selected
+  // check-in. Null = not requested yet.
+  const [adaptationPreview, setAdaptationPreview] = useState(null);
+  // P1-B11: real program targets + cardio per client code, filled by the
+  // lazy program fetch below. Absent = unknown, never invented.
+  const [programTargetsByCode, setProgramTargetsByCode] = useState({});
   // A failed approval must stay visible: the check-in stays in the queue until the server confirms.
   const [approveError, setApproveError] = useState(null);
   const [inspectionTab, setInspectionTab] = useState('PHOTOS'); // 'PHOTOS' | 'CHART' | 'LABS'
@@ -620,11 +639,16 @@ export default function CheckinReviewDashboard() {
   // Live Checkins Fetcher from MariaDB
   // The loader sits outside the effect so the coach can ask for it again without reloading the page.
   const fetchLiveCheckins = useCallback(async () => {
+    setQueueLoadStatus('loading');
     try {
       const res = await fetch(`${API_BASE}/api/v1/programs/checkin/pending`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.checkins && Array.isArray(data.checkins) && data.checkins.length > 0) {
+      if (!res.ok) {
+        setQueueLoadStatus('error');
+        return;
+      }
+      const data = await res.json();
+      if (data.checkins && Array.isArray(data.checkins)) {
+        setQueueLoadStatus('loaded');
           const liveMapped = data.checkins.map(ch => {
             const userPhotos = ch.user?.progressPhotos || [];
             const weekPhotos = userPhotos.filter(p => Number(p.week_number) === Number(ch.week_number));
@@ -644,7 +668,7 @@ export default function CheckinReviewDashboard() {
                   week: Number(pc.week_number) || 1,
                   weight: Number(pc.average_weight_kg) || 0,
                   waist: Number(pc.waist_circumference_cm) || 0,
-                  adherence: Number(pc.nutrition_adherence_percent) || 100,
+                  adherence: getCheckinAdherencePercent(pc),
                   date: `الأسبوع ${pc.week_number}`,
                   photos: {
                     front: (pcPhotos.find(p => String(p.pose).toUpperCase() === 'FRONT') || {}).photo_url || null,
@@ -658,7 +682,7 @@ export default function CheckinReviewDashboard() {
                 week: ch.week_number || 1,
                 weight: ch.average_weight_kg || 0,
                 waist: ch.waist_circumference_cm || 0,
-                adherence: ch.nutrition_adherence_percent || 100,
+                adherence: getCheckinAdherencePercent(ch),
                 date: `الأسبوع ${ch.week_number || 1}`,
                 photos: currentWeekPhotos
               }];
@@ -672,15 +696,19 @@ export default function CheckinReviewDashboard() {
                 id: `CL_${ch.user_id}`,
                 name: ch.user?.full_name || `مشترك #${ch.user?.client_code || ch.user_id}`,
                 code: ch.user?.client_code || String(ch.user_id),
-                package: String(ch.user?.subscription_package || 'MAX').toUpperCase().includes('MAX') ? 'MAX' : 'ELITE',
-                package_name: String(ch.user?.subscription_package || '').includes('MAX') ? 'باقة MAX' : 'باقة ELITE',
+                package: ch.user?.subscription_package
+                  ? (String(ch.user.subscription_package).toUpperCase().includes('MAX') ? 'MAX' : 'ELITE')
+                  : null,
+                package_name: ch.user?.subscription_package
+                  ? (String(ch.user.subscription_package).includes('MAX') ? 'باقة MAX' : 'باقة ELITE')
+                  : 'غير محددة',
                 phone: ch.user?.phone_number || '',
-                country: { name: 'مصر' },
-                gender: 'male',
-                goal_type: 'FAT_LOSS',
-                target_goal: 'خسارة دهون',
-                start_weight: ch.average_weight_kg || 80,
-                target_weight: (ch.average_weight_kg || 80) - 10,
+                country: null,
+                gender: ch.user?.gender || null,
+                goal_type: null,
+                target_goal: null,
+                start_weight: ch.average_weight_kg || null,
+                target_weight: null,
                 injuries: ch.user?.injuries || []
               },
               week_number: ch.week_number || 1,
@@ -689,20 +717,20 @@ export default function CheckinReviewDashboard() {
               photos: currentWeekPhotos,
               history: clientHistory,
               metrics: {
-                previous_weight: ch.average_weight_kg || 0,
-                current_weight: ch.average_weight_kg || 0,
-                weight_change: ch.weight_change_kg || 0,
-                waist_previous: ch.waist_circumference_cm || 0,
-                waist_current: ch.waist_circumference_cm || 0,
-                waist_change: 0,
-                adherence: ch.nutrition_adherence_percent || 100,
+                previous_weight: ch.average_weight_kg || null,
+                current_weight: ch.average_weight_kg || null,
+                weight_change: ch.weight_change_kg ?? null,
+                waist_previous: ch.waist_circumference_cm || null,
+                waist_current: ch.waist_circumference_cm || null,
+                waist_change: null,
+                adherence: getCheckinAdherencePercent(ch),
                 workouts_completed: ch.workouts_completed || 0,
                 workouts_target: ch.workouts_scheduled || 4,
-                daily_steps_avg: 8000,
-                strength_trend: 'MAINTAINED',
-                strength_note: 'أداء مستقر',
-                off_plan_meals: 0,
-                water_liters: 3
+                daily_steps_avg: null,
+                strength_trend: null,
+                strength_note: null,
+                off_plan_meals: null,
+                water_liters: null
               },
               biofeedback: ch.biofeedback || {
                 energy: 4, sleep: 4, hunger: 3, recovery: 4,
@@ -712,8 +740,8 @@ export default function CheckinReviewDashboard() {
               analysis_output: ch.analysis_output || {},
               is_deload_recommended: ch.analysis_output?.is_deload_recommended || false,
               reflections: {
-                nsv_note: 'الالتزام الكامل بالخطة',
-                struggle_note: ch.coach_notes || 'لا يوجد صعوبات'
+                nsv_note: null,
+                struggle_note: ch.coach_notes || null
               },
               client_notes: ch.coach_notes || '',
               lifestyle_variance: ch.lifestyle_variance || 'normal_routine',
@@ -730,15 +758,23 @@ export default function CheckinReviewDashboard() {
                 warning: null,
                 ...(ch.analysis_output || {})
               },
-              baseline_macros: { calories: 2000, protein: 140, carbs: 220, fats: 60 },
+              // P1-B11: unknown until the lazy program fetch fills it from
+              // the client's real program targets. Never 2000/140/220/60.
+              baseline_macros: null,
+              // P1-B11: filled by the same lazy fetch from the served
+              // cardio card. Null = unknown, and the WhatsApp cardio line
+              // is omitted until then (never an empty promise).
+              cardio_target: null,
               suggested_reply: `أهلاً بحضرتك يا بطل، تسلم إيدك على تقرير الأسبوع والالتزام. استمر على نفس الخطة والتركيز، وبالتوفيق دائماً.`
             };
           });
           setCheckinList(liveMapped);
-        }
+      } else {
+        setQueueLoadStatus('error');
       }
     } catch (e) {
       console.warn('Failed to load live checkins:', e);
+      setQueueLoadStatus('error');
     }
   }, []);
 
@@ -806,7 +842,7 @@ export default function CheckinReviewDashboard() {
     recommendation: 'الاستمرار على نفس الخطة مع مراقبة مؤشرات الأسبوع القادم.',
     warning: null
   };
-  const safeMacros = activeCheckin?.baseline_macros || DEFAULT_BASELINE_MACROS;
+  const safeMacros = activeCheckin?.baseline_macros || null;
   const clientFirstName = String(safeClient?.name || 'المتدرب').split(' ')[0];
 
   const handlePrevCheckin = () => {
@@ -824,11 +860,57 @@ export default function CheckinReviewDashboard() {
   // Sync state when switching clients
   useEffect(() => {
     if (activeCheckin) {
-      setMacroAdjustments(activeCheckin?.baseline_macros || DEFAULT_BASELINE_MACROS);
+      setMacroAdjustments(activeCheckin?.baseline_macros || EMPTY_MACRO_DRAFT);
       setEditedMacroFields({});
       setCoachReply(activeCheckin?.suggested_reply || "");
+      setDeloadDecision(activeCheckin?.analysis_output?.deload_decision || null);
+      setAdaptationPreview(null);
     }
   }, [activeCheckin]);
+
+  // P1-B11: lazy real program targets + cardio for the selected client.
+  // The pending endpoint carries no program targets and no cardio, so the
+  // old code invented both. The active-program endpoint (the same one the
+  // macro calculator already uses coach-side) carries the served cardio
+  // card and the real targets; when it fails, both stay unknown.
+  useEffect(() => {
+    const code = activeCheckin?.client?.code;
+    const rawId = activeCheckin?.raw_id;
+    if (!code || !rawId) return;
+    if (programTargetsByCode[code]) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/programs/active/${code}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const master = data.master_program || {};
+        const targets = master.nutrition?.targets
+          || master.nutrition_program?.stages?.macro_targets
+          || master.nutrition_program?.macro_targets
+          || null;
+        const cardio = data.client_view?.cardio || null;
+        const hasAnyTarget = targets && [targets.calories, targets.calories_kcal, targets.target_calories_kcal, targets.protein, targets.protein_g].some((v) => Number(v) > 0);
+        const baseline = hasAnyTarget
+          ? {
+              calories: targets.calories ?? targets.calories_kcal ?? targets.target_calories_kcal ?? '',
+              protein: targets.protein ?? targets.protein_g ?? '',
+              carbs: targets.carbs ?? targets.carbohydrate_g ?? targets.carb_g ?? targets.carbs_g ?? '',
+              fats: targets.fats ?? targets.fat_g ?? ''
+            }
+          : null;
+        const cardioTarget = formatCardioLine(cardio);
+        if (cancelled) return;
+        setProgramTargetsByCode((prev) => ({ ...prev, [code]: { baseline_macros: baseline, cardio_target: cardioTarget } }));
+        setCheckinList((prev) => prev.map((item) => item.id === activeCheckin.id
+          ? { ...item, baseline_macros: baseline, cardio_target: cardioTarget }
+          : item));
+      } catch {
+        // Unknown stays unknown; the editor starts empty.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeCheckin?.client?.code, activeCheckin?.raw_id]);
 
   // Auto dismiss approval toast after 7 seconds
   useEffect(() => {
@@ -860,7 +942,11 @@ export default function CheckinReviewDashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showLabModal, selectedIdx, filteredQueue.length]);
 
-  const buildSmartWhatsAppSummary = (notes = coachReply) => {
+  // P1-B11: the summary claims applied macros / an updated plan ONLY
+  // when the caller proves an adaptation was applied. Draft contexts
+  // (fill-reply button, direct WhatsApp) pass nothing and stay
+  // conservative: no macros line, "current plan" wording.
+  const buildSmartWhatsAppSummary = (notes = coachReply, adaptationApplied = false) => {
     if (!activeCheckin) return '';
     return generateCheckinApprovalWhatsAppMessage({
       clientName: safeClient?.name,
@@ -873,6 +959,7 @@ export default function CheckinReviewDashboard() {
       macros: macroAdjustments,
       cardioTarget: activeCheckin?.cardio_target || activeCheckin?.cardio || '',
       coachNotes: typeof notes === 'string' ? notes : '',
+      adaptationApplied,
       appBaseUrl: typeof window !== 'undefined' ? window.location.origin : 'https://zakaria.fit'
     });
   };
@@ -922,6 +1009,29 @@ export default function CheckinReviewDashboard() {
     }
   };
 
+  // P1-B11 stage 21: wire the coach-side preview panel to the
+  // adaptation-preview endpoint (built by P1-B10, never wired to a
+  // screen). Preview only: it never applies anything.
+  const fetchAdaptationPreview = async () => {
+    const checkinDbId = activeCheckin?.raw_id;
+    if (!checkinDbId) {
+      setAdaptationPreview({ error: 'لا يوجد سجل شيك إن مطابق على الخادم.' });
+      return;
+    }
+    setAdaptationPreview({ loading: true });
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/checkin/${checkinDbId}/adaptation-preview`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setAdaptationPreview({ error: data.error || 'تعذر تحميل المعاينة من الخادم.' });
+        return;
+      }
+      setAdaptationPreview({ data });
+    } catch {
+      setAdaptationPreview({ error: 'تعذر الاتصال بالخادم.' });
+    }
+  };
+
   const handleApprove = async (applyAdaptation = false) => {
     if (!activeCheckin) return;
     if (!String(coachReply || '').trim()) {
@@ -962,7 +1072,11 @@ export default function CheckinReviewDashboard() {
           body: JSON.stringify({
             coach_notes: replyMsg,
             apply_program_adaptation: Boolean(applyAdaptation),
-            ...(applyAdaptation && Object.keys(changedMacros).length > 0 ? { custom_macros: changedMacros } : {})
+            ...(applyAdaptation && Object.keys(changedMacros).length > 0 ? { custom_macros: changedMacros } : {}),
+            // P1-B11: the deload decision rides inside the approval
+            // payload (the card's own POST persists it immediately; this
+            // copy is the approval-time trace, not a second decision).
+            ...(deloadDecision ? { deload_decision: deloadDecision } : {})
           })
         });
         if (!res.ok) {
@@ -991,11 +1105,12 @@ export default function CheckinReviewDashboard() {
     }
 
     // Trigger non-blocking luxury floating toast with smart WhatsApp action
-    const smartWhatsAppSummary = buildSmartWhatsAppSummary(replyMsg);
+    const smartWhatsAppSummary = buildSmartWhatsAppSummary(replyMsg, Boolean(applyAdaptation));
     setApprovalToast({
       clientName: approvedClientName,
       phone: clientPhone,
-      reply: smartWhatsAppSummary
+      reply: smartWhatsAppSummary,
+      applied: Boolean(applyAdaptation)
     });
   };
 
@@ -1118,9 +1233,20 @@ export default function CheckinReviewDashboard() {
 
             {/* Scrollable Queue Items */}
             <div style={{ overflowY: 'auto', flex: 1, padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {filteredQueue.length === 0 ? (
+              {queueLoadStatus === 'loading' ? (
                 <div style={{ padding: '36px 12px', textAlign: 'center', color: '#64748B', fontSize: '12px', fontWeight: 600 }}>
-                  لا يوجد متدرب مطابق للبحث
+                  جارٍ تحميل قائمة المتدربين…
+                </div>
+              ) : queueLoadStatus === 'error' ? (
+                <div style={{ padding: '36px 12px', textAlign: 'center', fontSize: '12px', fontWeight: 600 }}>
+                  <div style={{ color: '#DC2626' }}>تعذر تحميل قائمة المتدربين من الخادم.</div>
+                  <button type="button" onClick={fetchLiveCheckins} style={{ marginTop: '10px', padding: '8px 14px', borderRadius: '10px', border: '1px solid #DC2626', background: '#FFFFFF', color: '#DC2626', fontWeight: 800, fontSize: '12px', cursor: 'pointer' }}>
+                    إعادة المحاولة
+                  </button>
+                </div>
+              ) : filteredQueue.length === 0 ? (
+                <div style={{ padding: '36px 12px', textAlign: 'center', color: '#64748B', fontSize: '12px', fontWeight: 600 }}>
+                  {checkinList.length === 0 ? 'لا توجد متابعات بانتظار المراجعة حالياً.' : 'لا يوجد متدرب مطابق للبحث'}
                 </div>
               ) : (
                 filteredQueue.map((item, idx) => {
@@ -1417,7 +1543,7 @@ export default function CheckinReviewDashboard() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid #F1F5F9', flexWrap: 'wrap', gap: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '11px', color: '#64748B' }}>
-                        الهدف: <strong style={{ color: '#101828' }}>{safeClient.target_goal}</strong>
+                        الهدف: <strong style={{ color: '#101828' }}>{safeClient.target_goal || 'غير محدد'}</strong>
                       </span>
                       <span style={{ color: '#CBD5E1' }}>•</span>
                       <span style={{ fontSize: '11px', color: '#64748B' }}>
@@ -1612,10 +1738,10 @@ export default function CheckinReviewDashboard() {
                         )}
                       </div>
                       <strong style={{ fontSize: '17px', color: '#101828', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
-                        {safeMetrics.current_weight} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>كجم</span>
+                        {safeMetrics.current_weight ?? 'غير معروف'} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>كجم</span>
                       </strong>
                       <small style={{ fontSize: '10px', color: '#94A3B8', display: 'block', marginTop: '2px', fontFamily: 'Cairo, sans-serif' }}>
-                        السابق: {safeMetrics.previous_weight} كجم
+                        السابق: {safeMetrics.previous_weight ?? 'غير معروف'} كجم
                       </small>
                     </div>
 
@@ -1636,8 +1762,8 @@ export default function CheckinReviewDashboard() {
                         gap: '4px',
                         fontWeight: 800
                       }}>
-                        {(safeMetrics.weight_change || 0) < 0 ? <TrendingDown size={16} /> : ((safeMetrics.weight_change || 0) === 0 ? <Minus size={16} /> : <TrendingUp size={16} />)}
-                        <span dir="ltr">{(safeMetrics.weight_change || 0) > 0 ? `+${(safeMetrics.weight_change || 0)}` : (safeMetrics.weight_change || 0)}</span>
+                        {safeMetrics.weight_change == null ? <Minus size={16} /> : (safeMetrics.weight_change < 0 ? <TrendingDown size={16} /> : (safeMetrics.weight_change === 0 ? <Minus size={16} /> : <TrendingUp size={16} />))}
+                        <span dir="ltr">{safeMetrics.weight_change == null ? 'غير معروف' : (safeMetrics.weight_change > 0 ? `+${safeMetrics.weight_change}` : safeMetrics.weight_change)}</span>
                         <span style={{ fontSize: '11.5px', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>كجم</span>
                       </strong>
                       <small style={{ fontSize: '10px', color: deltaColor, display: 'block', marginTop: '2px', fontWeight: 800, fontFamily: 'Cairo, sans-serif' }}>
@@ -1649,10 +1775,10 @@ export default function CheckinReviewDashboard() {
                     <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '12px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>محيط الخصر</span>
                       <strong style={{ fontSize: '17px', color: '#101828', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
-                        {safeMetrics.waist_current} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>سم</span>
+                        {safeMetrics.waist_current ?? 'غير معروف'} <span style={{ fontSize: '11px', fontWeight: 600, fontFamily: 'Cairo, sans-serif' }}>سم</span>
                       </strong>
                       <small style={{ fontSize: '10px', color: '#16A34A', display: 'block', marginTop: '2px', fontWeight: 700, fontFamily: 'Cairo, sans-serif' }}>
-                        {safeMetrics.waist_change} سم فرق مقاس
+                        {safeMetrics.waist_change == null ? 'فرق المقاس غير معروف' : `${safeMetrics.waist_change} سم فرق مقاس`}
                       </small>
                     </div>
 
@@ -1660,7 +1786,7 @@ export default function CheckinReviewDashboard() {
                     <div style={{ background: '#F8FAFC', border: '1px solid #EAECF0', padding: '10px 12px', borderRadius: '12px' }}>
                       <span style={{ fontSize: '11px', color: '#64748B', display: 'block', marginBottom: '2px', fontFamily: 'Cairo, sans-serif' }}>الالتزام والتمارين</span>
                       <strong style={{ fontSize: '17px', color: '#101828', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
-                        {safeMetrics.adherence}%
+                        {safeMetrics.adherence == null ? 'غير معروف' : `${safeMetrics.adherence}%`}
                       </strong>
                       <small style={{ fontSize: '10px', color: '#64748B', display: 'block', marginTop: '2px', fontFamily: 'Cairo, sans-serif' }}>
                         {safeMetrics.workouts_completed} من {safeMetrics.workouts_target} تمارين
@@ -1680,7 +1806,7 @@ export default function CheckinReviewDashboard() {
                         <div>
                           <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>أوزان التمرين:</span>
                           <strong style={{ color: safeMetrics.strength_trend === 'INCREASED' ? '#16A34A' : (safeMetrics.strength_trend === 'DECREASED' ? '#DC2626' : '#0F172A') }}>
-                            {safeMetrics.strength_trend === 'INCREASED' ? 'زيادة ملحوظة' : (safeMetrics.strength_trend === 'DECREASED' ? 'تراجع' : 'ثبات')}
+                            {safeMetrics.strength_trend === 'INCREASED' ? 'زيادة ملحوظة' : (safeMetrics.strength_trend === 'DECREASED' ? 'تراجع' : (safeMetrics.strength_trend === 'MAINTAINED' ? 'ثبات' : 'غير معروف'))}
                           </strong>
                         </div>
                         <div>
@@ -1710,12 +1836,12 @@ export default function CheckinReviewDashboard() {
                         <div>
                           <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>متوسط الخطوات:</span>
                           <strong style={{ color: '#101828', fontFamily: 'JetBrains Mono, Cairo, sans-serif' }}>
-                            {(safeMetrics.daily_steps_avg || 8000).toLocaleString()}
+                            {safeMetrics.daily_steps_avg == null ? 'غير معروف' : safeMetrics.daily_steps_avg.toLocaleString()}
                           </strong>
                         </div>
                         <div>
                           <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>استهلاك الماء:</span>
-                          <strong style={{ color: '#101828' }}>{safeMetrics.water_liters || 3.0} لتر</strong>
+                          <strong style={{ color: '#101828' }}>{safeMetrics.water_liters == null ? 'غير معروف' : `${safeMetrics.water_liters} لتر`}</strong>
                         </div>
                         <div>
                           <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>مستوى الجوع:</span>
@@ -1724,7 +1850,7 @@ export default function CheckinReviewDashboard() {
                         <div>
                           <span style={{ color: '#64748B', display: 'block', fontSize: '10.5px' }}>وجبات خارج الخطة:</span>
                           <strong style={{ color: (safeMetrics.off_plan_meals || 0) > 0 ? '#D97706' : '#16A34A' }}>
-                            {safeMetrics.off_plan_meals || 0}
+                            {safeMetrics.off_plan_meals == null ? 'غير معروف' : safeMetrics.off_plan_meals}
                           </strong>
                         </div>
                       </div>
@@ -1766,13 +1892,18 @@ export default function CheckinReviewDashboard() {
                   </div>
 
                   {/* Early-deload recommendation (coach approves with one tap) */}
-                  <DeloadRecommendationCard key={activeCheckin?.raw_id} checkinId={activeCheckin?.raw_id} analysisOutput={activeCheckin?.analysis_output} />
+                  <DeloadRecommendationCard key={activeCheckin?.raw_id} checkinId={activeCheckin?.raw_id} analysisOutput={activeCheckin?.analysis_output} onDecision={(d) => setDeloadDecision(d)} />
+                  {!activeCheckin?.analysis_output?.deload_recommendation?.recommended && (
+                    <div style={{ marginTop: '10px', fontSize: '11.5px', color: '#64748B', fontFamily: 'Cairo, sans-serif' }}>
+                      لا توجد توصية ديلود لهذا الأسبوع.
+                    </div>
+                  )}
 
                   {/* False Plateau Triad Alert Banner */}
                   {(() => {
                     const isConstipated = activeCheckin?.bowel_regularity === 'constipated_3plus';
                     const isHighSleepStress = Number(activeCheckin?.sleep_stress_composite || 0) >= 4;
-                    const _isHighAdherence = (safeMetrics.adherence || 100) >= 85;
+                    const _isHighAdherence = safeMetrics.adherence != null && safeMetrics.adherence >= 85;
                     const isWeightStalled = Math.abs(safeMetrics.weight_change || 0) <= 0.2;
                     const isFalsePlateau = (isConstipated || isHighSleepStress) && (isWeightStalled || activeCheckin?.analysis_output?.lock_reason === 'FALSE_PLATEAU_DETECTED' || activeCheckin?.ai_analysis?.status_badge?.includes('FALSE_PLATEAU') || activeCheckin?.ai_analysis?.recommendation?.includes('ثبات زائف'));
 
@@ -1986,13 +2117,19 @@ export default function CheckinReviewDashboard() {
               {/* Tab 2: Trajectory Chart */}
               {inspectionTab === 'CHART' && (
                 <div style={{ minHeight: '340px' }}>
-                  <ProgressTrendChart
-                    history={activeCheckin.history || []}
-                    isMaxTier={isMaxTier}
-                    targetWeight={safeClient.target_weight}
-                    client={safeClient}
-                    activeCheckin={activeCheckin}
-                  />
+                  {(activeCheckin.history || []).some((h) => Number(h.weight) > 0) ? (
+                    <ProgressTrendChart
+                      history={activeCheckin.history || []}
+                      isMaxTier={isMaxTier}
+                      targetWeight={safeClient.target_weight}
+                      client={safeClient}
+                      activeCheckin={activeCheckin}
+                    />
+                  ) : (
+                    <div style={{ padding: '36px 12px', textAlign: 'center', color: '#64748B', fontSize: '12px', fontWeight: 600 }}>
+                      لا توجد بيانات وزن كافية لعرض منحنى التقدم.
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -2258,6 +2395,7 @@ export default function CheckinReviewDashboard() {
                       <button
                         type="button"
                         onClick={() => {
+                          if (!safeMacros) return;
                           setMacroAdjustments(safeMacros);
                         setEditedMacroFields({});
                           setCoachReply(activeCheckin.suggested_reply);
@@ -2481,12 +2619,16 @@ export default function CheckinReviewDashboard() {
                   flexWrap: 'wrap' 
                 }}>
                   <span style={{ fontSize: '12px', fontWeight: 700, color: '#101828' }}>قرارات وتعديلات سريعة بنقرة واحدة:</span>
+                  {!safeMacros && (
+                    <span style={{ fontSize: '11px', color: '#B45309', fontWeight: 700 }}>لا توجد أهداف حالية معروفة لهذا المتدرب — الاقتراحات السريعة معطلة حتى يتحمل برنامجه، ويمكنك إدخال الأرقام يدويًا.</span>
+                  )}
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     {/* Preset 1: Keep Plan */}
                     <button
                       type="button"
                       onClick={() => {
+                        if (!safeMacros) return;
                         setMacroAdjustments(safeMacros);
                         setEditedMacroFields({});
                         setCoachReply(`عاش يا ${clientFirstName}! مستواك الأسبوع ده ممتاز ونتايجك ماشية على الخطة بالظبط. هنثبت على نفس السعرات والماكروز عشان نواصل التقدم بنفس الزخم. كمل بنفس القوة يا بطل!`);
@@ -2514,6 +2656,7 @@ export default function CheckinReviewDashboard() {
                     <button
                       type="button"
                       onClick={() => {
+                        if (!safeMacros) return;
                         const p = safeMacros.protein;
                         const c = Math.max(100, safeMacros.carbs - 25);
                         const f = Math.max(35, safeMacros.fats - 5);
@@ -2545,6 +2688,7 @@ export default function CheckinReviewDashboard() {
                     <button
                       type="button"
                       onClick={() => {
+                        if (!safeMacros) return;
                         const p = safeMacros.protein + 5;
                         const c = safeMacros.carbs + 30;
                         const f = safeMacros.fats;
@@ -3027,13 +3171,13 @@ export default function CheckinReviewDashboard() {
                 <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '6px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>تغير الوزن</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: Number(safeMetrics?.weight_change || 0) <= 0 ? '#16A34A' : '#D97706', fontFamily: 'JetBrains Mono, Cairo' }}>
-                    {Number(safeMetrics?.weight_change || 0) > 0 ? `+${safeMetrics?.weight_change}` : (safeMetrics?.weight_change || 0)} كجم
+                    {safeMetrics?.weight_change == null ? 'غير معروف' : (Number(safeMetrics.weight_change) > 0 ? `+${safeMetrics.weight_change}` : safeMetrics.weight_change)} كجم
                   </div>
                 </div>
                 <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '6px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>التزام التغذية</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#101828', fontFamily: 'JetBrains Mono, Cairo' }}>
-                    {safeMetrics?.adherence ?? 100}%
+                    {safeMetrics?.adherence == null ? 'غير معروف' : `${safeMetrics.adherence}%`}
                   </div>
                 </div>
                 <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '12px', padding: '6px 8px', textAlign: 'center' }}>
@@ -3046,11 +3190,52 @@ export default function CheckinReviewDashboard() {
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700 }}>فرق السعرات</div>
                   <div style={{ fontSize: '12.5px', fontWeight: 800, color: '#673DE6', fontFamily: 'JetBrains Mono, Cairo' }}>
                     {(() => {
-                      const diff = (Number(macroAdjustments?.calories) || 0) - (Number(activeCheckin?.baseline_macros?.calories) || 2000);
-                      return diff > 0 ? `+${diff}` : diff;
-                    })()} سعرة
+                      const base = Number(activeCheckin?.baseline_macros?.calories);
+                      const draft = Number(macroAdjustments?.calories);
+                      if (!Number.isFinite(base) || base <= 0 || !Number.isFinite(draft) || draft <= 0) return 'غير معروف';
+                      const diff = draft - base;
+                      return diff > 0 ? `+${diff} سعرة` : `${diff} سعرة`;
+                    })()}
                   </div>
                 </div>
+              </div>
+
+              {/* P1-B11: adaptation preview (read-only, before approval) */}
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '12px 14px', marginTop: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#101828' }}>معاينة التكييف قبل الاعتماد</span>
+                  <button type="button" onClick={fetchAdaptationPreview} disabled={adaptationPreview?.loading} style={{ height: '30px', padding: '0 12px', borderRadius: '9999px', border: '1px solid #CBD5E1', background: '#F8FAFC', color: '#101828', fontSize: '11.5px', fontWeight: 800, cursor: 'pointer' }}>
+                    {adaptationPreview?.loading ? 'جارٍ التحميل…' : 'عرض المعاينة'}
+                  </button>
+                </div>
+                {adaptationPreview?.error && (
+                  <div style={{ marginTop: '8px', fontSize: '11.5px', color: '#DC2626', fontWeight: 700 }}>{adaptationPreview.error}</div>
+                )}
+                {adaptationPreview?.data && (() => {
+                  const d = adaptationPreview.data;
+                  const adaptedNutrition = d.adapted?.adapted_nutrition || null;
+                  const weekDiff = d.training_week_diff || null;
+                  return (
+                    <div style={{ marginTop: '8px', display: 'grid', gap: '6px', fontSize: '11.5px', color: '#334155' }}>
+                      {d.cycle_ended && (
+                        <div style={{ color: '#B45309', fontWeight: 800 }}>الدورة التدريبية منتهية — التكييف المعروض لن يُدمج بعد انتهاء الدورة.</div>
+                      )}
+                      <div>السعرات الأساسية: {d.base_targets?.baseCaloriesKcal != null ? `${d.base_targets.baseCaloriesKcal} سعرة` : 'غير معروف'}</div>
+                      {adaptedNutrition ? (
+                        <div>الأهداف المقترحة: {adaptedNutrition.target_calories_kcal ?? '—'} سعرة، بروتين {adaptedNutrition.protein_g ?? '—'} جم، كارب {adaptedNutrition.carbohydrate_g ?? '—'} جم، دهون {adaptedNutrition.fat_g ?? '—'} جم</div>
+                      ) : (
+                        <div>الأهداف المقترحة: غير متاحة في المعاينة.</div>
+                      )}
+                      {weekDiff && (
+                        <div>جلسات الأسبوع: {weekDiff.sessions_before} قبل ← {weekDiff.sessions_after} بعد</div>
+                      )}
+                      {Array.isArray(d.adapted?.adaptation_reasons) && d.adapted.adaptation_reasons.length > 0 && (
+                        <div>أسباب التكييف: {d.adapted.adaptation_reasons.join('، ')}</div>
+                      )}
+                      <div style={{ color: '#64748B' }}>هذه معاينة فقط — لا يُطبَّق شيء حتى تضغط اعتماد.</div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Coach Reply & Approval */}
@@ -3365,7 +3550,9 @@ export default function CheckinReviewDashboard() {
                 تم اعتماد تقييم {approvalToast.clientName} بنجاح
               </div>
               <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>
-                تم تحديث الخطة في تطبيق المتدرب وحفظ الماكروز.
+                {approvalToast.applied
+                  ? 'تم تحديث الخطة في تطبيق المتدرب وحفظ الماكروز.'
+                  : 'تم اعتماد التقييم فقط — لم تُطبَّق أي تغييرات على خطة المتدرب.'}
               </div>
             </div>
             {approvalToast.phone && (

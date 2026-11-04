@@ -142,11 +142,31 @@ export default function IntakeSubmissions() {
 
   const handleVerifyPayment = async (sub) => {
     const clientName = sub.user?.full_name || sub.answers?.personal?.firstName || 'المشترك';
-    const isMax = getClientTier(sub) === 'MAX';
-    const rawPkg = sub.user?.subscription_package || sub.package_name || (isMax ? 'MAX_3_PLUS_1' : 'ELITE_3_PLUS_1');
-    const rawPrice = sub.user?.subscription_price || sub.subscription_price || (isMax ? 3500 : 2500);
+    // P1-B11: send ONLY stored values. The old code invented a package,
+    // a price, a payment method and a duration when nothing was stored —
+    // and the server then applied its own different defaults on top.
+    // Money must never be invented: a missing price refuses outright,
+    // and the confirm lists exactly what will be sent, with "غير مسجل"
+    // for anything missing.
+    const rawPkg = sub.user?.subscription_package || sub.package_name || null;
+    const rawPrice = sub.user?.subscription_price || sub.subscription_price || null;
+    const rawMethod = sub.user?.payment_method || null;
+    const rawDuration = sub.duration_months || sub.user?.duration_months || null;
 
-    if (!window.confirm(`هل ترغب في تأكيد استلام سداد اشتراك (${clientName}) وتفعيل الحساب فوراً؟`)) {
+    if (rawPrice == null) {
+      alert(`لا يمكن تأكيد الدفع لـ (${clientName}): سعر الاشتراك غير مسجل. سجّل السعر أولاً ثم أعد المحاولة.`);
+      return;
+    }
+
+    const confirmLines = [
+      `هل ترغب في تأكيد استلام سداد اشتراك (${clientName}) وتفعيل الحساب فوراً؟`,
+      ``,
+      `الباقة: ${rawPkg || 'غير مسجل'}`,
+      `السعر: ${Number(rawPrice).toLocaleString('en-US')} ج.م`,
+      `طريقة الدفع: ${rawMethod || 'غير مسجل'}`,
+      `المدة: ${rawDuration != null ? `${rawDuration} أشهر` : 'غير مسجل'}`
+    ].join('\n');
+    if (!window.confirm(confirmLines)) {
       return;
     }
 
@@ -156,10 +176,10 @@ export default function IntakeSubmissions() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          subscription_package: rawPkg,
+          ...(rawPkg ? { subscription_package: rawPkg } : {}),
           subscription_price: rawPrice,
-          payment_method: sub.user?.payment_method || 'INSTAPAY',
-          duration_months: 4
+          ...(rawMethod ? { payment_method: rawMethod } : {}),
+          ...(rawDuration != null ? { duration_months: rawDuration } : {})
         })
       });
 
@@ -302,7 +322,7 @@ export default function IntakeSubmissions() {
       title: 'البرامج المعتمدة', 
       value: approvedCount, 
       unit: 'برنامج', 
-      label: 'منشورة للمتدرب', 
+      label: 'معتمدة', 
       icon: CheckCircle2
     },
   ];
@@ -492,8 +512,7 @@ export default function IntakeSubmissions() {
                     const rawCode = sub.user?.client_code || sub.answers?.client_code || sub.client_code || '1';
                     const cleanCode = String(rawCode).replace(/^client[-_]?/i, '').replace('#', '');
                     const isApproved = sub.status === 'APPROVED';
-                    const isMax = getClientTier(sub) === 'MAX';
-                    const rawPrice = sub.user?.subscription_price || sub.subscription_price || (isMax ? 3500 : 2500);
+                    const rawPrice = sub.user?.subscription_price || sub.subscription_price || null;
                     const submissionDate = sub.createdAt || sub.created_at || sub.user?.createdAt;
 
                     // Clean name formatting for simulation / stress-test clients
@@ -618,7 +637,7 @@ export default function IntakeSubmissions() {
 
                         {/* 5. Package */}
                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }} title={`سعر الباقة: ${Number(rawPrice).toLocaleString('en-US')} ج.م`}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }} title={rawPrice != null ? `سعر الباقة: ${Number(rawPrice).toLocaleString('en-US')} ج.م` : 'سعر الباقة: غير مسجل'}>
                             <ClientPackageBadge item={sub} />
                           </div>
                         </td>
@@ -627,7 +646,7 @@ export default function IntakeSubmissions() {
                         <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                           {isApproved ? (
                             <span style={{ background: '#ECFDF3', border: '1px solid #A6F4C7', color: '#027A48', padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>
-                              معتمد ومنشور
+                              معتمد
                             </span>
                           ) : sub.status === 'DRAFT_GENERATED' ? (
                             <span style={{ background: '#F4F0FD', border: '1px solid #EDE8FA', color: '#673DE6', padding: '4px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600, display: 'inline-block' }}>

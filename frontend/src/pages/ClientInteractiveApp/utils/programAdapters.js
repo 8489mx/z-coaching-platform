@@ -92,12 +92,16 @@ export function adaptProgramToInteractiveMeals(masterProgram) {
     });
   }
 
+  // P1-B11: the legacy fallback is labelled, never silent. The app and
+  // the PDF both prefer culinary meals; when this branch fires, the meal
+  // carries source 'legacy' so the tab can say so on screen.
   if (rawNutrition?.meals && Array.isArray(rawNutrition.meals) && rawNutrition.meals.length > 0) {
     return rawNutrition.meals.map((m, mIdx) => {
       const mealNum = mIdx + 1;
       const rawTitle = m.title || m.name || `الوجبة ${mealNum}`;
       return {
         ...m,
+        source: 'legacy',
         id: m.id || `m${mealNum}`,
         title: cleanMealTitle(rawTitle, mealNum),
         completed: !!m.completed,

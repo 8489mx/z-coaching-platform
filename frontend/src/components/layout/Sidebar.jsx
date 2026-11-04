@@ -96,9 +96,11 @@ export default function Sidebar({ isCollapsed = false, onToggleSidebar }) {
       const AWAITING_COACH = ['PENDING_COACH_REVIEW', 'PAYMENT_CONFIRMED', 'DRAFT_GENERATED'];
 
       setLiveBadges(prev => {
-        const checkinsCount = Array.isArray(chData?.pending)
-          ? chData.pending.length
-          : (Array.isArray(chData?.checkins) ? chData.checkins.length : (Array.isArray(chData) ? chData.length : prev.checkins));
+        // P1-B11: ONE response shape. The server returns { checkins }
+        // (see getPendingCheckins); the old code also accepted `pending`
+        // and a bare array, so the badge could count a different list
+        // than the dashboard and command center read.
+        const checkinsCount = Array.isArray(chData?.checkins) ? chData.checkins.length : prev.checkins;
         const intakesCount = Array.isArray(inData?.submissions)
           ? inData.submissions.filter((s) => AWAITING_COACH.includes(String(s?.status || '').toUpperCase())).length
           : prev.intakes;

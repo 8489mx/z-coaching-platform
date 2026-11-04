@@ -30,6 +30,10 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
   Map<String, dynamic>? _activeProgram;
   late final NotificationService _notificationService;
   List<NotificationItem> _notifications = [];
+  // P1-B11: true while the hub shows a cached program because the live
+  // refresh failed. The old code kept the old cache silently.
+  bool _servingStaleCache = false;
+  String? _cacheUpdatedLabel;
 
   DailyMacroTarget _macroTarget = DailyMacroTarget(calories: 0, protein: 0, carbs: 0, fat: 0, waterLiters: 0.0);
   List<SupplementItem> _supplements = [];
@@ -84,6 +88,7 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
     }
 
     _activeProgram = widget.storage.getCachedActiveProgram();
+    _cacheUpdatedLabel = _formatCacheLabel(widget.storage.getCachedActiveProgramMeta());
     // P0-A4: a cached program carrying an active lockout locks the hub even
     // when no stored lockout row exists (e.g. after an app update), so the
     // cached path below never fills plan fields for a locked client.
@@ -130,6 +135,9 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
           _isLoading = false;
           if (_activeProgram == null) {
             _errorMessage = 'تعذر الاتصال بالخادم لجلب الخطة الحالية. يرجى التحقق من اتصال الإنترنت.';
+          } else {
+            // P1-B11: serving the old cache is now announced, not silent.
+            _servingStaleCache = true;
           }
         });
         return;
@@ -198,6 +206,8 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
         _activeProgram = program;
         _isPendingApproval = false;
         _isLoading = false;
+        _servingStaleCache = false;
+        _cacheUpdatedLabel = _formatCacheLabel(widget.storage.getCachedActiveProgramMeta());
         _errorMessage = null;
         _applyProgram(program);
       });
@@ -207,9 +217,42 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
         _isLoading = false;
         if (_activeProgram == null) {
           _errorMessage = 'حدث خطأ أثناء تحميل الخطة. يرجى مراجعة الاتصال أو المدرب.';
+        } else {
+          _servingStaleCache = true;
         }
       });
     }
+  }
+
+  // P1-B11: human-readable cache stamp ("2026-11-04 14:20") or null.
+  String? _formatCacheLabel(Map<String, dynamic>? meta) {
+    final raw = meta?['cached_at']?.toString();
+    if (raw == null || raw.isEmpty) return null;
+    final parsed = DateTime.tryParse(raw);
+    if (parsed == null) return raw;
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${parsed.year}-${two(parsed.month)}-${two(parsed.day)} ${two(parsed.hour)}:${two(parsed.minute)}';
+  }
+
+  Future<void> _markNotificationRead(NotificationItem item) async {
+    if (item.isRead) return;
+    final code = _user?.clientCode ?? '';
+    if (code.isEmpty) return;
+    final ok = await _notificationService.markAsRead(code, notificationId: item.id);
+    if (!mounted || !ok) return;
+    setState(() {
+      _notifications = _notifications.map((n) => n.id == item.id
+          ? NotificationItem(
+              id: n.id,
+              clientCode: n.clientCode,
+              title: n.title,
+              body: n.body,
+              isRead: true,
+              createdAt: n.createdAt,
+              payload: n.payload,
+            )
+          : n).toList();
+    });
   }
 
   /// يقرأ الأهداف اليومية وجلسة اليوم من شكل البرنامج الذي يرسله الخادم.
@@ -498,6 +541,105 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
               ),
 
               const SizedBox(height: 24),
+
+              // P1-B11: stale-cache notice — the hub used to serve an old
+              // cached program with no sign the refresh had failed.
+              if (_servingStaleCache) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB),
+                    border: Border.all(color: const Color(0xFFFDE68A)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.cloud_off_outlined, color: Color(0xFFB45309), size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _cacheUpdatedLabel != null
+                              ? 'تعذر الاتصال بالخادم — تعمل الآن على نسخة محفوظة من خطتك (آخر تحديث: $_cacheUpdatedLabel).'
+                              : 'تعذر الاتصال بالخادم — تعمل الآن على نسخة محفوظة من خطتك.',
+                          style: const TextStyle(color: Color(0xFF92400E), fontSize: 12, height: 1.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              // P1-B11: notifications box. The hub fetched notifications
+              // and stored them but no widget ever read the list, so the
+              // client never saw a single notification.
+              if (_notifications.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.notifications_outlined, color: AppColors.primaryDeep, size: 18),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'إشعارات الكوتش',
+                            style: TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 8),
+                          if (_notifications.where((n) => !n.isRead).isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDC2626),
+                                borderRadius: BorderRadius.circular(9999),
+                              ),
+                              child: Text(
+                                '${_notifications.where((n) => !n.isRead).length} جديدة',
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ..._notifications.map((n) => GestureDetector(
+                            onTap: () => _markNotificationRead(n),
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: n.isRead ? AppColors.background : AppColors.primaryLight,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    n.title,
+                                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold),
+                                  ),
+                                  if (n.body.isNotEmpty) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      n.body,
+                                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.4),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
 
               // تنبيه تعديل البرنامج إن وجد
               if (_programChangeSummary != null) ...[

@@ -63,6 +63,7 @@ export default function ClientInteractiveApp() {
   // Consolidated Client & Program Interactive Data
   const {
     clientData,
+    clientProgram,
     currentTrainingWeek,
     setCurrentTrainingWeek,
     trainingWeeks,
@@ -192,6 +193,7 @@ export default function ClientInteractiveApp() {
                 setCurrentTrainingWeek={setCurrentTrainingWeek}
                 selectedWeekData={selectedWeekData}
                 workoutSession={workoutSession || { exercises: [] }}
+                sessionDayInfo={sessionDayInfo}
                 dailyReadiness={dailyReadiness}
                 handleSetDailyReadiness={handleSetDailyReadiness}
                 clientData={clientData}
@@ -253,6 +255,8 @@ export default function ClientInteractiveApp() {
                 clientData={clientData}
                 setEmergencyModalOpen={setEmergencyModalOpen}
                 setPdfModalOpen={setPdfModalOpen}
+                dailyStepsTarget={cardioPrescription?.daily_steps_target ?? null}
+                weightKg={clientProgram?.client?.weight_kg ?? null}
               />
             ) : (
               <PendingPlanNotice

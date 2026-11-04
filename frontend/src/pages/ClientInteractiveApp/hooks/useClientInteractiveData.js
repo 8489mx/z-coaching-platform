@@ -93,6 +93,28 @@ export function useClientInteractiveData() {
     return trainingWeeks.find(w => w.week_number === currentTrainingWeek) || trainingWeeks[0];
   }, [trainingWeeks, currentTrainingWeek]);
 
+  // P1-B11: day-map info. The 7 day buttons map onto N split sessions by
+  // modulo, so days past the split repeat a session. The tab must say so:
+  // session X of Y, marked repeated when the day index runs past the
+  // split. Rest days cannot be marked from current data: the split
+  // assigns a session to every day, so no rest-day field exists to read
+  // (a true rest-day model is a program-data follow-up, not a label).
+  const sessionDayInfo = useMemo(() => {
+    const sessions = selectedWeekData?.sessions
+      || clientProgram?.training?.sessions
+      || clientProgram?.training_split?.sessions
+      || clientProgram?.master_program?.training?.sessions
+      || clientProgram?.master_program?.training_split?.sessions
+      || [];
+    if (!Array.isArray(sessions) || sessions.length === 0) return null;
+    const sessionIndex = Math.max(0, (selectedDay - 1) % sessions.length);
+    return {
+      sessionIndex,
+      sessionCount: sessions.length,
+      isRepeat: (selectedDay - 1) >= sessions.length,
+    };
+  }, [selectedWeekData, clientProgram, selectedDay]);
+
   // 4. Offline Sync Queue
   const [offlineQueue, setOfflineQueue] = useState(() => {
     try {
@@ -605,27 +627,9 @@ export function useClientInteractiveData() {
       };
     }
 
-    if (meals && meals.length > 0) {
-      const mealSum = meals.reduce((acc, meal) => {
-        (meal.items || []).forEach(item => {
-          acc.p += Number(item.p || 0);
-          acc.c += Number(item.c || 0);
-          acc.f += Number(item.f || 0);
-          acc.cal += Number(item.cal || 0);
-        });
-        return acc;
-      }, { p: 0, c: 0, f: 0, cal: 0 });
-
-      if (mealSum.cal > 0) {
-        return {
-          cal: Math.round(mealSum.cal),
-          p: Math.round(mealSum.p),
-          c: Math.round(mealSum.c),
-          f: Math.round(mealSum.f)
-        };
-      }
-    }
-
+    // P1-B11: no sum-of-meals fallback. Summing the displayed meals made
+    // targets always "match" the meals even when the engine's targets
+    // differed. Zeros mean "targets unavailable" and the tab says so.
     // P0-A14: no fixed targets — zeros mean "no plan yet", never a fabricated plan.
     return { p: 0, c: 0, f: 0, cal: 0 };
   }, [clientProgram, meals]);
@@ -846,6 +850,7 @@ export function useClientInteractiveData() {
 
     // Workout
     workoutSession: displayedWorkoutSession,
+    sessionDayInfo,
     setWorkoutSession,
     progression,
     isDeloadActive,

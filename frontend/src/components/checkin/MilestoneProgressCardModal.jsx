@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Award, Download, Copy, Check } from 'lucide-react';
+import { resolveMilestoneMetrics } from '../../utils/milestoneMetrics';
 
 export function MilestoneProgressCardModal({
   isOpen,
@@ -12,43 +13,50 @@ export function MilestoneProgressCardModal({
 
   if (!isOpen) return null;
 
-  const clientName = client.full_name || 'بطل المنظومة';
-  const clientCode = client.client_code ? `#${client.client_code}` : '';
-  const goalLabel = client.goal_label || 'خسارة دهون وبناء عضلي متوازن';
+  // P1-B11: every number comes from the shared resolver, which accepts
+  // both key sets (weight_kg/weight, waist_cm/waist, ...) and returns null
+  // for anything unknown. The old code fell back to invented constants
+  // (85 kg, 90 cm, 90%/92%, 4 weeks) and rendered them on a formal
+  // "certificate" — because the review flow's history uses weight/waist
+  // keys, the old reads missed and the fallbacks fired almost always.
+  const metrics = resolveMilestoneMetrics({ client, activeCheckin, history });
+  const clientName = client.full_name || client.name || 'مشترك';
+  const clientCode = (client.client_code || client.code) ? `#${client.client_code || client.code}` : '';
+  const goalLabel = client.goal_label || client.target_goal || null;
+  const { startWeight, currentWeight, weightDropKg, waistDropCm, weeksCount, avgAdherence, avgReadiness } = metrics;
 
-  // Compute milestones
-  const historyList = Array.isArray(history) ? history : [];
-  const startWeight = Number(historyList[0]?.weight_kg || client.initial_weight || client.weight || 85);
-  const currentWeight = Number(activeCheckin?.weight_kg || historyList[historyList.length - 1]?.weight_kg || startWeight);
-  const weightDropKg = Math.max(0, Number((startWeight - currentWeight).toFixed(1)));
-
-  const startWaist = Number(historyList[0]?.waist_cm || client.initial_waist || client.waist || 90);
-  const currentWaist = Number(activeCheckin?.waist_cm || historyList[historyList.length - 1]?.waist_cm || startWaist);
-  const waistDropCm = Math.max(0, Number((startWaist - currentWaist).toFixed(1)));
-
-  const weeksCount = Math.max(1, Number(activeCheckin?.week_number) || historyList.length || 4);
-
-  const dietAdh = Number(activeCheckin?.diet_adherence_percentage) || 90;
-  const trainAdh = Number(activeCheckin?.workout_adherence_percentage) || 92;
-  const avgAdherence = Math.round((dietAdh + trainAdh) / 2);
-
-  const sleepScore = Number(activeCheckin?.sleep_quality) || 4;
-  const energyScore = Number(activeCheckin?.energy_level) || 4.5;
-  const avgReadiness = Number(((sleepScore + energyScore) / 2).toFixed(1));
+  // Refuse to render a certificate without real weight data.
+  if (!metrics.canRender) {
+    return (
+      <div dir="rtl" style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(15, 23, 42, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', fontFamily: 'Cairo, sans-serif' }}>
+        <div style={{ background: '#FFFFFF', borderRadius: '24px', padding: '24px', maxWidth: '480px', width: '100%', textAlign: 'center' }}>
+          <div style={{ fontSize: '14px', fontWeight: 800, color: '#101828' }}>لا توجد بيانات وزن كافية لإصدار بطاقة الإنجاز</div>
+          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '8px' }}>بطاقة الإنجاز تحتاج وزن بداية ووزن حالي مسجلين، حتى لا تُعرض أرقام غير حقيقية.</div>
+          <button type="button" onClick={onClose} style={{ marginTop: '16px', padding: '8px 16px', borderRadius: '9999px', border: '1px solid #CBD5E1', background: '#FFFFFF', color: '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>إغلاق</button>
+        </div>
+      </div>
+    );
+  }
 
   // Copy text for WhatsApp
   const handleCopyWhatsApp = () => {
-    const text = `منظومة Z Coaching Platform — تقرير الإنجاز الرياضي\n\n` +
-      `البطل: ${clientName} ${clientCode}\n` +
-      `الهدف: ${goalLabel}\n` +
-      `الفترة التدريبية: ${weeksCount} أسابيع مكتملة\n\n` +
-      `مؤشرات الإنجاز المعتمدة:\n` +
-      `- إجمالي نزول الوزن: -${weightDropKg} كجم\n` +
-      `- انخفاض محيط الخصر: -${waistDropCm} سم\n` +
-      `- معدل الالتزام العام: ${avgAdherence}%\n` +
-      `- مؤشر الجاهزية والتعافي: ${avgReadiness} / 5\n\n` +
-      `إنجاز فسيولوجي متميز يعكس انضباطك العالي. استمر في التطور نحو هدفك القادم.\n` +
-      `إشراف: كابتن زكريا — كبير المدربين الإكلينيكيين`;
+    const lines = [
+      `منظومة Z Coaching Platform — تقرير الإنجاز الرياضي`,
+      ``,
+      `البطل: ${clientName} ${clientCode}`,
+      ...(goalLabel ? [`الهدف: ${goalLabel}`] : []),
+      ...(weeksCount != null ? [`الفترة التدريبية: ${weeksCount} أسابيع مكتملة`] : []),
+      ``,
+      `مؤشرات الإنجاز المعتمدة:`,
+      `- إجمالي نزول الوزن: -${weightDropKg} كجم`,
+      ...(waistDropCm != null ? [`- انخفاض محيط الخصر: -${waistDropCm} سم`] : []),
+      ...(avgAdherence != null ? [`- معدل الالتزام العام: ${avgAdherence}%`] : []),
+      ...(avgReadiness != null ? [`- مؤشر الجاهزية والتعافي: ${avgReadiness} / 5`] : []),
+      ``,
+      `إنجاز فسيولوجي متميز يعكس انضباطك العالي. استمر في التطور نحو هدفك القادم.`,
+      `إشراف: كابتن زكريا — كبير المدربين الإكلينيكيين`
+    ];
+    const text = lines.join('\n');
 
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -88,7 +96,7 @@ export function MilestoneProgressCardModal({
   <!-- Client Header Box -->
   <rect x="30" y="110" width="740" height="75" rx="14" fill="rgba(30, 41, 59, 0.7)" stroke="#334155" stroke-width="1"/>
   <text x="740" y="145" text-anchor="start" font-size="18" font-weight="800" fill="#F8FAFC">${clientName} ${clientCode}</text>
-  <text x="740" y="170" text-anchor="start" font-size="12" font-weight="600" fill="#38BDF8">الهدف: ${goalLabel} | الفترة التدريبية: ${weeksCount} أسابيع مكتملة</text>
+  <text x="740" y="170" text-anchor="start" font-size="12" font-weight="600" fill="#38BDF8">${goalLabel ? `الهدف: ${goalLabel} | ` : ''}${weeksCount != null ? `الفترة التدريبية: ${weeksCount} أسابيع مكتملة` : 'فترة غير محددة'}</text>
 
   <!-- KPI Badges Grid (4 Badges) -->
   <!-- Badge 1: Weight Loss -->
@@ -100,19 +108,19 @@ export function MilestoneProgressCardModal({
   <!-- Badge 2: Waist Reduction -->
   <rect x="400" y="205" width="175" height="110" rx="14" fill="url(#badgeGrad)" stroke="#334155" stroke-width="1.5"/>
   <text x="487" y="235" text-anchor="middle" font-size="12" font-weight="700" fill="#94A3B8">انخفاض محيط الخصر</text>
-  <text x="487" y="275" text-anchor="middle" font-size="28" font-weight="900" fill="#38BDF8">-${waistDropCm} سم</text>
+  <text x="487" y="275" text-anchor="middle" font-size="28" font-weight="900" fill="#38BDF8">${waistDropCm != null ? `-${waistDropCm} سم` : 'غير معروف'}</text>
   <text x="487" y="300" text-anchor="middle" font-size="11" font-weight="600" fill="#BAE6FD">انكماش الدهون الحشوية</text>
 
   <!-- Badge 3: Cumulative Adherence -->
   <rect x="215" y="205" width="170" height="110" rx="14" fill="url(#badgeGrad)" stroke="#334155" stroke-width="1.5"/>
   <text x="300" y="235" text-anchor="middle" font-size="12" font-weight="700" fill="#94A3B8">الالتزام التراكمي</text>
-  <text x="300" y="275" text-anchor="middle" font-size="28" font-weight="900" fill="#F59E0B">${avgAdherence}%</text>
+  <text x="300" y="275" text-anchor="middle" font-size="28" font-weight="900" fill="#F59E0B">${avgAdherence != null ? `${avgAdherence}%` : 'غير معروف'}</text>
   <text x="300" y="300" text-anchor="middle" font-size="11" font-weight="600" fill="#FDE68A">انضباط غذائي وتدريبي</text>
 
   <!-- Badge 4: Readiness & Recovery -->
   <rect x="30" y="205" width="170" height="110" rx="14" fill="url(#badgeGrad)" stroke="#334155" stroke-width="1.5"/>
   <text x="115" y="235" text-anchor="middle" font-size="12" font-weight="700" fill="#94A3B8">مؤشر الجاهزية والتعافي</text>
-  <text x="115" y="275" text-anchor="middle" font-size="28" font-weight="900" fill="#A855F7">${avgReadiness} / 5</text>
+  <text x="115" y="275" text-anchor="middle" font-size="28" font-weight="900" fill="#A855F7">${avgReadiness != null ? `${avgReadiness} / 5` : 'غير معروف'}</text>
   <text x="115" y="300" text-anchor="middle" font-size="11" font-weight="600" fill="#E9D5FF">استشفاء عصبي مثالي</text>
 
   <!-- Motivational Box -->
@@ -231,7 +239,7 @@ export function MilestoneProgressCardModal({
                 </h3>
               </div>
               <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '9999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#CBD5E1' }}>
-                {weeksCount} أسابيع مكتملة
+                {weeksCount != null ? `${weeksCount} أسابيع مكتملة` : 'فترة غير محددة'}
               </span>
             </div>
 
@@ -241,7 +249,7 @@ export function MilestoneProgressCardModal({
                 {clientName} <span style={{ fontSize: '12px', color: '#94A3B8' }}>{clientCode}</span>
               </div>
               <div style={{ fontSize: '11.5px', color: '#38BDF8', marginTop: '2px' }}>
-                الهدف الرياضي والتغذوي المعتمد: {goalLabel}
+                {goalLabel ? `الهدف الرياضي والتغذوي المعتمد: ${goalLabel}` : 'الهدف غير محدد'}
               </div>
             </div>
 
@@ -259,7 +267,7 @@ export function MilestoneProgressCardModal({
               <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '20px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <span style={{ fontSize: '10.5px', color: '#94A3B8', display: 'block' }}>انخفاض محيط الخصر</span>
                 <strong style={{ fontSize: '20px', color: '#38BDF8', fontFamily: 'JetBrains Mono', display: 'block', marginTop: '2px' }}>
-                  -{waistDropCm} سم
+                  {waistDropCm != null ? `-${waistDropCm} سم` : 'غير معروف'}
                 </strong>
                 <span style={{ fontSize: '9.5px', color: '#BAE6FD' }}>انكماش الدهون الحشوية</span>
               </div>
@@ -267,7 +275,7 @@ export function MilestoneProgressCardModal({
               <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '20px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <span style={{ fontSize: '10.5px', color: '#94A3B8', display: 'block' }}>الالتزام التراكمي</span>
                 <strong style={{ fontSize: '20px', color: '#F59E0B', fontFamily: 'JetBrains Mono', display: 'block', marginTop: '2px' }}>
-                  {avgAdherence}%
+                  {avgAdherence != null ? `${avgAdherence}%` : 'غير معروف'}
                 </strong>
                 <span style={{ fontSize: '9.5px', color: '#FDE68A' }}>انضباط غذائي وتدريبي</span>
               </div>
@@ -275,7 +283,7 @@ export function MilestoneProgressCardModal({
               <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderRadius: '20px', padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <span style={{ fontSize: '10.5px', color: '#94A3B8', display: 'block' }}>الجاهزية والتعافي</span>
                 <strong style={{ fontSize: '20px', color: '#A855F7', fontFamily: 'JetBrains Mono', display: 'block', marginTop: '2px' }}>
-                  {avgReadiness} / 5
+                  {avgReadiness != null ? `${avgReadiness} / 5` : 'غير معروف'}
                 </strong>
                 <span style={{ fontSize: '9.5px', color: '#E9D5FF' }}>استشفاء عصبي مثالي</span>
               </div>

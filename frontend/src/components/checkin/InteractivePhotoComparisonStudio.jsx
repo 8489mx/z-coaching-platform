@@ -105,9 +105,13 @@ function BodyProgressCanvas({ gender = 'MALE', angle = 'FRONT', progressStage = 
         </g>
       )}
 
-      <rect x="25" y="290" width="150" height="22" rx="5" fill="#FFFFFF" stroke="#E2E8F0" />
-      <text x="100" y="305" textAnchor="middle" fill="#0F172A" fontSize="10.5" fontWeight="800" fontFamily="Cairo, sans-serif">
-        {progressStage === 'BEFORE' ? 'صورة الأساس (قبل)' : 'التقييم الحالي (بعد)'}
+      {/* P1-B11: the silhouette is an ILLUSTRATION, not the client's photo.
+          This canvas only renders when no real photo exists for the stage,
+          so the label must say so — otherwise the generic figure reads as
+          the client's actual body. */}
+      <rect x="12" y="290" width="176" height="22" rx="5" fill="#FFFFFF" stroke="#E2E8F0" />
+      <text x="100" y="305" textAnchor="middle" fill="#0F172A" fontSize="9.5" fontWeight="800" fontFamily="Cairo, sans-serif">
+        {progressStage === 'BEFORE' ? 'صورة الأساس (قبل) — صورة توضيحية' : 'التقييم الحالي (بعد) — صورة توضيحية'}
       </text>
     </svg>
   );
