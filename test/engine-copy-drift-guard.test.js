@@ -40,9 +40,10 @@ const LIVE_PAIRS = {
 };
 
 // Known, deliberate differences. Remove an entry once resolved.
-const PENDING_DECISION = {
-  'checkin-approval-whatsapp': 'intentional: frontend derives app URL from window.location'
-};
+// P2-C4: 'checkin-approval-whatsapp' pair resolved by deletion — the backend
+// file had zero importers (the live message builder is the frontend
+// checkinApprovalWhatsApp.js), so there is no backend copy left to drift.
+const PENDING_DECISION = {};
 
 const kebabToCamel = (s) => s.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 const normalize = (src) =>

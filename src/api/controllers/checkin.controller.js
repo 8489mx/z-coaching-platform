@@ -1923,61 +1923,11 @@ export async function logWorkout(req, res) {
 /**
  * Get Workout Logs for a Program (For smart pre-fill)
  */
-export async function getWorkoutLogs(req, res) {
-  try {
-    const { programId } = req.params;
-    const logs = await WorkoutLog.findAll({
-      where: { program_id: programId },
-      order: [["createdAt", "DESC"]],
-    });
-
-    return res.status(200).json({ success: true, logs });
-  } catch (error) {
-    return res.status(500).json({ success: false, error: error.message });
-  }
-}
-
-/**
- * Authoritative Check-in Schedule Query
- * Single Source of Truth for Trainee App and Coach Command Center
- */
-export async function getCheckinSchedule(req, res) {
-  try {
-    const rawTarget = req.params.userId || req.user?.id;
-    if (!rawTarget) {
-      return res.status(400).json({ success: false, error: "معرف المتدرب مطلوب" });
-    }
-
-    const cleanCode = String(rawTarget).replace("#", "").trim();
-    let userObj = await User.findOne({ where: { client_code: cleanCode } });
-    if (!userObj && !isNaN(cleanCode)) {
-      userObj = await User.findByPk(parseInt(cleanCode, 10));
-    }
-    const resolvedId = userObj ? userObj.id : (!isNaN(cleanCode) ? parseInt(cleanCode, 10) : null);
-    if (!resolvedId) {
-      return res.status(404).json({ success: false, error: "المتدرب غير موجود" });
-    }
-
-    // فحص الملكية ومنع ثغرة IDOR: المتدرب يطّلع على جدوله فقط، والمدرب أو الأدمن له حق الوصول لكافة الجداول
-    if (req.user && req.user.id !== resolvedId) {
-      const requester = await User.findByPk(req.user.id);
-      const isCoachOrAdmin = requester && (requester.role === "COACH" || requester.role === "ADMIN");
-      if (!isCoachOrAdmin) {
-        return res.status(403).json({ success: false, error: "غير مصرح لك بعرض جدول متابعات متدرب آخر" });
-      }
-    }
-
-    const schedule = await evaluateClientCheckinSchedule(resolvedId, new Date());
-    return res.status(200).json({
-      success: true,
-      schedule,
-    });
-  } catch (error) {
-    console.error("Error retrieving checkin schedule:", error);
-    return res.status(500).json({ success: false, error: error.message });
-  }
-}
-
+// P2-C4: getWorkoutLogs (GET /workout-logs/program/:programId) and
+// getCheckinSchedule (GET /schedule[/:userId]) are deleted: zero UI callers
+// on any screen. Deleting getWorkoutLogs also removes its C18 ownership
+// hole (no ownership check) by removal, not by a new check. Workout-log
+// writes and the schedule service itself stay untouched.
 
 /**
  * Coach unlock of clinical safety lockout after verified medical clearance.

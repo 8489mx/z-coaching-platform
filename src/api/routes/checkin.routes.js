@@ -7,10 +7,8 @@ import {
   bulkApproveCheckins,
   updateCheckinMeasurements,
   logWorkout,
-  getWorkoutLogs,
   decideDeload,
   unlockClinicalSafety,
-  getCheckinSchedule,
   openLateWindow,
   previewAdaptation,
 } from "../controllers/checkin.controller.js";
@@ -22,8 +20,6 @@ const router = express.Router();
 router.post("/", requireAuth, checkinRateLimiter, submitCheckin);
 router.get("/digest", requireAuth, getCoachDigest);
 router.post("/bulk-approve", requireAuth, bulkApproveCheckins);
-router.get("/schedule/:userId", requireAuth, getCheckinSchedule);
-router.get("/schedule", requireAuth, getCheckinSchedule);
 router.get("/user/:userId", requireAuth, getClientCheckins);
 router.get("/client/:userId", requireAuth, getClientCheckins);
 router.put("/:checkinId/measurements", requireAuth, updateCheckinMeasurements);
@@ -37,7 +33,9 @@ router.post("/:checkinId/adaptation-preview", requireAuth, previewAdaptation);
 router.post("/:checkinId/deload-decision", requireAuth, decideDeload);
 router.post("/:checkinId/unlock-clinical-safety", requireAuth, unlockClinicalSafety);
 
+// P2-C4: GET /workout-logs/program/:programId and GET /schedule[/:userId]
+// are deleted (zero UI callers). Workout-log writes (POST /workout-logs)
+// and the late-window POST stay wired.
 router.post("/workout-logs", requireAuth, logWorkout);
-router.get("/workout-logs/program/:programId", requireAuth, getWorkoutLogs);
 
 export default router;

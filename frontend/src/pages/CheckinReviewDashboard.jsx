@@ -623,6 +623,16 @@ export default function CheckinReviewDashboard() {
   // P1-B11: adaptation preview (POST adaptation-preview) for the selected
   // check-in. Null = not requested yet.
   const [adaptationPreview, setAdaptationPreview] = useState(null);
+  // P2-C4: coach digest (GET /checkin/digest) + bulk approve + stale override.
+  // The digest never blocks the queue: its own strip shows loading / error /
+  // empty states, and the queue keeps working from /pending when it fails.
+  const [coachDigest, setCoachDigest] = useState(null);
+  const [digestLoadStatus, setDigestLoadStatus] = useState('idle');
+  const [bulkResult, setBulkResult] = useState(null);
+  const [bulkError, setBulkError] = useState(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  // Stale override for the selected check-in only; reset on selection change.
+  const [staleOverrideEnabled, setStaleOverrideEnabled] = useState(false);
   // P1-B11: real program targets + cardio per client code, filled by the
   // lazy program fetch below. Absent = unknown, never invented.
   const [programTargetsByCode, setProgramTargetsByCode] = useState({});
@@ -778,9 +788,60 @@ export default function CheckinReviewDashboard() {
     }
   }, []);
 
+  // P2-C4: read-only coach digest. Server-computed tiers and stale flags;
+  // the screen shows only what the server returns, never invented counts.
+  const fetchCoachDigest = useCallback(async () => {
+    setDigestLoadStatus('loading');
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/checkin/digest`);
+      if (!res.ok) {
+        setDigestLoadStatus('error');
+        return;
+      }
+      const data = await res.json();
+      setCoachDigest(data.digest || null);
+      setDigestLoadStatus('loaded');
+    } catch (e) {
+      console.warn('Failed to load coach digest:', e);
+      setDigestLoadStatus('error');
+    }
+  }, []);
+
+  // P2-C4: bulk approve. The server selects YELLOW pending rows only and
+  // reports every skipped id with its reason; the screen shows that result
+  // verbatim and refreshes the queue, so nothing is approved silently.
+  const handleBulkApprove = useCallback(async () => {
+    const ids = checkinList.map((item) => item?.raw_id).filter((id) => id !== undefined && id !== null);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    setBulkError(null);
+    setBulkResult(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/checkin/bulk-approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ checkin_ids: ids }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setBulkError(data.error || 'تعذر تنفيذ الموافقة الجماعية على الخادم.');
+        return;
+      }
+      setBulkResult({ approved: data.approved || [], skipped: data.skipped || [] });
+      await fetchLiveCheckins();
+      await fetchCoachDigest();
+    } catch (e) {
+      console.warn('Failed to bulk-approve check-ins:', e);
+      setBulkError('تعذر الاتصال بالخادم، لم يتم تنفيذ الموافقة الجماعية.');
+    } finally {
+      setBulkBusy(false);
+    }
+  }, [checkinList, fetchLiveCheckins, fetchCoachDigest]);
+
   useEffect(() => {
     fetchLiveCheckins();
-  }, [fetchLiveCheckins]);
+    fetchCoachDigest();
+  }, [fetchLiveCheckins, fetchCoachDigest]);
 
   // Read URL query params on mount or param change
   useEffect(() => {
@@ -832,6 +893,20 @@ export default function CheckinReviewDashboard() {
   });
 
   const activeCheckin = filteredQueue[selectedIdx] || filteredQueue[0] || checkinList[0];
+
+  // P2-C4: stale flags come from the digest only (server-computed). Keyed by
+  // database id, matching the queue items' raw_id.
+  const staleByCheckinId = (coachDigest?.stale_pending || []).reduce((acc, entry) => {
+    if (entry?.checkin_id !== undefined && entry?.checkin_id !== null) acc[entry.checkin_id] = entry.stale_reasons || [];
+    return acc;
+  }, {});
+  const activeCheckinStaleReasons = activeCheckin?.raw_id !== undefined && activeCheckin?.raw_id !== null
+    ? staleByCheckinId[activeCheckin.raw_id]
+    : undefined;
+
+  useEffect(() => {
+    setStaleOverrideEnabled(false);
+  }, [activeCheckin?.id]);
 
   const safeClient = activeCheckin?.client || {};
   const safeMetrics = activeCheckin?.metrics || {};
@@ -1077,6 +1152,10 @@ export default function CheckinReviewDashboard() {
             // payload (the card's own POST persists it immediately; this
             // copy is the approval-time trace, not a second decision).
             ...(deloadDecision ? { deload_decision: deloadDecision } : {})
+            // P2-C4: the stale override is sent ONLY when the coach
+            // explicitly enables it for a digest-flagged stale check-in.
+            // Without it, a stale approval stays review-only on the server.
+            ...(staleOverrideEnabled && activeCheckinStaleReasons ? { apply_despite_staleness: true } : {})
           })
         });
         if (!res.ok) {
@@ -1169,6 +1248,31 @@ export default function CheckinReviewDashboard() {
           )}
         />
 
+        {/* P2-C4: coach digest strip (GET /checkin/digest). Server-computed
+            counts only; a failed load shows its own error, never zeros. */}
+        <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '16px', padding: '12px 14px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <strong style={{ fontSize: '13px', color: '#101828', fontWeight: 800 }}>ملخص المتابعات</strong>
+            <span style={{ fontSize: '11px', color: '#64748B' }}>من الخادم مباشرة — بدون أرقام مخترعة</span>
+          </div>
+          {digestLoadStatus === 'loading' || digestLoadStatus === 'idle' ? (
+            <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>جارٍ تحميل الملخص…</div>
+          ) : digestLoadStatus === 'error' ? (
+            <div style={{ fontSize: '12px', color: '#B42318', fontWeight: 700 }}>تعذر تحميل الملخص من الخادم. الطابور نفسه ما زال يعمل من قائمة الانتظار.</div>
+          ) : !coachDigest || coachDigest.counts?.total === 0 ? (
+            <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>لا توجد متابعات معلقة أو مطبقة تلقائياً.</div>
+          ) : (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '12px', fontWeight: 700 }}>
+              <span>إجمالي: {coachDigest.counts.total}</span>
+              <span>معلق أصفر: {coachDigest.counts.yellow_pending}</span>
+              <span>معلق أحمر: {coachDigest.counts.red_pending}</span>
+              <span>معلق أخضر: {coachDigest.counts.green_pending}</span>
+              <span>راكد: {coachDigest.counts.stale_pending}</span>
+              <span>مُطبق تلقائياً: {coachDigest.counts.auto_applied}</span>
+            </div>
+          )}
+        </div>
+
         {/* 2. Scalable Master-Detail Architecture (Queue Sidebar on Right / Workspace on Left) */}
         <div style={{ display: 'grid', gridTemplateColumns: '320px minmax(0, 1fr)', gap: '16px', alignItems: 'start' }}>
           
@@ -1228,6 +1332,34 @@ export default function CheckinReviewDashboard() {
                   onChange={(next) => { setTierFilter(next); setSelectedIdx(0); }}
                   fullWidth
                 />
+              </div>
+
+              {/* P2-C4: bulk approve. The server approves YELLOW pending rows
+                  only and reports every skipped id; the result below is the
+                  server's own reply, and the queue refreshes afterwards. */}
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={handleBulkApprove}
+                  disabled={bulkBusy || checkinList.length === 0}
+                  style={{
+                    width: '100%', height: '36px', borderRadius: '9px',
+                    border: '1px solid #673DE6', background: '#673DE6', color: '#FFFFFF',
+                    fontSize: '12px', fontWeight: 800, cursor: 'pointer'
+                  }}
+                  title="اعتماد جماعي: الخادم يعتمد المتابعات الصفراء المعلقة فقط ويبلغ عن المتخطاة"
+                >
+                  {bulkBusy ? 'جارٍ التنفيذ…' : 'اعتماد جماعي للأصفر'}
+                </button>
+                {bulkError && (
+                  <div style={{ marginTop: '6px', fontSize: '11.5px', color: '#B42318', fontWeight: 700 }}>{bulkError}</div>
+                )}
+                {bulkResult && (
+                  <div style={{ marginTop: '6px', fontSize: '11.5px', color: '#027A48', fontWeight: 700 }}>
+                    تم اعتماد {bulkResult.approved.length} متابعة
+                    {bulkResult.skipped.length > 0 ? ` — وتُخطي ${bulkResult.skipped.length} (${bulkResult.skipped.map((s) => `${s.checkin_id}: ${s.reason}`).join('، ')})` : ''}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1296,6 +1428,12 @@ export default function CheckinReviewDashboard() {
                           {(item?.medical_reports_urls?.length > 0 || item?.client?.medical_reports_urls?.length > 0) && (
                             <span style={{ fontSize: '9px', background: '#ECFDF5', color: '#15803D', border: '1px solid #A7F3D0', padding: '1px 5px', borderRadius: '9999px', fontWeight: 800 }}>
                               تحاليل
+                            </span>
+                          )}
+                          {/* P2-C4: stale flag from the digest (server-computed). */}
+                          {staleByCheckinId[item?.raw_id] && (
+                            <span style={{ fontSize: '9px', background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '1px 5px', borderRadius: '9999px', fontWeight: 800 }}>
+                              راكدة
                             </span>
                           )}
                           <ClientPackageBadge item={item?.client} size="xs" />
@@ -3304,6 +3442,28 @@ export default function CheckinReviewDashboard() {
                       fontFamily: 'Cairo, sans-serif'
                     }}
                   />
+
+                  {/* P2-C4: stale approval. Without the explicit override,
+                      the server keeps a stale approval review-only. The
+                      override is offered ONLY for digest-flagged stale items. */}
+                  {activeCheckinStaleReasons && (
+                    <div style={{ marginTop: '10px', padding: '10px 12px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '9px' }}>
+                      <div style={{ fontSize: '12px', color: '#92400E', fontWeight: 800 }}>
+                        هذه المتابعة راكدة — اعتمادها العادي سيبقى مراجعة وملاحظات فقط دون تعديل البرنامج.
+                      </div>
+                      <div style={{ fontSize: '11.5px', color: '#78350F', marginTop: '4px' }}>
+                        أسباب الركود: {activeCheckinStaleReasons.join('، ') || 'غير محددة'}
+                      </div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', fontSize: '12px', fontWeight: 700, color: '#101828', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={staleOverrideEnabled}
+                          onChange={(e) => setStaleOverrideEnabled(e.target.checked)}
+                        />
+                        اعتماد رغم القدم — تجاوز فحص الحداثة لهذه المتابعة فقط
+                      </label>
+                    </div>
+                  )}
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                     {/* Copy Text Button */}

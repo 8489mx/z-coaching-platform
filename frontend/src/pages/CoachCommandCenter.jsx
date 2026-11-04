@@ -118,6 +118,36 @@ export default function CoachCommandCenter() {
   const [pendingCheckins, setPendingCheckins] = useState([]);
   const [cycleAttention, setCycleAttention] = useState({ count: 0, ended_count: 0, clients: [] });
 
+  // P2-C4: coach-opened late window (POST open-late-window) for overdue
+  // clients. The cycle number comes from the coach (the card does not carry
+  // it); the server validates it (positive integer) and the reply — or its
+  // error — is shown on the card, never invented.
+  const [lateWindowByAction, setLateWindowByAction] = useState({});
+  const handleOpenLateWindow = async (action) => {
+    const form = lateWindowByAction[action.id] || {};
+    const cycle = Number(form.cycle);
+    if (!Number.isInteger(cycle) || cycle < 1) {
+      setLateWindowByAction((prev) => ({ ...prev, [action.id]: { ...form, error: 'أدخل رقم دورة صحيح (عدد صحيح أكبر من صفر).' } }));
+      return;
+    }
+    setLateWindowByAction((prev) => ({ ...prev, [action.id]: { ...form, busy: true, error: null, result: null } }));
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/checkin/schedule/${action.clientCode}/open-late-window`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cycle_sequence: cycle, window_hours: Number(form.hours) || 72, reason: form.reason || null }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setLateWindowByAction((prev) => ({ ...prev, [action.id]: { ...form, busy: false, error: data.error || 'تعذر فتح النافذة المتأخرة.' } }));
+        return;
+      }
+      setLateWindowByAction((prev) => ({ ...prev, [action.id]: { ...form, busy: false, result: data.late_window || data } }));
+    } catch (e) {
+      setLateWindowByAction((prev) => ({ ...prev, [action.id]: { ...form, busy: false, error: 'تعذر الاتصال بالخادم.' } }));
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -1415,7 +1445,7 @@ export default function CoachCommandCenter() {
                       const isUrgentAction = isEndedCycle;
                       const isWhatsAppAction = action.type === 'OVERDUE_CHECKIN' || (action.type === 'RENEWAL' && Boolean(action.phone));
 
-                      return (
+                      return (<>
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -1440,6 +1470,24 @@ export default function CoachCommandCenter() {
                           </div>
 
                           {/* Hostinger Secondary White Button (Or Royal Purple for Critical) */}
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                          {isOverdue && (
+                            <button
+                              type="button"
+                              onClick={() => setLateWindowByAction((prev) => {
+                                const cur = prev[action.id] || {};
+                                return { ...prev, [action.id]: { ...cur, open: !cur.open, hours: cur.hours ?? 72 } };
+                              })}
+                              style={{
+                                height: '34px', padding: '0 14px', borderRadius: '9999px',
+                                background: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A',
+                                fontSize: '12px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
+                              }}
+                              title="فتح نافذة متأخرة لهذا المشترك حتى يتمكن من تسليم الشيك إن"
+                            >
+                              فتح نافذة متأخرة
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => {
@@ -1495,8 +1543,51 @@ export default function CoachCommandCenter() {
                             <span>{btnText}</span>
                             {isWhatsAppAction ? <MessageCircle size={13} /> : <ExternalLink size={12} />}
                           </button>
+                          </div>
                         </div>
-                      );
+                        {/* P2-C4: late-window form for overdue clients. The
+                            coach supplies the cycle number; the server
+                            validates it and its reply is shown verbatim. */}
+                        {isOverdue && lateWindowByAction[action.id]?.open && (
+                          <div style={{ marginTop: '10px', padding: '10px 12px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                            <input
+                              type="number" min="1" placeholder="رقم الدورة"
+                              value={lateWindowByAction[action.id]?.cycle || ''}
+                              onChange={(e) => setLateWindowByAction((prev) => ({ ...prev, [action.id]: { ...(prev[action.id] || {}), cycle: e.target.value } }))}
+                              style={{ width: '110px', height: '32px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 8px', fontSize: '12px' }}
+                            />
+                            <input
+                              type="number" min="1" placeholder="الساعات (72)"
+                              value={lateWindowByAction[action.id]?.hours ?? 72}
+                              onChange={(e) => setLateWindowByAction((prev) => ({ ...prev, [action.id]: { ...(prev[action.id] || {}), hours: e.target.value } }))}
+                              style={{ width: '110px', height: '32px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 8px', fontSize: '12px' }}
+                            />
+                            <input
+                              type="text" placeholder="السبب (اختياري)"
+                              value={lateWindowByAction[action.id]?.reason || ''}
+                              onChange={(e) => setLateWindowByAction((prev) => ({ ...prev, [action.id]: { ...(prev[action.id] || {}), reason: e.target.value } }))}
+                              style={{ flex: 1, minWidth: '140px', height: '32px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 8px', fontSize: '12px' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleOpenLateWindow(action)}
+                              disabled={lateWindowByAction[action.id]?.busy}
+                              style={{ height: '32px', padding: '0 14px', borderRadius: '8px', background: '#673DE6', color: '#FFFFFF', border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                            >
+                              {lateWindowByAction[action.id]?.busy ? 'جارٍ الفتح…' : 'تأكيد الفتح'}
+                            </button>
+                            {lateWindowByAction[action.id]?.error && (
+                              <span style={{ fontSize: '11.5px', color: '#B42318', fontWeight: 700 }}>{lateWindowByAction[action.id].error}</span>
+                            )}
+                            {lateWindowByAction[action.id]?.result && (
+                              <span style={{ fontSize: '11.5px', color: '#027A48', fontWeight: 700 }}>
+                                تم فتح النافذة للدورة {lateWindowByAction[action.id].result.cycle_sequence}
+                                {lateWindowByAction[action.id].result.expires_at ? ` حتى ${lateWindowByAction[action.id].result.expires_at}` : ''}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </>);
                     })()}
                   </div>
                 ))

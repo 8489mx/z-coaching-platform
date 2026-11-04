@@ -44,7 +44,9 @@ import { generateInitialPlan } from "../execution-engines/onboarding-plan-genera
 import { evaluateExerciseProgression, evaluateDeloadNeed, compileDeloadSession } from "../execution-engines/progressive-overload-deload-engine.js";
 import { calculateCalorieCycling, evaluateDietBreakNeed, calculateRefeedDay } from "../execution-engines/calorie-cycling-diet-break-engine.js";
 import { evaluateDailyHabits, calculateStreakStatus, correlateHabitsWithWeightChange } from "../execution-engines/habit-neat-tracker-engine.js";
-import { evaluateCoachCapacity, calculateRetentionAndChurn, generateDailyCoachTriage } from "../execution-engines/coach-capacity-business-analytics-engine.js";
+// P2-C4: the ADMIN-only /engines/coach/capacity + /triage POST routes are
+// deleted (zero UI callers, caller-supplied inputs). The pure engines
+// remain in coach-triage-engine.js, covered by tests, for C5 to decide on.
 import { calculateWarmupLadder } from "../execution-engines/warmup-ladder-engine.js";
 import { generatePrintablePlanHTML } from "../utils/pdf-plan-exporter.js";
 
@@ -178,24 +180,6 @@ app.post("/api/v1/engines/nutrition/diet-break-check", engineCalculatorRateLimit
 app.post("/api/v1/engines/habits/evaluate-daily", engineCalculatorRateLimiter, (req, res) => {
   try {
     const result = evaluateDailyHabits(req.body);
-    res.json({ success: true, data: result });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
-  }
-});
-
-app.post("/api/v1/engines/coach/capacity", requireAuth, requireAdmin, (req, res) => {
-  try {
-    const result = evaluateCoachCapacity(req.body);
-    res.json({ success: true, data: result });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
-  }
-});
-
-app.post("/api/v1/engines/coach/triage", requireAuth, requireAdmin, (req, res) => {
-  try {
-    const result = generateDailyCoachTriage(req.body.clients || []);
     res.json({ success: true, data: result });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
