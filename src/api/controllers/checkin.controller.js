@@ -1458,6 +1458,20 @@ export async function approveCheckin(req, res) {
         : shouldAdaptProgram
           ? "تم اعتماد المتابعة وتحديث البرنامج التدريبي والغذائي بنجاح"
           : "تم اعتماد المتابعة وحفظ الملاحظات بنجاح دون تعديل البرنامج";
+    // P1-B12: approvals leave a permanent audit trail (previously only
+    // measurement corrections and clinical unlocks were audited here).
+    recordAuditEvent({
+      event: 'CHECKIN_APPROVED',
+      req,
+      status: 'SUCCESS',
+      details: {
+        checkinId: checkin.id,
+        userId: checkin.user_id,
+        adaptationRequested: !!shouldAdaptProgram,
+        cycleEndedBlocked: !!blockedCycleEndedAdaptation,
+        staleBlocked: !!blockedStaleAdaptation
+      }
+    });
     return res.status(200).json({
       success: true,
       message: safetyCorrectionApplied
@@ -1799,6 +1813,19 @@ export async function bulkApproveCheckins(req, res) {
         skipped.push({ checkin_id: id, reason: "SAVE_FAILED" });
       }
     }
+    // P1-B12: bulk approvals leave a permanent audit trail like single
+    // approvals (previously neither was audited).
+    recordAuditEvent({
+      event: 'CHECKIN_BULK_APPROVED',
+      req,
+      status: 'SUCCESS',
+      details: {
+        approvedIds: approved,
+        approvedCount: approved.length,
+        skippedCount: skipped.length,
+        coachId: requester.id
+      }
+    });
     return res.status(200).json({ success: true, approved, skipped });
   } catch (error) {
     console.error("Error bulk-approving check-ins:", error);

@@ -3,7 +3,7 @@ import path from "path";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { User } from "../models/index.js";
-import { recordFailedAttempt, resetAttempts } from "../middlewares/rateLimiter.js";
+import { recordAuthFailedAttempt, resetAuthAttempts } from "../middlewares/rateLimiter.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
 import { generateCsrfToken } from "../middlewares/csrfProtection.js";
 import { serializeUserUnitPreferences, parseUserUnitPreferences } from "../../../frontend/src/utils/unitConverter.js";
@@ -62,7 +62,7 @@ export const setClientPassword = async (req, res) => {
     const user = await findClientByCodeAndPhone(client_code, phone_number);
 
     if (!user) {
-      await recordFailedAttempt(ip, client_code);
+      await recordAuthFailedAttempt(ip, client_code);
       return res.status(401).json({
         error: "بيانات الدخول غير صحيحة. يرجى التأكد من كتابة كود المشترك ورقم الهاتف المسجل بشكل دقيق."
       });
@@ -70,7 +70,7 @@ export const setClientPassword = async (req, res) => {
 
     // Staff accounts must never be set up through the client flow.
     if (user.role === 'ADMIN' || user.role === 'COACH') {
-      await recordFailedAttempt(ip, client_code);
+      await recordAuthFailedAttempt(ip, client_code);
       return res.status(403).json({
         error: "حسابات الكوتش والإدارة تسجل الدخول بالبريد الإلكتروني وكلمة المرور فقط."
       });
@@ -109,7 +109,7 @@ export const setClientPassword = async (req, res) => {
       details: { userId: user.id }
     });
 
-    resetAttempts(ip);
+    resetAuthAttempts(ip);
     const token = generateToken(user.id, nextVersion);
     return res.status(200).json({ user, token });
   } catch (err) {
@@ -189,7 +189,13 @@ export const loginFast = async (req, res) => {
     const user = await findClientByCodeAndPhone(client_code, phone_number);
 
     if (!user) {
-      await recordFailedAttempt(ip, client_code);
+      await recordAuthFailedAttempt(ip, client_code);
+      recordAuditEvent({
+        event: 'LOGIN_FAILED',
+        req,
+        status: 'FAILED',
+        details: { flow: 'login-fast', reason: 'unknown_user' }
+      });
       return res.status(401).json({ 
         error: "بيانات الدخول غير صحيحة. يرجى التأكد من كتابة كود المشترك ورقم الهاتف المسجل بشكل دقيق." 
       });
@@ -197,7 +203,7 @@ export const loginFast = async (req, res) => {
 
     // Staff accounts must never authenticate with a code + phone pair (no secret involved).
     if (user.role === 'ADMIN' || user.role === 'COACH') {
-      await recordFailedAttempt(ip, client_code);
+      await recordAuthFailedAttempt(ip, client_code);
       recordAuditEvent({
         event: 'STAFF_LOGIN_FAST_BLOCKED',
         req,
@@ -230,13 +236,20 @@ export const loginFast = async (req, res) => {
 
     const isPasswordMatch = await bcrypt.compare(password || "", user.password);
     if (!isPasswordMatch) {
-      await recordFailedAttempt(ip, client_code);
+      await recordAuthFailedAttempt(ip, client_code);
+      recordAuditEvent({
+        event: 'LOGIN_FAILED',
+        req,
+        status: 'FAILED',
+        details: { flow: 'login-fast', reason: 'wrong_password' },
+        userId: user.id
+      });
       return res.status(401).json({
         error: "بيانات الدخول غير صحيحة. يرجى التأكد من كتابة كود المشترك ورقم الهاتف وكلمة المرور بشكل دقيق."
       });
     }
 
-    resetAttempts(ip);
+    resetAuthAttempts(ip);
     const token = generateToken(user);
     return res.status(200).json({ user, token });
   } catch (err) {
@@ -246,6 +259,7 @@ export const loginFast = async (req, res) => {
 };
 
 export const loginEmail = async (req, res) => {
+  const ip = req.clientIp || req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
   try {
     const { email, password } = req.body;
 
@@ -255,11 +269,28 @@ export const loginEmail = async (req, res) => {
 
     const user = await User.findOne({ where: { email } });
     if (!user || !user.password) {
+      // P1-B12: email-flow failures now count and audit like the fast flow.
+      // (Previously they reached neither the limiter store nor the log.)
+      await recordAuthFailedAttempt(ip, email);
+      recordAuditEvent({
+        event: 'LOGIN_FAILED',
+        req,
+        status: 'FAILED',
+        details: { flow: 'login-email', reason: 'unknown_user' }
+      });
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      await recordAuthFailedAttempt(ip, email);
+      recordAuditEvent({
+        event: 'LOGIN_FAILED',
+        req,
+        status: 'FAILED',
+        details: { flow: 'login-email', reason: 'wrong_password' },
+        userId: user.id
+      });
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
@@ -269,6 +300,7 @@ export const loginEmail = async (req, res) => {
       });
     }
 
+    resetAuthAttempts(ip);
     const token = generateToken(user);
 
     // S4-8 (Option A): Set httpOnly cookie for coach/admin sessions
@@ -309,7 +341,11 @@ export const getProfile = async (req, res) => {
  */
 export const deleteAccount = async (req, res) => {
   try {
-    const userId = req.user?.id || req.body?.user_id;
+    // P1-B12: the account is always the authenticated caller. The old
+    // `req.body?.user_id` fallback could never fire through this
+    // requireAuth route; it only misled readers into thinking an
+    // unauthenticated caller could deactivate an account by ID.
+    const userId = req.user?.id;
     const clientCode = req.body?.client_code;
 
     let user = null;

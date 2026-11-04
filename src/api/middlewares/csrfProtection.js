@@ -1,7 +1,22 @@
 import crypto from 'crypto';
 import { recordAuditEvent } from '../services/auditLog.service.js';
 
-const CSRF_SECRET = process.env.CSRF_SECRET || process.env.JWT_SECRET || 'zcc-csrf-default-secret-salt-2026';
+// P1-B12: the CSRF secret comes ONLY from its own variable. The old chain
+// fell back to JWT_SECRET (key reuse across purposes: a JWT compromise
+// also broke CSRF) and then to a hardcoded default. Both fallbacks are
+// removed: production without CSRF_SECRET fails fast at import, and
+// non-production gets a random per-process secret (never deterministic,
+// never persisted, so dev tokens simply do not survive a restart).
+function resolveCsrfSecret() {
+  const configured = process.env.CSRF_SECRET;
+  if (configured) return configured;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('FATAL: CSRF_SECRET environment variable is not defined in production');
+  }
+  return crypto.randomBytes(32).toString('hex');
+}
+
+const CSRF_SECRET = resolveCsrfSecret();
 
 /**
  * Generate a cryptographically secure CSRF token

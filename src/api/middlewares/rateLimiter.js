@@ -1,8 +1,21 @@
 import { RateLimitLog } from "../models/index.js";
 
 /**
- * Universal In-Memory Sliding Window Rate Limiter Factory
+ * Universal In-Memory Sliding Window Rate Limiter Factory.
+ *
+ * P1-B12: all limiter instances share ONE module-level store (keyed by the
+ * full `${keyPrefix}:${identifier}`), so limits are shared infrastructure
+ * instead of per-operation silos. Each record carries its own windowMs, so
+ * the shared cleanup never applies one limiter's window to another's record.
+ *
+ * Single-instance assumption (documented, not assumed silently): the
+ * production deployment runs ONE process (ecosystem.config.cjs:
+ * `instances: 1` under PM2), so this in-memory store is effective. If the
+ * deployment ever scales past one process, move enforcement to shared
+ * storage (DB/Redis) — per-process counters would multiply the allowance.
  */
+const sharedLimiterStore = new Map();
+
 export function createRateLimiter({
   windowMs = 15 * 60 * 1000,
   maxAttempts = 5,
@@ -11,12 +24,12 @@ export function createRateLimiter({
   countAllRequests = false,
   keyGenerator = null
 }) {
-  const store = new Map();
+  const store = sharedLimiterStore;
 
   const cleanupStaleRecords = (now) => {
     if (store.size > 1000) {
       for (const [k, rec] of store.entries()) {
-        if (now - rec.firstAttempt >= windowMs) {
+        if (now - rec.firstAttempt >= (rec.windowMs || windowMs)) {
           store.delete(k);
         }
       }
@@ -57,11 +70,11 @@ export function createRateLimiter({
           }
         } else {
           // Window expired, reset window
-          record = { count: 0, firstAttempt: now };
+          record = { count: 0, firstAttempt: now, windowMs };
           store.set(key, record);
         }
       } else {
-        record = { count: 0, firstAttempt: now };
+        record = { count: 0, firstAttempt: now, windowMs };
         store.set(key, record);
       }
 
@@ -85,8 +98,9 @@ export function createRateLimiter({
   limiter.recordFailure = (ip) => {
     const key = `${keyPrefix}:${ip}`;
     const now = Date.now();
-    const record = store.get(key) || { count: 0, firstAttempt: now };
+    const record = store.get(key) || { count: 0, firstAttempt: now, windowMs };
     record.count += 1;
+    record.windowMs = windowMs;
     store.set(key, record);
     return record;
   };
@@ -102,11 +116,15 @@ export function createRateLimiter({
 }
 
 // 1. Authentication Rate Limiter (Brute-Force Protection for Login & Registration)
+// P1-B12: failures only. Successful logins must NOT consume the budget:
+// users sharing one IP (household, gym Wi-Fi) locked each other out after
+// 5 logins in 15 minutes. Failures are recorded explicitly by the login
+// handlers via recordAuthFailedAttempt below.
 export const authRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   maxAttempts: 5,
   keyPrefix: "auth",
-  countAllRequests: true,
+  countAllRequests: false,
   message: (remainingMins) => `تم تجاوز الحد الأقصى لمحاولات تسجيل الدخول (5 محاولات). يرجى الانتظار لمدة ${remainingMins} دقيقة قبل المحاولة مجدداً.`
 });
 
@@ -165,11 +183,11 @@ export const engineCalculatorRateLimiter = createRateLimiter({
 });
 
 // Retain legacy helpers for full backward compatibility
-export const recordFailedAttempt = async (ip, attemptedCode = '') => {
+// Internal: bump one limiter's counter for an IP and mirror the attempt in
+// the RateLimitLog table (IP + attempted code only, never secrets).
+const persistRateLimitRow = async (limiter, ip, attemptedCode = '') => {
+  const record = limiter.recordFailure(ip);
   try {
-    const record = intakeRateLimiter.recordFailure(ip);
-
-    // Also persist in Database
     if (RateLimitLog && typeof RateLimitLog.create === 'function') {
       await RateLimitLog.create({
         ip_address: String(ip).substring(0, 45),
@@ -180,10 +198,35 @@ export const recordFailedAttempt = async (ip, attemptedCode = '') => {
       });
     }
   } catch (e) {
-    console.error("recordFailedAttempt DB log error:", e);
+    console.error("RateLimiter DB log error:", e);
   }
+  return record;
+};
+
+export const recordFailedAttempt = async (ip, attemptedCode = '') => {
+  return persistRateLimitRow(intakeRateLimiter, ip, attemptedCode);
 };
 
 export const resetAttempts = (ip) => {
   intakeRateLimiter.reset(ip);
+};
+
+// P1-B12: auth failures go to the AUTH limiter (not the intake limiter).
+// Login handlers call this on every failed login; the middleware no longer
+// counts requests, so only failures consume the 5-per-15-minutes budget.
+export const recordAuthFailedAttempt = async (ip, attemptedCode = '') => {
+  return persistRateLimitRow(authRateLimiter, ip, attemptedCode);
+};
+
+export const resetAuthAttempts = (ip) => {
+  authRateLimiter.reset(ip);
+};
+
+// P1-B12: every public intake SUBMIT counts (success or failure), so the
+// public form cannot be flooded with successful submissions. Call once at
+// submit entry; failure branches inside submitPublicIntake must NOT call
+// recordFailedAttempt again, or the same submit would count twice.
+// Draft/lookup failures keep using recordFailedAttempt as before.
+export const recordIntakeSubmit = async (ip, attemptedCode = '') => {
+  return persistRateLimitRow(intakeRateLimiter, ip, attemptedCode);
 };

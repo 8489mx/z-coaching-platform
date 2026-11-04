@@ -2311,6 +2311,18 @@ export const updateCustomProgram = async (req, res) => {
         { status: "APPROVED", coach_notes: coach_notes || "تم اعتماد الخطة ونشرها" },
         { where: { user_id: user.id, status: ["PENDING_COACH_REVIEW", "DRAFT_GENERATED", "IN_PROGRESS"] } }
       );
+
+      // P1-B12: program approvals leave a permanent audit trail.
+      recordAuditEvent({
+        event: 'PROGRAM_APPROVED',
+        req,
+        status: 'SUCCESS',
+        details: {
+          target_user_id: user.id,
+          program_id: program.id,
+          source: "program_editor"
+        }
+      });
     }
 
     return res.status(200).json({

@@ -29,7 +29,6 @@ router.post("/change-password", requireAuth, authRateLimiter, changePassword);
 router.post("/logout-all", requireAuth, logoutAll);
 router.post("/logout", logout);
 router.post("/restore-client-account", requireAuth, requireAdmin, restoreClientAccount);
-router.delete("/delete-account", requireAuth, deleteAccount);
 router.post("/delete-account", requireAuth, deleteAccount);
 
 export default router;

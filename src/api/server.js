@@ -80,14 +80,28 @@ app.use(securityHeaders);
 app.use(csrfProtection);
 
 
-// 1. Health Endpoint
-app.get("/api/v1/health", (req, res) => {
-  res.json({
-    status: "HEALTHY",
-    environment: process.env.NODE_ENV || "production",
-    timezone: process.env.TZ,
-    timestamp: new Date().toISOString()
-  });
+// 1. Health Endpoint — REAL status, not a hardcoded HEALTHY (P1-B12).
+// The database is checked on every call: a down database must read as
+// UNHEALTHY (503) so monitoring sees red while data routes fail, instead
+// of green while everything is broken.
+app.get("/api/v1/health", async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    res.json({
+      status: "HEALTHY",
+      environment: process.env.NODE_ENV || "production",
+      timezone: process.env.TZ,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(503).json({
+      status: "UNHEALTHY",
+      environment: process.env.NODE_ENV || "production",
+      timezone: process.env.TZ,
+      timestamp: new Date().toISOString(),
+      error: "database unavailable"
+    });
+  }
 });
 
 // 2. High-Density Deterministic Execution Engine Endpoints
@@ -691,6 +705,16 @@ const startServer = async () => {
     initDailyPurgeScheduler();
     warmUpCatalogCache();
   } catch (err) {
+    // P1-B12: in production, refuse to serve with the database down.
+    // Warn-and-run made /health lie (HEALTHY) while every data route
+    // failed. PM2 autorestart will retry the boot; a boot loop in the
+    // logs is honest, a listening-but-broken server is not.
+    // Non-production keeps the old warn path so local dev/tests can run
+    // without a database.
+    if (process.env.NODE_ENV === "production") {
+      console.error("FATAL: database connection failed in production, refusing to start:", err.message);
+      process.exit(1);
+    }
     console.warn("Database connection notice: running with in-memory / mock persistence if needed.", err.message);
     initDailyBackupScheduler();
     warmUpCatalogCache();

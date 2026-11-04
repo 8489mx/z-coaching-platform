@@ -12,7 +12,7 @@ import { User, Program, IntakeSubmission } from "../models/index.js";
 import { startCycleOnPublish } from "../services/trainingCycleService.js";
 import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
 import { hasHealthDataConsent } from "../../../frontend/src/config/healthDataConsent.js";
-import { recordFailedAttempt } from "../middlewares/rateLimiter.js";
+import { recordFailedAttempt, recordIntakeSubmit } from "../middlewares/rateLimiter.js";
 import { assessServiceScope, outsideScopeResponse } from "../services/serviceScope.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
 import { evaluateResourceOwnership } from "../../execution-engines/staff-role-governance-engine.js";
@@ -387,6 +387,12 @@ export const submitPublicIntake = async (req, res) => {
   try {
     const { client_code, code, phone_number, phone, full_name, ...intakePayload } = req.body;
 
+    // P1-B12: EVERY public submit counts (success or failure), so the
+    // public form cannot be flooded with successful submissions. This
+    // single count replaces the failure-only counting below: the phone
+    // mismatch branch must not count again, or one submit counts twice.
+    await recordIntakeSubmit(requestIp(req), String(client_code || code || ""));
+
     // Strict validation: reject impossible biometrics or invalid field values
     adaptIntakePayloadToCanonicalEngine(intakePayload);
     if (!intakeHasConsent(intakePayload)) return res.status(400).json(HEALTH_DATA_CONSENT_REQUIRED);
@@ -401,7 +407,8 @@ export const submitPublicIntake = async (req, res) => {
     if (cleanClientCode) {
       user = await User.findOne({ where: { client_code: cleanClientCode, role: 'CLIENT' } });
       if (user && !mayWriteIntake(user, rawPhone)) {
-        await recordFailedAttempt(requestIp(req), cleanClientCode);
+        // Already counted once at submit entry (recordIntakeSubmit above);
+        // counting again here would double-count one submit.
         return res.status(403).json(CLIENT_PHONE_MISMATCH);
       }
     }

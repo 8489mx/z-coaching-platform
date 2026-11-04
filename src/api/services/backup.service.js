@@ -26,6 +26,10 @@ const dbBackupsDir = path.resolve(backupsDir, "db");
 const photosBackupsDir = path.resolve(backupsDir, "photos");
 const manifestPath = path.resolve(backupsDir, "backup-manifest.json");
 
+// P1-B12: manifest history keeps the same 12 months (365 days) as the
+// backup files themselves — the owner's locked retention decision.
+const BACKUP_MANIFEST_RETENTION_DAYS = 365;
+
 // التأكد من وجود مجلدات النسخ الاحتياطي
 for (const dir of [backupsDir, dbBackupsDir, photosBackupsDir]) {
   if (!fs.existsSync(dir)) {
@@ -34,17 +38,57 @@ for (const dir of [backupsDir, dbBackupsDir, photosBackupsDir]) {
 }
 
 /**
- * مفتاح تشفير النسخ الاحتياطي (S4-6)
+ * مفتاح تشفير النسخ الاحتياطي (S4-6, P1-B12)
+ *
+ * P1-B12: NEW backups use ONLY their own key (BACKUP_ENCRYPTION_KEY).
+ * The old fallback to MEDICAL_ENCRYPTION_KEY was key reuse across
+ * purposes (medical answers and backups under one key). In production a
+ * missing backup key is fatal; outside production the key is a random
+ * per-process secret (cached for the process lifetime so encrypt and
+ * decrypt agree within one run) — never a deterministic string anyone
+ * with the code could derive.
  */
+let ephemeralBackupKey = null;
 export function getBackupEncryptionKey() {
-  const rawKey = process.env.BACKUP_ENCRYPTION_KEY || process.env.MEDICAL_ENCRYPTION_KEY;
+  const rawKey = process.env.BACKUP_ENCRYPTION_KEY;
   if (!rawKey) {
     if (process.env.NODE_ENV === 'production') {
-      throw new Error("FATAL: BACKUP_ENCRYPTION_KEY or MEDICAL_ENCRYPTION_KEY must be defined in production");
+      throw new Error("FATAL: BACKUP_ENCRYPTION_KEY must be defined in production");
     }
-    return crypto.createHash('sha256').update('dev_backup_ephemeral_key_fallback').digest();
+    if (!ephemeralBackupKey) {
+      ephemeralBackupKey = crypto.randomBytes(32);
+    }
+    return ephemeralBackupKey;
   }
   return crypto.createHash('sha256').update(String(rawKey)).digest();
+}
+
+/**
+ * Keys that may decrypt a backup, newest first. Old backups were
+ * encrypted under the medical key (the pre-B12 fallback); they must
+ * still restore, so decryption tries the backup key first and the
+ * medical key second. Encryption never uses the medical key anymore.
+ */
+function getBackupDecryptionKeys() {
+  // Built independently of getBackupEncryptionKey: a production deployment
+  // that has not set BACKUP_ENCRYPTION_KEY yet must still restore old
+  // backups (encrypted under the medical key) instead of throwing.
+  const keys = [];
+  const backupRaw = process.env.BACKUP_ENCRYPTION_KEY;
+  if (backupRaw) {
+    keys.push(crypto.createHash('sha256').update(String(backupRaw)).digest());
+  } else if (process.env.NODE_ENV !== 'production') {
+    keys.push(getBackupEncryptionKey()); // ephemeral, cached per process
+  }
+  const legacyRaw = process.env.MEDICAL_ENCRYPTION_KEY;
+  if (legacyRaw) {
+    const legacy = crypto.createHash('sha256').update(String(legacyRaw)).digest();
+    if (!keys.some((k) => k.equals(legacy))) keys.push(legacy);
+  }
+  if (keys.length === 0) {
+    throw new Error("FATAL: BACKUP_ENCRYPTION_KEY must be defined in production");
+  }
+  return keys;
 }
 
 /**
@@ -63,13 +107,20 @@ export function encryptBackupPayload(buffer) {
  * فك تشفير مصفوفة البايتات بخوارزمية AES-256-GCM
  */
 export function decryptBackupPayload(encryptedBuffer) {
-  const key = getBackupEncryptionKey();
   const iv = encryptedBuffer.subarray(0, 12);
   const tag = encryptedBuffer.subarray(12, 28);
   const data = encryptedBuffer.subarray(28);
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-  decipher.setAuthTag(tag);
-  return Buffer.concat([decipher.update(data), decipher.final()]);
+  let lastError = null;
+  for (const key of getBackupDecryptionKeys()) {
+    try {
+      const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+      decipher.setAuthTag(tag);
+      return Buffer.concat([decipher.update(data), decipher.final()]);
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError;
 }
 
 /**
@@ -363,10 +414,16 @@ export const performFullBackup = async (triggerType = "AUTOMATED_CRON") => {
     manifest.last_backup = backupEntry.timestamp;
     manifest.backups.unshift(backupEntry);
 
-    // الاحتفاظ بأحدث 90 نسخة احتياطية تاريخية في السجل
-    if (manifest.backups.length > 90) {
-      manifest.backups = manifest.backups.slice(0, 90);
-    }
+    // P1-B12: manifest retention matches file retention (12 months =
+    // 365 days, the owner's locked decision). The old cap kept only the
+    // last 90 ENTRIES, so after 90 backups the manifest no longer
+    // described the files on disk (files live 365 days). Entries without
+    // a timestamp are kept, matching the prune step's rule.
+    const manifestCutoff = Date.now() - BACKUP_MANIFEST_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    manifest.backups = manifest.backups.filter((b) => {
+      if (!b.timestamp) return true;
+      return new Date(b.timestamp).getTime() >= manifestCutoff;
+    });
 
     saveBackupManifest(manifest);
     console.log(`[BACKUP] Full backup completed successfully in ${durationMs}ms:`, backupEntry.id);

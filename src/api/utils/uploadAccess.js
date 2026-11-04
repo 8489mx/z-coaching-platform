@@ -87,7 +87,10 @@ export function createUploadFileHandler({ uploadsRoot, resolveOwner, isStaff }) 
         filePath,
         {
           dotfiles: "deny",
-          headers: { "Cache-Control": "private, max-age=3600" },
+          // P1-B12: progress photos must never persist in a browser cache.
+          // The old one-hour cache let the next user of a shared device
+          // reopen a previous client's body photos.
+          headers: { "Cache-Control": "no-store" },
         },
         (err) => {
           if (err && !res.headersSent) {
