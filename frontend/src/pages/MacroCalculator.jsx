@@ -555,6 +555,21 @@ export default function MacroCalculator() {
         {/* ========================================================================= */}
         {activeTab === 'CATALOG' && (
           <div>
+            {/* P2-C8: food edits are calculator-only; client plans use the canonical table. */}
+            <div
+              style={{
+                background: '#FFFAEB',
+                border: '1px solid #FDBA74',
+                padding: '12px 18px',
+                borderRadius: '10px',
+                color: '#93370D',
+                fontWeight: 700,
+                fontSize: '13px',
+                marginBottom: '14px'
+              }}
+            >
+              ملحوظة: تعديل الأطعمة هنا يظهر في الحاسبة فقط، ولا يغيّر خطط العملاء — خطط العملاء تقرأ من الجدول الموحد، وقرار مرجعية الأطعمة القابلة للتعديل ما زال معلّقًا.
+            </div>
             {/* Filter & Control Bar */}
             <div style={{ background: '#FFFFFF', border: '1px solid #EAECF0', borderRadius: '10px', padding: '12px 16px', marginBottom: '14px', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.02)' }}>
               

@@ -76,7 +76,7 @@ export default function MasterSettingsHub() {
       await persistCoachConfigToServer(coachConfig);
       if (saved) {
         setCoachConfig(saved);
-        setSaveSuccessMsg('تم حفظ وتثبيت إعدادات وهوية المنظومة بنجاح!');
+        setSaveSuccessMsg('تم حفظ الإعدادات بنجاح (ملحوظة: لسه مش مباشرة — لا تظهر للعملاء مباشرةً).');
         setTimeout(() => setSaveSuccessMsg(null), 3500);
       }
     } catch (err) {
@@ -283,7 +283,7 @@ export default function MasterSettingsHub() {
         {/* 1. Page Header */}
         <PageHeader
           title="إعدادات وهوية المنظومة"
-          description="التحكم المركزي في هوية المنظومة، تخصيصات الكوتش، واستمارة الاشتراك."
+          description="إعدادات غير مباشرة: التعديل هنا يُحفظ ولا يظهر للعملاء مباشرةً — التفاصيل تحت كل تاب."
         />
 
         {/* 2. Navigation Tabs Bar */}
@@ -303,9 +303,9 @@ export default function MasterSettingsHub() {
           {/* Main Tabs */}
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {[
-              { id: 'system', label: 'تخصيص وهوية الكوتش (System & Studio)', icon: User },
-              { id: 'packages', label: 'باقات الاشتراك والأسعار (Packages)', icon: CreditCard },
-              { id: 'intake', label: 'محرر استمارة الاشتراك (Intake Builder)', icon: Layers },
+              { id: 'system', label: 'تخصيص وهوية الكوتش (System & Studio) — لسه مش مباشرة', icon: User },
+              { id: 'packages', label: 'باقات الاشتراك والأسعار (Packages) — لسه مش مباشرة', icon: CreditCard },
+              { id: 'intake', label: 'محرر استمارة الاشتراك (Intake Builder) — لسه مش مباشرة', icon: Layers },
             ].map(tab => {
               const Icon = tab.icon;
               const isSel = activeTab === tab.id;
@@ -407,11 +407,26 @@ export default function MasterSettingsHub() {
           )}
         </div>
 
+        {/* P2-C8: persistent non-live strip — every tab in this hub is tagged, not live. */}
+        <div
+          style={{
+            background: '#FFFAEB',
+            border: '1px solid #FDBA74',
+            padding: '12px 18px',
+            borderRadius: '20px',
+            color: '#93370D',
+            fontWeight: 700,
+            fontSize: '13px'
+          }}
+        >
+          تنبيه: التعديلات في هذه الصفحة لسه مش مباشرة — التعديل هنا يُحفظ في سجلات المنظومة لكنه لا يظهر للعملاء مباشرةً. التفاصيل تحت كل تاب.
+        </div>
+
         {/* ================= TAB 1: INTAKE BUILDER ================= */}
         {activeTab === 'intake' && (
           <FormSection
-            title="محرر أسئلة استمارة الاشتراك"
-            description="التحكم في الأسئلة، الأقسام، الحقول الإلزامية والاختيارية، وإعادة الترتيب."
+            title="محرر أسئلة استمارة الاشتراك — لسه مش مباشرة"
+            description="التحكم في الأسئلة، الأقسام، الحقول الإلزامية والاختيارية، وإعادة الترتيب. ملحوظة: استمارة العميل الحالية ثابتة ولا تقرأ هذه الأسئلة، فالتعديل هنا لا يظهر للعميل حاليًا."
             actions={(
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <TableSearch
@@ -667,8 +682,8 @@ export default function MasterSettingsHub() {
         {/* ================= TAB 2: PACKAGES ================= */}
         {activeTab === 'packages' && (
           <FormSection
-            title="باقات الاشتراك والأسعار المعتمدة"
-            description="إدارة الباقات والعروض والشهور المجانية والمميزات لتظهر في استمارة الاشتراك وعروض التجديد."
+            title="باقات الاشتراك والأسعار — لسه مش مباشرة"
+            description="إدارة الباقات والعروض والشهور المجانية والمميزات. ملحوظة: لسه مش مباشرة — صفحة الانضمام لا تعرض باقات، وأسعار التجديد ثابتة في الكود، فالتعديل هنا لا يظهر للعملاء حاليًا."
           >
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px', marginTop: '10px' }}>
               {packages.map((pkg) => (
@@ -785,7 +800,21 @@ export default function MasterSettingsHub() {
         {/* ================= TAB 3: COACH STUDIO & SYSTEM CONFIG ================= */}
         {activeTab === 'system' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            
+            {/* P2-C8: system edits are admin-visible only; clients see defaults. */}
+            <div
+              style={{
+                background: '#FFFAEB',
+                border: '1px solid #FDBA74',
+                padding: '12px 18px',
+                borderRadius: '20px',
+                color: '#93370D',
+                fontWeight: 700,
+                fontSize: '13px'
+              }}
+            >
+              ملحوظة: لسه مش مباشرة — التعديل هنا يظهر للأدمن فقط؛ أجهزة العملاء تعرض الهوية الافتراضية، لأن مزامنة العملاء من السيرفر مقصورة على الأدمن. بيانات الدفع (إنستا باي/البنك) لا تُنشر أبدًا.
+            </div>
+
             {/* Feedback Alert if saved */}
             {saveSuccessMsg && (
               <div 
