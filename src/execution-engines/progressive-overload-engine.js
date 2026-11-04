@@ -1,3 +1,8 @@
+import {
+  DELOAD_FATIGUE_THRESHOLD,
+  DELOAD_VOLUME_REDUCTION_PCT,
+} from "../training-deload/deload-table.js";
+
 /**
  * Double Progression & Auto-Deload Engine
  *
@@ -9,7 +14,7 @@
  *
  * 2. Auto-Deload Protocol:
  *    - Triggered after 4-6 weeks of continuous progression OR when performance drops across 2 consecutive sessions.
- *    - Reduces weekly set volume by 50% while maintaining absolute intensity/weight on the bar.
+ *    - Reduces weekly set volume by 40% while maintaining absolute intensity/weight on the bar (one deload table, P1-B5).
  */
 
 export const EXERCISE_CATEGORIES = {
@@ -66,6 +71,9 @@ export function evaluateDoubleProgression({
 
 /**
  * Evaluates Auto-Deload Protocol eligibility.
+ * P1-B5: the dose and the fatigue threshold come from the one deload table.
+ * This check used to prescribe 50% with a threshold of 8 while every other
+ * deload site used 40% with a threshold of 7; the table values win.
  */
 export function evaluateAutoDeloadRequirement({
   consecutive_training_weeks = 5,
@@ -73,16 +81,16 @@ export function evaluateAutoDeloadRequirement({
   systemic_fatigue_score_0_to_10 = 7,
   joint_ache_flag = false
 }) {
-  const isDeloadNeeded = 
+  const isDeloadNeeded =
     consecutive_training_weeks >= 6 ||
     consecutive_performance_drop_weeks >= 2 ||
-    (systemic_fatigue_score_0_to_10 >= 8 && consecutive_training_weeks >= 4) ||
+    (systemic_fatigue_score_0_to_10 >= DELOAD_FATIGUE_THRESHOLD && consecutive_training_weeks >= 4) ||
     joint_ache_flag;
 
   return {
     is_deload_active: isDeloadNeeded,
     protocol_name: isDeloadNeeded ? 'أسبوع تفريغ الأحمال التلقائي (Auto-Deload Week)' : 'مرحلة زيادة الأحمال التصاعدية النشطة (Progressive Overload)',
-    volume_reduction_percent: isDeloadNeeded ? 50 : 0,
+    volume_reduction_percent: isDeloadNeeded ? DELOAD_VOLUME_REDUCTION_PCT : 0,
     intensity_guideline_ar: isDeloadNeeded ? 
       'تثبيت أوزان التمرين على البار لضمان الحفاظ على الإشارات العصبية، مع خفض عدد المجموعات الإجمالية بنسبة 50% لإنعاش المفاصل والجهاز العصبي المركزي.' :
       'الاستمرار على وتيرة التدرج المزدوج وزيادة الأحمال الطبيعية.',

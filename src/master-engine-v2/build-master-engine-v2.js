@@ -922,6 +922,119 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     });
   }
 
+  // P1-B5 (Q16/Q20): clinical macro guardrails, applied AFTER every framework
+  // block and BEFORE the meal split, so the plates reflect the final macros.
+  // The PCOS 30% carb cap is a guardrail, not a framework feature: a manual
+  // framework choice or an IBS-first LOW_FODMAP would otherwise bypass it,
+  // and the low-carb branch's own fat-ceiling rebalance can push carbs back
+  // above the cap it just applied. The 130 g carb floor for insulin /
+  // secretagogue users is hypoglycemia protection: it outranks the cap, and
+  // any conflict is flagged rather than hidden.
+  const PCOS_CARB_CAP_SHARE = 0.30;
+  const INSULIN_CARB_FLOOR_G = 130;
+  let pcosCarbCapApplied = false;
+  let pcosCapRelaxed = false;
+  let pcosFatIncreaseG = 0;
+  let pcosCapNoteAr = null;
+  let carbFloorApplied = false;
+  let pcosCapOverriddenByFloor = false;
+  let carbFloorNoteAr = null;
+  // Same PCOS / insulin-resistance signals the framework resolver uses
+  // (that helper owns its own copy; this function needs one here).
+  const hasPcosOrIr = medical.hasPcos === true || rawMedical.hasPcos === true ||
+    medical.hasInsulinResistance === true || rawMedical.hasInsulinResistance === true ||
+    conditionsList.some((c) => c === "PCOS" || c === "INSULIN_RESISTANCE");
+  if (hasPcosOrIr) {
+    // The cap never pushes carbs under 100 g: the low-carb branch's own rule
+    // (a moderate lower-carb plan, never ketogenic) and its test.
+    const pcosCapG = Math.max(100, Math.floor((targetCalories * PCOS_CARB_CAP_SHARE) / 4));
+    if (carbG > pcosCapG) {
+      const preCapFatG = fatG;
+      const excessKcal = (carbG - pcosCapG) * 4;
+      carbG = pcosCapG;
+      // Displaced energy goes to fat first (reported, Q16), then to protein
+      // up to its ceiling.
+      const fatRoomG = Math.max(0, fatCeilingG() - fatG);
+      const fatGainG = Math.min(fatRoomG, Math.round(excessKcal / 9));
+      fatG += fatGainG;
+      let remainingKcal = excessKcal - fatGainG * 9;
+      if (remainingKcal > 0 && !kidneyProteinCapped) {
+        const maxProteinG = Math.round(referenceWeight * CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_PROTEIN_PER_KG);
+        const proteinGainG = Math.min(Math.max(0, maxProteinG - proteinG), Math.ceil(remainingKcal / 4));
+        proteinG += proteinGainG;
+        remainingKcal -= proteinGainG * 4;
+      }
+      pcosCarbCapApplied = true;
+      pcosFatIncreaseG = fatG - preCapFatG;
+      if (remainingKcal > 0) {
+        // Infeasible corner: protein is at its ceiling and fat is at its
+        // ceiling, so the displaced energy fits nowhere. The codebase's own
+        // tested resolution (macro-balance-fat-share, pcos-moderate-low-carb)
+        // lets carbs rise in exactly this corner, up to 40% — but only
+        // flagged, never silently. The alternatives would break a harder
+        // contract: fat above 35%, energy below the floor, energy cut while
+        // breastfeeding, or a maintenance plan cut more than 10% (P1-B2/Q17:
+        // that is refused, never delivered as maintenance). So an energy cut
+        // happens only when it is safe on all four counts; otherwise the
+        // relaxed path below takes over and the energy is preserved.
+        const sumAfterCap = proteinG * 4 + carbG * 4 + fatG * 9;
+        const energyCutAllowed = !isLactating && sumAfterCap >= calorieFloor &&
+          !(isMaintenanceGoal(primaryGoal) && sumAfterCap < Math.round(goalTargetCalories * 0.90));
+        if (energyCutAllowed) {
+          pcosCapNoteAr = `سقف كارب PCOS اتطبق: الكارب اتحدد بـ ${pcosCapG} جم (30% من السعرات)${pcosFatIncreaseG > 0 ? `، والدهون زادت ${pcosFatIncreaseG} جم لتعويض الطاقة` : ""}، والسعرات نزلت لأن البروتين والدهون وصلوا لسقفهم.`;
+        } else {
+          // 40% is the hard bound the codebase already blesses for this
+          // corner; anything above it is refused by the flag, not delivered.
+          const relaxedCapG = Math.floor((targetCalories * 0.40) / 4);
+          const restoreG = Math.min(relaxedCapG - carbG, Math.ceil(remainingKcal / 4));
+          carbG += Math.max(0, restoreG);
+          pcosCapRelaxed = true;
+        }
+      } else {
+        pcosCapNoteAr = `سقف كارب PCOS اتطبق: الكارب اتحدد بـ ${pcosCapG} جم (30% من السعرات)${pcosFatIncreaseG > 0 ? `، والدهون زادت ${pcosFatIncreaseG} جم لتعويض الطاقة` : ""}.`;
+      }
+      // Fat share is judged against the delivered sum, not the old target:
+      // after an energy cut the old ceiling in grams would read above 35%.
+      // Trimming fat to the share bound is a no-op whenever the share is
+      // already legal, and binding only when it would break 35%.
+      const fatShareCapG = Math.floor(((0.35 / 0.65) * (proteinG * 4 + carbG * 4)) / 9);
+      fatG = Math.max(minFatG, Math.min(fatG, fatShareCapG));
+      pcosFatIncreaseG = fatG - preCapFatG;
+      if (pcosCapRelaxed) {
+        const deliveredKcal = proteinG * 4 + carbG * 4 + fatG * 9;
+        pcosCapNoteAr = `سقف كارب PCOS اترخى لحد 40% (الكارب ${carbG} جم) لأن البروتين وصل لسقفه والدهون وصلت لسقف 35%، وتقليل السعرات مش آمن هنا (رضاعة أو تحت الحد الأدنى). الطاقة المسلمة ${deliveredKcal} سعرة مقابل هدف ${targetCalories} سعرة. الرخاء ده معلم للمراجعة، مش سكوت.`;
+      }
+    }
+  }
+  const needsCarbFloor = isType1Diabetic || isInsulinDependent || takesSecretagogue;
+  if (needsCarbFloor && carbG < INSULIN_CARB_FLOOR_G) {
+    const deficitG = INSULIN_CARB_FLOOR_G - carbG;
+    const deficitKcal = deficitG * 4;
+    carbG = INSULIN_CARB_FLOOR_G;
+    // Take the energy from fat down to its minimum; never cut protein for a
+    // hypo floor, and never cut energy below the floor. Any remainder raises
+    // the total: more energy is the safe direction here.
+    const fatCutG = Math.min(Math.max(0, fatG - minFatG), Math.ceil(deficitKcal / 9));
+    fatG -= fatCutG;
+    carbFloorApplied = true;
+    if (pcosCarbCapApplied) pcosCapOverriddenByFloor = true;
+    carbFloorNoteAr = `أرضية كارب ${INSULIN_CARB_FLOOR_G} جم اتطبقت لحماية من هبوط السكر (إنسولين/محفزات إفراز)${pcosCapOverriddenByFloor ? "، وهي فوق سقف كارب PCOS لأن أمان الهبوط أهم" : ""}.`;
+  }
+  if (pcosCarbCapApplied || carbFloorApplied) {
+    // Keep the reported total consistent with the final macros. The
+    // maintenance >10% case cannot reach here: the cut condition above
+    // already routes it to the relaxed path, so the energy is preserved
+    // instead of a deficit wearing a maintenance label (P1-B2/Q17).
+    targetCalories = proteinG * 4 + carbG * 4 + fatG * 9;
+    if (dietFramework === "TARGETED_LOW_CARB" && lowCarbConfig) {
+      lowCarbConfig = Object.freeze({
+        ...lowCarbConfig,
+        net_carbs_target_g: carbG,
+        fat_ratio_percent: Math.round((fatG * 9 / targetCalories) * 100),
+      });
+    }
+  }
+
   // 5. Meal Distribution (2, 3, 4, 5, 6 Meals)
   const preferredMealCount = Number(nutrition.preferredMealCount || nutrition.mealsPerDay || nutrition.preferred_meal_count) || 3;
   // After sleeve/bypass surgery the stomach holds ~150-250 g per sitting (ASMBS nutrition guideline):
@@ -944,9 +1057,18 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   // protein with a little carbohydrate is also what keeps a client full between meals.
   const SNACK_ENERGY_SHARE = { 4: 0.15, 5: 0.14, 6: 0.12 };
   const isSnackMeal = (mealNumber) => mealCount >= 4 && mealNumber > 3;
+  // P1-B5: protein is split by largest remainder, not per-meal rounding.
+  // Math.round(proteinG / mealCount) per meal drifted the sum away from the
+  // daily total (e.g. 154 g over 4 meals came out as 156 g). Equal shares,
+  // so the earliest meals take the leftover grams; the sum is exact.
+  const allocateMealProtein = (totalG, count) => {
+    const base = Math.floor(totalG / count);
+    const remainder = totalG - base * count;
+    return Array.from({ length: count }, (_unused, idx) => base + (idx < remainder ? 1 : 0));
+  };
+  const mealProteinAllocations = allocateMealProtein(proteinG, mealCount);
   const mealDistribution = [];
   for (let i = 1; i <= mealCount; i++) {
-    let pRatio = 1 / mealCount;
     let fRatio = 1 / mealCount;
     let cRatio = 1 / mealCount;
 
@@ -974,10 +1096,10 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     mealDistribution.push({
       meal_number: i,
       meal_name_ar: mealNameAr,
-      protein_g: Math.round(proteinG * pRatio),
+      protein_g: mealProteinAllocations[i - 1],
       carb_g: Math.round(carbG * cRatio),
       fat_g: Math.round(fatG * fRatio),
-      calories_kcal: Math.round((proteinG * pRatio * 4) + (carbG * cRatio * 4) + (fatG * fRatio * 9)),
+      calories_kcal: Math.round((mealProteinAllocations[i - 1] * 4) + (carbG * cRatio * 4) + (fatG * fRatio * 9)),
     });
   }
 
@@ -1073,6 +1195,16 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       hypoglycemia_guard_active: Boolean(hasDiabetesOrInsulinResistance),
       diabetes_type: isType1Diabetic ? "TYPE_1" : (isInsulinDependent ? "INSULIN_DEPENDENT_T2D" : (hasDiabetesOrInsulinResistance ? "DIABETES_OR_IR" : "NONE")),
       hypoglycemia_risk: (isType1Diabetic || isInsulinDependent || takesSecretagogue) ? "HIGH" : (hasDiabetesOrInsulinResistance ? "MODERATE" : "NONE"),
+      // P1-B5 (Q16/Q20): clinical macro guardrails, flagged not hidden.
+      pcos_carb_cap_applied: pcosCarbCapApplied,
+      pcos_carb_cap_relaxed: pcosCapRelaxed,
+      pcos_carb_cap_share: pcosCarbCapApplied ? PCOS_CARB_CAP_SHARE : null,
+      pcos_fat_increase_g: pcosCarbCapApplied ? pcosFatIncreaseG : null,
+      pcos_carb_cap_note_ar: pcosCapNoteAr,
+      carb_floor_applied: carbFloorApplied,
+      carb_floor_g: carbFloorApplied ? INSULIN_CARB_FLOOR_G : null,
+      carb_floor_note_ar: carbFloorNoteAr,
+      pcos_cap_overridden_by_floor: pcosCapOverriddenByFloor,
       takes_insulin_secretagogue: takesSecretagogue,
       secretagogue_alert_ar: takesSecretagogue ? "تنبيه سريري: أدوية محفزات إفراز الأنسولين (السلفونيل يوريا مثل أماريل أو دياميكرون) تزيد من خطر هبوط السكر أثناء الصيام أو التمارين المطولة؛ يجب توفير كربوهيدرات سريعة (قاعدة 15-15) ومراجعة الطبيب لتنسيق الجرعات." : null,
       hypoglycemia_guidance_ar: hasDiabetesOrInsulinResistance ? CLINICAL_GUIDELINES.DIABETES.SAFETY_GUIDANCE_AR : null,

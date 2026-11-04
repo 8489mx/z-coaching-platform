@@ -4,6 +4,12 @@
  * Zero External Dependencies
  */
 
+import {
+  DELOAD_DURATION_DAYS,
+  DELOAD_FATIGUE_THRESHOLD,
+  DELOAD_VOLUME_REDUCTION_PCT,
+} from "../training-deload/deload-table.js";
+
 export function evaluateExerciseProgression({
   exerciseId,
   exerciseType = 'ISOLATION',
@@ -93,7 +99,7 @@ export function evaluateDeloadNeed({
   if (weeksOfAccumulatedTraining >= 8) {
     triggerDeload = true;
     reason = 'تم إتمام 8 أسابيع متواصلة من التحميل التدريبي. حان وقت تفريغ الأحمال المجدول لإعادة حساسية الألياف العضلية.';
-  } else if (consecutivePerformanceDrops >= 2 && averageFatigueScore >= 7) {
+  } else if (consecutivePerformanceDrops >= 2 && averageFatigueScore >= DELOAD_FATIGUE_THRESHOLD) {
     triggerDeload = true;
     reason = 'تم رصد إجهاد تراكمي عصبي وعضلي (هبوط أداء متزامن مع ارتفاع الإجهاد). يوصى بأسبوع ديلود فوري.';
   }
@@ -104,9 +110,9 @@ export function evaluateDeloadNeed({
     weeks_accumulated: weeksOfAccumulatedTraining,
     reason_ar: reason || 'الجهاز العصبي والعضلي في حالة ممتازة لمواصلة التدرج بالأحمال.',
     protocol: triggerDeload ? {
-      volume_reduction_pct: 40,
+      volume_reduction_pct: DELOAD_VOLUME_REDUCTION_PCT,
       intensity_policy: 'الحفاظ على نفس أوزان التمرين مع خفض الجولات والابتعاد عن الفشل بـ RIR 3-4',
-      duration_days: 7
+      duration_days: DELOAD_DURATION_DAYS
     } : null
   };
 }

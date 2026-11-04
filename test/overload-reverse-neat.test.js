@@ -62,11 +62,12 @@ test('2. Double Progression - Holds Load When Top of Rep Range is Not Yet Reache
   assert.equal(result.next_target_reps, 12);
 });
 
-test('3. Auto-Deload Protocol - Triggers 50% Volume Cut on Fatigue Accumulation or Performance Drop', () => {
+test('3. Auto-Deload Protocol - Triggers 40% Volume Cut on Fatigue Accumulation or Performance Drop', () => {
   // Trigger on 6 weeks mesocycle
   const deload1 = evaluateAutoDeloadRequirement({ consecutive_training_weeks: 6 });
   assert.equal(deload1.is_deload_active, true);
-  assert.equal(deload1.volume_reduction_percent, 50);
+  // P1-B5: one deload table — 40%, the value every other deload site uses.
+  assert.equal(deload1.volume_reduction_percent, 40);
 
   // Trigger on 2 consecutive weeks performance drop
   const deload2 = evaluateAutoDeloadRequirement({ consecutive_training_weeks: 3, consecutive_performance_drop_weeks: 2 });
