@@ -15,6 +15,7 @@ import { hasHealthDataConsent } from "../../../frontend/src/config/healthDataCon
 import { recordFailedAttempt, recordIntakeSubmit } from "../middlewares/rateLimiter.js";
 import { assessServiceScope, outsideScopeResponse } from "../services/serviceScope.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
+import { notifyProgramPublished } from "../services/notification.service.js";
 import { evaluateResourceOwnership } from "../../execution-engines/staff-role-governance-engine.js";
 
 const HEALTH_DATA_CONSENT_REQUIRED = Object.freeze({
@@ -743,6 +744,15 @@ export const approveAndPublishIntake = async (req, res) => {
         coach_notes: coach_notes || null
       }
     });
+
+    // P2-C7: the client is notified inside the app that their plan is live.
+    // Fire-and-forget on purpose: a notification failure must never undo a
+    // successful publish, so it is logged and never thrown.
+    if (submission.user?.client_code) {
+      notifyProgramPublished(submission.user.client_code).catch((notifyErr) => {
+        console.warn("P2-C7: program-published notification failed:", notifyErr.message);
+      });
+    }
 
     return res.status(200).json({
       message: "تم اعتماد ونشر الخطة لحساب المتدرب بنجاح وتفعيلها في الويب وتطبيق الموبايل",

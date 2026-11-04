@@ -22,6 +22,7 @@ import checkinRoutes from "./routes/checkin.routes.js";
 import legalRoutes from "./routes/legal.routes.js";
 import backupRoutes from "./routes/backup.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import { migrateLegacyNotifications } from "./services/notification.service.js";
 import { initDailyBackupScheduler } from "./services/backup.service.js";
 import { initDailyCycleScheduler } from "./services/cycleScheduler.service.js";
 import { initDailyPurgeScheduler } from "./services/deletionLifecycle.service.js";
@@ -676,6 +677,13 @@ const startServer = async () => {
     console.log("Database connection established successfully.");
     await sequelize.sync();
     console.log("Database synced.");
+    // P2-C7: one-time migration of the pre-C7 JSON notification store into
+    // the database. Guarded: a failure logs and never blocks boot.
+    try {
+      await migrateLegacyNotifications();
+    } catch (migrateErr) {
+      console.warn("P2-C7: legacy notifications migration failed:", migrateErr.message);
+    }
     initDailyBackupScheduler();
     initDailyCycleScheduler();
     // Purge needs a live database, so it starts only here (success path),

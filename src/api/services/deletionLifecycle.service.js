@@ -26,6 +26,8 @@ import {
   WorkoutLog,
   NutritionPlan,
   WorkoutPlan,
+  Notification,
+  DeviceToken,
 } from "../models/index.js";
 import { PROGRESS_PHOTOS_DIR } from "../utils/photoStorage.js";
 import { recordAuditEvent } from "./auditLog.service.js";
@@ -166,6 +168,10 @@ export async function purgeExpiredDeletedAccounts(retentionDays = 90) {
       totalRelatedRecordsDeleted += await NutritionPlan.destroy({ where: { user_id: user.id } });
       totalRelatedRecordsDeleted += await WorkoutPlan.destroy({ where: { user_id: user.id } });
       totalRelatedRecordsDeleted += await ProgressPhoto.destroy({ where: { user_id: user.id } });
+      // P2-C7: the inbox and its device tokens die with the account. Pre-C7
+      // the JSON notification file survived purges entirely.
+      totalRelatedRecordsDeleted += await Notification.destroy({ where: { user_id: user.id } });
+      totalRelatedRecordsDeleted += await DeviceToken.destroy({ where: { user_id: user.id } });
 
       // Erase the photo files themselves, not just their rows.
       if (clientCode) {

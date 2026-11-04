@@ -43,3 +43,34 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// P2-C7: real web-push handling (appended to the existing offline worker;
+// the offline install/activate/fetch behavior above is untouched).
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    data = { body: event.data ? event.data.text() : '' };
+  }
+  const title = data.title || 'إشعار من الكوتش';
+  const options = {
+    body: data.body || '',
+    data: { url: (data.payload && data.payload.url) || '/client/today' },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/client/today';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(url);
+      return undefined;
+    })
+  );
+});

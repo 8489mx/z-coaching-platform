@@ -14,7 +14,8 @@ import {
   Order,
   NutritionPlan,
   WorkoutPlan,
-  RateLimitLog
+  RateLimitLog,
+  Notification
 } from "../models/index.js";
 import { sanitizeBackupPayload } from "./backupSanitizer.js";
 
@@ -219,7 +220,8 @@ export const performDatabaseBackup = async () => {
       orders,
       nutritionPlans,
       workoutPlans,
-      rateLimits
+      rateLimits,
+      notifications
     ] = await Promise.all([
       // P0-A5: exclude the REAL password field. The old code excluded a
       // nonexistent `password_hash` column, so password hashes leaked into
@@ -234,6 +236,9 @@ export const performDatabaseBackup = async () => {
       NutritionPlan.findAll({ raw: true }).catch(() => []),
       WorkoutPlan.findAll({ raw: true }).catch(() => []),
       RateLimitLog.findAll({ raw: true }).catch(() => []),
+      // P2-C7: inbox rows join the backup (pre-C7 they lived in a JSON file
+      // no backup ever saw). Device tokens are excluded on purpose.
+      Notification.findAll({ raw: true }).catch(() => []),
     ]);
 
     // P0-A5: sanitize the whole payload before it is written. New backups
@@ -252,6 +257,7 @@ export const performDatabaseBackup = async () => {
       nutritionPlans,
       workoutPlans,
       rateLimits,
+      notifications,
     });
 
     const backupPayload = {
@@ -268,6 +274,7 @@ export const performDatabaseBackup = async () => {
         total_photos_indexed: sanitized.photos.length,
         total_workout_logs: sanitized.workoutLogs.length,
         total_orders: sanitized.orders.length,
+        total_notifications: sanitized.notifications.length,
       },
       data: {
         users: sanitized.users,
@@ -280,6 +287,7 @@ export const performDatabaseBackup = async () => {
         nutritionPlans: sanitized.nutritionPlans,
         workoutPlans: sanitized.workoutPlans,
         rateLimits: sanitized.rateLimits,
+        notifications: sanitized.notifications,
       }
     };
 

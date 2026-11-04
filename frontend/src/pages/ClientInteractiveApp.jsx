@@ -13,6 +13,7 @@ import {
   FoodSwapModal,
   ExerciseSwapModal,
   EmergencyScenarioModal,
+  ClientNotificationsBox,
   ClientBottomNav
 } from './ClientInteractiveApp/components';
 import { useClientInteractiveData } from './ClientInteractiveApp/hooks/useClientInteractiveData';
@@ -150,6 +151,12 @@ export default function ClientInteractiveApp() {
           isSyncing={isSyncing}
           handleTriggerSync={handleTriggerSync}
         />
+
+        {/* P2-C7: the client's own inbox. Renders only when a real client code
+            is known — never with a fallback code. */}
+        <div style={{ padding: '0 16px' }}>
+          <ClientNotificationsBox clientCode={clientData?.code} />
+        </div>
 
         {/* MAIN BODY CONTENT */}
         <main style={{ padding: '16px', flex: 1 }}>

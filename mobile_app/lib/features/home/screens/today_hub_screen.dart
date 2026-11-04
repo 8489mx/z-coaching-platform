@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/api_constants.dart';
@@ -8,6 +9,7 @@ import '../../auth/models/client_user.dart';
 import '../../nutrition/models/meal_models.dart';
 import '../../notifications/models/notification_item.dart';
 import '../../notifications/services/notification_service.dart';
+import '../../notifications/services/push_token_provider.dart';
 
 /// شاشة اليوم التفاعلية (Today Hub)
 /// تصميم فائق النقاء والهدوء متطابق مع معايير التطبيقات العالمية الراقية (Editorial Minimal)
@@ -30,6 +32,8 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
   Map<String, dynamic>? _activeProgram;
   late final NotificationService _notificationService;
   List<NotificationItem> _notifications = [];
+  // P2-C7: live SSE subscription for the inbox. Cancelled in dispose.
+  StreamSubscription<String>? _notificationsSubscription;
   // P1-B11: true while the hub shows a cached program because the live
   // refresh failed. The old code kept the old cache silently.
   bool _servingStaleCache = false;
@@ -115,9 +119,38 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
           });
         }
       });
+      // P2-C7: live refresh over the ownership-checked SSE stream. A new
+      // event is prepended (deduped by id); if the stream drops, the plain
+      // fetch above stays the fallback — the box never depends on SSE alone.
+      _notificationService.subscribeToStream(_user!.clientCode, (item) {
+        if (!mounted) return;
+        setState(() {
+          if (_notifications.any((n) => n.id == item.id)) return;
+          _notifications = [item, ..._notifications];
+        });
+      }).then((sub) {
+        _notificationsSubscription = sub;
+        sub.onError((_) => _notificationService.fetchNotifications(_user!.clientCode).then((notifs) {
+              if (mounted) setState(() => _notifications = notifs);
+            }));
+        sub.onDone(() => _notificationService.fetchNotifications(_user!.clientCode).then((notifs) {
+              if (mounted) setState(() => _notifications = notifs);
+            }));
+      }).catchError((_) {});
+      // P2-C7: guarded FCM registration. No-ops (no crash) until the owner
+      // completes the Firebase setup; re-registers on every launch after.
+      PushTokenProvider(_notificationService).init(_user!.clientCode);
     }
 
     setState(() {});
+  }
+
+  // P2-C7: the hub had no dispose override; the new SSE subscription must
+  // be cancelled here or it would keep the stream (and setState) alive.
+  @override
+  void dispose() {
+    _notificationsSubscription?.cancel();
+    super.dispose();
   }
 
   /// يجلب البرنامج النشط للمتدرب المسجل من الخادم ويحفظه للعمل دون اتصال.
@@ -605,6 +638,19 @@ class _TodayHubScreenState extends State<TodayHubScreen> {
                                 style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                               ),
                             ),
+                          // P2-C7: manual refresh (fetch fallback) for the box.
+                          const Spacer(),
+                          IconButton(
+                            tooltip: 'تحديث الإشعارات',
+                            icon: const Icon(Icons.refresh, size: 18),
+                            onPressed: () {
+                              final code = _user?.clientCode;
+                              if (code == null || code.isEmpty) return;
+                              _notificationService.fetchNotifications(code).then((notifs) {
+                                if (mounted) setState(() => _notifications = notifs);
+                              });
+                            },
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),

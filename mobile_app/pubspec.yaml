@@ -38,6 +38,11 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.6.0
   shared_preferences: ^2.5.3
+  # P2-C7: real push delivery on mobile. Requires a Firebase project +
+  # google-services.json / GoogleService-Info.plist (see docs/notifications-setup.md).
+  # Until that setup lands, push registration is guarded (no crash, inbox still works).
+  firebase_core: ^3.10.0
+  firebase_messaging: ^15.2.0
   intl: ^0.20.2
   image_picker: ^1.2.1
 

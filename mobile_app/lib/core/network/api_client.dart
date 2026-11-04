@@ -74,6 +74,18 @@ class ApiClient {
     }
   }
 
+  /// طلب GET متدفق (للبث المباشر SSE). يعيد الاستجابة المتدفقة كما هي
+  /// ليتولى المتصل قراءة الأحداث؛ يحمل نفس ترويسة Bearer مثل باقي الطلبات.
+  /// ملاحظة P2-C7: إغلاق التدفق مسؤولية المتصل (cancel on dispose).
+  Future<http.StreamedResponse> getStream(String endpoint) async {
+    final uri = Uri.parse('$_baseUrl$endpoint');
+    final request = http.Request('GET', uri);
+    request.headers.addAll(_buildHeaders());
+    request.headers['Accept'] = 'text/event-stream';
+    final client = http.Client();
+    return client.send(request);
+  }
+
   /// طلب رفع ملفات متعددة (Multipart Request)
   Future<ApiResponse<dynamic>> uploadFiles(
     String endpoint, {

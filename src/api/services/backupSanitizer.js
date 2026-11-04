@@ -109,5 +109,10 @@ export function sanitizeBackupPayload(data) {
     nutritionPlans: (d.nutritionPlans || []).map((r) => ({ ...r })),
     workoutPlans: (d.workoutPlans || []).map((r) => ({ ...r })),
     rateLimits: (d.rateLimits || []).map((r) => ({ ...r })),
+    // P2-C7: inbox rows pass through intact. They are client-visible content
+    // the client already saw (not secrets, not credentials), and stripping
+    // titles/bodies would destroy restore value. Device tokens are NOT in
+    // backups at all (bearer credentials; apps re-register on next launch).
+    notifications: (d.notifications || []).map((r) => ({ ...r })),
   };
 }

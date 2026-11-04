@@ -610,6 +610,47 @@ export default function CheckinReviewDashboard() {
   // send placeholder numbers as an override.
   const [editedMacroFields, setEditedMacroFields] = useState({});
   const [coachReply, setCoachReply] = useState('');
+  // P2-C7: coach note sent inside the app to this client's inbox. The
+  // server's delivery report is shown verbatim (streams reached, push
+  // attempts, failures) — never a blanket success.
+  const [coachNoteTitle, setCoachNoteTitle] = useState('');
+  const [coachNoteBody, setCoachNoteBody] = useState('');
+  const [coachNoteBusy, setCoachNoteBusy] = useState(false);
+  const [coachNoteResult, setCoachNoteResult] = useState('');
+  const [coachNoteError, setCoachNoteError] = useState('');
+  const handleSendCoachNote = async () => {
+    const clientCode = activeCheckin?.client?.code;
+    if (!clientCode) {
+      setCoachNoteError('لا يوجد كود متدرب للمتابعة النشطة.');
+      return;
+    }
+    if (!coachNoteTitle.trim() || !coachNoteBody.trim()) {
+      setCoachNoteError('أدخل عنواناً ونصاً للملاحظة.');
+      return;
+    }
+    setCoachNoteBusy(true);
+    setCoachNoteError('');
+    setCoachNoteResult('');
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/notifications/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_code: clientCode, title: coachNoteTitle.trim(), body: coachNoteBody.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCoachNoteError(data.error || 'تعذر إرسال الملاحظة.');
+        return;
+      }
+      setCoachNoteResult(data.message || 'تم إرسال الملاحظة.');
+      setCoachNoteTitle('');
+      setCoachNoteBody('');
+    } catch (e) {
+      setCoachNoteError('تعذر الاتصال بالخادم.');
+    } finally {
+      setCoachNoteBusy(false);
+    }
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_approvedCount, setApprovedCount] = useState(0);
   const [showLabModal, setShowLabModal] = useState(false);
@@ -3597,6 +3638,40 @@ export default function CheckinReviewDashboard() {
                       {approveError}
                     </div>
                   )}
+                  {/* P2-C7: coach note to this client's in-app inbox. Uses
+                      the same client code as the approve action; the server
+                      reply (delivery counts) is shown verbatim below. */}
+                  <div style={{ marginTop: '14px', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px' }}>
+                    <div style={{ fontSize: '12.5px', fontWeight: 800, marginBottom: '8px' }}>إرسال ملاحظة داخل التطبيق للمتدرب</div>
+                    <input
+                      type="text"
+                      placeholder="عنوان الملاحظة"
+                      value={coachNoteTitle}
+                      onChange={(e) => setCoachNoteTitle(e.target.value)}
+                      style={{ width: '100%', height: '34px', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '0 10px', fontSize: '12.5px', marginBottom: '8px' }}
+                    />
+                    <textarea
+                      placeholder="نص الملاحظة (كلمات الكوتش نفسه — لا أرقام مختلقة)"
+                      value={coachNoteBody}
+                      onChange={(e) => setCoachNoteBody(e.target.value)}
+                      rows={3}
+                      style={{ width: '100%', borderRadius: '8px', border: '1px solid #D0D5DD', padding: '8px 10px', fontSize: '12.5px', marginBottom: '8px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSendCoachNote}
+                      disabled={coachNoteBusy}
+                      style={{ height: '34px', padding: '0 16px', borderRadius: '8px', background: '#673DE6', color: '#FFFFFF', border: 'none', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      {coachNoteBusy ? 'جارٍ الإرسال…' : 'إرسال الملاحظة'}
+                    </button>
+                    {coachNoteError && (
+                      <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: 700, color: '#B91C1C' }}>{coachNoteError}</div>
+                    )}
+                    {coachNoteResult && (
+                      <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: 700, color: '#027A48' }}>{coachNoteResult}</div>
+                    )}
+                  </div>
                 </div>
               </FormSection>
 

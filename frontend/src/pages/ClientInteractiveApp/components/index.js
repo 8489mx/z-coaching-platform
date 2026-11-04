@@ -9,4 +9,5 @@ export { default as MasterPdfModal } from './MasterPdfModal';
 export { default as FoodSwapModal } from './FoodSwapModal';
 export { default as ExerciseSwapModal } from './ExerciseSwapModal';
 export { default as EmergencyScenarioModal } from './EmergencyScenarioModal';
+export { default as ClientNotificationsBox } from './ClientNotificationsBox';
 export { default as ClientBottomNav } from './ClientBottomNav';

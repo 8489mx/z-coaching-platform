@@ -18,7 +18,7 @@ import {
   getNotificationsLog
 } from "../src/api/services/notification.service.js";
 import { deleteAccount, loginFast } from "../src/api/controllers/auth.controller.js";
-import { User } from "../src/api/models/index.js";
+import { User, Notification, DeviceToken } from "../src/api/models/index.js";
 import sequelize from "../src/api/config/database.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -55,40 +55,82 @@ test("منظومة النسخ الاحتياطي التلقائي (Automated Bac
 });
 
 test("منظومة الإشعارات الحية للمتدرب (Mobile Push Notifications)", async (t) => {
-  const testClientCode = "999";
-  const testToken = "fcm_test_device_token_sample_12345";
+  // P2-C7 REWRITE (intentional behavior change, same precedent as P2-C3/C5
+  // test updates): the old block tested the FAKE — registerDeviceToken
+  // returned success without storing anything, and notify* returned bare
+  // JSON rows with "notif_" ids. The new block tests real behavior: the
+  // token is actually stored (and re-registering upserts, never duplicates),
+  // sends return { notification, delivery } with honest counts, and inbox
+  // rows are database rows with integer ids. Requires a live test database
+  // (this file already imports the DB layer), so it stays unrunnable under
+  // plain node — see test/p2c7-notifications-real.test.js for the
+  // plain-node suite covering ownership, SSE origins, stub push, and
+  // delivery-report shape.
+  const stamp = Date.now();
+  const testClientCode = `P2C7-${stamp}`;
+  const testToken = `fcm_test_device_token_${stamp}`;
+  const user = await User.create({
+    client_code: testClientCode,
+    phone_number: `+200000${String(stamp).slice(-9)}`,
+    role: "CLIENT",
+  });
+  t.after(async () => {
+    try {
+      await Notification.destroy({ where: { user_id: user.id } });
+      await DeviceToken.destroy({ where: { user_id: user.id } });
+      await user.destroy();
+    } catch (_) {
+      // Cleanup is best-effort; never fail the suite on it.
+    }
+  });
 
-  await t.test("تسجيل وتخزين رمز جهاز المتدرب بنجاح", async () => {
+  await t.test("تسجيل رمز جهاز المتدرب وتخزينه فعلياً في قاعدة البيانات", async () => {
     const reg = await registerDeviceToken(testClientCode, testToken, {
       platform: "Android",
       model: "Pixel 7"
-    });
+    }, user.id);
     assert.equal(reg.success, true);
     assert.equal(reg.clientCode, testClientCode);
     assert.equal(reg.tokenRegistered, true);
+    // P2-C7: the token must REALLY be stored now (pre-C7 this row never existed).
+    const stored = await DeviceToken.findOne({ where: { token: testToken } });
+    assert.ok(stored, "device token row must exist in the database");
+    assert.equal(stored.user_id, user.id);
+    assert.equal(stored.client_code, testClientCode);
+    // Re-registering the same token upserts instead of duplicating.
+    await registerDeviceToken(testClientCode, testToken, { platform: "Android" }, user.id);
+    assert.equal(await DeviceToken.count({ where: { token: testToken } }), 1);
   });
 
-  await t.test("إرسال إشعار تذكير بالشيك إن الأسبوعي وتسجيله في سجل الإشعارات", async () => {
-    const reminder = await notifyCheckinReminder(testClientCode);
-    assert.ok(reminder.id.startsWith("notif_"));
+  await t.test("إرسال إشعار تذكير بالشيك إن الأسبوعي وتسجيله في صندوق الوارد", async () => {
+    const { notification: reminder, delivery } = await notifyCheckinReminder(testClientCode);
+    assert.equal(typeof reminder.id, "number");
     assert.equal(reminder.client_code, testClientCode);
     assert.ok(reminder.title.includes("الشيك إن"));
+    // Honest delivery report: no SSE clients are connected in tests, and
+    // the test token has no configured provider, so the push attempt is
+    // recorded as failed — never reported as delivered.
+    assert.equal(delivery.sseRecipients, 0);
+    assert.equal(delivery.push.attempted, 1);
+    assert.equal(delivery.push.delivered, 0);
+    assert.equal(delivery.push.failed, 1);
 
-    const logs = getNotificationsLog();
-    assert.ok(logs.some(l => l.id === reminder.id));
+    const logs = await getNotificationsLog();
+    assert.ok(logs.some((l) => l.id === reminder.id));
   });
 
   await t.test("إرسال إشعار اعتماد ونشر البرنامج التدريبي والغذائي", async () => {
-    const pub = await notifyProgramPublished(testClientCode, "برنامج الضخامة العضلية المتطور");
-    assert.ok(pub.id.startsWith("notif_"));
+    const { notification: pub, delivery } = await notifyProgramPublished(testClientCode, "برنامج الضخامة العضلية المتطور");
+    assert.equal(typeof pub.id, "number");
     assert.equal(pub.client_code, testClientCode);
     assert.ok(pub.title.includes("اعتماد"));
     assert.equal(pub.payload.type, "PROGRAM_PUBLISHED");
+    assert.equal(typeof delivery.summary, "string");
   });
 
   await t.test("إرسال إشعار مراجعة الشيك إن وإرفاق ملخص الكوتش", async () => {
-    const rev = await notifyCheckinReviewed(testClientCode, "ممتاز يا بطل، تم خفض 100 سعرة حرارية ورفع خطوات النشاط.");
-    assert.ok(rev.id.startsWith("notif_"));
+    const { notification: rev } = await notifyCheckinReviewed(testClientCode, "ممتاز يا بطل، تم خفض 100 سعرة حرارية ورفع خطوات النشاط.");
+    assert.equal(typeof rev.id, "number");
     assert.equal(rev.client_code, testClientCode);
     assert.equal(rev.payload.type, "CHECKIN_REVIEWED");
   });

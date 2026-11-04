@@ -6,38 +6,70 @@ import {
   markNotificationsAsRead,
   getNotificationsLog,
   notifyCheckinReminder,
-  registerDeviceToken
+  notifyCoachNote,
+  registerDeviceToken,
+  loadRequesterIdentity,
 } from "../services/notification.service.js";
+import { canAccessClientNotifications, resolveSseOrigin } from "../../notifications/notification-access.js";
 import { requireAuth, requireAdmin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 /**
- * بث مباشر لحظي للإشعارات عبر Server-Sent Events مباشرة من سيرفرك لهاتف المتدرب
- * (محمي بالمصادقة الصارمة لمنع اعتراض إشعارات المتدربين)
+ * P2-C7 ownership gate for client-scoped routes. Pre-C7 these routes accepted
+ * any valid login for any client_code (live privacy hole). Now the requested
+ * code must be the requester's own client_code (or numeric user id). ADMIN /
+ * COACH bypass applies ONLY on admin routes (history, send, remind-checkin),
+ * never here.
  */
-router.get("/stream/:clientCode", requireAuth, (req, res) => {
-  const { clientCode } = req.params;
-  if (!clientCode) {
-    return res.status(400).end("clientCode is required");
+const requireNotificationOwner = async (req, res, next) => {
+  try {
+    const requestedCode = req.params.clientCode || req.body?.client_code;
+    if (!requestedCode) {
+      return res.status(400).json({ error: "client_code is required" });
+    }
+    const identity = await loadRequesterIdentity(req.user?.id);
+    if (!identity) {
+      return res.status(401).json({ error: "Unauthorized: user not found" });
+    }
+    if (!canAccessClientNotifications(identity, requestedCode)) {
+      return res.status(403).json({ error: "غير مصرح لك بالوصول إلى إشعارات متدرب آخر" });
+    }
+    req.notificationIdentity = identity;
+    return next();
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
-  registerSseClient(clientCode, res);
+};
+
+/**
+ * Live stream of the client's own notifications (SSE). Ownership enforced
+ * before registration; the Origin header is validated and echoed only when
+ * trusted — never a wildcard (pre-C7 answered `*` to everyone).
+ */
+router.get("/stream/:clientCode", requireAuth, requireNotificationOwner, (req, res) => {
+  const { clientCode } = req.params;
+  const origin = req.header("Origin");
+  const decision = resolveSseOrigin(origin, req.hostname);
+  if (!decision.allowed) {
+    return res.status(403).json({ error: "Origin not allowed" });
+  }
+  registerSseClient(clientCode, res, decision.echoOrigin);
 });
 
 /**
- * جلب قائمة الإشعارات وصندوق الوارد لمتدرب محدد
+ * The client's own inbox, newest first.
  */
-router.get("/client/:clientCode", requireAuth, (req, res) => {
+router.get("/client/:clientCode", requireAuth, requireNotificationOwner, async (req, res) => {
   try {
     const { clientCode } = req.params;
-    const notifications = getClientNotifications(clientCode);
-    const unreadCount = notifications.filter(n => !n.is_read).length;
-
+    const notifications = await getClientNotifications(clientCode);
+    const unreadCount = notifications.filter((n) => !n.is_read).length;
     return res.status(200).json({
       success: true,
       client_code: clientCode,
       unread_count: unreadCount,
-      notifications
+      notifications,
     });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
@@ -45,16 +77,12 @@ router.get("/client/:clientCode", requireAuth, (req, res) => {
 });
 
 /**
- * تحديد إشعار أو كافة الإشعارات كمقروءة
+ * Mark the client's own notification(s) as read.
  */
-router.post("/mark-read", requireAuth, (req, res) => {
+router.post("/mark-read", requireAuth, requireNotificationOwner, async (req, res) => {
   try {
     const { client_code, notification_id } = req.body;
-    if (!client_code) {
-      return res.status(400).json({ error: "client_code is required" });
-    }
-
-    const result = markNotificationsAsRead(client_code, notification_id);
+    const result = await markNotificationsAsRead(client_code, notification_id);
     return res.status(200).json({ success: true, result });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
@@ -62,51 +90,76 @@ router.post("/mark-read", requireAuth, (req, res) => {
 });
 
 /**
- * إرسال إشعار يدوي ذاتي فوري
+ * Coach/admin manual send (note to a client). Reports REAL delivery: inbox
+ * saved + live streams reached + push attempts/deliveries/failures. A send
+ * that reaches nobody says so — never a blanket "broadcast succeeded".
  */
-router.post("/send", requireAuth, requireAdmin, (req, res) => {
+router.post("/send", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { client_code, title, body, payload } = req.body;
     if (!client_code || !title || !body) {
       return res.status(400).json({ error: "client_code, title, and body are required" });
     }
-
-    const notification = sendSelfHostedNotification({
+    const { notification, delivery } = await sendSelfHostedNotification({
       clientCode: client_code,
       title,
       body,
-      payload
+      payload,
     });
-
-    return res.status(200).json({ success: true, message: "تم بث وحفظ الإشعار بنجاح", notification });
+    return res.status(200).json({ success: true, message: delivery.summary, notification, delivery });
   } catch (err) {
+    if (/recipient not found/.test(err.message)) {
+      return res.status(404).json({ success: false, error: "المتدرب غير موجود" });
+    }
     return res.status(500).json({ success: false, error: err.message });
   }
 });
 
 /**
- * إرسال تذكير بالشيك إن
+ * Coach/admin check-in reminder to one client (also wired to the overdue
+ * cards on the coach command center). Same honest delivery report.
  */
-router.post("/remind-checkin", requireAuth, requireAdmin, (req, res) => {
+router.post("/remind-checkin", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { client_code } = req.body;
     if (!client_code) {
       return res.status(400).json({ error: "client_code is required" });
     }
-
-    const result = notifyCheckinReminder(client_code);
-    return res.status(200).json({ success: true, message: "تم إرسال تذكير الشيك إن", notification: result });
+    const { notification, delivery } = await notifyCheckinReminder(client_code);
+    return res.status(200).json({ success: true, message: delivery.summary, notification, delivery });
   } catch (err) {
+    if (/recipient not found/.test(err.message)) {
+      return res.status(404).json({ success: false, error: "المتدرب غير موجود" });
+    }
     return res.status(500).json({ success: false, error: err.message });
   }
 });
 
 /**
- * استعراض سجل الإشعارات
+ * Coach note endpoint (same delivery path as /send, explicit type).
  */
-router.get("/history", requireAuth, requireAdmin, (req, res) => {
+router.post("/note", requireAuth, requireAdmin, async (req, res) => {
   try {
-    const logs = getNotificationsLog();
+    const { client_code, title, body } = req.body;
+    if (!client_code || !title || !body) {
+      return res.status(400).json({ error: "client_code, title, and body are required" });
+    }
+    const { notification, delivery } = await notifyCoachNote(client_code, title, body);
+    return res.status(200).json({ success: true, message: delivery.summary, notification, delivery });
+  } catch (err) {
+    if (/recipient not found/.test(err.message)) {
+      return res.status(404).json({ success: false, error: "المتدرب غير موجود" });
+    }
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin history: all clients' inbox rows (admin-only by requireAdmin).
+ */
+router.get("/history", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const logs = await getNotificationsLog();
     return res.status(200).json({ success: true, total: logs.length, notifications: logs });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
@@ -114,12 +167,28 @@ router.get("/history", requireAuth, requireAdmin, (req, res) => {
 });
 
 /**
- * التوافقية مع مسار تسجيل الأجهزة
+ * Device-token registration. The token is stored ONLY against the
+ * authenticated user: the stored client_code is the requester's own code,
+ * and a body code for another client is rejected (403).
  */
 router.post("/register-token", requireAuth, async (req, res) => {
-  const { client_code, token, device_info } = req.body;
-  const result = await registerDeviceToken(client_code, token, device_info);
-  return res.status(200).json({ success: true, result });
+  try {
+    const { client_code, token, device_info } = req.body;
+    if (!token) {
+      return res.status(400).json({ error: "token is required" });
+    }
+    const identity = await loadRequesterIdentity(req.user?.id);
+    if (!identity) {
+      return res.status(401).json({ error: "Unauthorized: user not found" });
+    }
+    if (client_code && !canAccessClientNotifications(identity, client_code)) {
+      return res.status(403).json({ error: "غير مصرح لك بتسجيل جهاز لمتدرب آخر" });
+    }
+    const result = await registerDeviceToken(identity.clientCode, token, device_info, identity.userId);
+    return res.status(200).json({ success: true, result });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 export default router;

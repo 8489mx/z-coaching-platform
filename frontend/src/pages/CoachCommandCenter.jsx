@@ -148,6 +148,34 @@ export default function CoachCommandCenter() {
     }
   };
 
+  // P2-C7: in-app check-in reminder from an overdue card. Mirrors the
+  // late-window pattern: one POST, the server's delivery report shown
+  // verbatim (how many streams/pushes it reached, or that it reached none).
+  const [reminderByAction, setReminderByAction] = useState({});
+  const handleSendReminder = async (action) => {
+    const cur = reminderByAction[action.id] || {};
+    if (!action.clientCode) {
+      setReminderByAction((prev) => ({ ...prev, [action.id]: { ...cur, error: 'لا يوجد كود متدرب لهذا الإجراء.' } }));
+      return;
+    }
+    setReminderByAction((prev) => ({ ...prev, [action.id]: { ...cur, busy: true, error: null, result: null } }));
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/notifications/remind-checkin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_code: action.clientCode }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setReminderByAction((prev) => ({ ...prev, [action.id]: { ...cur, busy: false, error: data.error || 'تعذر إرسال التذكير.' } }));
+        return;
+      }
+      setReminderByAction((prev) => ({ ...prev, [action.id]: { ...cur, busy: false, result: data.message || data } }));
+    } catch (e) {
+      setReminderByAction((prev) => ({ ...prev, [action.id]: { ...cur, busy: false, error: 'تعذر الاتصال بالخادم.' } }));
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -1472,21 +1500,36 @@ export default function CoachCommandCenter() {
                           {/* Hostinger Secondary White Button (Or Royal Purple for Critical) */}
                           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
                           {isOverdue && (
-                            <button
-                              type="button"
-                              onClick={() => setLateWindowByAction((prev) => {
-                                const cur = prev[action.id] || {};
-                                return { ...prev, [action.id]: { ...cur, open: !cur.open, hours: cur.hours ?? 72 } };
-                              })}
-                              style={{
-                                height: '34px', padding: '0 14px', borderRadius: '9999px',
-                                background: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A',
-                                fontSize: '12px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
-                              }}
-                              title="فتح نافذة متأخرة لهذا المشترك حتى يتمكن من تسليم الشيك إن"
-                            >
-                              فتح نافذة متأخرة
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => setLateWindowByAction((prev) => {
+                                  const cur = prev[action.id] || {};
+                                  return { ...prev, [action.id]: { ...cur, open: !cur.open, hours: cur.hours ?? 72 } };
+                                })}
+                                style={{
+                                  height: '34px', padding: '0 14px', borderRadius: '9999px',
+                                  background: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A',
+                                  fontSize: '12px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
+                                }}
+                                title="فتح نافذة متأخرة لهذا المشترك حتى يتمكن من تسليم الشيك إن"
+                              >
+                                فتح نافذة متأخرة
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSendReminder(action)}
+                                disabled={reminderByAction[action.id]?.busy}
+                                style={{
+                                  height: '34px', padding: '0 14px', borderRadius: '9999px',
+                                  background: '#EFF6FF', color: '#1D4ED8', border: '1px solid #BFDBFE',
+                                  fontSize: '12px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
+                                }}
+                                title="إرسال تذكير شيك إن داخل التطبيق لهذا المشترك"
+                              >
+                                {reminderByAction[action.id]?.busy ? 'جارٍ الإرسال…' : 'إرسال تذكير'}
+                              </button>
+                            </>
                           )}
                           <button
                             type="button"
@@ -1586,6 +1629,13 @@ export default function CoachCommandCenter() {
                               </span>
                             )}
                           </div>
+                        )}
+                        {/* P2-C7: reminder delivery report, shown verbatim. */}
+                        {reminderByAction[action.id]?.error && (
+                          <div style={{ marginTop: '8px', fontSize: '11.5px', color: '#B42318', fontWeight: 700 }}>{reminderByAction[action.id].error}</div>
+                        )}
+                        {reminderByAction[action.id]?.result && (
+                          <div style={{ marginTop: '8px', fontSize: '11.5px', color: '#027A48', fontWeight: 700 }}>{typeof reminderByAction[action.id].result === 'string' ? reminderByAction[action.id].result : 'تم إرسال التذكير.'}</div>
                         )}
                       </>);
                     })()}

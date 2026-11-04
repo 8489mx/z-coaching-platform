@@ -30,6 +30,7 @@ import {
   selectYellowForBulkApprove,
 } from "../../execution-engines/follow-up-auto-apply.js";
 import { recordAuditEvent } from "../services/auditLog.service.js";
+import { notifyCheckinReviewed } from "../services/notification.service.js";
 export { getActiveClinicalLockout };
 
 /**
@@ -1472,6 +1473,19 @@ export async function approveCheckin(req, res) {
         staleBlocked: !!blockedStaleAdaptation
       }
     });
+    // P2-C7: the client is notified inside the app that their check-in was
+    // reviewed (coach notes quoted, truncated by the notifier). Fire-and-
+    // forget: a notification failure must never undo a successful approval.
+    // NOTE: this is outside the TRIAGE SHADOW MODE block, so the triage pin
+    // (which asserts non-sending only inside that block) is unaffected.
+    User.findByPk(checkin.user_id, { attributes: ["client_code"] }).then((owner) => {
+      if (owner?.client_code) {
+        return notifyCheckinReviewed(owner.client_code, coach_notes || "");
+      }
+      return null;
+    }).catch((notifyErr) => {
+      console.warn("P2-C7: checkin-reviewed notification failed:", notifyErr.message);
+    });
     return res.status(200).json({
       success: true,
       message: safetyCorrectionApplied
@@ -1826,6 +1840,24 @@ export async function bulkApproveCheckins(req, res) {
         coachId: requester.id
       }
     });
+    // P2-C7: one notification PER approved check-in, each to its own client.
+    // Never a cross-client summary (a client must not learn another client's
+    // approval). Fire-and-forget per client: one failure blocks no other.
+    (async () => {
+      try {
+        const approvedRows = rows.filter((row) => approved.includes(row.id));
+        const ownerIds = [...new Set(approvedRows.map((row) => row.user_id))];
+        const owners = await User.findAll({ where: { id: ownerIds }, attributes: ["id", "client_code"] });
+        const codeById = new Map(owners.map((u) => [u.id, u.client_code]));
+        await Promise.allSettled(approvedRows.map((row) => {
+          const code = codeById.get(row.user_id);
+          if (!code) return Promise.resolve();
+          return notifyCheckinReviewed(code, req.body?.coach_notes || "");
+        }));
+      } catch (notifyErr) {
+        console.warn("P2-C7: bulk-approve notifications failed:", notifyErr.message);
+      }
+    })();
     return res.status(200).json({ success: true, approved, skipped });
   } catch (error) {
     console.error("Error bulk-approving check-ins:", error);

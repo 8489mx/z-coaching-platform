@@ -8,6 +8,8 @@ import Order from "./Order.js";
 import NutritionPlan from "./NutritionPlan.js";
 import WorkoutPlan from "./WorkoutPlan.js";
 import RateLimitLog from "./RateLimitLog.js";
+import Notification from "./Notification.js";
+import DeviceToken from "./DeviceToken.js";
 
 // Setup associations
 User.hasMany(Program, { foreignKey: "user_id", as: "programs", onDelete: "CASCADE" });
@@ -36,6 +38,14 @@ Program.hasMany(WorkoutLog, { foreignKey: "program_id", as: "workoutLogs", onDel
 
 WorkoutLog.belongsTo(Program, { foreignKey: "program_id", as: "program" });
 
+User.hasMany(Notification, { foreignKey: "user_id", as: "notifications", onDelete: "CASCADE" });
+
+Notification.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+User.hasMany(DeviceToken, { foreignKey: "user_id", as: "deviceTokens", onDelete: "CASCADE" });
+
+DeviceToken.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
 User.hasMany(Order, { foreignKey: "client_id", as: "orders", onDelete: "CASCADE" });
 
 Order.belongsTo(User, { foreignKey: "client_id", as: "client" });
@@ -62,5 +72,7 @@ export {
   Order,
   NutritionPlan,
   WorkoutPlan,
-  RateLimitLog
+  RateLimitLog,
+  Notification,
+  DeviceToken
 };

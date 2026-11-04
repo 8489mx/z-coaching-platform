@@ -81,6 +81,7 @@
     "jsonwebtoken": "^9.0.3",
     "mariadb": "^3.5.3",
     "mysql2": "^3.23.2",
-    "sequelize": "^6.37.8"
+    "sequelize": "^6.37.8",
+    "web-push": "^3.6.0"
   }
 }
