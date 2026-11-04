@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { API_BASE } from '../../../../config/api';
+import { API_BASE } from '../../../config/api';
 import { arabicSearchMatch } from '../../../utils/searchUtils';
 import { isNoSwapFood, NO_SWAP_NOTE_AR } from '../../../utils/swapExchangeRules';
 

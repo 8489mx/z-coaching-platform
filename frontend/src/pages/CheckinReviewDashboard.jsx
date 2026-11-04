@@ -1192,7 +1192,7 @@ export default function CheckinReviewDashboard() {
             // P1-B11: the deload decision rides inside the approval
             // payload (the card's own POST persists it immediately; this
             // copy is the approval-time trace, not a second decision).
-            ...(deloadDecision ? { deload_decision: deloadDecision } : {})
+            ...(deloadDecision ? { deload_decision: deloadDecision } : {}),
             // P2-C4: the stale override is sent ONLY when the coach
             // explicitly enables it for a digest-flagged stale check-in.
             // Without it, a stale approval stays review-only on the server.
