@@ -16,10 +16,28 @@ import { resolveDailySteps, resolveStepTarget } from "../steps-source/resolve-da
  * @param {Object} [weeklyTrainingSchedule=null]
  * @returns {import("./domain/contracts.js").CardioEngineResult}
  */
+// P1-B8 (Q49): cardio machines follow the training location. The canonical
+// equipment model holds resistance gear only, so a HOME client has no cardio
+// machines by the system's own data; a GYM client does. Unknown locations keep
+// the old machines behavior (only an explicit HOME switches to outdoor).
+function resolveMachinesAvailable(clientIntakeProfile) {
+  const raw =
+    clientIntakeProfile?.training?.location ??
+    clientIntakeProfile?.training_location ??
+    clientIntakeProfile?.training_environment ??
+    null;
+  if (typeof raw !== "string") return true;
+  const loc = raw.toLowerCase();
+  if (loc.includes("home")) return false;
+  if (loc.includes("gym")) return true;
+  return true;
+}
+
 export function buildCardioEngine(
   intakeDecision,
   clientIntakeProfile,
-  weeklyTrainingSchedule = null
+  weeklyTrainingSchedule = null,
+  options = {}
 ) {
   // 1. Convert intake rules to plan specification
   const plan_specification = buildCardioPlanSpec(intakeDecision);
@@ -49,7 +67,11 @@ export function buildCardioEngine(
   // 4. Schedule sessions into the week
   const weekly_schedule = buildWeeklyCardioSchedule(
     prescription,
-    weeklyTrainingSchedule
+    weeklyTrainingSchedule,
+    {
+      machinesAvailable: resolveMachinesAvailable(clientIntakeProfile),
+      totalWeeks: options.totalWeeks,
+    }
   );
 
   // 5. Run preflight checks for approval readiness

@@ -148,6 +148,9 @@ import { resolveDailySteps, resolveTdeeActivityFactor } from "../steps-source/re
 import { normalizeGoal, resolveBodyFat, resolvePrimaryGoal, isMaintenanceGoal } from "../goal-resolution/resolve-primary-goal.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
+// P1-B8: one zones engine — the server uses the same canonical Tanaka
+// computation as the frontend (re-exported through cardio-zones-engine).
+import { computeZone2Bpm } from "../execution-engines/cardio-zones-engine.js";
 import { generatePeriWorkoutNutrientTimingSchedule, calculateCaffeineCutoffWindow } from "../execution-engines/circadian-nutrient-timing-engine.js";
 import {
   calculateTrainingReadiness,
@@ -1411,9 +1414,14 @@ export function buildMasterEngineV2(inputs) {
     ageSource = "DEFAULT_FALLBACK";
   }
 
-  const estimatedMaxHr = Math.round(208 - 0.7 * clientAge);
-  const zone2LowBpm = Math.round(0.6 * estimatedMaxHr);
-  const zone2HighBpm = Math.round(0.7 * estimatedMaxHr);
+  // P1-B8: canonical Zone 2 computation (same function as the frontend).
+  // Numbers are unchanged for every age the server already clamped 16-100;
+  // the P0-A16 estimated-age hold and beta-blocker talk-test-only paths
+  // below are untouched.
+  const canonicalZones = computeZone2Bpm(clientAge);
+  const estimatedMaxHr = canonicalZones.max_heart_rate_bpm;
+  const zone2LowBpm = canonicalZones.min_bpm;
+  const zone2HighBpm = canonicalZones.max_bpm;
 
   const baseCardioProgram = buildCardioEngine(
     intake_decision,
@@ -1521,8 +1529,22 @@ export function buildMasterEngineV2(inputs) {
   // duration bound to enforce and none is invented. A failing plan is
   // reported here and withheld by the generate handlers (DRAFT on
   // final_preflight REVIEW_REQUIRED), same pattern as the culinary preflight.
+  // P1-B8: weekly-dose bound for the final check — the prescribed weekly
+  // dose is the prescription's session count x its per-session ceiling.
+  const prescribedSessionMax = baseCardioProgram.prescription?.sessions?.[0]?.duration_minutes ?? null;
+  const prescribedSessionCount = Array.isArray(baseCardioProgram.prescription?.sessions)
+    ? baseCardioProgram.prescription.sessions.length
+    : 0;
   const cardioFinalPreflight = evaluateFinalCardioPlan(enrichedCardioSessions, {
-    maxDurationMinutes: baseCardioProgram.prescription?.sessions?.[0]?.duration_minutes ?? null,
+    maxDurationMinutes: prescribedSessionMax,
+    weeklyMinutesTotal: enrichedCardioSessions.reduce(
+      (sum, s) => sum + (Number.isFinite(s?.duration_minutes) ? s.duration_minutes : 0),
+      0,
+    ),
+    maxWeeklyMinutes:
+      typeof prescribedSessionMax === "number" && prescribedSessionCount > 0
+        ? prescribedSessionCount * prescribedSessionMax
+        : null,
   });
 
   // P0-A16: the prescription dose carries the same LOW cap as the weekly

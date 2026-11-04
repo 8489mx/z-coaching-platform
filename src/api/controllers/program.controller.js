@@ -1541,6 +1541,16 @@ export const getActiveProgramByUserId = async (req, res) => {
       ...(Array.isArray(answers.current_meds_supplements_list) ? answers.current_meds_supplements_list : []),
       String(answers.current_meds_supplements || ""),
     ];
+    // P1-B8: serve the V2 progression plan and the joint weekly load with
+    // iron training on the card (additive pass-through; pre-fix programs
+    // without them keep the card as-is, nothing fabricated).
+    const v2Schedule = program.program_data?.cardio_program?.weekly_schedule || {};
+    if (Array.isArray(v2Schedule.progression)) {
+      cardio.progression = v2Schedule.progression;
+    }
+    if (v2Schedule.weekly_load) {
+      cardio.weekly_load = v2Schedule.weekly_load;
+    }
     if (isBetaBlockerMedication(serveMeds) && cardio.heart_rate_target) {
       cardio.heart_rate_target = {
         ...cardio.heart_rate_target,

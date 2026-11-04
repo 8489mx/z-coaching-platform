@@ -4,6 +4,39 @@ import {
   CardioScheduleStatus,
   CardioScheduleReasonCode,
 } from "./domain/enums.js";
+import {
+  buildCardioProgression,
+  weekOneDuration,
+} from "../cardio-progression/build-cardio-progression.js";
+
+// P1-B8: every scheduled session carries a warm-up and a cool-down. The
+// intense (HIIT) protocol already warmed up; the beginner (LISS) one did not.
+const WARM_UP_MINUTES = 3;
+const COOL_DOWN_MINUTES = 3;
+const WARM_UP_GUIDANCE_AR =
+  "إحماء 3 دقائق: مشي خفيف ثم زيادة تدريجية للسرعة لحد ما توصل لسرعة الجلسة.";
+const COOL_DOWN_GUIDANCE_AR =
+  "تهدئة 3 دقائق: مشي هادئ لحد ما النفس يهدأ قبل ما توقف.";
+
+// P1-B8: static hot-climate guidance carried on the schedule itself (the
+// schedule has days but no times, so the live country-specific advisory
+// stays in the frontend heat function; this is the time-of-day rule).
+const HEAT_GUIDANCE = Object.freeze({
+  applies_to_countries: Object.freeze(["EG", "SA", "AE", "KW", "QA", "BH", "OM"]),
+  outdoor_blocked_window: Object.freeze({ start_hour: 10, end_hour: 17 }),
+  time_of_day_guidance_ar:
+    "في الحر: الكارديو الخارجي قبل 7 صباحاً أو بعد المغرب بساعة، وممنوع من 10 صباحاً حتى 5 مساءً، واشرب 500 مل ماء قبل الجلسة.",
+});
+
+function withWarmUpCoolDown(session) {
+  return {
+    ...session,
+    warm_up_minutes: WARM_UP_MINUTES,
+    warm_up_guidance_ar: WARM_UP_GUIDANCE_AR,
+    cool_down_minutes: COOL_DOWN_MINUTES,
+    cool_down_guidance_ar: COOL_DOWN_GUIDANCE_AR,
+  };
+}
 
 const DAYS_OF_WEEK = Object.freeze([
   DayOfWeek.MONDAY,
@@ -120,8 +153,13 @@ function validateInputs(cardioPrescription, weeklyTrainingSchedule) {
   }
 }
 
-export function buildWeeklyCardioSchedule(cardioPrescription, weeklyTrainingSchedule) {
+export function buildWeeklyCardioSchedule(cardioPrescription, weeklyTrainingSchedule, options = {}) {
   validateInputs(cardioPrescription, weeklyTrainingSchedule);
+  // P1-B8 (Q49): equipment-aware scheduling. Unknown stays machines (the old
+  // behavior); only an explicit no-machines client gets the outdoor plan.
+  // The canonical equipment model holds resistance gear only, so a HOME
+  // client has no cardio machines by the system's own data.
+  const machinesAvailable = options.machinesAvailable !== false;
 
   if (
     cardioPrescription.status === CardioScheduleStatus.WITHHELD ||
@@ -154,17 +192,33 @@ export function buildWeeklyCardioSchedule(cardioPrescription, weeklyTrainingSche
   let status = cardioPrescription.status;
   let schedule_review_required = false;
 
-  const baseInstruction =
-    "This is a recommended day, but you can flexibly perform your cardio after resistance training or on a rest day based on your schedule and energy. Prefer low-impact options like Elliptical or Bike to protect your joints.";
+  const baseInstruction = machinesAvailable
+    ? "This is a recommended day, but you can flexibly perform your cardio after resistance training or on a rest day based on your schedule and energy. Prefer low-impact options like Elliptical or Bike to protect your joints."
+    : "This is a recommended day, but you can flexibly perform your cardio after resistance training or on a rest day based on your schedule and energy. No machines are assumed: walk briskly outdoors or in a mall, or use stairs when available, to protect your joints.";
+
+  // P1-B8: the prescription dose is a ceiling; week 1 starts at 80% of it
+  // and the forward plan ramps to the ceiling by week 3 with a week-4 deload.
+  const baseDuration = cardioPrescription.sessions[0]?.duration_minutes;
+  const baseIntensity = cardioPrescription.sessions[0]?.intensity;
+  const progression =
+    cardioPrescription.sessions.length > 0 && Number.isFinite(baseDuration)
+      ? buildCardioProgression({
+          baseDurationMinutes: baseDuration,
+          intensity: baseIntensity,
+          sessionsPerWeek: cardioPrescription.sessions.length,
+          totalWeeks: options.totalWeeks,
+        })
+      : null;
 
   if (weeklyTrainingSchedule.schedule_mode === "SESSION_SEQUENCE") {
     for (const session of cardioPrescription.sessions) {
-      sessions.push({
+      sessions.push(withWarmUpCoolDown({
         ...session,
+        duration_minutes: weekOneDuration(session.duration_minutes),
         scheduled_day: null,
         schedule_reason_code: CardioScheduleReasonCode.CARDIO_SESSION_SEQUENCE_REQUIRED,
         instruction: baseInstruction,
-      });
+      }));
     }
   } else {
     // FIXED_DAYS
@@ -206,12 +260,13 @@ export function buildWeeklyCardioSchedule(cardioPrescription, weeklyTrainingSche
         schedule_review_required = true;
       }
 
-      sessions.push({
+      sessions.push(withWarmUpCoolDown({
         ...session,
+        duration_minutes: weekOneDuration(session.duration_minutes),
         scheduled_day: day,
         schedule_reason_code: reasonCode,
         instruction: baseInstruction,
-      });
+      }));
     }
 
     if (schedule_review_required) {
@@ -227,6 +282,29 @@ export function buildWeeklyCardioSchedule(cardioPrescription, weeklyTrainingSche
     }
   }
 
+  // P1-B8: joint weekly load with iron training, surfaced (never hidden).
+  // No new clinical threshold is invented: the bound stays the client's own
+  // prescribed dose, enforced by the final preflight; this summary is what
+  // the coach reviews, and the HIGH-sport-day rule above is the gate.
+  const trainingSessions = Array.isArray(weeklyTrainingSchedule.sessions)
+    ? weeklyTrainingSchedule.sessions
+    : [];
+  const trainingDays = new Set(
+    trainingSessions.map((s) => s?.scheduled_day).filter((d) => d !== null && d !== undefined),
+  );
+  const sessionsOnTrainingDays = sessions.filter((s) => trainingDays.has(s.scheduled_day));
+  const weeklyLoad = {
+    cardio_sessions: sessions.length,
+    cardio_minutes_total: sessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0),
+    training_sessions: trainingSessions.length,
+    training_days: trainingDays.size,
+    days_with_both: new Set(sessionsOnTrainingDays.map((s) => s.scheduled_day)).size,
+    cardio_minutes_on_training_days: sessionsOnTrainingDays.reduce(
+      (sum, s) => sum + (s.duration_minutes || 0),
+      0,
+    ),
+  };
+
   return {
     schedule_version: WEEKLY_CARDIO_SCHEDULE_VERSION,
     prescription_version: cardioPrescription.cardio_prescription_version,
@@ -234,6 +312,9 @@ export function buildWeeklyCardioSchedule(cardioPrescription, weeklyTrainingSche
     schedule_review_required,
     recommended_sessions: cardioPrescription.recommended_sessions,
     sessions,
+    progression,
+    weekly_load: weeklyLoad,
+    heat_guidance: HEAT_GUIDANCE,
     steps_prescription: cardioPrescription.steps_prescription,
     constraints: cardioPrescription.constraints,
     reasons,

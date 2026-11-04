@@ -11,7 +11,12 @@
  * Single source of truth: src/execution-engines/cardio-zones-engine.js re-exports this module.
  */
 
-import { resolveNeatStepTarget } from './cardioInterferenceEngine.js';
+import { resolveNeatStepTarget, computeZone2Bpm } from './cardioInterferenceEngine.js';
+
+// P1-B8: re-exported so the server master engine uses the same canonical
+// Zone 2 computation (src/execution-engines/cardio-zones-engine.js re-exports
+// this module); no caller re-implements Tanaka.
+export { computeZone2Bpm } from './cardioInterferenceEngine.js';
 
 export const CARDIO_TYPES = {
   LISS_TALK_TEST: 'LISS_TALK_TEST',
@@ -116,14 +121,12 @@ export function getPracticalCardioPrescription({
 
   const upperType = resolvedType;
 
-  // Resolve Heart Rate Zones via Tanaka (208 - 0.7 * age)
+  // Resolve Heart Rate Zones via the canonical Tanaka computation (P1-B8:
+  // one zones engine; the old local 16-80 clamp is gone).
   const numericAge = Number(age);
   let heartRateTarget = null;
   if (Number.isFinite(numericAge) && numericAge > 0) {
-    const safeAge = Math.max(16, Math.min(80, Math.round(numericAge)));
-    const maxHr = Math.round(208 - 0.7 * safeAge);
-    const z2Min = Math.round(maxHr * 0.6);
-    const z2Max = Math.round(maxHr * 0.7);
+    const { max_heart_rate_bpm: maxHr, min_bpm: z2Min, max_bpm: z2Max } = computeZone2Bpm(age);
     heartRateTarget = {
       max_heart_rate_bpm: maxHr,
       zone: 'ZONE_2',
@@ -212,9 +215,12 @@ export function getPracticalCardioPrescription({
     suggested_settings_ar: machines_available
       ? 'مشاية بميل Incline 8% إلى 12% على سرعة 4.0 إلى 5.0 كم/س، أو دراجة بمقاومة خفيفة.'
       : 'مشي سريع في الشارع أو النادي أو المول بخطوة تسرّع النفس وتسمح بالكلام، ولو فيه طلعة أو سلالم خفيفة تبقى أحسن.',
+    // P1-B8: LISS warms up and cools down like HIIT already did.
     execution_breakdown_ar: [
+      'إحماء هادئ لمدة 3 دقائق (مشي خفيف ثم زيادة تدريجية للسرعة).',
       `الحفاظ على سرعة ثابتة ومريحة لمدة ${duration_minutes} دقيقة متواصلة.`,
-      'التأكد المستمر من القدرة على التحدث بجملة كاملة دون توقف لالتقاط النفس.'
+      'التأكد المستمر من القدرة على التحدث بجملة كاملة دون توقف لالتقاط النفس.',
+      'تهدئة لمدة 3 دقائق (مشي هادئ حتى يهدأ النفس).'
     ],
     fat_oxidation_rationale_ar: 'أقصى كفاءة لأكسدة الدهون كوقود أساسي وتنشيط الميتوكوندريا دون أي تداخل مع استشفاء العضلات.',
     equipment_recommendation: equipment,
@@ -225,36 +231,51 @@ export function getPracticalCardioPrescription({
   };
 }
 
-// ---------- Gulf summer heat advisory ----------
+// ---------- Gulf + Egypt summer heat advisory ----------
+// P1-B8: Egypt joins the advisory (Karim's clients are Egypt + Gulf; EG was
+// excluded before, so Egyptian summer clients got no warning). Kept under the
+// old getGulfHeatAdvisory name so existing callers keep working.
 export const GULF_COUNTRY_CODES = Object.freeze(['SA', 'AE', 'KW', 'QA', 'BH', 'OM']);
-const GULF_TIME_ZONES = Object.freeze({ SA: 'Asia/Riyadh', AE: 'Asia/Dubai', KW: 'Asia/Kuwait', QA: 'Asia/Qatar', BH: 'Asia/Bahrain', OM: 'Asia/Muscat' });
+export const HEAT_COUNTRY_CODES = Object.freeze([...GULF_COUNTRY_CODES, 'EG']);
+const HEAT_TIME_ZONES = Object.freeze({ SA: 'Asia/Riyadh', AE: 'Asia/Dubai', KW: 'Asia/Kuwait', QA: 'Asia/Qatar', BH: 'Asia/Bahrain', OM: 'Asia/Muscat', EG: 'Africa/Cairo' });
 // May to September: daytime shade temperatures in the Gulf routinely pass 40-45 C.
+// Egypt runs hotter for longer, so its window extends through October.
 const GULF_SUMMER_MONTHS = Object.freeze([5, 6, 7, 8, 9]);
+const EGYPT_SUMMER_MONTHS = Object.freeze([5, 6, 7, 8, 9, 10]);
 const DAYTIME_START_HOUR = 10;
 const DAYTIME_END_HOUR = 17;
 
 export const GULF_HEAT_ADVISORY_AR = 'تحذير حرارة الصيف في الخليج: ممنوع الكارديو في الهواء الطلق من 10 صباحاً حتى 5 مساءً. نفّذ الكارديو داخل الجيم أو المول (مشاية أو دراجة)، أو في الخارج قبل 7 صباحاً أو بعد المغرب بساعة، واشرب 500 مل ماء قبل الجلسة.';
+export const EGYPT_HEAT_ADVISORY_AR = 'تحذير حرارة الصيف في مصر: ممنوع الكارديو في الهواء الطلق من 10 صباحاً حتى 5 مساءً. نفّذ الكارديو داخل الجيم أو المول (مشاية أو دراجة)، أو في الخارج قبل 7 صباحاً أو بعد المغرب بساعة، واشرب 500 مل ماء قبل الجلسة.';
+const TIME_OF_DAY_GUIDANCE_AR = 'أفضل وقت للكارديو الخارجي: قبل 7 صباحاً أو بعد المغرب بساعة. ممنوع من 10 صباحاً حتى 5 مساءً.';
 
 /**
- * Heat advisory for Gulf clients in summer. Active for the whole summer so outdoor cardio is never
- * planned in the daytime window; blocking_now is true while the local clock is inside that window.
+ * Heat advisory for Gulf + Egypt clients in summer. Active for the whole summer
+ * so outdoor cardio is never planned in the daytime window; blocking_now is
+ * true while the local clock is inside that window. A caller-flagged heat_wave
+ * activates the advisory outside the summer months too (heat waves do not
+ * wait for the calendar); the caller, not this function, decides a heat wave
+ * is happening, since this module has no weather feed.
  */
-export function getGulfHeatAdvisory({ country_code, date = new Date() } = {}) {
+export function getGulfHeatAdvisory({ country_code, date = new Date(), heat_wave = false } = {}) {
   const country = String(country_code || '').toUpperCase();
-  if (!GULF_COUNTRY_CODES.includes(country)) return { active: false, country_code: country || null };
+  if (!HEAT_COUNTRY_CODES.includes(country)) return { active: false, country_code: country || null };
   const parts = Object.fromEntries(
-    new Intl.DateTimeFormat('en-US', { timeZone: GULF_TIME_ZONES[country], month: 'numeric', hour: 'numeric', hourCycle: 'h23' })
+    new Intl.DateTimeFormat('en-US', { timeZone: HEAT_TIME_ZONES[country], month: 'numeric', hour: 'numeric', hourCycle: 'h23' })
       .formatToParts(new Date(date))
       .map((p) => [p.type, p.value])
   );
   const month = Number(parts.month);
   const hour = Number(parts.hour);
-  if (!GULF_SUMMER_MONTHS.includes(month)) return { active: false, country_code: country };
+  const summerMonths = country === 'EG' ? EGYPT_SUMMER_MONTHS : GULF_SUMMER_MONTHS;
+  if (!heat_wave && !summerMonths.includes(month)) return { active: false, country_code: country };
   return {
     active: true,
     country_code: country,
+    heat_wave: heat_wave === true,
     outdoor_blocked_window: { start_hour: DAYTIME_START_HOUR, end_hour: DAYTIME_END_HOUR },
     blocking_now: hour >= DAYTIME_START_HOUR && hour < DAYTIME_END_HOUR,
-    message_ar: GULF_HEAT_ADVISORY_AR,
+    message_ar: country === 'EG' ? EGYPT_HEAT_ADVISORY_AR : GULF_HEAT_ADVISORY_AR,
+    time_of_day_guidance_ar: TIME_OF_DAY_GUIDANCE_AR,
   };
 }

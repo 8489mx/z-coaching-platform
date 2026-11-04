@@ -19,6 +19,29 @@ export const CARDIO_INTENSITIES = {
 };
 
 /**
+ * P1-B8: the ONE canonical Zone 2 computation (Tanaka 208 - 0.7 * age, Zone 2
+ * 60%-70%). Every zones caller (this file, cardioZonesEngine, and the server
+ * master engine via re-export) uses this function — no re-implementation.
+ * Age clamps to 16-100 (the server clamp; the old frontend 80-clamp overstated
+ * max HR for clients over 80, e.g. age 85 gave 152 instead of the true 148).
+ * Missing/invalid age yields nulls, never a fabricated age.
+ */
+export function computeZone2Bpm(age) {
+  const numericAge = Number(age);
+  if (age === undefined || age === null || age === '' || !Number.isFinite(numericAge) || numericAge <= 0) {
+    return { age: null, max_heart_rate_bpm: null, min_bpm: null, max_bpm: null };
+  }
+  const safeAge = Math.max(16, Math.min(100, Math.round(numericAge)));
+  const maxHr = Math.round(208 - 0.7 * safeAge);
+  return {
+    age: safeAge,
+    max_heart_rate_bpm: maxHr,
+    min_bpm: Math.round(maxHr * 0.6),
+    max_bpm: Math.round(maxHr * 0.7),
+  };
+}
+
+/**
  * Calculates heart rate zones based on Tanaka formula (208 - 0.7 * age) with Zone 2 boundaries (60% - 70%).
  * Does NOT fabricate a silent age default when age is missing.
  */
@@ -38,11 +61,7 @@ export function calculateHeartRateZones(age) {
     };
   }
 
-  const safeAge = Math.max(16, Math.min(80, Math.round(numericAge)));
-  const maxHr = Math.round(208 - 0.7 * safeAge);
-
-  const zone2Min = Math.round(maxHr * 0.6);
-  const zone2Max = Math.round(maxHr * 0.7);
+  const { age: safeAge, max_heart_rate_bpm: maxHr, min_bpm: zone2Min, max_bpm: zone2Max } = computeZone2Bpm(age);
 
   return {
     age: safeAge,

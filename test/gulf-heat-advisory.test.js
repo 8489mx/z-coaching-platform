@@ -25,8 +25,23 @@ test("no advisory outside summer or outside the Gulf", () => {
   assert.equal(getGulfHeatAdvisory({ country_code: "KW", date: "2026-01-15T09:00:00Z" }).active, false);
   assert.equal(getGulfHeatAdvisory({ country_code: "QA", date: "2026-04-30T09:00:00Z" }).active, false);
   assert.equal(getGulfHeatAdvisory({ country_code: "OM", date: "2026-05-01T09:00:00Z" }).active, true, "May counts as summer");
-  assert.equal(getGulfHeatAdvisory({ country_code: "EG", date: "2026-07-15T09:00:00Z" }).active, false);
   assert.equal(getGulfHeatAdvisory({}).active, false);
+});
+
+test("P1-B8: Egypt joins the advisory, and a flagged heat wave activates it outside summer", () => {
+  // EG was excluded before; Egyptian summer clients got no warning.
+  const egJuly = getGulfHeatAdvisory({ country_code: "EG", date: "2026-07-15T09:00:00Z" });
+  assert.equal(egJuly.active, true);
+  assert.match(egJuly.message_ar, /مصر/);
+  assert.equal(egJuly.time_of_day_guidance_ar.includes("7 صباحاً"), true);
+  // Egypt's window runs through October; January is outside it.
+  assert.equal(getGulfHeatAdvisory({ country_code: "EG", date: "2026-01-15T09:00:00Z" }).active, false);
+  // A caller-flagged heat wave activates the advisory outside summer months.
+  const wave = getGulfHeatAdvisory({ country_code: "EG", date: "2026-03-10T09:00:00Z", heat_wave: true });
+  assert.equal(wave.active, true);
+  assert.equal(wave.heat_wave, true);
+  // Truly outside the covered countries: still nothing.
+  assert.equal(getGulfHeatAdvisory({ country_code: "US", date: "2026-07-15T09:00:00Z" }).active, false);
 });
 
 test("wiring: the active program response carries the country and the client cardio card shows the advisory", () => {

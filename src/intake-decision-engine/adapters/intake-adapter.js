@@ -1315,7 +1315,10 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     // the two values the cardio rule watches for.
     walkingAbility: { EASY: "EASY", MODERATE: "LIMITED", PAINFUL: "LIMITED", LIMITED: "LIMITED", UNKNOWN: "UNKNOWN" }[String(cardio.walkingAbility || "").toUpperCase()] || "UNKNOWN",
     maxSessionsPerWeek: Math.min(7, Math.max(0, !isNaN(Number(cardio.maxSessionsPerWeek)) ? Number(cardio.maxSessionsPerWeek) : 2)),
-    maxDurationMinutes: Math.min(120, Math.max(10, !isNaN(Number(cardio.maxDurationMinutes)) ? Number(cardio.maxDurationMinutes) : 30))
+    // P1-B8 (Q44): unified floor 15. The prescription refuses sessions under
+    // 15 minutes, so the form must not promise 10-14: a 10-minute capacity is
+    // recorded as 15 and gets sessions, never 0 sessions + a review flag.
+    maxDurationMinutes: Math.min(120, Math.max(15, !isNaN(Number(cardio.maxDurationMinutes)) ? Number(cardio.maxDurationMinutes) : 30))
   };
 
 

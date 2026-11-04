@@ -487,6 +487,10 @@ export function decideCardioStrategy(input, safetyContext, conservativeRecoveryS
     if (maxSessions <= 0 || maxDurationMinutes <= 0) {
       throw new Error("Cardio decision invariant violated: formal sessions require positive capacity.");
     }
+    // P1-B8 (Q44): unified floor 15, enforced here too so direct callers
+    // (not just the adapter-canonicalized master path) can never feed the
+    // prescription a sub-15 duration it must refuse.
+    maxDurationMinutes = Math.max(15, maxDurationMinutes);
   } else {
     maxSessions = 0;
     maxDurationMinutes = 0;

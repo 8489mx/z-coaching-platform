@@ -30,6 +30,8 @@ const SEQUENCE_REASON = "CARDIO_SESSION_SEQUENCE_REQUIRED";
  * @param {Array} sessions final cardio sessions
  * @param {Object} [context]
  * @param {number} [context.maxDurationMinutes] the client's prescribed per-session max, when known
+ * @param {number} [context.weeklyMinutesTotal] P1-B8: summed final session minutes for the week
+ * @param {number} [context.maxWeeklyMinutes] P1-B8: prescribed weekly dose (sessions x per-session max)
  * @returns {{ status: "PASSED"|"REVIEW_REQUIRED", violations: Array }}
  */
 export function evaluateFinalCardioPlan(sessions, context = {}) {
@@ -73,6 +75,22 @@ export function evaluateFinalCardioPlan(sessions, context = {}) {
         "Final cardio session has no scheduled day.",
         "جلسة الكارديو النهائية ملهاش يوم محدد — الخطة تحتاج مراجعة مدرب قبل التسليم.");
     }
+  }
+
+  // P1-B8: joint weekly load with iron training, bounded by the client's own
+  // prescribed weekly dose (sessions x per-session max) — no new clinical
+  // threshold is invented. Week-1 progression doses sit below the ceiling by
+  // construction, so this fires only if a future change breaks that.
+  const weeklyTotal = context.weeklyMinutesTotal;
+  const weeklyMax = context.maxWeeklyMinutes;
+  if (
+    typeof weeklyTotal === "number" && Number.isFinite(weeklyTotal) &&
+    typeof weeklyMax === "number" && Number.isFinite(weeklyMax) && weeklyMax > 0 &&
+    weeklyTotal > weeklyMax
+  ) {
+    push("FINAL_CARDIO_WEEKLY_DOSE", null,
+      `Final cardio week totals ${weeklyTotal} minutes, over the client's prescribed weekly dose of ${weeklyMax} minutes.`,
+      `إجمالي الكارديو الأسبوعي النهائي ${weeklyTotal} دقيقة وهو أعلى من الجرعة الأسبوعية المسموحة للعميل (${weeklyMax} دقيقة) — الخطة تحتاج مراجعة مدرب قبل التسليم.`);
   }
 
   return Object.freeze({
