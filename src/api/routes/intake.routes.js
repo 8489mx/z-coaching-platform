@@ -10,7 +10,7 @@ import {
   approveAndPublishIntake
 } from "../controllers/intake.controller.js";
 
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireAuth, requireAdmin } from "../middlewares/auth.middleware.js";
 import { intakeRateLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
@@ -25,8 +25,9 @@ router.post("/", intakeRateLimiter, submitPublicIntake);
 // Coach management endpoints
 router.get("/submissions", requireAuth, getAllIntakeSubmissions);
 router.get("/:id", requireAuth, getIntakeSubmission);
-router.post("/:submission_id/verify-payment", requireAuth, verifyIntakePayment);
-router.post("/:submission_id/generate-draft", requireAuth, generateDraftFromIntake);
-router.post("/:submission_id/approve-and-publish", requireAuth, approveAndPublishIntake);
+// Staff-only: payment confirmation, draft generation and publishing must never run as a client.
+router.post("/:submission_id/verify-payment", requireAuth, requireAdmin, verifyIntakePayment);
+router.post("/:submission_id/generate-draft", requireAuth, requireAdmin, generateDraftFromIntake);
+router.post("/:submission_id/approve-and-publish", requireAuth, requireAdmin, approveAndPublishIntake);
 
 export default router;

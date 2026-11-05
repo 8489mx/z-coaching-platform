@@ -20,7 +20,7 @@ import {
   runDueCycles,
   calculateTargetsHandler,
 } from "../controllers/program.controller.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireAuth, requireAdmin } from "../middlewares/auth.middleware.js";
 import { engineCalculatorRateLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
@@ -49,7 +49,8 @@ router.get("/exercises-catalog", getExercisesCatalog);
 
 // Check-in & Adaptation V2 endpoints. S3-4/S4-5: the duplicated submit and
 // calculator routes were retired; all check-ins go through POST /api/v1/checkin.
-router.get("/checkin/pending", requireAuth, getPendingCheckins);
+// Staff-only: the pending-checkins list carries other clients' personal data and photos.
+router.get("/checkin/pending", requireAuth, requireAdmin, getPendingCheckins);
 router.get("/checkin/history", requireAuth, getMyCheckinHistory);
 router.get("/checkin/history/:user_id", requireAuth, getCheckinHistory);
 router.post("/adapt", requireAuth, adaptProgramHandler);
