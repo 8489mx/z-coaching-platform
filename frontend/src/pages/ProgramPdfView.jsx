@@ -959,6 +959,39 @@ export default function ProgramPdfView() {
                   <tbody>
                     {session.exercises?.map((ex, eIdx) => {
                       const exNames = getExerciseDisplayNames(ex);
+                      // B4: a held slot is a named "coach to fill" row, never a
+                      // blank row with invented defaults — the `|| 3` / `|| '8 - 10'`
+                      // fallbacks below would otherwise fake a dose for a slot
+                      // that has none. Dose cells render "—" until the coach fills it.
+                      if (ex.held_for_review) {
+                        return (
+                          <tr key={eIdx}>
+                            <td style={{ textAlign: 'right' }}>
+                              <strong style={{ display: 'block', fontSize: '7.8pt', fontWeight: '800', color: '#92400E', direction: 'ltr', textAlign: 'right' }}>
+                                {exNames.nameEn}
+                              </strong>
+                              <span style={{ fontSize: '6.8pt', color: '#92400E', display: 'block', marginTop: '1px' }}>
+                                {exNames.nameAr}
+                              </span>
+                              <span style={{ fontSize: '6.5pt', color: '#78716C', display: 'block', marginTop: '1px' }}>
+                                {ex.held_note_ar || ex.coach_action_ar || 'لازم المدرب يملاها قبل التسليم.'}
+                              </span>
+                            </td>
+                            <td style={{ color: '#64748B', fontWeight: '700', fontSize: '7.5pt', textAlign: 'center' }}>
+                              —
+                            </td>
+                            <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '8pt', color: '#64748B' }} className="nowrap">
+                              —
+                            </td>
+                            <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '7.5pt', color: '#64748B' }} className="nowrap">
+                              —
+                            </td>
+                            <td style={{ textAlign: 'center', color: '#64748B', fontSize: '7.2pt' }} className="nowrap">
+                              —
+                            </td>
+                          </tr>
+                        );
+                      }
                       const targetMuscle = resolveExerciseMuscleName(ex);
                       const altExercise = resolveExerciseAlternative(ex);
                       const rirLabel = ex.target_rir != null ? `RIR ${ex.target_rir}` : (ex.rir != null ? `RIR ${ex.rir}` : 'RIR 1-2');

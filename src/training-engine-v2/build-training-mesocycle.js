@@ -507,8 +507,20 @@ export function evaluateFinalTrainingWeeks(weeks, context = {}) {
         // P1-B9: a slot the mesocycle held (dedup or equipment exhausted) stays in the
         // session flagged for review instead of vanishing silently (audit C2). A held
         // slot withholds the plan exactly like any other final-check violation.
+        // B4: the violation code names the hold reason — a shoulder hold is not a
+        // dedup hold, and a joint hold is not an equipment hold — so the coach
+        // sees why the slot is held without opening the entry.
         if (exercise?.held_for_review) {
-          push(exercise.held_reason === "EQUIPMENT_EXHAUSTED" ? "EQUIPMENT_SLOT_HELD_FOR_REVIEW" : "DEDUP_SLOT_HELD_FOR_REVIEW",
+          const heldViolationCodeByReason = {
+            EQUIPMENT_EXHAUSTED: "EQUIPMENT_SLOT_HELD_FOR_REVIEW",
+            SHOULDER_OVERHEAD_ARM_HELD: "SHOULDER_SLOT_HELD_FOR_REVIEW",
+            ELBOW_INJURY_HELD: "JOINT_SLOT_HELD_FOR_REVIEW",
+            WRIST_INJURY_HELD: "JOINT_SLOT_HELD_FOR_REVIEW",
+            HIP_INJURY_HELD: "JOINT_SLOT_HELD_FOR_REVIEW",
+            ANKLE_INJURY_HELD: "JOINT_SLOT_HELD_FOR_REVIEW",
+            DEDUP_EXHAUSTED: "DEDUP_SLOT_HELD_FOR_REVIEW",
+          };
+          push(heldViolationCodeByReason[exercise.held_reason] || "DEDUP_SLOT_HELD_FOR_REVIEW",
             week.week_number ?? null, session.session_code ?? null, exercise.slot_code || null,
             `Final weeks hold slot ${exercise.slot_code || "?"} for coach review (${exercise.held_reason || "DEDUP_EXHAUSTED"}).`,
             `الخطة النهائية فيها خانة ${exercise.slot_code || "?"} محجوزة لمراجعة المدرب — لازم المدرب يملاها قبل التسليم.`);
@@ -845,12 +857,31 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     reviewFlagKeys.add(key);
     guardReviewFlags.push(Object.freeze(flag));
   };
-  const heldEntryFor = (ex, reason, codeBefore, weekNumber, sessionCode) => {
-    const noteAr = reason === "EQUIPMENT_EXHAUSTED"
-      ? "الخانة دي ملهاش تمرين مناسب بمعدات العميل المعلنة — لازم المدرب يختار بديل قبل التسليم."
-      : reason === "SHOULDER_OVERHEAD_ARM_HELD"
-        ? "تمارين الذراع فوق الرأس ممنوعة على إصابة الكتف ومفيش بديل آمن بدون كيبل — لازم المدرب يختار بديل قبل التسليم."
-        : "الخانة دي اتكرر تمرينها في نفس الجلسة وملهاش بديل متاح — لازم المدرب يختار بديل قبل التسليم.";
+  // B4 (held slots as explicit placeholders): a held slot is served as a
+  // NAMED placeholder, never as a blank null-code exercise. The code is
+  // HELD_SLOT_<SLOT_CODE> (with a _2/_3 suffix if the same slot is held
+  // twice in one session): it is never a catalog code (no catalog entry,
+  // image, or swap exists for it), so no consumer can mistake it for a real
+  // exercise, and it stays unique inside a session — the coach editor keys
+  // rows by code and the no-duplicate-exercise invariant must still hold.
+  // The names, reason, Arabic note and coach action make the row readable
+  // even for a consumer that never reads final_preflight. Dose fields stay
+  // explicitly null — a held slot has no prescribed sets/reps/RIR, and no
+  // consumer may invent one (the PDF view renders "—" for a held row).
+  const HELD_REASON_NOTES_AR = Object.freeze({
+    EQUIPMENT_EXHAUSTED: "الخانة دي ملهاش تمرين مناسب بمعدات العميل المعلنة — لازم المدرب يختار بديل قبل التسليم.",
+    SHOULDER_OVERHEAD_ARM_HELD: "تمارين الذراع فوق الرأس ممنوعة على إصابة الكتف ومفيش بديل آمن بدون كيبل — لازم المدرب يختار بديل قبل التسليم.",
+    DEDUP_EXHAUSTED: "الخانة دي اتكرر تمرينها في نفس الجلسة وملهاش بديل متاح — لازم المدرب يختار بديل قبل التسليم.",
+    ELBOW_INJURY_HELD: "تمارين الذراع دي ممنوعة على إصابة الكوع ومفيش بديل آمن — لازم المدرب يختار بديل قبل التسليم.",
+    WRIST_INJURY_HELD: "تمارين الذراع دي ممنوعة على إصابة الرسغ ومفيش بديل آمن — لازم المدرب يختار بديل قبل التسليم.",
+    HIP_INJURY_HELD: "التمارين المحمّلة على مفصل الفخذ ممنوعة على إصابة الفخذ ومفيش بديل آمن — لازم المدرب يختار بديل قبل التسليم.",
+    ANKLE_INJURY_HELD: "التمارين المحمّلة على الكاحل ممنوعة على إصابة الكاحل ومفيش بديل آمن — لازم المدرب يختار بديل قبل التسليم.",
+  });
+  const heldEntryFor = (ex, reason, codeBefore, weekNumber, sessionCode, exerciseCode = null) => {
+    const noteAr = HELD_REASON_NOTES_AR[reason] || HELD_REASON_NOTES_AR.DEDUP_EXHAUSTED;
+    // Callers pass a per-session-unique code (HELD_SLOT_<SLOT>, _2 on a
+    // repeat); the default keeps the slot in the code for any direct caller.
+    const heldCode = exerciseCode || `HELD_SLOT_${ex.slot_code}`;
     flagReviewSlot({
       type: reason,
       week_number: weekNumber,
@@ -862,17 +893,28 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     return Object.freeze({
       order: ex.order ?? null,
       slot_code: ex.slot_code,
-      exercise_code: null,
-      code: null,
-      name: null,
-      name_en: null,
-      name_ar: null,
+      exercise_code: heldCode,
+      code: heldCode,
+      name: `خانة محجوزة للمدرب — ${ex.slot_code}`,
+      name_en: `Coach to fill — ${ex.slot_code} (held: ${reason})`,
+      name_ar: `خانة محجوزة للمدرب — ${ex.slot_code}`,
       selection_status: "REVIEW_REQUIRED",
       reason_code: reason,
       prescription: null,
       held_for_review: true,
       held_reason: reason,
       held_note_ar: noteAr,
+      coach_action_ar: "لازم المدرب يختار تمرين بديل آمن للخانة دي قبل تسليم الخطة للعميل.",
+      placeholder: true,
+      primary_muscle: null,
+      target_sets: null,
+      sets: null,
+      target_reps: null,
+      reps: null,
+      target_rir: null,
+      rir: null,
+      rest_seconds: null,
+      rest: null,
     });
   };
 
@@ -969,6 +1011,15 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
       }
 
       const usedSessionCodes = new Set();
+      // B4: placeholder codes are unique inside a session (HELD_SLOT_<SLOT>,
+      // _2 on a repeat of the same slot) so the coach editor — which keys rows
+      // by code — and the no-duplicate-exercise invariant both keep working.
+      const heldSlotCounts = new Map();
+      const heldCodeFor = (slotCode) => {
+        const n = (heldSlotCounts.get(slotCode) || 0) + 1;
+        heldSlotCounts.set(slotCode, n);
+        return n === 1 ? `HELD_SLOT_${slotCode}` : `HELD_SLOT_${slotCode}_${n}`;
+      };
       const periodizedExercises = sessionExerciseTemplates.map((ex, exIdx) => {
         let finalCode = ex.exercise_code;
 
@@ -1069,7 +1120,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             // non-overhead triceps substitute, so the slot is held for the
             // coach instead of serving an overhead movement.
             if (isHome) {
-              return heldEntryFor(ex, "SHOULDER_OVERHEAD_ARM_HELD", beforeShoulder, config.week_number, baseSession.session_code);
+              return heldEntryFor(ex, "SHOULDER_OVERHEAD_ARM_HELD", beforeShoulder, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
             }
             finalCode = "CABLE_TRICEPS_ROPE_PUSHDOWN";
           }
@@ -1105,20 +1156,35 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         // them with loaded work. These guards run after the knee/lower-back guards on
         // purpose: a hip client falsely tripping the knee guard (audit S19) gets the
         // knee guard's hip-thrust substitute removed again here.
+        // B4: a joint hold is a HELD slot, never a silent drop. The old code
+        // nulled finalCode here and the `return null` below (plus the session
+        // `.filter(Boolean)`) deleted the row from the served session — the
+        // plan flag recorded the gap but the session lost it. Record the
+        // reason and let the fit-check below serve the placeholder.
+        let jointHeldReason = null;
+        let jointHeldCodeBefore = null;
         if (hasElbowInjury && (ELBOW_WRIST_PRESS.has(finalCode) || ELBOW_WRIST_PULL.has(finalCode) || ELBOW_WRIST_ARM.has(finalCode))) {
           flagHeldSlot("ELBOW", ex.slot_code, finalCode);
+          jointHeldReason = "ELBOW_INJURY_HELD";
+          jointHeldCodeBefore = finalCode;
           finalCode = null;
         }
         if (hasWristInjury && (ELBOW_WRIST_PRESS.has(finalCode) || ELBOW_WRIST_PULL.has(finalCode) || ELBOW_WRIST_ARM.has(finalCode))) {
           flagHeldSlot("WRIST", ex.slot_code, finalCode);
+          jointHeldReason = "WRIST_INJURY_HELD";
+          jointHeldCodeBefore = finalCode;
           finalCode = null;
         }
         if (hasHipInjury && HIP_LOADED.has(finalCode)) {
           flagHeldSlot("HIP", ex.slot_code, finalCode);
+          jointHeldReason = "HIP_INJURY_HELD";
+          jointHeldCodeBefore = finalCode;
           finalCode = null;
         }
         if (hasAnkleInjury && ANKLE_LOADED.has(finalCode)) {
           flagHeldSlot("ANKLE", ex.slot_code, finalCode);
+          jointHeldReason = "ANKLE_INJURY_HELD";
+          jointHeldCodeBefore = finalCode;
           finalCode = null;
         }
 
@@ -1149,12 +1215,16 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           return alternative ? alternative.exercise_code : null;
         };
         // P1-B9: a slot the equipment guard empties stays held for review instead of
-        // vanishing silently. An injury hold (already null + flagged above) still returns
-        // null exactly as before — only a code the guard itself drops becomes a held entry.
+        // vanishing silently. An injury hold (already null + flagged above) is
+        // served as a named held placeholder too — B4: a served session never
+        // silently loses a row. Only a code the guard itself drops becomes an
+        // EQUIPMENT_EXHAUSTED entry; a slot that was never a code at all (no
+        // upstream exercise, no joint hold) still returns null and is filtered.
         const codeBeforeFit = finalCode;
         finalCode = fitDeclaredEquipment(finalCode);
         if (!finalCode) {
-          if (codeBeforeFit) return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", codeBeforeFit, config.week_number, baseSession.session_code);
+          if (jointHeldReason) return heldEntryFor(ex, jointHeldReason, jointHeldCodeBefore, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
+          if (codeBeforeFit) return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", codeBeforeFit, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
           return null;
         }
 
@@ -1163,7 +1233,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         // extension. Re-check the final code for a shoulder injury; at home
         // there is no safe substitute, so the slot is held for the coach.
         if (hasShoulderInjury && OVERHEAD_ARM_TRICEPS_EXTENSIONS.has(finalCode)) {
-          return heldEntryFor(ex, "SHOULDER_OVERHEAD_ARM_HELD", finalCode, config.week_number, baseSession.session_code);
+          return heldEntryFor(ex, "SHOULDER_OVERHEAD_ARM_HELD", finalCode, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
         }
 
         // Never repeat an exercise inside one session after substitutions.
@@ -1172,10 +1242,10 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         if (usedSessionCodes.has(finalCode)) {
           const duplicateCode = finalCode;
           const alternative = DUPLICATE_ALTERNATIVES[finalCode];
-          if (!alternative || usedSessionCodes.has(alternative)) return heldEntryFor(ex, "DEDUP_EXHAUSTED", duplicateCode, config.week_number, baseSession.session_code);
+          if (!alternative || usedSessionCodes.has(alternative)) return heldEntryFor(ex, "DEDUP_EXHAUSTED", duplicateCode, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
           finalCode = fitDeclaredEquipment(alternative);
-          if (!finalCode) return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", alternative, config.week_number, baseSession.session_code);
-          if (usedSessionCodes.has(finalCode)) return heldEntryFor(ex, "DEDUP_EXHAUSTED", finalCode, config.week_number, baseSession.session_code);
+          if (!finalCode) return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", alternative, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
+          if (usedSessionCodes.has(finalCode)) return heldEntryFor(ex, "DEDUP_EXHAUSTED", finalCode, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
         }
         usedSessionCodes.add(finalCode);
 

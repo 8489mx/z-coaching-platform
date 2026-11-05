@@ -53,7 +53,8 @@ test('shoulder injury: no barbell bench, incline or overhead press; substitutes 
     const meso = mesocycle({ injuries: ['SHOULDER'], location });
     for (const session of sessions(meso)) {
       for (const ex of session.exercises) {
-        // A held slot has no served code (null); the hold itself is the guard.
+        // A held slot is served as the HELD_SLOT placeholder, never a real
+        // overhead code; the hold itself is the guard.
         assert.doesNotMatch(ex.exercise_code || '', /^BARBELL_BENCH_PRESS$|INCLINE_.*PRESS|OVERHEAD_PRESS|SHOULDER_PRESS/, `${location} ${session.session_code}: ${ex.exercise_code}`);
       }
     }
@@ -67,6 +68,9 @@ test('no session ever repeats the same exercise after substitutions', () => {
   const cases = [
     {}, { location: 'HOME' }, { experience: 'ADVANCED', location: 'HOME' },
     { injuries: ['SHOULDER'] }, { injuries: ['SHOULDER'], location: 'HOME', experience: 'ADVANCED' },
+    // B4: joint holds are placeholders with per-slot codes, so the no-duplicate
+    // invariant must hold for them too (an elbow client holds 45 slots).
+    { injuries: ['ELBOW'] }, { injuries: ['HIP'] }, { injuries: ['ANKLE'] },
     { injuries: ['LOWER_BACK'] }, { injuries: ['KNEE'] }, { injuries: ['KNEE', 'LOWER_BACK', 'SHOULDER'] },
     { experience: 'INTERMEDIATE', days: 4, injuries: ['LOWER_BACK'] },
   ];
