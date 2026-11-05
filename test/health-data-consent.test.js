@@ -8,6 +8,9 @@ import { submitPublicIntake, saveDraftIntake } from "../src/api/controllers/inta
 import { User, IntakeSubmission } from "../src/api/models/index.js";
 import { hasHealthDataConsent, buildHealthDataConsent, HEALTH_DATA_CONSENT_VERSION } from "../frontend/src/config/healthDataConsent.js";
 
+// Closes the shared Sequelize pool after this file so the test child exits.
+import "./db-teardown.js";
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function mockRes() {

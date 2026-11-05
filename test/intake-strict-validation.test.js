@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { adaptIntakePayloadToCanonicalEngine } from "../src/intake-decision-engine/adapters/intake-adapter.js";
 import { IntakeValidationError } from "../src/intake-decision-engine/validation/intake-validation-error.js";
 import { submitPublicIntake, saveDraftIntake } from "../src/api/controllers/intake.controller.js";
+import "./db-teardown.js";
 
 test("Intake Strict Validation: Biometrics & Field Values", async (t) => {
   await t.test("1. Rejects impossible height (>250 cm or <120 cm) with INVALID_BIOMETRICS", () => {

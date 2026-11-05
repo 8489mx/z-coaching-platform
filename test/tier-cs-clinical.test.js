@@ -2,6 +2,7 @@ import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { calculateUniversalNutritionTargets } from "../src/master-engine-v2/build-master-engine-v2.js";
 import { CLINICAL_GUIDELINES } from "../src/config/clinical-guidelines.js";
+import "./db-teardown.js";
 
 describe("Tier CS Clinical Fixes & Verification", () => {
   // "Tier CS-0: Item 1 - Kidney Disease Protein Cap" was here. Declared kidney disease is outside

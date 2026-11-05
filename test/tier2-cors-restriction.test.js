@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import app from '../src/api/server.js';
 import { isTrustedOrigin } from '../src/api/middlewares/csrfProtection.js';
+import "./db-teardown.js";
 
 test('Tier 2 Item 2: Strict CORS & Official Domain Whitelisting Suite', async (t) => {
   let server;
