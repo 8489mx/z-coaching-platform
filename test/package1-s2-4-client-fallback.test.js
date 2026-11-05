@@ -1,30 +1,51 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { DEFAULT_FALLBACK_WEEKS } from "../frontend/src/pages/ClientInteractiveApp/hooks/useClientInteractiveData.js";
 import { resolveMesocycleWeekConfigs } from "../src/training-engine-v2/build-training-mesocycle.js";
 
-test("S2-4: DEFAULT_FALLBACK_WEEKS in client interactive app never forces RIR 0 and matches server volume modifiers", () => {
-  assert.ok(Array.isArray(DEFAULT_FALLBACK_WEEKS), "DEFAULT_FALLBACK_WEEKS must be an array");
-  assert.equal(DEFAULT_FALLBACK_WEEKS.length, 5, "Fallback must define 5 weeks");
+// Decision 8 (confirmed 2026-11-05): DEFAULT_FALLBACK_WEEKS was deleted
+// intentionally in P0-A14 (commit 0f9fd37) — the client never fabricates a
+// demo week plan; the server mesocycle engine is the only source of weeks.
+// This file used to assert the fallback's shape; it now asserts the same
+// properties against the server engine, plus that no fallback export exists.
 
-  // Server volume modifier standards for progressive mesocycle: [1.0, 1.0, 1.15, 1.25, 0.6]
-  const expectedVolumeModifiers = [1.0, 1.0, 1.15, 1.25, 0.6];
+test("S2-4: no client fallback weeks exist — the server mesocycle engine is the only source of weeks", async () => {
+  const hookMod = await import("../frontend/src/pages/ClientInteractiveApp/hooks/useClientInteractiveData.js");
+  assert.equal(
+    "DEFAULT_FALLBACK_WEEKS" in hookMod,
+    false,
+    "The client hook must not export DEFAULT_FALLBACK_WEEKS (deleted intentionally in P0-A14; weeks come from the server only)"
+  );
 
-  DEFAULT_FALLBACK_WEEKS.forEach((week, idx) => {
-    assert.ok(
-      week.target_rir > 0,
-      `Week ${week.week_number} target_rir (${week.target_rir}) must be strictly greater than 0; forced RIR 0 is banned`
+  // Server volume modifier standards for the progressive mesocycle, per
+  // experience level (measured from the engine with default options).
+  // The deleted fallback carried the ADVANCED ladder [1.0, 1.0, 1.15, 1.25, 0.6];
+  // that ladder now lives only in the server engine.
+  const expectedVolumeModifiers = {
+    BEGINNER: [1.0, 1.0, 1.0, 1.0, 1.0],
+    INTERMEDIATE: [1.0, 1.0, 1.15, 1.25, 0.7],
+    ADVANCED: [1.0, 1.0, 1.15, 1.25, 0.6],
+  };
+
+  for (const exp of ["BEGINNER", "INTERMEDIATE", "ADVANCED"]) {
+    const weeks = resolveMesocycleWeekConfigs({ experience: exp, weeksCount: 5 });
+    assert.equal(weeks.length, 5, `Server must define 5 weeks for ${exp}`);
+    assert.deepEqual(
+      weeks.map((w) => w.volume_modifier),
+      expectedVolumeModifiers[exp],
+      `Server volume modifiers for ${exp} must match the standard ladder`
     );
-    assert.equal(
-      week.volume_modifier,
-      expectedVolumeModifiers[idx],
-      `Week ${week.week_number} volume_modifier (${week.volume_modifier}) must match server standard (${expectedVolumeModifiers[idx]})`
-    );
-  });
 
-  const week4 = DEFAULT_FALLBACK_WEEKS[3];
-  assert.ok(week4.target_rir === 1 || week4.target_rir === 2, "Week 4 target_rir must be 1 or 2");
+    weeks.forEach((week) => {
+      assert.ok(
+        week.target_rir > 0,
+        `Server mesocycle for ${exp} week ${week.week_number} target_rir (${week.target_rir}) must be strictly greater than 0; forced RIR 0 is banned`
+      );
+    });
+
+    const week4 = weeks[3];
+    assert.ok(week4.target_rir === 1 || week4.target_rir === 2, `Week 4 target_rir for ${exp} must be 1 or 2`);
+  }
 });
 
 test("S2-4: server mesocycle engine never outputs target_rir 0 in default mesocycle configurations", () => {

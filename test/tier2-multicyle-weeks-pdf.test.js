@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { evaluateIntake } from '../src/intake-decision-engine/index.js';
 import { buildTrainingMesoCycle, MesoCyclePhase } from '../src/training-engine-v2/index.js';
 import { completeIntake } from './fixtures/complete-intake.js';
-import { DEFAULT_FALLBACK_WEEKS } from '../frontend/src/pages/ClientInteractiveApp/hooks/useClientInteractiveData.js';
+import { readFileSync } from 'node:fs';
 import { adaptSessionToInteractiveWorkout } from '../frontend/src/pages/ClientInteractiveApp/utils/programAdapters.js';
 
 describe('Tier 2 - Item 1: Multi-Week Mesocycle & PDF Full Periodization Suite', () => {
@@ -12,7 +12,13 @@ describe('Tier 2 - Item 1: Multi-Week Mesocycle & PDF Full Periodization Suite',
     const validIntake = completeIntake();
     const evaluationContext = { assessmentDate: '2026-08-16' };
     const decision = evaluateIntake(validIntake, evaluationContext);
-    const mesocycle = buildTrainingMesoCycle(decision, { weeksCount: 5 });
+    // Hidden old-contract failure (uncovered only once the M5 load error was
+    // fixed): the fixture's profile has no experience, so the engine treats
+    // it as a beginner — and the locked P1-B9 design CONSOLIDATES week 5 for
+    // beginners instead of deloading (shouldDeload = !isBeginner). The test's
+    // intent is to verify a deload week exists in a 5-week cycle, so it
+    // explicitly requests a planned deload; the engine behavior is unchanged.
+    const mesocycle = buildTrainingMesoCycle(decision, { weeksCount: 5, plannedDeload: true });
 
     assert.ok(mesocycle, 'Mesocycle should be generated');
     assert.equal(mesocycle.total_weeks, 5, 'Must generate exactly 5 weeks');
@@ -128,20 +134,33 @@ describe('Tier 2 - Item 1: Multi-Week Mesocycle & PDF Full Periodization Suite',
     assert.ok(deloadPage.focusNote.includes('كسر الإجهاد'));
   });
 
-  it('3. Client Interactive App default fallback provides full 5-week navigation when offline', () => {
-    assert.ok(Array.isArray(DEFAULT_FALLBACK_WEEKS), 'DEFAULT_FALLBACK_WEEKS must be an array');
-    assert.equal(DEFAULT_FALLBACK_WEEKS.length, 5, 'Fallback must define 5 weeks');
+  it('3. Client Interactive App has NO fallback weeks — offline with no program means no weeks, never a fabricated plan', async () => {
+    // Decision 8 (confirmed 2026-11-05): DEFAULT_FALLBACK_WEEKS was deleted
+    // intentionally in P0-A14 — the client never fabricates a demo week plan.
+    // The old shape assertions (week 1 ACCUMULATION / RIR 3, week 5 DELOAD /
+    // RIR 3) described the deleted demo constant and cannot be expressed
+    // under the current design; the live coverage of "weeks come from the
+    // server only" is test 1 in this file (the engine generates the real
+    // 5-week cycle: week 1 INTRO_ACCUMULATION, week 5 DELOAD).
+    const hookMod = await import('../frontend/src/pages/ClientInteractiveApp/hooks/useClientInteractiveData.js');
+    assert.equal(
+      'DEFAULT_FALLBACK_WEEKS' in hookMod,
+      false,
+      'The client hook must not export DEFAULT_FALLBACK_WEEKS (deleted intentionally in P0-A14)'
+    );
 
-    const week1 = DEFAULT_FALLBACK_WEEKS[0];
-    const week5 = DEFAULT_FALLBACK_WEEKS[4];
-
-    assert.equal(week1.week_number, 1);
-    assert.equal(week1.phase, 'ACCUMULATION');
-    assert.equal(week1.target_rir, 3);
-
-    assert.equal(week5.week_number, 5);
-    assert.equal(week5.phase, 'DELOAD');
-    assert.equal(week5.target_rir, 3);
+    const hookSrc = readFileSync(
+      new URL('../frontend/src/pages/ClientInteractiveApp/hooks/useClientInteractiveData.js', import.meta.url),
+      'utf8'
+    );
+    // The trainingWeeks memo returns the program's weeks when they exist,
+    // and [] — never a fabricated plan — when no program exists.
+    assert.match(hookSrc, /P0-A14: no program means no weeks/);
+    assert.match(
+      hookSrc,
+      /const trainingWeeks = useMemo\(\(\) => \{[\s\S]*?return \[\];/,
+      'trainingWeeks must fall back to an empty array when no program weeks exist'
+    );
   });
 
   it('4. adaptSessionToInteractiveWorkout properly incorporates weekContext target_rir', () => {
