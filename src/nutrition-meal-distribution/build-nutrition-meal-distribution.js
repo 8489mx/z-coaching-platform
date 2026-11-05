@@ -341,13 +341,28 @@ function addReason(reasons, reasonCodes, code) {
   reasons.push({ code, message: REASON_MESSAGES[code] });
 }
 
-function allocateEvenly(total, count) {
-  const base = Math.floor(total / count);
-  const remainder = total - base * count;
-  return Array.from(
-    { length: count },
-    (_unused, index) => base + (index < remainder ? 1 : 0),
-  );
+// Q28 snack-share redistribution (2026-11-05): protein used to be split
+// evenly across meals while calories, fat and carbohydrate followed the
+// calorie weights, so a 15%-of-calories snack was asked to carry 25% of the
+// day's protein — 45 g of protein in a ~365 kcal snack — and its planned
+// calories ran at ~19% of the day on a 15% weight. Protein now follows the
+// same calorie weights as the other macros, so every meal's planned
+// calories sit on its own weight share and the day still closes exactly.
+function allocateByCalorieWeights(total, weights) {
+  return allocateByLargestRemainder(total, weights);
+}
+
+// A snack carries no vegetables, so a full-weight fiber share is not
+// servable in its carbohydrate budget: 4 g of fiber at 24 g of carbohydrate
+// needs ~30 g of oats on top of the yogurt that already fills the carbs,
+// which breaks the carbohydrate tolerance. A snack therefore counts at half
+// its calorie weight for fiber; the freed share goes to the full meals,
+// which carry vegetables and absorb it inside tolerance. The day total
+// still closes exactly (largest-remainder allocation over the effective
+// weights).
+function fiberWeightsForRoles(roles, weights) {
+  return roles.map((role, index) =>
+    role === NutritionMealRole.SNACK ? weights[index] / 2 : weights[index]);
 }
 
 function allocateByLargestRemainder(total, weights) {
@@ -504,9 +519,9 @@ export function buildNutritionMealDistribution({
     fiber_g: nutritionMacroTargets.fiber_target_g,
   };
 
-  const proteinAllocations = allocateEvenly(
+  const proteinAllocations = allocateByCalorieWeights(
     nutritionMacroTargets.protein.target_g,
-    preferredMealCount,
+    distributionMap.weights,
   );
   const fatAllocations = allocateByLargestRemainder(
     nutritionMacroTargets.fat.target_g,
@@ -518,7 +533,7 @@ export function buildNutritionMealDistribution({
   );
   const fiberAllocations = allocateByLargestRemainder(
     nutritionMacroTargets.fiber_target_g,
-    distributionMap.weights,
+    fiberWeightsForRoles(distributionMap.roles, distributionMap.weights),
   );
 
   output.meals = distributionMap.roles.map((role, index) => {

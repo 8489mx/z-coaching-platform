@@ -252,34 +252,34 @@ test("actual example flows end to end into the exact meal distribution", () => {
       sequence: 1,
       role: NutritionMealRole.BREAKFAST,
       policy_calorie_weight_percent: 30,
-      protein_g: 54,
+      protein_g: 48,
       fat_g: 18,
       carbohydrate_g: 67,
       fiber_g: 7,
-      planned_calories: 646,
-      actual_calorie_percent: 31.1,
+      planned_calories: 622,
+      actual_calorie_percent: 29.9,
     },
     {
       sequence: 2,
       role: NutritionMealRole.MAIN_MEAL,
       policy_calorie_weight_percent: 35,
-      protein_g: 53,
+      protein_g: 56,
       fat_g: 21,
       carbohydrate_g: 79,
       fiber_g: 9,
-      planned_calories: 717,
-      actual_calorie_percent: 34.5,
+      planned_calories: 729,
+      actual_calorie_percent: 35,
     },
     {
       sequence: 3,
       role: NutritionMealRole.EVENING_MEAL,
       policy_calorie_weight_percent: 35,
-      protein_g: 53,
+      protein_g: 56,
       fat_g: 21,
       carbohydrate_g: 79,
       fiber_g: 9,
-      planned_calories: 717,
-      actual_calorie_percent: 34.5,
+      planned_calories: 729,
+      actual_calorie_percent: 35,
     },
   ]);
   assert.deepEqual(distribution.constraints, nutritionMacroTargets.constraints);
@@ -292,7 +292,7 @@ test("actual example flows end to end into the exact meal distribution", () => {
   ]);
   assert.deepEqual(
     distribution.meals.map((meal) => meal.planned_calories),
-    [646, 717, 717],
+    [622, 729, 729],
   );
 });
 
@@ -420,7 +420,7 @@ test("four-meal policy uses the exact roles and 25/30/15/30 weights", () => {
     [25, 30, 15, 30],
   );
   assert.deepEqual(distribution.meals.map((meal) => meal.planned_calories),
-    [576, 676, 394, 663]);
+    [576, 700, 346, 687]);
 });
 
 test("five-meal policy uses the exact roles and 20/10/30/10/30 weights", () => {
@@ -438,15 +438,15 @@ test("five-meal policy uses the exact roles and 20/10/30/10/30 weights", () => {
     [20, 10, 30, 10, 30],
   );
   assert.deepEqual(distribution.meals.map((meal) => meal.planned_calories),
-    [461, 283, 652, 270, 643]);
+    [461, 239, 700, 222, 687]);
 });
 
-test("protein is distributed evenly and closes exactly to its daily target", () => {
+test("protein follows the meal calorie weights and closes exactly to its daily target", () => {
   for (const [mealCount, expected] of [
     [2, [58, 57]],
-    [3, [39, 38, 38]],
-    [4, [29, 29, 29, 28]],
-    [5, [23, 23, 23, 23, 23]],
+    [3, [35, 40, 40]],
+    [4, [29, 35, 17, 34]],
+    [5, [23, 12, 35, 11, 34]],
   ]) {
     const values = distributionForMealCount(mealCount).meals
       .map((meal) => meal.protein_g);
@@ -477,14 +477,41 @@ test("carbohydrate uses deterministic largest-remainder allocation", () => {
   );
 });
 
-test("fiber uses deterministic largest-remainder allocation", () => {
+test("a snack's planned calories sit on its calorie weight, not above it (Q28)", () => {
+  // The old even protein split asked a 15% snack to carry 25% of the
+  // protein, so its planned calories ran at ~17-19% of the day on a 15%
+  // weight and the snack overshot before any food was chosen.
+  const four = distributionForMealCount(4);
+  assert.equal(four.meals[2].role, NutritionMealRole.SNACK);
+  assert.equal(four.meals[2].actual_calorie_percent, 15);
+  assert.ok(Math.abs(four.meals[2].planned_calories - 2310 * 0.15) <= 5);
+  const five = distributionForMealCount(5);
+  for (const snack of [five.meals[1], five.meals[3]]) {
+    assert.equal(snack.role, NutritionMealRole.SNACK);
+    assert.ok(Math.abs(snack.actual_calorie_percent - 10) <= 0.5);
+  }
+});
+
+test("a snack's fiber share is below its calorie weight (Q28)", () => {
+  // No vegetables fit in a snack, so a full-weight fiber share (4 g at
+  // 24 g of carbohydrate) is not servable; the freed grams go to the
+  // full meals and the day still closes exactly.
+  const four = distributionForMealCount(4);
+  assert.equal(four.meals[2].fiber_g, 2);
+  assert.equal(
+    four.meals.reduce((total, meal) => total + meal.fiber_g, 0),
+    25,
+  );
+});
+
+test("fiber uses deterministic largest-remainder allocation with a snack at half weight", () => {
   assert.deepEqual(
     distributionForMealCount(4).meals.map((meal) => meal.fiber_g),
-    [6, 8, 4, 7],
+    [7, 8, 2, 8],
   );
   assert.deepEqual(
     distributionForMealCount(5).meals.map((meal) => meal.fiber_g),
-    [5, 3, 8, 2, 7],
+    [6, 2, 8, 1, 8],
   );
 });
 
@@ -546,7 +573,7 @@ test("actual calorie percentages use target calories and one decimal place", () 
   const distribution = distributionForMealCount(3);
   assert.deepEqual(
     distribution.meals.map((meal) => meal.actual_calorie_percent),
-    [30.6, 34.8, 34.6],
+    [29.9, 35.1, 34.9],
   );
   for (const meal of distribution.meals) {
     assert.equal(

@@ -672,10 +672,12 @@ test("actual example flows end to end into the exact assembly blueprint", () => 
   // Stage 1: the example intake is a fat-loss client, so the distribution now
   // carries the deficit target (was the maintenance-based 707 kcal golden).
   // Protein reconciled to the served basis (160 g/day): breakfast carries
-  // 54 g protein and 67 g carbs instead of 44 g / 77 g.
+  // 54 g protein and 67 g carbs instead of 44 g / 77 g. Q28: protein now
+  // follows each meal's calorie share, so breakfast carries 48 g (29.9% of
+  // 160 g) while the two bigger meals carry 56 g each.
   assert.deepEqual(blueprint.meals[0].target, {
-    planned_calories: 646,
-    protein_g: 54,
+    planned_calories: 622,
+    protein_g: 48,
     fat_g: 18,
     carbohydrate_g: 67,
     fiber_g: 7,

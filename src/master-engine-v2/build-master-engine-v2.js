@@ -1053,47 +1053,78 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   const platesForCalories = targetCalories >= 5200 ? 6 : targetCalories >= 4200 ? 5 : targetCalories >= 3200 ? 4 : 0;
   const mealCount = Math.max(chosenMealCount, platesForCalories);
   const mealAddedForCalories = mealCount > chosenMealCount;
-  // How a day is shared out. Protein is spread evenly over every sitting, snacks included: the
-  // muscle answers to each meal on its own (about 0.3-0.4 g/kg a sitting, Moore 2015 / Schoenfeld
-  // & Aragon 2018), so an even spread is worth more than the same protein piled into two plates.
-  // Carbohydrate and fat follow the size of the sitting - a snack is a snack - and a snack of
-  // protein with a little carbohydrate is also what keeps a client full between meals.
+  // How a day is shared out. Carbohydrate and fat follow the size of the
+  // sitting - a snack is a snack - and a snack of protein with a little
+  // carbohydrate is also what keeps a client full between meals.
+  // Q28 snack-share redistribution (2026-11-05): protein used to be spread
+  // evenly over every sitting, snacks included, while carbohydrate and fat
+  // followed the size of the sitting. A 15%-of-calories snack was therefore
+  // asked to carry 25% of the day's protein - 45-52 g in a ~365 kcal snack -
+  // and the culinary snack overshot its calories by +31-71 kcal in 19 of 20
+  // clients, because no snack plate can hold that much protein inside its
+  // energy. Protein now follows the same energy weight as carbohydrate and
+  // fat (largest remainder, so the day still closes exactly): a snack takes
+  // only its own share, and the full meals take the rest. Each full meal
+  // still carries roughly 0.4 g/kg a sitting (Moore 2015 / Schoenfeld &
+  // Aragon 2018).
   const SNACK_ENERGY_SHARE = { 4: 0.15, 5: 0.14, 6: 0.12 };
   const isSnackMeal = (mealNumber) => mealCount >= 4 && mealNumber > 3;
   // P1-B5: protein is split by largest remainder, not per-meal rounding.
   // Math.round(proteinG / mealCount) per meal drifted the sum away from the
-  // daily total (e.g. 154 g over 4 meals came out as 156 g). Equal shares,
-  // so the earliest meals take the leftover grams; the sum is exact.
-  const allocateMealProtein = (totalG, count) => {
-    const base = Math.floor(totalG / count);
-    const remainder = totalG - base * count;
-    return Array.from({ length: count }, (_unused, idx) => base + (idx < remainder ? 1 : 0));
+  // daily total (e.g. 154 g over 4 meals came out as 156 g). The earliest
+  // meals take the leftover grams; the sum is exact.
+  const allocateByLargestRemainder = (total, weights) => {
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+    const allocations = weights.map((weight) =>
+      Math.floor(total * weight / totalWeight));
+    const remainders = weights.map((weight, index) => ({
+      index,
+      remainder: total * weight % totalWeight,
+    }));
+    let remaining = total - allocations.reduce((sum, value) => sum + value, 0);
+    remainders.sort(
+      (left, right) =>
+        right.remainder - left.remainder || left.index - right.index,
+    );
+    for (let index = 0; index < remaining; index += 1) {
+      allocations[remainders[index].index] += 1;
+    }
+    return allocations;
   };
-  const mealProteinAllocations = allocateMealProtein(proteinG, mealCount);
-  const mealDistribution = [];
+  const mealRatios = [];
   for (let i = 1; i <= mealCount; i++) {
     let fRatio = 1 / mealCount;
     let cRatio = 1 / mealCount;
+    if (mealCount === 3) {
+      if (i === 1) cRatio = 0.30;
+      else if (i === 2) cRatio = 0.40;
+      else cRatio = 0.30;
+    } else if (mealCount >= 4) {
+      const snackShare = SNACK_ENERGY_SHARE[mealCount] || 0.15;
+      const snacks = mealCount - 3;
+      cRatio = fRatio = isSnackMeal(i) ? snackShare : (1 - snacks * snackShare) / 3;
+    }
+    mealRatios.push({ cRatio, fRatio });
+  }
+  const mealProteinAllocations = allocateByLargestRemainder(
+    proteinG,
+    mealRatios.map(({ cRatio, fRatio }) => carbG * cRatio * 4 + fatG * fRatio * 9),
+  );
+  const mealDistribution = [];
+  for (let i = 1; i <= mealCount; i++) {
+    const { cRatio, fRatio } = mealRatios[i - 1];
 
     let mealNameAr = `الوجبة ${i}`;
     if (mealCount === 2) {
       mealNameAr = i === 1 ? "الوجبة الأولى (كسر الصيام / إفطار كبير)" : "الوجبة الثانية (الوجبة الرئيسية / السحور أو العشاء)";
     } else if (mealCount === 3) {
       mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة قبل التمرين / الغداء" : "وجبة العشاء / بعد التمرين";
-      if (i === 1) cRatio = 0.30;
-      else if (i === 2) cRatio = 0.40;
-      else cRatio = 0.30;
     } else if (mealCount >= 4) {
       // The names say what the plate actually is: the kitchen writes breakfast, lunch and dinner
       // first and the snacks after them, and the names used to be shifted against it - meal 2 was
       // called a protein snack and came out as lunch.
       const SNACK_NAMES = ["سناك أول", "سناك تاني", "سناك تالت"];
       mealNameAr = i === 1 ? "وجبة الإفطار" : i === 2 ? "وجبة الغداء" : i === 3 ? "وجبة العشاء" : SNACK_NAMES[i - 4] || `سناك ${i - 3}`;
-      // A snack used to take an equal share of the day: the "snack" of a 3574 kcal day was 927 kcal,
-      // 357 g of sweet potato and 290 g of yogurt. It keeps its protein and gives back the rest.
-      const snackShare = SNACK_ENERGY_SHARE[mealCount] || 0.15;
-      const snacks = mealCount - 3;
-      cRatio = fRatio = isSnackMeal(i) ? snackShare : (1 - snacks * snackShare) / 3;
     }
 
     mealDistribution.push({

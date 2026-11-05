@@ -1173,7 +1173,7 @@ test("real closed meals expose only the approved safe Core swaps", () => {
       alternative.food_code,
       alternative.grams,
       alternative.objective_score,
-    ]), [["PASTA_SPAGHETTI_COOKED", 150, 1.78]]);
+    ]), [["PASTA_SPAGHETTI_COOKED", 150, 1.95]]);
   // P1-B6: totals and residuals recalibrated for the relative-tolerance
   // objective (the swap itself — pasta at 150 g, and only pasta — is
   // unchanged, as are the no-swap assertions below). The 175 g -> 150 g
@@ -1184,21 +1184,23 @@ test("real closed meals expose only the approved safe Core swaps", () => {
   // (oats/carrot base values rounded; the swap itself is unchanged).
   // Protein reconciliation: the main-meal target is now 53 g protein /
   // 79 g carbs, so the pasta-swapped meal totals move with it.
+  // Q28: the main-meal protein target is now 56 g (its calorie share),
+  // so the totals and residuals move again by the same 3 g.
   assert.deepEqual(riceAlternative.projected_meal_totals, {
-    calories_kcal: 728.07,
-    protein_g: 56.07,
-    fat_g: 22.48,
+    calories_kcal: 744.57,
+    protein_g: 59.17,
+    fat_g: 22.84,
     carbohydrate_g: 75.37,
     fiber_g: 10.85,
   });
   // P1-B7: residuals shifted with the totals (same 2-decimal rounding
   // fix; targets unchanged, so each residual moves by its total's delta).
   // Protein reconciliation: residuals are now measured against the
-  // 53 g protein / 79 g carbs main-meal target.
+  // 53 g protein / 79 g carbs main-meal target (56 g under Q28).
   assert.deepEqual(riceAlternative.projected_meal_residual, {
-    calories_kcal: 11.07,
-    protein_g: 3.07,
-    fat_g: 1.48,
+    calories_kcal: 15.57,
+    protein_g: 3.17,
+    fat_g: 1.84,
     carbohydrate_g: -3.63,
     fiber_g: 1.85,
   });
@@ -1214,30 +1216,31 @@ test("real closed meals expose only the approved safe Core swaps", () => {
   // and chicken thighs are still refused (their fat would breach the
   // meal's energy/fat tolerance) — the engine's own gating, working.
   // Protein reconciliation: the fish portions grow 130 g -> 170 g because
-  // the main-meal protein target grew 43 g -> 53 g.
+  // the main-meal protein target grew 43 g -> 53 g. Q28: they grow again
+  // 170 g -> 180 g because the target is now 56 g (its calorie share).
   assert.deepEqual(findItem(result,
     "CHICKEN_BREAST_ROASTED_SKINLESS", 1).alternatives, [
     {
       food_code: "KING_MACKEREL_COOKED",
-      grams: 170,
+      grams: 180,
       nutrition: {
-        calories_kcal: 227.8,
-        protein_g: 44.2,
-        fat_g: 4.35,
+        calories_kcal: 241.2,
+        protein_g: 46.8,
+        fat_g: 4.61,
         carbohydrate_g: 0,
         fiber_g: 0,
       },
       projected_meal_totals: {
-        calories_kcal: 716.87,
-        protein_g: 52.91,
-        fat_g: 20.94,
+        calories_kcal: 730.27,
+        protein_g: 55.51,
+        fat_g: 21.2,
         carbohydrate_g: 78.62,
         fiber_g: 8.85,
       },
       projected_meal_residual: {
-        calories_kcal: -0.13,
-        protein_g: -0.1,
-        fat_g: -0.06,
+        calories_kcal: 1.27,
+        protein_g: -0.49,
+        fat_g: 0.2,
         carbohydrate_g: -0.39,
         fiber_g: -0.15,
       },
@@ -1248,29 +1251,29 @@ test("real closed meals expose only the approved safe Core swaps", () => {
         carbohydrate_g: true,
         fiber_g: true,
       },
-      objective_score: 0.01,
+      objective_score: 0.03,
     },
     {
       food_code: "TILAPIA_COOKED",
-      grams: 170,
+      grams: 180,
       nutrition: {
-        calories_kcal: 217.6,
-        protein_g: 44.46,
-        fat_g: 4.51,
+        calories_kcal: 230.4,
+        protein_g: 47.07,
+        fat_g: 4.77,
         carbohydrate_g: 0,
         fiber_g: 0,
       },
       projected_meal_totals: {
-        calories_kcal: 706.67,
-        protein_g: 53.16,
-        fat_g: 21.1,
+        calories_kcal: 719.47,
+        protein_g: 55.78,
+        fat_g: 21.36,
         carbohydrate_g: 78.62,
         fiber_g: 8.85,
       },
       projected_meal_residual: {
-        calories_kcal: -10.33,
-        protein_g: 0.16,
-        fat_g: 0.1,
+        calories_kcal: -9.53,
+        protein_g: -0.23,
+        fat_g: 0.36,
         carbohydrate_g: -0.39,
         fiber_g: -0.15,
       },
@@ -1281,14 +1284,14 @@ test("real closed meals expose only the approved safe Core swaps", () => {
         carbohydrate_g: true,
         fiber_g: true,
       },
-      objective_score: 0.07,
+      objective_score: 0.08,
     },
   ]);
   // P1-B6: the main meal no longer carried cucumber — under the relative-
   // tolerance objective the optimizer fit the old target with carrot and
   // tomato alone. Protein reconciliation changed the main-meal target
-  // (53 g protein / 79 g carbs), so the optimizer fits cucumber back in
-  // (125 g) — it offers no safe swap (NO_SAFE_SWAP_AVAILABLE).
+  // (53 g protein / 79 g carbs, now 56 g under Q28), so the optimizer fits
+  // cucumber back in (125 g) — it offers no safe swap (NO_SAFE_SWAP_AVAILABLE).
   assert.equal(findItem(result, "CUCUMBER_WITH_PEEL_RAW", 1).grams, 125);
   assert.deepEqual(
     findItem(result, "CUCUMBER_WITH_PEEL_RAW", 1).alternatives,

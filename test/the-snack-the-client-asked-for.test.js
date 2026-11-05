@@ -57,8 +57,9 @@ test("the day the client eats is still the day that was planned", () => {
   }
 });
 
-// The snack keeps a full share of the day's protein - the muscle answers to each sitting on its own
-// - and gives back the carbohydrate and the fat, so it eats smaller than any meal without being a
+// Q28: the snack takes only its own share of the day's protein - its calorie share, not a full
+// meal's share - so the full meals keep the protein each sitting needs (Moore 2015 / Schoenfeld &
+// Aragon 2018: ~0.4 g/kg per full meal). It still eats smaller than any meal without being a
 // plate of nothing.
 test("the snack is the size of a snack, not a fourth dinner", () => {
   const withSnack = plan("3_meals_snack");
@@ -69,7 +70,10 @@ test("the snack is the size of a snack, not a fourth dinner", () => {
   assert.ok(snack < smallestMeal * 0.8, `the snack is ${snack} kcal against a ${smallestMeal} kcal meal`);
   assert.ok(snack > withSnack.macro_targets.calories_kcal * 0.12, `the snack is only ${snack} kcal`);
   const proteinOf = (meal) => (meal.items || []).reduce((total, item) => total + (Number(item.protein_g) || 0), 0);
-  assert.ok(proteinOf(meals[3]) >= proteinOf(meals[0]) * 0.8, "the snack keeps its share of the protein");
+  const snackProtein = proteinOf(meals[3]);
+  const breakfastProtein = proteinOf(meals[0]);
+  assert.ok(snackProtein < breakfastProtein * 0.65, `the snack keeps a full meal's protein: ${snackProtein} g against ${breakfastProtein} g`);
+  assert.ok(snackProtein > breakfastProtein * 0.35, `the snack carries almost no protein: ${snackProtein} g against ${breakfastProtein} g`);
 });
 
 test("a day too big for four plates gets a fifth instead of bigger plates", () => {

@@ -10,10 +10,12 @@ import { collectCoachAlerts } from "../frontend/src/utils/coachAlerts.js";
 
 /**
  * How a day is shared between its sittings. Every plate used to take the same share of everything,
- * so a "snack" was a fourth dinner, and protein - which the muscle answers to one sitting at a time
- * (about 0.3-0.4 g/kg a sitting; Moore 2015, Schoenfeld & Aragon 2018) - was spread by plate size
- * instead of evenly. Protein is even across the day now; carbohydrate and fat follow the size of the
- * sitting. A plate holds about a thousand calories, so a bigger day gets more plates, not bigger ones.
+ * so a "snack" was a fourth dinner. Carbohydrate and fat follow the size of the sitting, and protein
+ * does too now (Q28, 2026-11-05): an even protein spread asked a 15%-of-calories snack to carry 25%
+ * of the day's protein, and the snack overshot its calories by +31-71 kcal in 19 of 20 clients. The
+ * full meals still share protein evenly between themselves (about 0.3-0.4 g/kg a sitting; Moore 2015,
+ * Schoenfeld & Aragon 2018); a snack takes only its own energy share. A plate holds about a thousand
+ * calories, so a bigger day gets more plates, not bigger ones.
  */
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, "data/catalogs/core-global-food-batch-v1.json"), "utf8"));
@@ -33,11 +35,17 @@ const plan = ({ weight = "85", height = "178", goal = "fat_loss", neat = "modera
 
 const kcalOf = (meal) => (meal.items || []).reduce((total, item) => total + (Number(item.calories_kcal) || 0), 0);
 
-test("protein is spread evenly over every sitting, snacks included", () => {
+test("protein is even across the full meals, and a snack takes only its own share (Q28)", () => {
   const targets = plan().nutrition_program.targets;
   const protein = targets.meal_distribution.map((meal) => meal.protein_g);
-  const spread = (Math.max(...protein) - Math.min(...protein)) / Math.max(...protein);
-  assert.ok(spread <= 0.05, `protein per sitting: ${protein.join(", ")}`);
+  const fullMeals = protein.slice(0, 3);
+  const spread = (Math.max(...fullMeals) - Math.min(...fullMeals)) / Math.max(...fullMeals);
+  assert.ok(spread <= 0.05, `protein per full meal: ${fullMeals.join(", ")}`);
+  const total = protein.reduce((sum, value) => sum + value, 0);
+  assert.equal(total, targets.protein_g, "protein still closes exactly to the daily target");
+  const snackShare = protein[3] / total;
+  assert.ok(Math.abs(snackShare - 0.15) <= 0.01, `snack protein share: ${snackShare}`);
+  assert.ok(protein[3] < Math.min(...fullMeals), `snack protein ${protein[3]} against full meals ${fullMeals.join(", ")}`);
 });
 
 test("carbohydrate and fat follow the size of the sitting", () => {

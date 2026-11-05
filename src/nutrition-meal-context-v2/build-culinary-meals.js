@@ -4007,44 +4007,134 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           : "سناك زبادي يوناني مع بطاطا حلوة مشوية";
         recipeConceptDesc = "سناك مشبع فيه بروتين ونشويات ودهون صحية، بياخد نصيبه من أكل اليوم.";
 
-        // Fat first: a handful of nuts (seeds for a nut allergy), none for a kidney protein cap
-        // since both add protein; the rest of the fat is olive oil on the sweet potato.
+        // Q28 snack-share fix (2026-11-05): size the snack jointly, not food
+        // by food. The old order sized nuts from the full fat target, sweet
+        // potato from the full carb target minus nuts, and yogurt from what
+        // was left, so the protein foods' own carbs and fat (yogurt ~9 g
+        // carbs, cottage ~5 g) landed on top of items already sized to the
+        // full targets. The plate ran +5-7 g carbs and +30-70 kcal over in
+        // 19 of 20 clients, and trim could only cut a third of one donor.
+        // Now protein is sized first, nuts from the fat the protein foods
+        // leave, and sweet potato from the carbs nuts and protein foods
+        // leave; the oil tops up only the fat still missing. Densities come
+        // from the canonical table (yogurt 59 kcal/100 g, not the hardcoded
+        // 70 that alone added ~30 kcal to a 320 g tub).
         const kidneyProteinCapped = Boolean(universalTargets.clinical_guardrails?.kidney_protein_capped);
         const nutCode = kidneyProteinCapped ? null : isNutsExcluded ? "HEMP_CHIA_SEEDS" : "RAW_ALMONDS";
         const nutFood = nutCode && isFoodClinicallySafe(nutCode, allergenContext) ? FOOD_SWAP_DATABASE[nutCode] : null;
-        const nutGrams = nutFood ? Math.min(SNACK_NUT_MAX_G, Math.round((Math.max(0, targetF) / nutFood.fat_per_100g) * 100)) : 0;
+        // First pass: nuts sized from the full fat target, only to estimate
+        // the protein and carbs they bring into the protein sizing below.
+        const nutEstGrams = nutFood ? Math.min(SNACK_NUT_MAX_G, Math.round((Math.max(0, targetF) / nutFood.fat_per_100g) * 100)) : 0;
+        const nutEstMacros = nutEstGrams > 0 ? {
+          protein_g: Math.round((nutEstGrams * nutFood.protein_per_100g) / 100),
+          carb_g: Math.round((nutEstGrams * nutFood.carb_per_100g) / 100),
+          fat_g: Math.round((nutEstGrams * nutFood.fat_per_100g) / 100),
+        } : { protein_g: 0, carb_g: 0, fat_g: 0 };
+        // The potato will be sized to the carbs left after nuts, so its
+        // protein is ~2 g per 21 g of those carbs.
+        const sweetPotatoEntry = FOOD_SWAP_DATABASE.SWEET_POTATO;
+        const potatoEstGrams = Math.round(Math.max(0, targetC - nutEstMacros.carb_g) / (sweetPotatoEntry.carb_per_100g / 100));
+        const potatoEstProtein = Math.round(potatoEstGrams * (sweetPotatoEntry.protein_per_100g / 100));
+
+        // Protein first: yogurt capped at a tub and a half, then cottage
+        // cheese (or powder) for the rest — or chicken when dairy is out.
+        // The yogurt is sized from the estimated nuts; the second protein
+        // food is sized below, after the final nuts are known, because the
+        // nuts shrink once the protein foods take their fat — sizing it from
+        // the estimate left the snack 3-4 g short on protein.
+        const remP = Math.max(10, targetP - potatoEstProtein - nutEstMacros.protein_g);
+        const yogurtEntry = FOOD_SWAP_DATABASE.GREEK_YOGURT;
+        const chickenEntry = FOOD_SWAP_DATABASE.CHICKEN_BREAST;
+        let yogurtGrams = 0;
+        let yogurtProtein = 0;
+        let yogurtCarb = 0;
+        let yogurtFat = 0;
+        let secondCode = null;
+        let secondFood = null;
+        let secondGrams = 0;
+        let secondProtein = 0;
+        let secondCarb = 0;
+        let secondFat = 0;
+        let chickenGrams = 0;
+        let chickenFat = 0;
+        if (!isDairyExcluded) {
+          // Protein above a tub and a half of yogurt goes to a scoop of powder (or a second protein
+          // food when the client has no powder), instead of 370 g of yogurt in one sitting.
+          const wholeYogurtGrams = Math.round(remP / (yogurtEntry.protein_per_100g / 100));
+          yogurtGrams = Math.min(SNACK_YOGURT_COMFORTABLE_G, wholeYogurtGrams);
+          yogurtProtein = Math.round((yogurtGrams * yogurtEntry.protein_per_100g) / 100);
+          yogurtCarb = Math.round((yogurtGrams * yogurtEntry.carb_per_100g) / 100);
+          yogurtFat = Math.round((yogurtGrams * yogurtEntry.fat_per_100g) / 100);
+          // Food before a supplement: the intake never asks whether the client keeps protein powder
+          // at home, so the snack reaches for cottage cheese first - a food everybody has - and only
+          // falls back to a scoop when cheese is out of the question.
+          const secondProteinGEst = Math.max(0, remP - yogurtProtein);
+          if (secondProteinGEst >= 5) {
+            const powderCode = proteinPowderAvailable
+              ? (isDairyExcluded || isVegan ? "PEA_RICE_PROTEIN_POWDER" : "WHEY_PROTEIN")
+              : null;
+            secondCode = isFoodClinicallySafe("COTTAGE_CHEESE", allergenContext)
+              ? "COTTAGE_CHEESE"
+              : (powderCode && isFoodClinicallySafe(powderCode, allergenContext) ? powderCode : null);
+            secondFood = secondCode ? FOOD_SWAP_DATABASE[secondCode] : null;
+          }
+        } else {
+          chickenGrams = Math.round(remP / (chickenEntry.protein_per_100g / 100));
+          chickenFat = Math.round((chickenGrams * chickenEntry.fat_per_100g) / 100);
+        }
+
+        // Nuts, final: only the fat the protein foods leave behind. The
+        // second food's fat is estimated here (its exact grams are sized
+        // below, after the final nuts); the oil step at the end tops up
+        // whatever fat is still missing, so the estimate only has to be
+        // close, not exact.
+        const secondFatEst = secondFood
+          ? Math.round((Math.round((Math.max(0, remP - yogurtProtein) / secondFood.protein_per_100g) * 100) * secondFood.fat_per_100g) / 100)
+          : 0;
+        const proteinFoodsFatBeforeSecond = yogurtFat + chickenFat + secondFatEst;
+        const nutGrams = nutFood ? Math.min(SNACK_NUT_MAX_G, Math.round((Math.max(0, targetF - proteinFoodsFatBeforeSecond) / nutFood.fat_per_100g) * 100)) : 0;
         const nutMacros = nutGrams > 0 ? {
           protein_g: Math.round((nutGrams * nutFood.protein_per_100g) / 100),
           carb_g: Math.round((nutGrams * nutFood.carb_per_100g) / 100),
           fat_g: Math.round((nutGrams * nutFood.fat_per_100g) / 100),
         } : { protein_g: 0, carb_g: 0, fat_g: 0 };
 
-        // Carbs
-        const remC = Math.max(0, targetC - nutMacros.carb_g);
-        const sweetPotatoGrams = Math.round(remC / 0.21);
-        items.push({
-          food_code: "SWEET_POTATO",
-          name_ar: "بطاطا حلوة مشوية مع نصف تفاحة طازجة",
-          name_en: "Baked Sweet Potato & Apple",
-          category: "CARBS",
-          portion_g: sweetPotatoGrams,
-          household_measurement: `${sweetPotatoGrams} جم مشوية`,
-          protein_g: Math.round(sweetPotatoGrams * 0.02),
-          carb_g: remC,
-          fat_g: 0.1,
-          calories_kcal: Math.round(sweetPotatoGrams * 0.95),
-          swaps: generateSmartSwaps("CARBS", sweetPotatoGrams, "SWEET_POTATO", "SNACK", 5, allergenContext),
-        });
+        // Second protein food, sized from the final nuts: what the yogurt
+        // and the nuts actually carry, not the first-pass estimate.
+        if (secondFood) {
+          const secondProteinG = Math.max(0, targetP - potatoEstProtein - nutMacros.protein_g - yogurtProtein);
+          if (secondProteinG >= 5) {
+            secondGrams = Math.round((secondProteinG / secondFood.protein_per_100g) * 100);
+            secondProtein = Math.round((secondGrams * secondFood.protein_per_100g) / 100);
+            secondCarb = Math.round((secondGrams * secondFood.carb_per_100g) / 100);
+            secondFat = Math.round((secondGrams * secondFood.fat_per_100g) / 100);
+          }
+        }
 
-        // Protein
-        const remP = Math.max(10, targetP - Math.round(sweetPotatoGrams * 0.02) - nutMacros.protein_g);
+        // Sweet potato, final: only the carbs nuts and protein foods leave.
+        const proteinFoodsFat = yogurtFat + secondFat + chickenFat;
+        const proteinFoodsCarb = yogurtCarb + secondCarb;
+        const remC = Math.max(0, targetC - nutMacros.carb_g - proteinFoodsCarb);
+        const sweetPotatoGrams = Math.round(remC / (sweetPotatoEntry.carb_per_100g / 100));
+        const sweetPotatoFat = Math.round((sweetPotatoGrams * sweetPotatoEntry.fat_per_100g) / 100);
+
+        if (sweetPotatoGrams > 0) {
+          items.push({
+            food_code: "SWEET_POTATO",
+            name_ar: "بطاطا حلوة مشوية مع نصف تفاحة طازجة",
+            name_en: "Baked Sweet Potato & Apple",
+            category: "CARBS",
+            portion_g: sweetPotatoGrams,
+            household_measurement: `${sweetPotatoGrams} جم مشوية`,
+            protein_g: Math.round(sweetPotatoGrams * (sweetPotatoEntry.protein_per_100g / 100)),
+            carb_g: remC,
+            fat_g: sweetPotatoFat,
+            calories_kcal: Math.round((sweetPotatoGrams * sweetPotatoEntry.kcal_per_100g) / 100),
+            swaps: generateSmartSwaps("CARBS", sweetPotatoGrams, "SWEET_POTATO", "SNACK", 5, allergenContext),
+          });
+        }
+
         if (!isDairyExcluded) {
-          // Protein above a tub and a half of yogurt goes to a scoop of powder (or a second protein
-          // food when the client has no powder), instead of 370 g of yogurt in one sitting.
-          const wholeYogurtGrams = Math.round(remP / 0.10);
-          const yogurtGrams = Math.min(SNACK_YOGURT_COMFORTABLE_G, wholeYogurtGrams);
-          const yogurtProtein = Math.round(yogurtGrams * 0.10);
-          const secondProteinG = Math.max(0, remP - yogurtProtein);
           items.push({
             food_code: "GREEK_YOGURT",
             name_ar: "زبادي يوناني طبيعي قليل الدسم عالي البروتين",
@@ -4053,42 +4143,28 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             portion_g: yogurtGrams,
             household_measurement: `${yogurtGrams} جم (${(yogurtGrams / 170).toFixed(1)} علبة كبيرة)`,
             protein_g: yogurtProtein,
-            carb_g: Math.round(yogurtGrams * 0.035),
-            fat_g: 1.5,
-            calories_kcal: Math.round(yogurtGrams * 0.70),
+            carb_g: yogurtCarb,
+            fat_g: yogurtFat,
+            calories_kcal: Math.round((yogurtGrams * yogurtEntry.kcal_per_100g) / 100),
             swaps: generateSmartSwaps("PROTEIN", yogurtGrams, "GREEK_YOGURT", "SNACK", 0, allergenContext),
           });
 
-          if (secondProteinG >= 5) {
-            // Food before a supplement: the intake never asks whether the client keeps protein powder
-            // at home, so the snack reaches for cottage cheese first - a food everybody has - and only
-            // falls back to a scoop when cheese is out of the question.
-            const powderCode = proteinPowderAvailable
-              ? (isDairyExcluded || isVegan ? "PEA_RICE_PROTEIN_POWDER" : "WHEY_PROTEIN")
-              : null;
-            const secondCode = isFoodClinicallySafe("COTTAGE_CHEESE", allergenContext)
-              ? "COTTAGE_CHEESE"
-              : (powderCode && isFoodClinicallySafe(powderCode, allergenContext) ? powderCode : null);
-            const secondFood = secondCode ? FOOD_SWAP_DATABASE[secondCode] : null;
-            if (secondFood) {
-              const grams = Math.round((secondProteinG / secondFood.protein_per_100g) * 100);
-              items.push({
-                food_code: secondCode,
-                name_ar: secondFood.name_ar,
-                name_en: secondFood.name_en,
-                category: "PROTEIN",
-                portion_g: grams,
-                household_measurement: secondCode === "COTTAGE_CHEESE" ? `${grams} جم` : `${grams} جم (سكوب)`,
-                protein_g: Math.round((grams * secondFood.protein_per_100g) / 100),
-                carb_g: Math.round((grams * secondFood.carb_per_100g) / 100),
-                fat_g: Math.round((grams * secondFood.fat_per_100g) / 100),
-                calories_kcal: Math.round((grams * (secondFood.protein_per_100g * 4 + secondFood.carb_per_100g * 4 + secondFood.fat_per_100g * 9)) / 100),
-                swaps: generateSmartSwaps("PROTEIN", grams, secondCode, "SNACK", 0, allergenContext),
-              });
-            }
+          if (secondFood && secondGrams > 0) {
+            items.push({
+              food_code: secondCode,
+              name_ar: secondFood.name_ar,
+              name_en: secondFood.name_en,
+              category: "PROTEIN",
+              portion_g: secondGrams,
+              household_measurement: secondCode === "COTTAGE_CHEESE" ? `${secondGrams} جم` : `${secondGrams} جم (سكوب)`,
+              protein_g: secondProtein,
+              carb_g: secondCarb,
+              fat_g: secondFat,
+              calories_kcal: Math.round((secondGrams * (secondFood.protein_per_100g * 4 + secondFood.carb_per_100g * 4 + secondFood.fat_per_100g * 9)) / 100),
+              swaps: generateSmartSwaps("PROTEIN", secondGrams, secondCode, "SNACK", 0, allergenContext),
+            });
           }
         } else {
-          const chickenGrams = Math.round(remP / 0.31);
           items.push({
             food_code: "CHICKEN_BREAST",
             name_ar: "شرائح صدور دجاج مشوية خفيفة للسناك",
@@ -4098,8 +4174,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             household_measurement: `${chickenGrams} جم مطبوخ`,
             protein_g: remP,
             carb_g: 0,
-            fat_g: 1.5,
-            calories_kcal: Math.round(chickenGrams * 1.65),
+            fat_g: chickenFat,
+            calories_kcal: Math.round((chickenGrams * chickenEntry.kcal_per_100g) / 100),
             swaps: generateSmartSwaps("PROTEIN", chickenGrams, "CHICKEN_BREAST", "SNACK", 0, allergenContext),
           });
         }
@@ -4119,7 +4195,8 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             swaps: generateSmartSwaps("FATS", nutGrams, nutCode, "SNACK", 0, allergenContext),
           });
         }
-        const oilGrams = Math.round(targetF - nutMacros.fat_g - 1.6);
+        // Oil tops up only the fat still missing after every food on the plate.
+        const oilGrams = Math.round(targetF - nutMacros.fat_g - proteinFoodsFat - sweetPotatoFat);
         if (oilGrams > 0) {
           items.push({
             food_code: "OLIVE_OIL",
@@ -4796,24 +4873,38 @@ export function trimMealsToTarget(meals = []) {
     // with it, and the protein pass then sees what is really left. Fat last
     // in each round, so a fat trim that clips a protein item is seen by the
     // next round's protein pass and by the re-add below.
-    for (let round = 0; round < TRIM_MAX_ROUNDS; round += 1) {
-      const carb = trimPass(items, "carb_g", "CARBS");
-      items = carb.items;
-      const protein = trimPass(items, "protein_g", "PROTEIN");
-      items = protein.items;
-      const fat = trimPass(items, "fat_g", null);
-      items = fat.items;
-      if (!carb.moved && !protein.moved && !fat.moved) break;
-      const remaining = [["carb_g"], ["protein_g"], ["fat_g"]]
-        .every(([macro]) => Math.round(totals(items, macro) - (Number(meal.target_macros[macro]) || 0)) < TRIM_ROUNDING_G);
-      if (remaining) break;
-    }
+    // Q28: the loop runs again after the protein re-add below. The re-add
+    // scales a protein item up, and the carbs it drags along used to push
+    // the plate back over its carbohydrate target with no correction after
+    // it — that is how a snack kept +5 g of carbs with a trim note admitting
+    // it. The per-donor third-cap is cumulative across both runs, so the
+    // second run can never trim a plate away (see the test that pins it).
+    const runTrimRounds = () => {
+      for (let round = 0; round < TRIM_MAX_ROUNDS; round += 1) {
+        const carb = trimPass(items, "carb_g", "CARBS");
+        items = carb.items;
+        const protein = trimPass(items, "protein_g", "PROTEIN");
+        items = protein.items;
+        const fat = trimPass(items, "fat_g", null);
+        items = fat.items;
+        if (!carb.moved && !protein.moved && !fat.moved) break;
+        const remaining = [["carb_g"], ["protein_g"], ["fat_g"]]
+          .every(([macro]) => Math.round(totals(items, macro) - (Number(meal.target_macros[macro]) || 0)) < TRIM_ROUNDING_G);
+        if (remaining) break;
+      }
+    };
+    runTrimRounds();
     // Protein re-add: restore what trimming took, from the meal's own protein
-    // items, largest first, at most twice each item's portion.
+    // items, largest first, at most twice each item's portion. Q28: the
+    // re-add is carb-aware — scaling a protein item up drags its carbs along
+    // (yogurt ~0.35 g carbs per gram of protein), so an add is capped by the
+    // carbohydrate headroom still on the plate; a carb-free protein food
+    // (chicken, tuna) is never capped. What cannot be restored is flagged.
     const proteinTarget = Number(meal.target_macros.protein_g);
     if (proteinTarget > 0) {
       let shortfall = Math.round(proteinTarget - totals(items, "protein_g"));
       if (shortfall >= TRIM_ROUNDING_G) {
+        const carbTarget = Number(meal.target_macros.carb_g);
         const donors = items
           .map((item, index) => ({ item, index }))
           .filter(({ item }) => item?.category === "PROTEIN" && (Number(item.protein_g) || 0) > 0 && (Number(item.portion_g) || 0) > 0)
@@ -4822,7 +4913,16 @@ export function trimMealsToTarget(meals = []) {
           if (shortfall <= 0) break;
           const have = Number(item.protein_g) || 0;
           const maxAdd = have * (TRIM_MAX_SCALE_UP - 1);
-          const add = Math.min(shortfall, maxAdd);
+          let add = Math.min(shortfall, maxAdd);
+          const carbPerProtein = have > 0 ? (Number(item.carb_g) || 0) / have : 0;
+          if (carbPerProtein > 0 && carbTarget > 0) {
+            // The rounding slack is usable headroom: a re-add that leaves
+            // carbs at most TRIM_ROUNDING_G - 1 over target draws no note.
+            // Without it, a plate whose carbs are exactly on target could
+            // never restore any protein from a carb-carrying food.
+            const carbHeadroom = Math.max(0, carbTarget + TRIM_ROUNDING_G - 1 - totals(items, "carb_g"));
+            add = Math.min(add, Math.floor(carbHeadroom / carbPerProtein));
+          }
           if (add < 1) continue;
           const factor = (have + add) / have;
           const next = items.slice();
@@ -4832,6 +4932,7 @@ export function trimMealsToTarget(meals = []) {
         }
       }
     }
+    runTrimRounds();
     // What is still off after every pass is flagged on the meal, never passed
     // in silence. The culinary preflight flags the same meals independently.
     const notes = [];
@@ -4844,6 +4945,18 @@ export function trimMealsToTarget(meals = []) {
         notes.push(`البروتين ناقص ${Math.abs(diff)} جم عن الهدف بعد القص؛ راجع الطبق.`);
       } else if (macro !== "protein_g" && diff >= TRIM_ROUNDING_G) {
         notes.push(`${label} زايدة ${diff} جم عن الهدف بعد استنفاد القص؛ راجع الطبق.`);
+      }
+    }
+    // Q28: a plate whose macros are on target can still run over on calories
+    // when an item's stated energy does not match its macros (a yogurt tub
+    // written at 0.70 kcal/g against macros worth 0.59). Trim scales items,
+    // so it cannot repair a density error without breaking the macros; a
+    // kcal gap past 10% is therefore flagged on the meal, never silent.
+    const kcalTarget = Number(meal.target_macros.calories_kcal);
+    if (kcalTarget > 0) {
+      const kcalDiff = Math.round(totals(items, "calories_kcal") - kcalTarget);
+      if (kcalDiff > Math.max(10, Math.round(kcalTarget * 0.1))) {
+        notes.push(`السعرات زايدة ${kcalDiff} سعرة عن الهدف بعد القص؛ راجع الطبق.`);
       }
     }
     if (items === meal.items && notes.length === 0) return meal;
