@@ -17,7 +17,7 @@ import {
 
 const PROTEIN_REFERENCE_WEIGHT_BASIS = Object.freeze({
   ACTUAL_WEIGHT: "ACTUAL_WEIGHT",
-  BMI_30_CAPPED_WEIGHT: "BMI_30_CAPPED_WEIGHT",
+  ADJUSTED_BODY_WEIGHT: "ADJUSTED_BODY_WEIGHT",
 });
 
 const REASON_MESSAGES = Object.freeze({
@@ -27,12 +27,8 @@ const REASON_MESSAGES = Object.freeze({
     "Macro targets cannot be calculated until a target calorie value is available.",
   MACRO_POLICY_APPLIED:
     "Daily protein, fat, carbohydrate, and fiber targets were calculated using Z Coaching Macro Policy V1.",
-  PROTEIN_REFERENCE_WEIGHT_CAPPED:
-    "Protein reference weight was capped at the weight corresponding to BMI 30 under Z Coaching Macro Policy V1.",
-  PROTEIN_ENERGY_CAP_APPLIED:
-    "Protein was capped at 30% of target calories to fit the available energy budget.",
-  PROTEIN_TARGET_BELOW_POLICY_MINIMUM_REQUIRES_REVIEW:
-    "The energy-capped protein target provides less than 1.2 grams per kilogram of reference weight and requires coach review.",
+  PROTEIN_REFERENCE_WEIGHT_ADJUSTED:
+    "Protein reference weight is the dietetic adjusted body weight (weight at BMI 25 plus 25% of the excess above it) because BMI is 30 or higher, under Z Coaching Macro Policy V1.",
 });
 
 function isObject(value) {
@@ -227,10 +223,6 @@ function roundToNearest5(value) {
   return Math.round(value / 5) * 5;
 }
 
-function floorToNearest5(value) {
-  return Math.floor(value / 5) * 5;
-}
-
 function roundToOneDecimal(value) {
   return Math.round(value * 10) / 10;
 }
@@ -241,41 +233,46 @@ function roundToTwoDecimals(value) {
 
 function calculateProteinReference(snapshot) {
   const heightMeters = snapshot.body.height_cm / 100;
-  const weightAtBmi30 = 30 * heightMeters ** 2;
-  const capped = snapshot.body.weight_kg > weightAtBmi30;
+  const bmi =
+    snapshot.body.weight_kg / heightMeters ** 2;
+  // One basis with the master engine: grams per kilogram of the dietetic
+  // adjusted body weight (weight at BMI 25 plus 25% of the excess above it)
+  // when BMI is 30 or higher, so fat mass does not inflate the prescription;
+  // actual body weight otherwise. This is the same formula as the master
+  // engine's ADJUSTED_BODY_WEIGHT branch — the old BMI-30 cap (86.7 kg for
+  // real-client-1) described a reference the served plan never used.
+  if (bmi >= 30) {
+    const weightAtBmi25 = 25 * heightMeters ** 2;
+    return {
+      referenceWeightKg: roundToOneDecimal(
+        weightAtBmi25 + 0.25 * (snapshot.body.weight_kg - weightAtBmi25),
+      ),
+      basis: PROTEIN_REFERENCE_WEIGHT_BASIS.ADJUSTED_BODY_WEIGHT,
+      adjusted: true,
+    };
+  }
 
   return {
-    referenceWeightKg: roundToOneDecimal(
-      Math.min(snapshot.body.weight_kg, weightAtBmi30),
-    ),
-    basis: capped
-      ? PROTEIN_REFERENCE_WEIGHT_BASIS.BMI_30_CAPPED_WEIGHT
-      : PROTEIN_REFERENCE_WEIGHT_BASIS.ACTUAL_WEIGHT,
-    capped,
+    referenceWeightKg: roundToOneDecimal(snapshot.body.weight_kg),
+    basis: PROTEIN_REFERENCE_WEIGHT_BASIS.ACTUAL_WEIGHT,
+    adjusted: false,
   };
 }
 
 function calculateProteinFactor(snapshot, energyTarget) {
-  const resistanceDays = snapshot.activity.recommended_resistance_days;
-  const weightedSportMinutes =
-    energyTarget.activity_assessment.weighted_sport_minutes;
-  const ordinaryTrainingLoad =
-    (resistanceDays >= 1 && resistanceDays <= 3) ||
-    (weightedSportMinutes > 0 && weightedSportMinutes < 180);
-  const highTrainingLoad =
-    resistanceDays >= 4 || weightedSportMinutes >= 180;
-
-  let factor = 1.2;
-  if (ordinaryTrainingLoad) {
-    factor = Math.max(factor, 1.6);
-  }
-  if (highTrainingLoad) {
-    factor = Math.max(factor, 1.8);
-  }
+  // One rate per calorie direction — the same rates the master engine
+  // serves (2.2 g/kg fat loss, 2.0 muscle gain, 1.8 maintenance), inside
+  // the 1.6-2.2 g/kg evidence range for fat loss (Morton et al. 2018,
+  // Br J Sports Med). The old training-load ladder (1.2-2.0 g/kg) was
+  // never served: the master engine overwrote it on every plan, so the
+  // two stages disagreed on protein for every client.
   if (energyTarget.calorie_direction === CalorieDirection.DEFICIT) {
-    factor = Math.min(factor + 0.2, 2);
+    return 2.2;
   }
-  return roundToTwoDecimals(factor);
+  if (energyTarget.calorie_direction === CalorieDirection.SURPLUS) {
+    return 2.0;
+  }
+  return 1.8;
 }
 
 function calculateFiberTarget(snapshot) {
@@ -413,11 +410,11 @@ export function buildNutritionMacroTargets({
   const proteinReference = calculateProteinReference(
     nutritionPlanningSnapshot,
   );
-  if (proteinReference.capped) {
+  if (proteinReference.adjusted) {
     addReason(
       output.reasons,
       reasonCodes,
-      "PROTEIN_REFERENCE_WEIGHT_CAPPED",
+      "PROTEIN_REFERENCE_WEIGHT_ADJUSTED",
     );
   }
 
@@ -425,34 +422,13 @@ export function buildNutritionMacroTargets({
     nutritionPlanningSnapshot,
     nutritionEnergyTarget,
   );
-  const desiredProteinG = roundToNearest5(
+  // No energy cap on protein: protein is flagged for kidney check, never
+  // capped by the system (owner decision Q13). The old 30%-of-calories cap
+  // is what made this stage prescribe 145 g while the master engine served
+  // 180 g for the same client.
+  const proteinTargetG = roundToNearest5(
     proteinReference.referenceWeightKg * proteinFactor,
   );
-  const wholeGramEnergyCap = Math.floor(
-    nutritionEnergyTarget.target_calories * 0.3 / 4,
-  );
-  const proteinEnergyCapG = floorToNearest5(wholeGramEnergyCap);
-  const proteinTargetG = Math.min(desiredProteinG, proteinEnergyCapG);
-  const proteinCappedByEnergy = proteinEnergyCapG < desiredProteinG;
-
-  if (proteinCappedByEnergy) {
-    addReason(
-      output.reasons,
-      reasonCodes,
-      "PROTEIN_ENERGY_CAP_APPLIED",
-    );
-  }
-
-  const effectiveProteinFactor =
-    proteinTargetG / proteinReference.referenceWeightKg;
-  if (proteinCappedByEnergy && effectiveProteinFactor < 1.2) {
-    output.status = NutritionMacroTargetsStatus.PROVISIONAL_REVIEW_REQUIRED;
-    addReason(
-      output.reasons,
-      reasonCodes,
-      "PROTEIN_TARGET_BELOW_POLICY_MINIMUM_REQUIRES_REVIEW",
-    );
-  }
 
   const proteinCalories = proteinTargetG * 4;
   const fatTargetG = roundToNearest5(
@@ -484,8 +460,6 @@ export function buildNutritionMacroTargets({
     factor_g_per_kg: roundToTwoDecimals(proteinFactor),
     reference_weight_kg: proteinReference.referenceWeightKg,
     reference_weight_basis: proteinReference.basis,
-    energy_cap_g: proteinEnergyCapG,
-    capped_by_energy_budget: proteinCappedByEnergy,
     calories: proteinCalories,
     percent_of_calories: roundToOneDecimal(
       proteinCalories / nutritionEnergyTarget.target_calories * 100,

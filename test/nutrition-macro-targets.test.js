@@ -222,14 +222,12 @@ test("actual intake flows end to end into the complete macro targets contract", 
   );
   assert.equal(targets.target_calories, 2080);
   assert.deepEqual(targets.protein, {
-    target_g: 130,
-    factor_g_per_kg: 1.8,
+    target_g: 160,
+    factor_g_per_kg: 2.2,
     reference_weight_kg: 72,
     reference_weight_basis: "ACTUAL_WEIGHT",
-    energy_cap_g: 155,
-    capped_by_energy_budget: false,
-    calories: 520,
-    percent_of_calories: 25,
+    calories: 640,
+    percent_of_calories: 30.8,
   });
   assert.deepEqual(targets.fat, {
     target_g: 60,
@@ -237,9 +235,9 @@ test("actual intake flows end to end into the complete macro targets contract", 
     percent_of_calories: 26,
   });
   assert.deepEqual(targets.carbohydrate, {
-    target_g: 255,
-    calories: 1020,
-    percent_of_calories: 49,
+    target_g: 225,
+    calories: 900,
+    percent_of_calories: 43.3,
   });
   assert.equal(targets.fiber_target_g, 25);
   assert.equal(targets.macro_calories_total, 2080);
@@ -322,25 +320,25 @@ test("provisional energy with calories calculates macros and stays provisional",
   assert.ok(reasonCodes(targets).includes("MACRO_POLICY_APPLIED"));
 });
 
-test("protein factor is 1.2 without resistance or sport load", () => {
+test("protein factor is the maintenance rate 1.8 regardless of training load", () => {
   const snapshot = makeSnapshot();
   const targets = buildFrom(snapshot, makeEnergyTarget(snapshot));
 
-  assert.equal(targets.protein.factor_g_per_kg, 1.2);
-  assert.equal(targets.protein.target_g, 85);
+  assert.equal(targets.protein.factor_g_per_kg, 1.8);
+  assert.equal(targets.protein.target_g, 130);
 });
 
-test("protein factor is 1.4 for a deficit without training load", () => {
+test("protein factor is 2.2 for a deficit without training load", () => {
   const snapshot = makeSnapshot({
     goal: { calorie_direction: CalorieDirection.DEFICIT },
   });
   const targets = buildFrom(snapshot, makeEnergyTarget(snapshot));
 
-  assert.equal(targets.protein.factor_g_per_kg, 1.4);
-  assert.equal(targets.protein.target_g, 100);
+  assert.equal(targets.protein.factor_g_per_kg, 2.2);
+  assert.equal(targets.protein.target_g, 160);
 });
 
-test("ordinary resistance or sport load produces protein factor 1.6", () => {
+test("training load alone does not change the protein factor", () => {
   const cases = [
     [{ recommended_resistance_days: 1 }, 0],
     [{ recommended_resistance_days: 3 }, 0],
@@ -358,27 +356,30 @@ test("ordinary resistance or sport load produces protein factor 1.6", () => {
         },
       }),
     );
-    assert.equal(targets.protein.factor_g_per_kg, 1.6);
+    assert.equal(targets.protein.factor_g_per_kg, 1.8);
   }
 });
 
-test("high load or ordinary deficit training produces protein factor 1.8", () => {
+test("protein factor follows calorie direction, not training load", () => {
   const cases = [
     {
       snapshot: makeSnapshot({
         activity: { recommended_resistance_days: 4 },
       }),
       weightedSportMinutes: 0,
+      expectedFactor: 1.8,
     },
     {
       snapshot: makeSnapshot({
         activity: { recommended_resistance_days: 6 },
       }),
       weightedSportMinutes: 0,
+      expectedFactor: 1.8,
     },
     {
       snapshot: makeSnapshot(),
       weightedSportMinutes: 180,
+      expectedFactor: 1.8,
     },
     {
       snapshot: makeSnapshot({
@@ -386,10 +387,11 @@ test("high load or ordinary deficit training produces protein factor 1.8", () =>
         activity: { recommended_resistance_days: 2 },
       }),
       weightedSportMinutes: 0,
+      expectedFactor: 2.2,
     },
   ];
 
-  for (const { snapshot, weightedSportMinutes } of cases) {
+  for (const { snapshot, weightedSportMinutes, expectedFactor } of cases) {
     const targets = buildFrom(
       snapshot,
       makeEnergyTarget(snapshot, {
@@ -398,22 +400,22 @@ test("high load or ordinary deficit training produces protein factor 1.8", () =>
         },
       }),
     );
-    assert.equal(targets.protein.factor_g_per_kg, 1.8);
+    assert.equal(targets.protein.factor_g_per_kg, expectedFactor);
   }
 });
 
-test("high training load with deficit caps protein factor at 2.0", () => {
+test("deficit sets protein factor 2.2 even at high training load", () => {
   const snapshot = makeSnapshot({
     goal: { calorie_direction: CalorieDirection.DEFICIT },
     activity: { recommended_resistance_days: 4 },
   });
   const targets = buildFrom(snapshot, makeEnergyTarget(snapshot));
 
-  assert.equal(targets.protein.factor_g_per_kg, 2);
-  assert.equal(targets.protein.target_g, 145);
+  assert.equal(targets.protein.factor_g_per_kg, 2.2);
+  assert.equal(targets.protein.target_g, 160);
 });
 
-test("high steps and PAL alone do not raise the protein factor", () => {
+test("high steps and PAL alone do not raise the protein factor above the maintenance rate", () => {
   const snapshot = makeSnapshot({
     activity: {
       recommended_resistance_days: 0,
@@ -430,26 +432,28 @@ test("high steps and PAL alone do not raise the protein factor", () => {
     }),
   );
 
-  assert.equal(targets.protein.factor_g_per_kg, 1.2);
+  assert.equal(targets.protein.factor_g_per_kg, 1.8);
 });
 
-test("BMI 30 caps protein reference weight without changing status", () => {
+test("BMI 30 or higher uses adjusted body weight as the protein reference", () => {
   const snapshot = makeSnapshot({
     body: { height_cm: 165, weight_kg: 100 },
   });
   const targets = buildFrom(snapshot, makeEnergyTarget(snapshot));
 
-  assert.equal(targets.protein.reference_weight_kg, 81.7);
+  assert.equal(targets.protein.reference_weight_kg, 76);
   assert.equal(
     targets.protein.reference_weight_basis,
-    "BMI_30_CAPPED_WEIGHT",
+    "ADJUSTED_BODY_WEIGHT",
   );
-  assert.equal(targets.protein.target_g, 100);
+  assert.equal(targets.protein.target_g, 135);
   assert.equal(targets.status, NutritionMacroTargetsStatus.READY);
-  assert.ok(reasonCodes(targets).includes("PROTEIN_REFERENCE_WEIGHT_CAPPED"));
+  assert.ok(
+    reasonCodes(targets).includes("PROTEIN_REFERENCE_WEIGHT_ADJUSTED"),
+  );
 
   const boundarySnapshot = makeSnapshot({
-    body: { height_cm: 165, weight_kg: 30 * 1.65 ** 2 },
+    body: { height_cm: 165, weight_kg: 81 },
   });
   const boundaryTargets = buildFrom(
     boundarySnapshot,
@@ -459,10 +463,48 @@ test("BMI 30 caps protein reference weight without changing status", () => {
     boundaryTargets.protein.reference_weight_basis,
     "ACTUAL_WEIGHT",
   );
-  assert.equal(boundaryTargets.protein.reference_weight_kg, 81.7);
+  assert.equal(boundaryTargets.protein.reference_weight_kg, 81);
 });
 
-test("protein energy cap applies at 30 percent without unnecessary review", () => {
+test("real-client-1: macro stage agrees with the served 180 g protein", () => {
+  // 110 kg / 170 cm, fat loss, 1953 kcal: adjusted body weight 81.7 kg
+  // x 2.2 g/kg = 180 g — the same number the master engine serves.
+  const snapshot = makeSnapshot({
+    body: { height_cm: 170, weight_kg: 110 },
+    goal: { calorie_direction: CalorieDirection.DEFICIT },
+    activity: { recommended_resistance_days: 3 },
+  });
+  const targets = buildFrom(
+    snapshot,
+    makeEnergyTarget(snapshot, { targetCalories: 1953 }),
+  );
+
+  assert.equal(targets.protein.reference_weight_kg, 81.7);
+  assert.equal(
+    targets.protein.reference_weight_basis,
+    "ADJUSTED_BODY_WEIGHT",
+  );
+  assert.equal(targets.protein.factor_g_per_kg, 2.2);
+  assert.equal(targets.protein.target_g, 180);
+  assert.equal(targets.protein.calories, 720);
+  assert.equal(targets.protein.percent_of_calories, 36.9);
+  assert.equal(targets.status, NutritionMacroTargetsStatus.READY);
+  assert.ok(
+    reasonCodes(targets).includes("PROTEIN_REFERENCE_WEIGHT_ADJUSTED"),
+  );
+  assert.equal(
+    reasonCodes(targets).includes("PROTEIN_REFERENCE_WEIGHT_CAPPED"),
+    false,
+  );
+  assert.equal(
+    reasonCodes(targets).includes("PROTEIN_ENERGY_CAP_APPLIED"),
+    false,
+  );
+  assert.equal("energy_cap_g" in targets.protein, false);
+  assert.equal("capped_by_energy_budget" in targets.protein, false);
+});
+
+test("protein is not capped at 30 percent of calories", () => {
   const snapshot = makeSnapshot({
     body: { height_cm: 180, weight_kg: 80 },
     activity: { recommended_resistance_days: 4 },
@@ -473,11 +515,14 @@ test("protein energy cap applies at 30 percent without unnecessary review", () =
   );
 
   assert.equal(targets.protein.factor_g_per_kg, 1.8);
-  assert.equal(targets.protein.energy_cap_g, 120);
-  assert.equal(targets.protein.target_g, 120);
-  assert.equal(targets.protein.capped_by_energy_budget, true);
+  assert.equal(targets.protein.target_g, 145);
+  assert.equal("energy_cap_g" in targets.protein, false);
+  assert.equal("capped_by_energy_budget" in targets.protein, false);
   assert.equal(targets.status, NutritionMacroTargetsStatus.READY);
-  assert.ok(reasonCodes(targets).includes("PROTEIN_ENERGY_CAP_APPLIED"));
+  assert.equal(
+    reasonCodes(targets).includes("PROTEIN_ENERGY_CAP_APPLIED"),
+    false,
+  );
   assert.equal(
     reasonCodes(targets).includes(
       "PROTEIN_TARGET_BELOW_POLICY_MINIMUM_REQUIRES_REVIEW",
@@ -485,49 +530,48 @@ test("protein energy cap applies at 30 percent without unnecessary review", () =
     false,
   );
 
-  const exactMinimumSnapshot = makeSnapshot({
+  const lowCalorieSnapshot = makeSnapshot({
     body: { height_cm: 165, weight_kg: 75 },
     activity: { recommended_resistance_days: 4 },
   });
-  const exactMinimum = buildFrom(
-    exactMinimumSnapshot,
-    makeEnergyTarget(exactMinimumSnapshot, { targetCalories: 1200 }),
+  const lowCalorie = buildFrom(
+    lowCalorieSnapshot,
+    makeEnergyTarget(lowCalorieSnapshot, { targetCalories: 1200 }),
   );
-  assert.equal(exactMinimum.protein.target_g, 90);
+  assert.equal(lowCalorie.protein.target_g, 135);
   assert.equal(
-    exactMinimum.protein.target_g /
-      exactMinimum.protein.reference_weight_kg,
-    1.2,
+    lowCalorie.protein.target_g /
+      lowCalorie.protein.reference_weight_kg,
+    1.8,
   );
-  assert.equal(exactMinimum.status, NutritionMacroTargetsStatus.READY);
+  assert.equal(lowCalorie.status, NutritionMacroTargetsStatus.READY);
 });
 
-test("protein energy cap is not applied when desired protein fits", () => {
+test("protein target follows the direction rate with no energy cap", () => {
   const snapshot = makeSnapshot();
   const targets = buildFrom(snapshot, makeEnergyTarget(snapshot));
 
-  assert.equal(targets.protein.target_g, 85);
-  assert.equal(targets.protein.energy_cap_g, 170);
-  assert.equal(targets.protein.capped_by_energy_budget, false);
+  assert.equal(targets.protein.target_g, 130);
+  assert.equal(targets.protein.factor_g_per_kg, 1.8);
+  assert.equal("energy_cap_g" in targets.protein, false);
   assert.equal(
     reasonCodes(targets).includes("PROTEIN_ENERGY_CAP_APPLIED"),
     false,
   );
 
-  const equalityTarget = buildFrom(
+  const lowCalorieTarget = buildFrom(
     snapshot,
     makeEnergyTarget(snapshot, { targetCalories: 1140 }),
   );
-  assert.equal(equalityTarget.protein.target_g, 85);
-  assert.equal(equalityTarget.protein.energy_cap_g, 85);
-  assert.equal(equalityTarget.protein.capped_by_energy_budget, false);
+  assert.equal(lowCalorieTarget.protein.target_g, 130);
+  assert.equal(lowCalorieTarget.protein.factor_g_per_kg, 1.8);
   assert.equal(
-    reasonCodes(equalityTarget).includes("PROTEIN_ENERGY_CAP_APPLIED"),
+    reasonCodes(lowCalorieTarget).includes("PROTEIN_ENERGY_CAP_APPLIED"),
     false,
   );
 });
 
-test("protein below 1.2 g/kg after energy cap requires review but keeps macros", () => {
+test("a low-calorie deficit target keeps the full protein rate and stays ready", () => {
   const snapshot = makeSnapshot({
     goal: { calorie_direction: CalorieDirection.DEFICIT },
     activity: { recommended_resistance_days: 4 },
@@ -537,23 +581,17 @@ test("protein below 1.2 g/kg after energy cap requires review but keeps macros",
     makeEnergyTarget(snapshot, { targetCalories: 1000 }),
   );
 
-  assert.equal(
-    targets.status,
-    NutritionMacroTargetsStatus.PROVISIONAL_REVIEW_REQUIRED,
-  );
-  assert.equal(targets.protein.factor_g_per_kg, 2);
-  assert.equal(targets.protein.energy_cap_g, 75);
-  assert.equal(targets.protein.target_g, 75);
-  assert.equal(targets.protein.capped_by_energy_budget, true);
-  assert.equal(targets.protein.calories, 300);
+  assert.equal(targets.status, NutritionMacroTargetsStatus.READY);
+  assert.equal(targets.protein.factor_g_per_kg, 2.2);
+  assert.equal(targets.protein.target_g, 160);
+  assert.equal(targets.protein.calories, 640);
   assert.equal(targets.fat.target_g, 30);
-  assert.equal(targets.carbohydrate.target_g, 108);
+  assert.equal(targets.carbohydrate.target_g, 23);
   assert.equal(targets.macro_calories_total, 1002);
   assert.equal(targets.calorie_difference, 2);
-  assert.ok(
-    reasonCodes(targets).includes(
-      "PROTEIN_TARGET_BELOW_POLICY_MINIMUM_REQUIRES_REVIEW",
-    ),
+  assert.equal(
+    reasonCodes(targets).includes("PROTEIN_ENERGY_CAP_APPLIED"),
+    false,
   );
 });
 
@@ -601,9 +639,9 @@ test("carbohydrate uses only calories remaining after protein and fat", () => {
     targets.protein.calories -
     targets.fat.calories;
 
-  assert.equal(remainingCalories, 1265);
-  assert.equal(targets.carbohydrate.target_g, Math.round(1265 / 4));
-  assert.equal(targets.carbohydrate.calories, 1264);
+  assert.equal(remainingCalories, 1205);
+  assert.equal(targets.carbohydrate.target_g, Math.round(1205 / 4));
+  assert.equal(targets.carbohydrate.calories, 1204);
 });
 
 test("macro calorie closure stays within two kcal after rounding", () => {

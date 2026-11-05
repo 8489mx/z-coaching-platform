@@ -3,7 +3,7 @@ export const NUTRITION_MACRO_TARGETS_VERSION =
 
 /** @typedef {"READY"|"PROVISIONAL_REVIEW_REQUIRED"|"WITHHELD"} NutritionMacroTargetsStatusValue */
 /** @typedef {"Z_COACHING_MACRO_POLICY_V1"} NutritionMacroCalculationPolicyValue */
-/** @typedef {"ACTUAL_WEIGHT"|"BMI_30_CAPPED_WEIGHT"} ProteinReferenceWeightBasisValue */
+/** @typedef {"ACTUAL_WEIGHT"|"ADJUSTED_BODY_WEIGHT"} ProteinReferenceWeightBasisValue */
 
 /**
  * @typedef {Object} ProteinMacroTarget
@@ -11,8 +11,6 @@ export const NUTRITION_MACRO_TARGETS_VERSION =
  * @property {number} factor_g_per_kg
  * @property {number} reference_weight_kg
  * @property {ProteinReferenceWeightBasisValue} reference_weight_basis
- * @property {number} energy_cap_g
- * @property {boolean} capped_by_energy_budget
  * @property {number} calories
  * @property {number} percent_of_calories
  */

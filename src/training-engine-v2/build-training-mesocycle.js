@@ -331,6 +331,20 @@ const INCLINE_DECLINE_PRESSES = new Set([
   "DECLINE_DUMBBELL_BENCH_PRESS",
   "DECLINE_BENCH_PRESS",
 ]);
+// Overhead-arm triceps extensions: the arm is overhead even though the slot
+// is elbow extension, not a press, so the press-only shoulder guard missed
+// them (a shoulder-injured client kept the overhead cable triceps extension
+// in every week). The gym substitute is the rope pushdown — the swap
+// registry's safe swap for the overhead extension. At home the catalog has
+// no non-overhead triceps substitute (bench dips load the front of the
+// shoulder), so the slot is held for the coach instead.
+const OVERHEAD_ARM_TRICEPS_EXTENSIONS = new Set([
+  "OVERHEAD_CABLE_TRICEPS_EXTENSION",
+  "CABLE_OVERHEAD_TRICEPS_EXTENSION",
+  "DUMBBELL_OVERHEAD_TRICEPS_EXTENSION",
+  "OVERHEAD_DUMBBELL_TRICEPS_EXTENSION",
+  "ARMS_OVERHEAD_TRICEPS_EXTENSION",
+]);
 // P0-A9: elbow/wrist loading sets. V1 already holds push/pull slots for these injuries; the
 // mesocycle must not refill them. The catalog carries no grip data, so elbow and wrist share
 // the same exclusion sets.
@@ -409,7 +423,7 @@ const DUPLICATE_ALTERNATIVES = Object.freeze({
 const INJURY_CUES_AR = Object.freeze({
   LOWER_BACK: "حماية أسفل الظهر: تم استبدال التحميل المحوري والانحناء المحمل ببديل بظهر مسنود؛ ثبّت الحوض والعمود الفقري في وضع محايد وأوقف التمرين عند أي ألم ينزل للرجل.",
   KNEE: "حماية الركبة: اشتغل في مدى حركي بدون ألم (ثني الركبة حتى 90 درجة تقريباً) ونزول بطيء متحكم؛ ألم خفيف لا يتجاوز 3 من 10 ويختفي خلال 24 ساعة مقبول، وأكثر من ذلك يستدعي تقليل المدى أو الوزن.",
-  SHOULDER: "حماية الكتف: تم حذف الضغط فوق الرأس والنزول العميق في تمارين الصدر؛ استخدم قبضة محايدة، وارفع الذراع في مستوى لوح الكتف (30 درجة أمام الجسم) بدون تجاوز مستوى الكتف.",
+  SHOULDER: "حماية الكتف: تم حذف الضغط فوق الرأس وتمارين الذراع فوق الرأس (مثل الترايسبس خلف الرأس) والنزول العميق في تمارين الصدر؛ استخدم قبضة محايدة، وارفع الذراع في مستوى لوح الكتف (30 درجة أمام الجسم) بدون تجاوز مستوى الكتف.",
   // P0-A9: cues for the new guards (held slots are recorded on the plan flag, not here,
   // because a dropped exercise carries no prescription to attach a cue to).
   ELDERLY_HIGH_BMI: "بداية محافظة لكبار السن أو الوزن المرتفع: الأسبوع الأول تمارين تأسيسية بأوزان خفيفة بدون بار على الظهر وبدون قفز، ومراجعة المدرب مطلوبة قبل التقدم للبار من الأسبوع الثاني.",
@@ -465,7 +479,7 @@ export function evaluateFinalTrainingWeeks(weeks, context = {}) {
   const forbiddenByJoint = [
     ["LOWER_BACK", context.hasLowerBackInjury, new Set([...AXIAL_SQUATS, ...LOADED_HINGES, ...STANDING_OVERHEAD_PRESSES, "BARBELL_BENT_OVER_ROW"])],
     ["KNEE", context.hasKneeInjury, new Set([...AXIAL_SQUATS, "HACK_SQUAT_MACHINE", ...KNEE_DOMINANT_LOADED, ...LUNGE_PATTERNS, "BODYWEIGHT_SQUAT"])],
-    ["SHOULDER", context.hasShoulderInjury, new Set(["BARBELL_BENCH_PRESS", "BARBELL_FLAT_BENCH_PRESS", ...INCLINE_DECLINE_PRESSES, ...OVERHEAD_PRESSES])],
+    ["SHOULDER", context.hasShoulderInjury, new Set(["BARBELL_BENCH_PRESS", "BARBELL_FLAT_BENCH_PRESS", ...INCLINE_DECLINE_PRESSES, ...OVERHEAD_PRESSES, ...OVERHEAD_ARM_TRICEPS_EXTENSIONS])],
     ["ELBOW", context.hasElbowInjury, new Set([...ELBOW_WRIST_PRESS, ...ELBOW_WRIST_PULL, ...ELBOW_WRIST_ARM])],
     ["WRIST", context.hasWristInjury, new Set([...ELBOW_WRIST_PRESS, ...ELBOW_WRIST_PULL, ...ELBOW_WRIST_ARM])],
     ["HIP", context.hasHipInjury, HIP_LOADED],
@@ -795,7 +809,9 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
   const heldEntryFor = (ex, reason, codeBefore, weekNumber, sessionCode) => {
     const noteAr = reason === "EQUIPMENT_EXHAUSTED"
       ? "الخانة دي ملهاش تمرين مناسب بمعدات العميل المعلنة — لازم المدرب يختار بديل قبل التسليم."
-      : "الخانة دي اتكرر تمرينها في نفس الجلسة وملهاش بديل متاح — لازم المدرب يختار بديل قبل التسليم.";
+      : reason === "SHOULDER_OVERHEAD_ARM_HELD"
+        ? "تمارين الذراع فوق الرأس ممنوعة على إصابة الكتف ومفيش بديل آمن بدون كيبل — لازم المدرب يختار بديل قبل التسليم."
+        : "الخانة دي اتكرر تمرينها في نفس الجلسة وملهاش بديل متاح — لازم المدرب يختار بديل قبل التسليم.";
     flagReviewSlot({
       type: reason,
       week_number: weekNumber,
@@ -1000,6 +1016,17 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             // Pressing overhead narrows the subacromial space; external-rotation strengthening is
             // first-line exercise therapy for subacromial shoulder pain, and lateral raises stay in the week.
             finalCode = "ROTATOR_CUFF_EXTERNAL_ROTATION";
+          } else if (OVERHEAD_ARM_TRICEPS_EXTENSIONS.has(finalCode)) {
+            // The arm is overhead even though this is elbow extension, not a
+            // press: the same subacromial narrowing applies. In the gym the
+            // rope pushdown trains the same muscle with the arms down (the
+            // swap registry's safe swap). At home the catalog has no
+            // non-overhead triceps substitute, so the slot is held for the
+            // coach instead of serving an overhead movement.
+            if (isHome) {
+              return heldEntryFor(ex, "SHOULDER_OVERHEAD_ARM_HELD", beforeShoulder, config.week_number, baseSession.session_code);
+            }
+            finalCode = "CABLE_TRICEPS_ROPE_PUSHDOWN";
           }
           if (finalCode !== beforeShoulder) injuryCues.push(INJURY_CUES_AR.SHOULDER);
         }
@@ -1082,6 +1109,14 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         if (!finalCode) {
           if (codeBeforeFit) return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", codeBeforeFit, config.week_number, baseSession.session_code);
           return null;
+        }
+
+        // The equipment fit above can reintroduce an overhead-arm movement:
+        // the home replacement for a rope pushdown is a dumbbell overhead
+        // extension. Re-check the final code for a shoulder injury; at home
+        // there is no safe substitute, so the slot is held for the coach.
+        if (hasShoulderInjury && OVERHEAD_ARM_TRICEPS_EXTENSIONS.has(finalCode)) {
+          return heldEntryFor(ex, "SHOULDER_OVERHEAD_ARM_HELD", finalCode, config.week_number, baseSession.session_code);
         }
 
         // Never repeat an exercise inside one session after substitutions.

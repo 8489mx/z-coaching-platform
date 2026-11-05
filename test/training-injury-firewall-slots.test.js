@@ -53,7 +53,8 @@ test('shoulder injury: no barbell bench, incline or overhead press; substitutes 
     const meso = mesocycle({ injuries: ['SHOULDER'], location });
     for (const session of sessions(meso)) {
       for (const ex of session.exercises) {
-        assert.doesNotMatch(ex.exercise_code, /^BARBELL_BENCH_PRESS$|INCLINE_.*PRESS|OVERHEAD_PRESS|SHOULDER_PRESS/, `${location} ${session.session_code}: ${ex.exercise_code}`);
+        // A held slot has no served code (null); the hold itself is the guard.
+        assert.doesNotMatch(ex.exercise_code || '', /^BARBELL_BENCH_PRESS$|INCLINE_.*PRESS|OVERHEAD_PRESS|SHOULDER_PRESS/, `${location} ${session.session_code}: ${ex.exercise_code}`);
       }
     }
     const cuff = sessions(meso).flatMap((s) => s.exercises).find((e) => e.exercise_code === 'ROTATOR_CUFF_EXTERNAL_ROTATION');
@@ -77,4 +78,52 @@ test('no session ever repeats the same exercise after substitutions', () => {
       }
     }
   }
+});
+
+const OVERHEAD_ARM_TRICEPS = /OVERHEAD.*TRICEPS|TRICEPS.*OVERHEAD/;
+
+test('shoulder injury (gym): overhead triceps extensions become rope pushdowns in every week', () => {
+  const meso = mesocycle({ injuries: ['SHOULDER'] });
+  for (const week of meso.weeks) {
+    for (const session of week.sessions) {
+      for (const ex of session.exercises) {
+        assert.doesNotMatch(ex.exercise_code || '', OVERHEAD_ARM_TRICEPS, `week ${week.week_number} ${session.session_code}: ${ex.exercise_code}`);
+      }
+    }
+  }
+  const pushdown = sessions(meso).flatMap((s) => s.exercises).find((e) => e.exercise_code === 'CABLE_TRICEPS_ROPE_PUSHDOWN');
+  assert.ok(pushdown, 'gym: overhead triceps slot should become a rope pushdown');
+  assert.equal(pushdown.slot_code, 'ELBOW_EXTENSION');
+  assert.ok(pushdown.prescription.injury_safety_cues_ar?.length > 0, 'pushdown must carry the shoulder safety cue');
+});
+
+test('shoulder injury (home): overhead triceps slot is held for coach review, never served overhead', () => {
+  const meso = mesocycle({ injuries: ['SHOULDER'], location: 'HOME' });
+  for (const week of meso.weeks) {
+    for (const session of week.sessions) {
+      for (const ex of session.exercises) {
+        assert.doesNotMatch(ex.exercise_code || '', OVERHEAD_ARM_TRICEPS, `week ${week.week_number} ${session.session_code}: ${ex.exercise_code}`);
+      }
+    }
+  }
+  const held = sessions(meso).flatMap((s) => s.exercises).find((e) => e.slot_code === 'ELBOW_EXTENSION' && e.held_for_review);
+  assert.ok(held, 'home: elbow-extension slot should be held for review when no safe substitute exists');
+  assert.equal(held.held_reason, 'SHOULDER_OVERHEAD_ARM_HELD');
+  assert.equal(held.selection_status, 'REVIEW_REQUIRED');
+});
+
+test('shoulder injury: final check flags a surviving overhead triceps extension', async () => {
+  const { evaluateFinalTrainingWeeks } = await import('../src/training-engine-v2/build-training-mesocycle.js');
+  const weeks = [{ week_number: 1, sessions: [{ session_code: 'FULL_BODY_B', exercises: [{ exercise_code: 'OVERHEAD_CABLE_TRICEPS_EXTENSION', slot_code: 'ELBOW_EXTENSION' }] }] }];
+  const result = evaluateFinalTrainingWeeks(weeks, { hasShoulderInjury: true });
+  assert.equal(result.status, 'REVIEW_REQUIRED');
+  assert.ok(result.violations.some((v) => v.exercise_code === 'OVERHEAD_CABLE_TRICEPS_EXTENSION'));
+  const clean = evaluateFinalTrainingWeeks(weeks, { hasShoulderInjury: false });
+  assert.equal(clean.status, 'PASSED');
+});
+
+test('no shoulder injury: overhead triceps extension is still prescribed', () => {
+  const meso = mesocycle({});
+  const ext = sessions(meso).flatMap((s) => s.exercises).find((e) => e.exercise_code === 'OVERHEAD_CABLE_TRICEPS_EXTENSION');
+  assert.ok(ext, 'without a shoulder injury the overhead extension stays in the plan');
 });

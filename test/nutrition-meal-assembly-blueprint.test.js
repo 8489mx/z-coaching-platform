@@ -671,11 +671,13 @@ test("actual example flows end to end into the exact assembly blueprint", () => 
   assert.ok(blueprint.food_restrictions.disliked_foods.includes("TUNA"));
   // Stage 1: the example intake is a fat-loss client, so the distribution now
   // carries the deficit target (was the maintenance-based 707 kcal golden).
+  // Protein reconciled to the served basis (160 g/day): breakfast carries
+  // 54 g protein and 67 g carbs instead of 44 g / 77 g.
   assert.deepEqual(blueprint.meals[0].target, {
     planned_calories: 646,
-    protein_g: 44,
+    protein_g: 54,
     fat_g: 18,
-    carbohydrate_g: 77,
+    carbohydrate_g: 67,
     fiber_g: 7,
   });
   assert.deepEqual(patternCodes(blueprint.meals[0].allowed_patterns), [
