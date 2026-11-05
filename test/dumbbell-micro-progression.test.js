@@ -19,8 +19,21 @@ const nutritionFoodCatalog = JSON.parse(
 );
 
 function buildTestProgram() {
+  // This test verifies the dumbbell micro-progression bridge, so the mesocycle must
+  // contain dumbbell (and barbell) work. The fixture client trains machines-only, so
+  // since the Q5 equipment guard his program correctly contains neither; the baseline
+  // here is therefore the full room, exactly as this test was written. The machines-only
+  // baseline itself is covered by test/training-gym-equipment-enforcement.test.js.
+  const intake = completeIntake();
+  intake.training.equipment = [
+    { equipmentCode: "DUMBBELLS", otherEquipmentText: null, loadCapacity: "HEAVY" },
+    { equipmentCode: "BARBELL_AND_PLATES", otherEquipmentText: null, loadCapacity: "HEAVY" },
+    { equipmentCode: "CABLE_STATION", otherEquipmentText: null, loadCapacity: "HEAVY" },
+    { equipmentCode: "SELECTORIZED_MACHINES", otherEquipmentText: null, loadCapacity: "HEAVY" },
+    { equipmentCode: "BODYWEIGHT", otherEquipmentText: null, loadCapacity: "BODYWEIGHT_ONLY" },
+  ];
   return buildMasterEngineV2({
-    intake: completeIntake(),
+    intake,
     evaluationContext,
     nutritionFoodCatalog,
   });

@@ -1175,7 +1175,13 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   if (!["GYM", "HOME"].includes(location)) location = "GYM";
 
   // Equipment array: ensure valid equipment for GYM and HOME
-  const rawEquipment = Array.isArray(training.equipment) ? training.equipment : [];
+  // An explicitly declared list — even an empty one — is the client's own answer and is
+  // never overwritten: a gym client who declared no equipment must fail closed on
+  // bodyweight only downstream, never silently inherit the full room. The full-room
+  // default below applies only when no list was declared at all (the flat form, which
+  // has no equipment question: choosing a commercial gym there means the full room).
+  const equipmentExplicitlyDeclared = Array.isArray(training.equipment);
+  const rawEquipment = equipmentExplicitlyDeclared ? training.equipment : [];
   let equipment = [];
 
   rawEquipment.forEach((item) => {
@@ -1243,7 +1249,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       { equipmentCode: "DUMBBELLS", otherEquipmentText: null, loadCapacity: "MODERATE" },
       { equipmentCode: "BODYWEIGHT", otherEquipmentText: null, loadCapacity: "BODYWEIGHT_ONLY" },
     ];
-  } else if (location === "GYM" && equipment.length === 0) {
+  } else if (location === "GYM" && equipment.length === 0 && !equipmentExplicitlyDeclared) {
+    // Flat-form gym clients declared no equipment list: the commercial-gym choice itself
+    // means the full room. An explicitly empty list is left empty on purpose (see above).
     equipment = [
       { equipmentCode: "DUMBBELLS", otherEquipmentText: null, loadCapacity: "HEAVY" },
       { equipmentCode: "BARBELL_AND_PLATES", otherEquipmentText: null, loadCapacity: "HEAVY" },

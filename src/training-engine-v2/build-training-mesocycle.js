@@ -9,15 +9,8 @@ const ANY_OF_EQUIPMENT = Object.freeze({
   ROTATOR_CUFF_EXTERNAL_ROTATION: ["CABLE_STATION", "DUMBBELLS", "RESISTANCE_BANDS"],
 });
 
-/** True when every piece of equipment the exercise needs is in the client's declared set. */
-function exerciseFitsEquipment(code, available) {
-  if (!available) return true;
-  if (ANY_OF_EQUIPMENT[code]) return ANY_OF_EQUIPMENT[code].some((item) => available.has(item));
-  const record = getExerciseV2ByCode(code);
-  if (record) {
-    return (record.equipment_requirements || []).every((req) => available.has(String(req.equipment_code).toUpperCase()));
-  }
-  // Not in the catalog (some template codes are not): read the equipment from the name itself.
+/** Equipment the exercise code's own name implies (DUMBBELL_*, BARBELL_*, ...). */
+function equipmentNamedByCode(code) {
   const named = String(code || "").toUpperCase();
   const needs = [];
   if (/DUMBBELL/.test(named)) needs.push("DUMBBELLS");
@@ -25,17 +18,37 @@ function exerciseFitsEquipment(code, available) {
   if (/CABLE/.test(named)) needs.push("CABLE_STATION");
   if (/MACHINE/.test(named)) needs.push("SELECTORIZED_MACHINES");
   if (/SMITH/.test(named)) needs.push("SMITH_MACHINE");
-  return needs.every((item) => available.has(item));
+  return needs;
+}
+
+/** True when every piece of equipment the exercise needs is in the client's declared set. */
+function exerciseFitsEquipment(code, available) {
+  if (!available) return true;
+  if (ANY_OF_EQUIPMENT[code]) return ANY_OF_EQUIPMENT[code].some((item) => available.has(item));
+  const record = getExerciseV2ByCode(code);
+  if (record) {
+    if (!(record.equipment_requirements || []).every((req) => available.has(String(req.equipment_code).toUpperCase()))) return false;
+  }
+  // The code name is what the client sees ("Dumbbell Calf Raise"): a V1 passthrough code
+  // whose catalog alias understates its equipment (DUMBBELL_CALF_RAISE resolves to the
+  // bodyweight standing raise) must still honour the name — serving a dumbbell-named
+  // exercise to a client with no dumbbells is prescribing a session they cannot do,
+  // whatever the alias resolves to internally.
+  return equipmentNamedByCode(code).every((item) => available.has(item));
 }
 
 /**
  * The closest exercise the client can actually do: same movement slot first, then the same primary
  * muscle, then an exercise that trains it as a secondary muscle. Never one already in the session.
+ * `excluded` (optional) holds exercises a clinical guard removed for this client: the equipment
+ * fallback must never reintroduce one (a hypertensive client's leg press stays removed even when
+ * it is the closest machine for the slot — the slot is held for the coach instead).
  */
-function equipmentSafeAlternative(code, slotCode, available, used) {
+function equipmentSafeAlternative(code, slotCode, available, used, excluded = null) {
   const original = getExerciseV2ByCode(code);
   const pool = EXERCISE_CATALOG_V2.exercises.filter((candidate) =>
     !used.has(candidate.exercise_code) &&
+    !(excluded instanceof Set && excluded.has(candidate.exercise_code)) &&
     (candidate.equipment_requirements || []).every((req) => available.has(String(req.equipment_code).toUpperCase())));
   return (
     pool.find((candidate) => candidate.slot_code === slotCode) ||
@@ -458,14 +471,12 @@ function resolveRirFloor(exerciseCode, slotCode, isAdvanced, isIntermediate) {
  * dedup, re-dosing) — the upstream structural preflight cannot see exercises
  * the mesocycle itself introduced, so it is not reused here. The forbidden
  * sets are exactly the ones the guards above enforce, so a survivor is a
- * guard miss, not a new medical judgment. Equipment is checked only for
- * home clients against a declared set (null = undeclared, unverifiable,
+ * guard miss, not a new medical judgment. Equipment is checked against a
+ * declared set wherever one was declared (null = undeclared, unverifiable,
  * skipped — never assumed), mirroring the in-build equipment guard, which
- * runs for home only: gym plans assume the full room today (audit S8,
- * owner decision Q5 still open), so the final check does not newly
- * withhold gym plans on equipment grounds. A failing plan is never fixed
- * up here: violations are reported and the caller withholds the plan via
- * the existing review mechanism.
+ * now runs for gym clients too (Q5: a declared machines-only gym is not the
+ * full room). A failing plan is never fixed up here: violations are reported
+ * and the caller withholds the plan via the existing review mechanism.
  *
  * @param {Array} weeks final mesocycle weeks ({ sessions: [{ exercises: [{ exercise_code }] }] })
  * @param {Object} [context] injury flags, hypertension flag, declared equipment set
@@ -523,7 +534,10 @@ export function evaluateFinalTrainingWeeks(weeks, context = {}) {
             `الخطة النهائية فيها تمرين ${code} مرتين في نفس الجلسة — الخطة تحتاج مراجعة مدرب قبل التسليم.`);
         }
         seenInSession.add(code);
-        if (context.isHome && context.availableEquipment instanceof Set && !exerciseFitsEquipment(code, context.availableEquipment)) {
+        // The final check enforces declared equipment wherever it was declared, not
+        // only at home: a gym client who declared machines-only must never reach
+        // delivery with a barbell or dumbbell exercise the guard failed to swap.
+        if (context.availableEquipment instanceof Set && !exerciseFitsEquipment(code, context.availableEquipment)) {
           push("FINAL_EQUIPMENT_MISMATCH", week.week_number ?? null, session.session_code ?? null, code,
             `Final weeks contain ${code}, which the client's declared equipment cannot perform.`,
             `الخطة النهائية فيها تمرين ${code} والعميل معندوش المعدات اللي تنفذه — الخطة تحتاج مراجعة مدرب قبل التسليم.`);
@@ -626,11 +640,17 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
   const agePolicy = trainingAgePolicy(options.rawIntake?.training?.trainingAge ?? trainingAgeForExperience(intakeExperience));
 
   const rawIntake = options.rawIntake || {};
-  // What the client said they own. Unknown (no list) leaves every template exactly as it was.
-  const declaredEquipment = Array.isArray(rawIntake?.training?.equipment)
+  // What the client said they own. A list that was declared — even an empty one — is
+  // enforced: a gym client who declared no equipment owns nothing we can assume, so
+  // the set is bodyweight only and every other slot is swapped or held for the coach
+  // (fail closed, never a full room by assumption). No list at all (direct callers,
+  // legacy) keeps the old leave-as-is behaviour.
+  const equipmentDeclared = Array.isArray(rawIntake?.training?.equipment);
+  const declaredEquipment = equipmentDeclared
     ? rawIntake.training.equipment.map((item) => String(item?.equipmentCode || item).toUpperCase())
     : [];
-  const availableEquipment = declaredEquipment.length > 0 ? new Set([...declaredEquipment, "BODYWEIGHT"]) : null;
+  const availableEquipment = equipmentDeclared ? new Set([...declaredEquipment, "BODYWEIGHT"]) : null;
+  const hasDeclaredEquipment = availableEquipment instanceof Set;
   const isHome =
     rawIntake.training?.location === "HOME" ||
     rawIntake.training_location === "HOME" ||
@@ -731,6 +751,25 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     medical.hasHeartCondition === true ||
     rawIntake.hasHypertension === true ||
     rawMedicalConditions.some(c => c.includes("HYPERTENSION") || c.includes("HEART_CONDITION") || c.includes("HIGH_BLOOD_PRESSURE"));
+
+  // Exercises the clinical guards below remove for this client, as sets — the equipment
+  // fallback must never propose one of them as a "closest" alternative. Without this, a
+  // guard's removal is undone whenever its own substitute does not fit the declared
+  // equipment (hypertension removes the leg press for a machines-only client, the guard
+  // substitutes a goblet squat, the goblet needs dumbbells the client has not got, and
+  // the fallback picks the leg press again because it is the closest machine). A slot
+  // with no safe, owned alternative is held for the coach instead.
+  const clinicallyExcludedCodes = new Set();
+  const excludeClinical = (...sets) => {
+    for (const set of sets) for (const code of set) clinicallyExcludedCodes.add(code);
+  };
+  if (hasLowerBackInjury) excludeClinical(AXIAL_SQUATS, LOADED_HINGES, STANDING_OVERHEAD_PRESSES, new Set(["BARBELL_BENT_OVER_ROW"]));
+  if (hasKneeInjury) excludeClinical(AXIAL_SQUATS, KNEE_DOMINANT_LOADED, LUNGE_PATTERNS, new Set(["HACK_SQUAT_MACHINE", "BODYWEIGHT_SQUAT"]));
+  if (hasShoulderInjury) excludeClinical(INCLINE_DECLINE_PRESSES, OVERHEAD_PRESSES, OVERHEAD_ARM_TRICEPS_EXTENSIONS, new Set(["BARBELL_BENCH_PRESS", "BARBELL_FLAT_BENCH_PRESS"]));
+  if (hasElbowInjury || hasWristInjury) excludeClinical(ELBOW_WRIST_PRESS, ELBOW_WRIST_PULL, ELBOW_WRIST_ARM);
+  if (hasHipInjury) excludeClinical(HIP_LOADED);
+  if (hasAnkleInjury) excludeClinical(ANKLE_LOADED);
+  if (hasHypertensionOrHeart) excludeClinical(CLINICAL_GUIDELINES.HYPERTENSION.CONTRAINDICATED_EXERCISES);
 
   // P0-A9: elderly / high-BMI guard (owner decision Q13: age 65+ and/or BMI 35+, beginners).
   // Age sources, in order: explicit option, raw personal.age, date of birth (the canonical
@@ -947,7 +986,10 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           else if (ex.slot_code === "KNEE_FLEXION") finalCode = isHome ? "GLUTE_BRIDGE" : "LYING_LEG_CURL_MACHINE";
           else if (ex.slot_code === "UNILATERAL_LOWER") finalCode = "DUMBBELL_REVERSE_LUNGE";
           else finalCode = isHome ? "ONE_ARM_DUMBBELL_ROW" : "CHEST_SUPPORTED_ROW";
-        } else if (!isHome && !hasInjuries && GYM_COMPOUND_UPGRADES[finalCode]) {
+        } else if (!isHome && !hasInjuries && GYM_COMPOUND_UPGRADES[finalCode] && exerciseFitsEquipment(GYM_COMPOUND_UPGRADES[finalCode], availableEquipment)) {
+          // A compound upgrade is only a gym upgrade when the client owns what it
+          // needs: a machines-only client keeps the fallback movement, and the
+          // equipment guard below swaps it for a machine they actually have.
           finalCode = GYM_COMPOUND_UPGRADES[finalCode];
           const upgradedV2 = getExerciseV2ByCode(finalCode);
           if (upgradedV2) {
@@ -958,9 +1000,12 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         // Equipment guard. The session templates above name specific movements (goblet squats and
         // dumbbell rows for "home"), but home is three different rooms: a client who trains with
         // bodyweight and bands owns no dumbbells. Swap to the closest exercise their equipment
-        // allows. Gyms are assumed to have the full room, so gym plans are never touched here.
-        if (isHome && !exerciseFitsEquipment(finalCode, availableEquipment)) {
-          const alternative = equipmentSafeAlternative(finalCode, ex.slot_code, availableEquipment, usedSessionCodes);
+        // allows. The same guard applies to gym clients who declared their equipment: a
+        // machines-only gym is not the full room, so a barbell or dumbbell template is swapped
+        // for a machine (or bodyweight) movement they actually have, and held for the coach
+        // when nothing they own fits the slot.
+        if (hasDeclaredEquipment && !exerciseFitsEquipment(finalCode, availableEquipment)) {
+          const alternative = equipmentSafeAlternative(finalCode, ex.slot_code, availableEquipment, usedSessionCodes, clinicallyExcludedCodes);
           if (alternative) {
             finalCode = alternative.exercise_code;
             finalNameEn = alternative.name_en;
@@ -1094,18 +1139,20 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         // client owns none, so the substitute is checked again against the declared equipment and,
         // when it does not fit, swapped for the closest exercise of the substitute's own slot. When
         // nothing they own fits (a second lateral raise once the band version is already in the
-        // session) the exercise is left out, exactly as a duplicate is below.
-        const fitHomeEquipment = (code) => {
-          if (!isHome || exerciseFitsEquipment(code, availableEquipment)) return code;
+        // session) the exercise is left out, exactly as a duplicate is below. The same re-check
+        // applies to gym clients with declared equipment: a clinical substitute that needs a
+        // barbell or dumbbells is not servable to a machines-only client either.
+        const fitDeclaredEquipment = (code) => {
+          if (!hasDeclaredEquipment || exerciseFitsEquipment(code, availableEquipment)) return code;
           const own = getExerciseV2ByCode(code);
-          const alternative = equipmentSafeAlternative(code, own?.slot_code || ex.slot_code, availableEquipment, usedSessionCodes);
+          const alternative = equipmentSafeAlternative(code, own?.slot_code || ex.slot_code, availableEquipment, usedSessionCodes, clinicallyExcludedCodes);
           return alternative ? alternative.exercise_code : null;
         };
         // P1-B9: a slot the equipment guard empties stays held for review instead of
         // vanishing silently. An injury hold (already null + flagged above) still returns
         // null exactly as before — only a code the guard itself drops becomes a held entry.
         const codeBeforeFit = finalCode;
-        finalCode = fitHomeEquipment(finalCode);
+        finalCode = fitDeclaredEquipment(finalCode);
         if (!finalCode) {
           if (codeBeforeFit) return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", codeBeforeFit, config.week_number, baseSession.session_code);
           return null;
@@ -1126,7 +1173,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           const duplicateCode = finalCode;
           const alternative = DUPLICATE_ALTERNATIVES[finalCode];
           if (!alternative || usedSessionCodes.has(alternative)) return heldEntryFor(ex, "DEDUP_EXHAUSTED", duplicateCode, config.week_number, baseSession.session_code);
-          finalCode = fitHomeEquipment(alternative);
+          finalCode = fitDeclaredEquipment(alternative);
           if (!finalCode) return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", alternative, config.week_number, baseSession.session_code);
           if (usedSessionCodes.has(finalCode)) return heldEntryFor(ex, "DEDUP_EXHAUSTED", finalCode, config.week_number, baseSession.session_code);
         }

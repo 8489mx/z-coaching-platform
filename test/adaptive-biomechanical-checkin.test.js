@@ -18,8 +18,22 @@ const nutritionFoodCatalog = JSON.parse(
 );
 
 function buildTestProgram() {
+  // These tests verify the adaptation firewall, not the equipment guard — and the
+  // firewall needs a barbell squat / bench press in the baseline to swap. The fixture
+  // client trains machines-only, so since the Q5 equipment guard his baseline correctly
+  // contains no barbell work at all; the firewall then has nothing to swap. The baseline
+  // here is therefore the full room, exactly as these tests were written; the
+  // machines-only baseline itself is covered by test/training-gym-equipment-enforcement.test.js.
+  const intake = completeIntake();
+  intake.training.equipment = [
+    { equipmentCode: "DUMBBELLS", otherEquipmentText: null, loadCapacity: "HEAVY" },
+    { equipmentCode: "BARBELL_AND_PLATES", otherEquipmentText: null, loadCapacity: "HEAVY" },
+    { equipmentCode: "CABLE_STATION", otherEquipmentText: null, loadCapacity: "HEAVY" },
+    { equipmentCode: "SELECTORIZED_MACHINES", otherEquipmentText: null, loadCapacity: "HEAVY" },
+    { equipmentCode: "BODYWEIGHT", otherEquipmentText: null, loadCapacity: "BODYWEIGHT_ONLY" },
+  ];
   return buildMasterEngineV2({
-    intake: completeIntake(),
+    intake,
     evaluationContext,
     nutritionFoodCatalog,
   });
