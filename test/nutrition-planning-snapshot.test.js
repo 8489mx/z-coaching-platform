@@ -115,6 +115,10 @@ test("actual example intake and decision produce the complete snapshot contract"
     recovery: {
       sleep_average_hours: 7.5,
       sleep_quality: "GOOD",
+      // B3 (sleep-shift wiring): the snapshot carries the reported clock
+      // times alongside the hours/quality; null when the client gave none.
+      sleep_bedtime: null,
+      sleep_wake_time: null,
       stress_level: "MODERATE",
     },
     meal_preferences: {
@@ -179,6 +183,9 @@ test("camelCase source fields map to the exact snake_case snapshot keys", () => 
   assert.deepEqual(Object.keys(snapshot.recovery), [
     "sleep_average_hours",
     "sleep_quality",
+    // B3 (sleep-shift wiring): clock times added to the recovery section.
+    "sleep_bedtime",
+    "sleep_wake_time",
     "stress_level",
   ]);
   assert.deepEqual(Object.keys(snapshot.meal_preferences), [

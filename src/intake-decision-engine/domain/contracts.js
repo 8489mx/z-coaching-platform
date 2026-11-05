@@ -21,7 +21,9 @@
  * @property {string} dailyActivity
  * @property {string} [occupationType] - Client's primary occupation type for NEAT baseline classification.
  * @property {{type:string, physicallyDemandingDays:string[]}} workSchedule
- * @property {{averageHours:number, quality:string}} sleep
+ * @property {{averageHours:number, quality:string, bedtime?:string, wakeTime?:string}} sleep
+ *   bedtime/wakeTime are optional 24-hour HH:MM clock times; wakeTime is
+ *   derived (bedtime + averageHours) when the client reports a bedtime only.
  * @property {string} stressLevel
  */
 /** @typedef {{conditionCode:string, otherConditionText:null|string, stability:string, physicianInstructions:string[], unclassifiedInstructionsText?:string|null}} ClassifiedMedicalCondition `otherConditionText` must be null or the empty string. */

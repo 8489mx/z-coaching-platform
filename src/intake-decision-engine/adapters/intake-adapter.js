@@ -40,6 +40,28 @@ export function parseCleanNumber(val, fallback = null) {
   return Number.isFinite(num) ? num : fallback;
 }
 
+// B3: sleep clock times. The form collects the usual bedtime
+// (`sleep_schedule.bedtime_hour`, HH:MM) but the adapter used to drop it,
+// so every client got the 23:00/07:00 defaults. A malformed value is dropped
+// (never invented or repaired) and the caller falls back to its default/hold.
+export function parseTimeOfDay(val) {
+  if (typeof val !== "string") return null;
+  const t = val.trim();
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(t)) return null;
+  return t;
+}
+
+// Wake time is derived, not asked: bedtime + reported average sleep hours.
+// `hours` may be fractional (e.g. 7.5); the result wraps past midnight.
+export function deriveWakeTime(bedtime, hours) {
+  const start = parseTimeOfDay(bedtime);
+  const h = Number(hours);
+  if (!start || !Number.isFinite(h) || h <= 0 || h >= 24) return null;
+  const [hh, mm] = start.split(":").map(Number);
+  const total = (hh * 60 + mm + Math.round(h * 60)) % 1440;
+  return String(Math.floor(total / 60)).padStart(2, "0") + ":" + String(total % 60).padStart(2, "0");
+}
+
 export function adaptIntakePayloadToCanonicalEngine(raw) {
   if (!raw || typeof raw !== 'object') return {};
 
@@ -343,12 +365,19 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     };
     const rawSleepVal = intake.sleep_schedule?.average_hours || intake.sleep_hours;
     const avgSleep = typeof rawSleepVal === 'number' ? rawSleepVal : (sleepHoursMap[rawSleepVal] || 7.5);
+    // B3: the form's usual bedtime reaches the canonical sleep record, and
+    // the wake time is derived from it (bedtime + average hours). Without
+    // this the circadian builder saw 23:00/07:00 for every client.
+    const flatBedtime = parseTimeOfDay(intake.sleep_schedule?.bedtime_hour);
+    const flatWakeTime = flatBedtime ? deriveWakeTime(flatBedtime, avgSleep) : null;
     intake.lifestyle = {
       dailyActivity: neatMap[intake.neat_level] || neatMap[intake.daily_activity] || 'MODERATE',
       occupationType: intake.occupation_type || undefined,
       sleep: {
         averageHours: avgSleep,
-        quality: intake.sleep_schedule?.pattern === 'regular_night' ? 'GOOD' : 'FAIR'
+        quality: intake.sleep_schedule?.pattern === 'regular_night' ? 'GOOD' : 'FAIR',
+        ...(flatBedtime ? { bedtime: flatBedtime } : {}),
+        ...(flatWakeTime ? { wakeTime: flatWakeTime } : {}),
       },
       workSchedule: {
         type: (intake.sleep_schedule?.pattern === 'rotating_shifts' || intake.sleep_schedule?.pattern === 'night_shift') ? 'SHIFT_BASED' : 'FIXED'
@@ -702,6 +731,14 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   const validActivity = ["SEDENTARY", "LIGHT", "MODERATE", "HIGH"];
   const activityLevel = validActivity.includes(lifestyle.dailyActivity) ? lifestyle.dailyActivity : "LIGHT";
 
+  // B2/B3: the canonical sleep record carries the reported hours under
+  // `averageHours` (the recovery baseline used to read a `hours` field that
+  // no writer ever set) plus the clock times when the client reported them.
+  // A reported bedtime without a wake time derives one (bedtime + hours);
+  // a malformed clock time is dropped, never repaired or invented.
+  const canonicalBedtime = parseTimeOfDay(lifestyle.sleep?.bedtime);
+  const canonicalWakeTime = parseTimeOfDay(lifestyle.sleep?.wakeTime)
+    || (canonicalBedtime ? deriveWakeTime(canonicalBedtime, lifestyle.sleep?.averageHours) : null);
   const canonicalLifestyle = {
     dailyActivity: canonicalActivity || activityLevel,
     workSchedule: {
@@ -710,7 +747,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     },
     sleep: {
       averageHours: Number(lifestyle.sleep?.averageHours) || 7,
-      quality: ["POOR", "FAIR", "GOOD", "UNKNOWN"].includes(lifestyle.sleep?.quality) ? lifestyle.sleep.quality : "GOOD"
+      quality: ["POOR", "FAIR", "GOOD", "UNKNOWN"].includes(lifestyle.sleep?.quality) ? lifestyle.sleep.quality : "GOOD",
+      ...(canonicalBedtime ? { bedtime: canonicalBedtime } : {}),
+      ...(canonicalWakeTime ? { wakeTime: canonicalWakeTime } : {}),
     },
     stressLevel: ["LOW", "MODERATE", "HIGH", "UNKNOWN"].includes(lifestyle.stressLevel) ? lifestyle.stressLevel : (lifestyle.stressLevel === "SEVERE" ? "HIGH" : "MODERATE"),
     occupationType: ["DESK_OFFICE", "FIELD_MOBILE", "MANUAL_LABOR", "STUDENT", "UNEMPLOYED"].includes(lifestyle.occupationType || intake.occupation_type) ? (lifestyle.occupationType || intake.occupation_type) : undefined

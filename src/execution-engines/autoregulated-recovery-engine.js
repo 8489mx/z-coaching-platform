@@ -56,6 +56,12 @@ export function calculateTrainingReadiness({
   energy_level = 7
 } = {}) {
   // Normalize sleep score (0-100)
+  // B2: FAIR is a real reported quality (the adapter writes FAIR for any
+  // non-regular sleep pattern), so it must score between AVERAGE (65) and
+  // GOOD (90) — it used to fall through to 90, i.e. perfect sleep. UNKNOWN
+  // likewise never scores as good: an unknown quality is treated
+  // conservatively, like AVERAGE, matching the intake decision rules that
+  // force a conservative start on unknown sleep.
   let sleepScore = 75;
   if (typeof sleep_quality === 'number') {
     sleepScore = Math.min(100, Math.max(0, sleep_quality * 10));
@@ -63,6 +69,8 @@ export function calculateTrainingReadiness({
     const sq = String(sleep_quality || 'GOOD').toUpperCase();
     if (sq === 'POOR') sleepScore = 35;
     else if (sq === 'AVERAGE') sleepScore = 65;
+    else if (sq === 'FAIR') sleepScore = 75;
+    else if (sq === 'UNKNOWN') sleepScore = 65;
     else sleepScore = 90;
   }
   // Hours modifier

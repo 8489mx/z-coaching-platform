@@ -1846,6 +1846,7 @@ export default function FullIntakeForm() {
                     <option value="none">بدون صيام متقطع</option>
                     <option value="16_8">صيام 16/8</option>
                     <option value="14_10">صيام 14/10</option>
+                    <option value="ramadan">صيام شهر رمضان</option>
                   </CurvedSelect>
                 </div>
               </div>

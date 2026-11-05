@@ -55,6 +55,8 @@ export const NUTRITION_PLANNING_SNAPSHOT_VERSION =
  * @typedef {Object} NutritionPlanningRecovery
  * @property {number} sleep_average_hours
  * @property {string} sleep_quality
+ * @property {string|null} sleep_bedtime
+ * @property {string|null} sleep_wake_time
  * @property {string} stress_level
  */
 

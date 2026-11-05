@@ -10,7 +10,32 @@
 // Intake form answers that the canonical contract cannot carry.
 function readFormFastingProtocol(effectiveRaw) {
   const protocol = String(effectiveRaw?.meal_structure?.intermittent_fasting || "").toLowerCase();
+  if (protocol === "ramadan") return "RAMADAN";
   return protocol === "16_8" || protocol === "14_10" ? protocol : null;
+}
+
+// B3 (Ramadan): is this client fasting Ramadan, rather than a lifestyle
+// 16:8/14:10 window? Two honest signals: the client picked Ramadan in the
+// form, or a Muslim client on a generic window whose plan is generated on a
+// Ramadan day (Umm al-Qura calendar, the same source the serve path uses).
+// Either way the window below is the Ramadan one — never the generic clock
+// window — and its iftar/suhoor times are HELD for the coach, because the
+// intake carries no location to compute sunset from.
+function isRamadanFasting(effectiveRaw, evaluationContext) {
+  const protocol = readFormFastingProtocol(effectiveRaw);
+  if (protocol === "RAMADAN") return true;
+  if (protocol === null) return false;
+  const religion = String(
+    effectiveRaw?.religion || effectiveRaw?.personal?.religion || "",
+  ).toUpperCase();
+  if (religion !== "MUSLIM") return false;
+  const dateStr = evaluationContext?.assessmentDate || evaluationContext?.system_time;
+  if (!dateStr) return false;
+  try {
+    return isRamadanDay(localDay(new Date(dateStr)));
+  } catch {
+    return false;
+  }
 }
 
 function isPostBariatric(effectiveRaw) {
@@ -152,6 +177,7 @@ import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engin
 // computation as the frontend (re-exported through cardio-zones-engine).
 import { computeZone2Bpm } from "../execution-engines/cardio-zones-engine.js";
 import { generatePeriWorkoutNutrientTimingSchedule, calculateCaffeineCutoffWindow } from "../execution-engines/circadian-nutrient-timing-engine.js";
+import { isRamadanDay, localDay } from "../execution-engines/fasting-calendar-engine.js";
 import {
   calculateTrainingReadiness,
   autoregulateWorkoutSession,
@@ -910,9 +936,29 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       weekly_energy_balance_ar: "متوسط السعرات الأسبوعية يطابق تماماً العجز المستهدف مع الاستفادة من قمم الجليكوجين وأكسدة الدهون.",
     });
   } else if (dietFramework === "INTERMITTENT_FASTING") {
+    // B3 (Ramadan): a Ramadan fast is dawn-to-sunset, not a 12:00–20:00
+    // lifestyle window. Its length changes with the day and the client's
+    // location, and the intake carries neither sunset nor a city — so the
+    // hours stay null and HELD for the coach instead of inventing an
+    // iftar/suhoor clock time. The framework stays INTERMITTENT_FASTING
+    // (same meal structure); only the window is Ramadan.
+    if (isRamadanFasting(effectiveRaw, evaluationContext)) {
+      fastingWindowConfig = Object.freeze({
+        framework: "INTERMITTENT_FASTING",
+        protocol: "RAMADAN",
+        framework_name_ar: "صيام شهر رمضان (Ramadan)",
+        fasting_hours: null,
+        eating_window_hours: null,
+        eating_window_schedule_ar: "نافذة تناول الطعام من الإفطار (وقت غروب الشمس) إلى السحور (قبل الفجر) — لازم الكوتش يحدد مواعيد الإفطار والسحور حسب موقع العميل وتاريخ اليوم، لأن مدة الصيام بتتغير كل يوم.",
+        rules_ar: "الصيام من الفجر إلى غروب الشمس بدون أكل أو شرب؛ الإفطار عند الغروب والسحور قبل الفجر، وشرب الماء مسموح طول الليل.",
+        held_for_coach_review: true,
+        hold_reason_ar: "مواعيد الإفطار والسحور مش محسوبة لأن ملف العميل مفيهوش موقع لحساب وقت الغروب؛ لازم الكوتش يثبتها قبل التسليم.",
+      });
+    } else {
     const fastingProtocol = readFormFastingProtocol(effectiveRaw) || "16_8";
     fastingWindowConfig = Object.freeze({
       framework: "INTERMITTENT_FASTING",
+      protocol: fastingProtocol,
       framework_name_ar: fastingProtocol === "14_10"
         ? "الصيام المتقطع الذكي (14/10 Intermittent Fasting)"
         : "الصيام المتقطع الذكي (16/8 Intermittent Fasting)",
@@ -923,6 +969,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
         : "نافذة تناول الطعام: 12:00 ظهراً إلى 8:00 مساءً (الصيام من 8 مساءً إلى 12 ظهر اليوم التالي)",
       rules_ar: "شرب الماء والقهوة السادة والشاي الأخضر والأعشاب مسموح وحر أثناء ساعات الصيام بدون سكر أو حليب.",
     });
+    }
   }
 
   // P1-B5 (Q16/Q20): clinical macro guardrails, applied AFTER every framework
@@ -1737,21 +1784,61 @@ export function buildMasterEngineV2(inputs) {
   };
 
   // 6. Circadian Rhythm & Peri-Workout Nutrient Timing Synthesis
-  const preferredWorkoutTime = canonicalIntake.training?.preferredTime || effectiveIntake?.training?.preferredTime || effectiveIntake?.preferred_workout_time || "17:00";
-  const clientBedtime = canonicalIntake.lifestyle?.sleep?.bedtime || effectiveIntake?.lifestyle?.sleep?.bedtime || effectiveIntake?.bedtime || "23:00";
-  const clientWakeTime = canonicalIntake.lifestyle?.sleep?.wakeTime || effectiveIntake?.lifestyle?.sleep?.wakeTime || effectiveIntake?.wake_time || "07:00";
+  // B3: every circadian input is read here, in priority order — canonical
+  // sleep clock times first, then the flat form's bedtime_hour (with the
+  // wake time derived from bedtime + reported hours), then the legacy raw
+  // fields. A shift worker's day does NOT run on 17:00/23:00/07:00:
+  // - rotating shifts: one bedtime cannot describe the roster, so the
+  //   timing is always held for the coach, even if a bedtime was given;
+  // - a fixed night shift: the timing is computed only when the client
+  //   actually reported a bedtime AND an explicit workout time; otherwise
+  //   it is held rather than inventing a schedule for him.
+  // A held timing keeps any known clock time (e.g. a reported bedtime) and
+  // nulls the rest, with an Arabic reason the coach must act on.
+  const sleepPattern = String(effectiveIntake?.sleep_schedule?.pattern || "").toLowerCase();
+  const isShiftWork = canonicalIntake.lifestyle?.workSchedule?.type === "SHIFT_BASED"
+    || sleepPattern === "night_shift" || sleepPattern === "rotating_shifts";
+  const isRotatingShift = sleepPattern === "rotating_shifts";
+  const explicitWorkoutTime = canonicalIntake.training?.preferredTime
+    || effectiveIntake?.training?.preferredTime || effectiveIntake?.preferred_workout_time || null;
+  const reportedBedtime = canonicalIntake.lifestyle?.sleep?.bedtime
+    || effectiveIntake?.lifestyle?.sleep?.bedtime
+    || effectiveIntake?.sleep_schedule?.bedtime_hour
+    || effectiveIntake?.bedtime || null;
+  const reportedWakeTime = canonicalIntake.lifestyle?.sleep?.wakeTime
+    || effectiveIntake?.lifestyle?.sleep?.wakeTime
+    || effectiveIntake?.wake_time || null;
+  const preferredWorkoutTime = explicitWorkoutTime || "17:00";
+  const clientBedtime = reportedBedtime || "23:00";
+  const clientWakeTime = reportedWakeTime || "07:00";
 
-  const circadianTiming = generatePeriWorkoutNutrientTimingSchedule({
-    workout_time: preferredWorkoutTime,
-    workout_duration_minutes: 60,
-    bedtime: clientBedtime,
-    wake_time: clientWakeTime,
-    daily_calories: universalTargets.target_calories,
-    daily_protein_g: universalTargets.protein_g,
-    daily_carbs_g: universalTargets.carb_g,
-    daily_fat_g: universalTargets.fat_g,
-    meal_count: universalTargets.meals_count,
-  });
+  const circadianHeldForReview = isShiftWork
+    && (isRotatingShift || !reportedBedtime || !explicitWorkoutTime);
+  const circadianTiming = circadianHeldForReview
+    ? Object.freeze({
+        held_for_coach_review: true,
+        status: "HELD_FOR_COACH_REVIEW",
+        workout_time: null,
+        bedtime: reportedBedtime,
+        wake_time: reportedWakeTime,
+        timeline: [],
+        caffeine_cutoff: null,
+        hold_reason_ar: isRotatingShift
+          ? "عميل شفتات متغيرة: موعد نوم واحد مش بيوصف جدول الشفتات، فلازم الكوتش يحدد مواعيد النوم والتمرين بنفسه قبل التسليم."
+          : "عميل شفت ليلي من غير موعد نوم أو موعد تمرين معلن: توقيت النوم والتمرين محجوز لمراجعة الكوتش بدل ما يتخمن جدول من 17:00/23:00/07:00.",
+        circadian_summary_ar: "توقيت النوم والتمرين محجوز لمراجعة الكوتش (عميل شفتات).",
+      })
+    : generatePeriWorkoutNutrientTimingSchedule({
+        workout_time: preferredWorkoutTime,
+        workout_duration_minutes: 60,
+        bedtime: clientBedtime,
+        wake_time: clientWakeTime,
+        daily_calories: universalTargets.target_calories,
+        daily_protein_g: universalTargets.protein_g,
+        daily_carbs_g: universalTargets.carb_g,
+        daily_fat_g: universalTargets.fat_g,
+        meal_count: universalTargets.meals_count,
+      });
 
   const nutrition_program_v2 = Object.freeze({
     ...baseNutritionProgram,
@@ -1834,7 +1921,14 @@ export function buildMasterEngineV2(inputs) {
     recovery_autoregulation: Object.freeze({
       readiness_baseline: calculateTrainingReadiness({
         sleep_quality: canonicalIntake.lifestyle?.sleep?.quality || "GOOD",
-        sleep_hours: canonicalIntake.lifestyle?.sleep?.hours || 7.5,
+        // B2: the canonical record carries the reported hours as
+        // `averageHours` — the `hours` field this read used to read was
+        // never written by any adapter, so the 7.5 h default applied to
+        // everyone. `hours` stays as a fallback for callers that set it.
+        sleep_hours: (() => {
+          const h = canonicalIntake.lifestyle?.sleep?.hours ?? canonicalIntake.lifestyle?.sleep?.averageHours;
+          return Number.isFinite(Number(h)) ? Number(h) : 7.5;
+        })(),
         stress_level: canonicalIntake.lifestyle?.stressLevel === 'HIGH' ? 8 : (canonicalIntake.lifestyle?.stressLevel === 'LOW' ? 2 : 4),
         energy_level: 8
       }),

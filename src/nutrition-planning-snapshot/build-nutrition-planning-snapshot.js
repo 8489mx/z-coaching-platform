@@ -170,6 +170,8 @@ export function buildNutritionPlanningSnapshot({
     recovery: {
       sleep_average_hours: intake.lifestyle.sleep.averageHours,
       sleep_quality: intake.lifestyle.sleep.quality,
+      sleep_bedtime: intake.lifestyle.sleep.bedtime ?? null,
+      sleep_wake_time: intake.lifestyle.sleep.wakeTime ?? null,
       stress_level: intake.lifestyle.stressLevel,
     },
 

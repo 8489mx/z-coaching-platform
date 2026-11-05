@@ -269,9 +269,19 @@ function validateLifestyle(input, issues) {
   enumValue(work.type, WorkScheduleType, "lifestyle.workSchedule.type", issues);
   dayArray(work.physicallyDemandingDays, "lifestyle.workSchedule.physicallyDemandingDays", issues);
   const sleep = requiredObject(lifestyle.sleep, "lifestyle.sleep", issues);
-  rejectUnknownKeys(sleep, ["averageHours", "quality"], "lifestyle.sleep", issues);
+  rejectUnknownKeys(sleep, ["averageHours", "quality", "bedtime", "wakeTime"], "lifestyle.sleep", issues);
   numberInRange(sleep.averageHours, "lifestyle.sleep.averageHours", issues, 0, 24);
   enumValue(sleep.quality, SleepQuality, "lifestyle.sleep.quality", issues);
+  // B3: optional clock times (24-hour HH:MM). A present-but-malformed time is
+  // an issue — the adapter drops it, and the engine must never silently
+  // treat a typo as a real bedtime.
+  for (const key of ["bedtime", "wakeTime"]) {
+    if (sleep[key] !== undefined && sleep[key] !== null) {
+      if (typeof sleep[key] !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/.test(sleep[key])) {
+        issues.push(issue(`lifestyle.sleep.${key}`, "INVALID_TIME", "Expected 24-hour time HH:MM."));
+      }
+    }
+  }
   enumValue(lifestyle.stressLevel, StressLevel, "lifestyle.stressLevel", issues);
 
   // Optional occupationType for NEAT baseline (introduced for OCCUPATIONAL_NEAT_LOCK)
