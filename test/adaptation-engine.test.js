@@ -54,13 +54,13 @@ test("Adaptation Engine Suite", async (t) => {
     assert.equal(adapted.adapted_week_number, 3);
     const baseKcal = baseProgram.nutrition_program?.macro_targets?.calories_kcal || baseProgram.nutrition_program.stages.energy_target.target_calories;
     assert.equal(adapted.adapted_nutrition.target_calories_kcal, Math.round(baseKcal - 125));
-    // P1-B10: this program carries no step target at all (its
-    // prescription has steps_prescription: null), so the old 8000+500
-    // expectation was the invented fallback. A missing step target is
-    // null + coach review, and the merge keeps the existing steps.
-    assert.equal(adapted.adapted_cardio.daily_step_target, null);
-    assert.equal(adapted.requires_coach_approval, true);
-    assert.ok(adapted.adaptation_reasons.some((r) => r.code === "BASE_STEP_TARGET_UNREADABLE"));
+    // H1 (B4): this program carries a real step target (8000, from the
+    // client's reported steps), so the plateau step increase applies to
+    // it instead of gating on a missing target. A missing step target
+    // now defaults to the 5000 minimum and never blocks adaptation.
+    assert.equal(adapted.adapted_cardio.daily_step_target, 8500);
+    assert.equal(adapted.requires_coach_approval, false);
+    assert.ok(!adapted.adaptation_reasons.some((r) => r.code === "BASE_STEP_TARGET_UNREADABLE"));
     assert.ok(adapted.adaptation_reasons.some((r) => r.code === AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED));
   });
 

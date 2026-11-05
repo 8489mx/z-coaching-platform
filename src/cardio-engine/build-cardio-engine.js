@@ -5,7 +5,6 @@ import { buildWeeklyCardioSchedule } from "../weekly-cardio-schedule/index.js";
 import { evaluateCardioPlanPreflight } from "../cardio-plan-preflight/index.js";
 import { CARDIO_ENGINE_VERSION } from "./domain/enums.js";
 import { CardioPrescriptionStatus } from "../cardio-prescription/domain/enums.js";
-import { CardioStrategy, PrimaryGoal } from "../intake-decision-engine/domain/enums.js";
 import { resolveDailySteps, resolveStepTarget } from "../steps-source/resolve-daily-steps.js";
 
 /**
@@ -48,20 +47,29 @@ export function buildCardioEngine(
   // 3. Generate concrete dose prescriptions
   const prescription = buildCardioPrescription(plan_specification, modality_requirements);
 
-  // P1-B1: one step number. STEPS_ONLY always carries a number, and every
-  // fat-loss client carries a minimum movement target even with sessions.
-  // The number comes from the same single source as the decision and TDEE;
-  // a withheld prescription carries no target at all.
-  if (
-    prescription.status !== CardioPrescriptionStatus.WITHHELD &&
-    (plan_specification.strategy === CardioStrategy.STEPS_ONLY ||
-      (clientIntakeProfile?.goals?.primary === PrimaryGoal.FAT_LOSS &&
-        plan_specification.strategy === CardioStrategy.CARDIO_SESSIONS))
-  ) {
-    const stepBaseline = resolveDailySteps({
-      averageDailySteps: clientIntakeProfile?.cardio?.averageDailySteps,
-    }).value;
-    prescription.daily_step_target = resolveStepTarget(stepBaseline);
+  // H1 (B4/CB7): every client carries a daily step target, whatever the
+  // strategy or goal. The old gate (STEPS_ONLY, or FAT_LOSS with
+  // CARDIO_SESSIONS) left muscle-gain, recomp, maintenance and
+  // NO_ADDITIONAL_CARDIO / REVIEW_REQUIRED clients with no target at
+  // all, and the adaptation gate then held every one of their check-ins
+  // forever. A coach-set target wins; otherwise the target is the
+  // client's own reported baseline lifted to the system's minimum
+  // movement target (5000) — unknown steps take the minimum, never an
+  // invented personal number. A withheld prescription still carries no
+  // target at all.
+  const coachStepTarget = Number(
+    options.coach_step_target ?? options.coachStepTarget
+    ?? clientIntakeProfile?.coach_step_target ?? NaN,
+  );
+  if (prescription.status !== CardioPrescriptionStatus.WITHHELD) {
+    if (Number.isFinite(coachStepTarget) && coachStepTarget > 0) {
+      prescription.daily_step_target = Math.round(coachStepTarget);
+    } else {
+      const stepBaseline = resolveDailySteps({
+        averageDailySteps: clientIntakeProfile?.cardio?.averageDailySteps,
+      }).value;
+      prescription.daily_step_target = resolveStepTarget(stepBaseline);
+    }
   }
 
   // 4. Schedule sessions into the week

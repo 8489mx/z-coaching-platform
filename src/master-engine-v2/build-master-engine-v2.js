@@ -170,6 +170,7 @@ import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.j
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
 import { resolveDailySteps, resolveTdeeActivityFactor } from "../steps-source/resolve-daily-steps.js";
+import { readAdaptationState } from "../adaptation-engine/diet-break-state.js";
 import { normalizeGoal, resolveBodyFat, resolvePrimaryGoal, isMaintenanceGoal } from "../goal-resolution/resolve-primary-goal.js";
 import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 import { analyzeBloodworkBiomarkers } from "../execution-engines/biomarker-engine.js";
@@ -347,7 +348,7 @@ export function unifyNutritionStageTargets(stages, universalTargets) {
  * @param {Object} [inputs.options]
  * @returns {Object}
  */
-export function calculateUniversalNutritionTargets(canonicalIntake, evaluationContext = {}, rawIntake = {}) {
+export function calculateUniversalNutritionTargets(canonicalIntake, evaluationContext = {}, rawIntake = {}, preserved = {}) {
   const effectiveRaw = (rawIntake?.answers && typeof rawIntake.answers === 'object')
     ? { ...rawIntake.answers, ...rawIntake }
     : (rawIntake || {});
@@ -536,7 +537,7 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
   // P1-B2: the goal target the balance below is measured against, captured
   // after lactation, young-trainee, and floor adjustments — the energy the
   // client was actually promised.
-  const goalTargetCalories = targetCalories;
+  let goalTargetCalories = targetCalories;
 
   // Protein reference weight: grams per kg of total weight overshoot in people carrying a lot of fat
   // mass (a 140 kg client would get ~310 g/day). Use the weight this lean mass would have at a healthy
@@ -613,6 +614,41 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     effectiveRaw?.medical?.hasInsulinResistance === true ||
     conditionsList.some(c => c.includes("DIABETES") || c.includes("INSULIN_RESISTANCE")) ||
     (biomarkerAnalysis.has_biomarker_flags && biomarkerAnalysis.flags.some(f => f.biomarker === 'GLUCOSE_METABOLISM'));
+
+  // H1 (CB4): a regeneration must not discard adaptation history. When a
+  // preserved adaptation state is supplied, the target is rebuilt from the
+  // adapted target (formula + incremental offset), or from the stored
+  // maintenance target while a diet break is ACTIVE — never from the plain
+  // formula deficit, which produced the overnight -1000...-2200 kcal
+  // sawtooth. The adjustment happens HERE, before the macro split, so
+  // every derived config (carb cycling, weekend refeed, reverse diet,
+  // flexible 80/20, meal distribution) is computed from the same target.
+  {
+    const preservedState = (preserved && typeof preserved === "object")
+      ? (preserved.adaptation_state || preserved)
+      : {};
+    const preservedBreak = (preservedState && preservedState.diet_break) || {};
+    let regeneratedTarget = null;
+    if (preservedBreak.status === "ACTIVE" && Number.isFinite(preservedBreak.maintenance_calories_kcal)) {
+      regeneratedTarget = Math.round(preservedBreak.maintenance_calories_kcal);
+    } else if (Number.isFinite(preservedState.calorie_offset_kcal) && preservedState.calorie_offset_kcal !== 0) {
+      regeneratedTarget = Math.round(targetCalories + preservedState.calorie_offset_kcal);
+    }
+    if (regeneratedTarget !== null) {
+      const regenCeiling = Math.round(55 * referenceWeight);
+      regeneratedTarget = Math.max(calorieFloor, Math.min(regenCeiling, regeneratedTarget));
+      if (primaryGoal === "FAT_LOSS" || primaryGoal === "BODY_RECOMPOSITION") {
+        regeneratedTarget = Math.min(regeneratedTarget, Math.round(tdee));
+      } else if (primaryGoal === "MUSCLE_GAIN" || primaryGoal === "LEAN_BULK") {
+        regeneratedTarget = Math.max(regeneratedTarget, Math.round(tdee));
+      }
+      if (regeneratedTarget !== targetCalories) {
+        calorieAdjustmentDesc += ` (تم الحفاظ على السعرات المعدلة من المتابعات السابقة: ${regeneratedTarget} سعرة بدلاً من ${targetCalories} سعرة من المعادلة)`;
+        targetCalories = regeneratedTarget;
+        goalTargetCalories = targetCalories;
+      }
+    }
+  }
 
   // 4. Macro Grams Breakdown
   let proteinG = Math.round(referenceWeight * proteinPerKg);
@@ -1501,10 +1537,33 @@ export function buildMasterEngineV2(inputs) {
   const zone2LowBpm = canonicalZones.min_bpm;
   const zone2HighBpm = canonicalZones.max_bpm;
 
+  // H1 (CB4/CB7): a regeneration rebuilds the plan from the intake, so
+  // without the previous program's state it would wipe the coach's step
+  // target and every approved adaptation. Callers that regenerate pass
+  // the previous program's adaptation_state (and the coach step target)
+  // in options; both are carried into the rebuilt plan below.
+  let preservedAdaptationState = readAdaptationState({
+    adaptation_state: options.adaptation_state ?? options.previous_program?.adaptation_state ?? null,
+  });
+  const preservedCoachStepTarget = Number(
+    options.coach_step_target ?? options.coachStepTarget
+    ?? preservedAdaptationState.coach_step_target ?? NaN,
+  );
+  // A coach step target passed as an option is part of the state from
+  // now on, so adaptations and later regenerations keep it without the
+  // caller re-passing it every time.
+  if (Number.isFinite(preservedCoachStepTarget) && preservedCoachStepTarget > 0) {
+    preservedAdaptationState = { ...preservedAdaptationState, coach_step_target: Math.round(preservedCoachStepTarget) };
+  }
   const baseCardioProgram = buildCardioEngine(
     intake_decision,
     canonicalIntake,
     syntheticWeeklyPlan,
+    {
+      ...(Number.isFinite(preservedCoachStepTarget) && preservedCoachStepTarget > 0
+        ? { coach_step_target: preservedCoachStepTarget }
+        : {}),
+    },
   );
 
   const medical = canonicalIntake?.medical || {};
@@ -1665,7 +1724,11 @@ export function buildMasterEngineV2(inputs) {
   const mobility_program = buildMobilityEngine(intake_decision, syntheticWeeklyPlan);
 
   // 5. Universal Nutrition Targets & Culinary Meal Generator
-  const universalTargets = calculateUniversalNutritionTargets(canonicalIntake, evaluationContext, effectiveIntake);
+  // H1 (CB4): the preserved adaptation state is passed into the targets
+  // calculation so the rebuilt target (and every config derived from it,
+  // e.g. carb cycling) keeps the adaptation history instead of resetting
+  // to the plain formula target.
+  const universalTargets = calculateUniversalNutritionTargets(canonicalIntake, evaluationContext, effectiveIntake, { adaptation_state: preservedAdaptationState });
   // The diabetic choice can replace a food after the generator split its large portions, so the
   // split runs again on the final meals.
   const isDiabeticClient = isDiabeticIntake(canonicalIntake, effectiveIntake);
@@ -1914,6 +1977,10 @@ export function buildMasterEngineV2(inputs) {
     cardio_program: cardio_program_v2,
     mobility_program,
     nutrition_program: nutrition_program_v2,
+    // H1: the adaptation history (diet-break state, preserved calorie
+    // offset, coach step target) travels with the program, so a
+    // regeneration or a new cycle starts from it instead of from zero.
+    adaptation_state: Object.freeze({ ...preservedAdaptationState }),
     hypoglycemia_guard: masterHypoglycemiaGuard,
     biomarker_analysis: universalTargets.biomarker_analysis,
     clinical_safety_shield: universalTargets.clinical_safety_shield,

@@ -99,13 +99,12 @@ test('Note 2a. Plateau at Calorie Floor: Does NOT force Refeed or +750 steps aut
   assert.equal(adapted.adaptation_action, AdaptationAction.MAINTAIN_TRAJECTORY, 'Maintains trajectory by default');
   assert.equal(adapted.requires_coach_approval, true, 'Must route to coach review');
   assert.equal(adapted.adapted_nutrition.refeed_config, null, 'Must NOT force Refeed automatically');
-  // P1-B10: this fixture nests cardio_program under nutrition_program,
-  // a path the engine never read, so the old 8000 was the invented
-  // fallback. No readable step target means null (no increase forced —
-  // the test's intent holds) + coach review; the merge keeps existing
-  // steps.
-  assert.equal(adapted.adapted_cardio.daily_step_target, null, 'Must NOT force step increase automatically');
-  assert.ok(adapted.adaptation_reasons.some((r) => r.code === "BASE_STEP_TARGET_UNREADABLE"));
+  // H1 (B4): this fixture nests cardio_program under nutrition_program,
+  // a path the engine never read, so the program carries no readable
+  // step target. It now defaults to the 5000 minimum instead of
+  // blocking adaptation — the floor lock still routes to coach review.
+  assert.equal(adapted.adapted_cardio.daily_step_target, 5000, 'Missing step target defaults to the 5000 minimum');
+  assert.ok(!adapted.adaptation_reasons.some((r) => r.code === "BASE_STEP_TARGET_UNREADABLE"));
 
   const reason = adapted.adaptation_reasons.find(r => r.code === AdaptationReasonCode.DIET_BREAK_PLATEAU_BREAKER_APPLIED);
   assert.ok(reason.floor_locked, 'Reason must flag floor_locked: true');
@@ -134,11 +133,10 @@ test('Note 2b. Plateau at Calorie Floor: Coach-approved Refeed and steps are pro
 
   assert.equal(adapted.adaptation_action, AdaptationAction.SCHEDULE_REFEED_DAY);
   assert.ok(adapted.adapted_nutrition.refeed_config, 'Refeed config active under coach approval');
-  // P1-B10: same misplaced cardio nesting as 2a — no readable step base
-  // exists, so the approved +500 has nothing to add to. Steps stay null
-  // (merge keeps existing) and the plan routes to coach review, instead
-  // of applying +500 to an invented 8000.
-  assert.equal(adapted.adapted_cardio.daily_step_target, null, 'No step base to apply the approved increase to');
+  // H1 (B4): same misplaced cardio nesting as 2a — no readable step base
+  // exists, so the approved +500 now applies to the 5000 minimum base
+  // (5500) instead of being lost on a null base.
+  assert.equal(adapted.adapted_cardio.daily_step_target, 5500, 'Approved step increase applies to the minimum base');
   assert.equal(adapted.requires_coach_approval, true);
 });
 
@@ -313,6 +311,7 @@ test('Note 6. Diet Break routes to coach review and accounts for weight change t
       targets: {
         calories_kcal: 1800,
         tdee: 2350,
+        resolved_goal: "FAT_LOSS",
         protein_g: 160,
         carbohydrate_g: 175,
         fat_g: 55

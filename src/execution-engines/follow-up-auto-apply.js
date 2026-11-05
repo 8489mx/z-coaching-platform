@@ -10,6 +10,7 @@
  * shadow prediction).
  */
 import { FOLLOW_UP_TRIAGE } from "./coach-triage-engine.js";
+import { MINIMUM_STEP_TARGET } from "../steps-source/resolve-daily-steps.js";
 
 function finiteNumber(value) {
   const n = Number(value);
@@ -35,8 +36,13 @@ export function baseTargetsFromProgram(programData = {}) {
     finiteNumber(data.nutrition_program?.stages?.energy_target?.target_calories) ??
     finiteNumber(data.nutrition_program?.stages?.energy_target?.target_calories_kcal) ??
     null;
+  // H1 (B4): a program built before step targets existed for every
+  // strategy carries no step base. The adaptation now fills it with the
+  // minimum movement target, so the gate measures the steps delta
+  // against that same minimum instead of blocking auto-apply forever
+  // for a missing base. Calories still have no invented base.
   const steps =
-    finiteNumber(data.cardio_program?.prescription?.daily_step_target) ?? null;
+    finiteNumber(data.cardio_program?.prescription?.daily_step_target) ?? MINIMUM_STEP_TARGET;
   return Object.freeze({ baseCaloriesKcal: calories, baseSteps: steps });
 }
 

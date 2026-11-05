@@ -6,6 +6,7 @@ import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engin
 import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
 import { buildAdaptedPlan } from "../../../src/adaptation-engine/index.js";
+import { readAdaptationState, validateStepTarget } from "../../../src/adaptation-engine/diet-break-state.js";
 import { User, Program, IntakeSubmission, CheckinSubmission, ProgressPhoto } from "../models/index.js";
 import { Op } from "sequelize";
 import { decryptMedicalData } from "../../utils/crypto.js";
@@ -227,12 +228,36 @@ export const generateAndSaveProgram = async (req, res) => {
     const requiresMedicalReview = intakeDecision.plan_status === "MEDICAL_REVIEW_REQUIRED";
 
     // 2. Load Catalog & Build Master Engine V2
+    // H1 (CB4/CB7): regenerating a client who already has a program must
+    // not wipe their adaptation history or coach step target. The
+    // previous program's state is read first (best effort — a lookup
+    // failure never blocks generation) and passed into the build, which
+    // re-applies the preserved calorie offset / diet-break state and the
+    // coach step target.
+    let preservedStateForRegen = null;
+    try {
+      const existingUserForRegen = phone_number && phone_number !== "01000000000"
+        ? await User.findOne({ where: { phone_number } })
+        : (client_code ? await User.findOne({ where: { client_code } }) : null);
+      if (existingUserForRegen) {
+        const existingProgramForRegen = await Program.findOne({
+          where: { user_id: existingUserForRegen.id },
+          order: [["id", "DESC"]],
+        });
+        const prevData = existingProgramForRegen?.program_data;
+        if (prevData && typeof prevData === "object" && prevData.adaptation_state) {
+          preservedStateForRegen = prevData.adaptation_state;
+        }
+      }
+    } catch (regenStateError) {
+      console.error("generateAndSaveProgram preserved-state lookup skipped:", regenStateError?.message || regenStateError);
+    }
     const catalog = await loadFoodCatalog();
     const masterProgram = buildMasterEngineV2({
       intake: canonicalIntake,
       evaluationContext,
       nutritionFoodCatalog: catalog,
-      options: {}
+      options: preservedStateForRegen ? { adaptation_state: preservedStateForRegen } : {}
     });
 
     // 3. Find or Create User in MariaDB `z`
@@ -2360,6 +2385,81 @@ export const updateCustomProgram = async (req, res) => {
   } catch (err) {
     console.error("updateCustomProgram error:", err);
     return res.status(500).json({ error: "فشل تحديث الخطة", details: err.message });
+  }
+};
+
+// H1 (CB7): the dedicated step-target control. The only route to a step
+// target used to be saving a whole edited program_data through
+// update-custom, and every regeneration wiped it. This endpoint writes
+// one number — the daily step target — into the stored program and into
+// adaptation_state.coach_step_target, so later adaptations and
+// regenerations keep it. Coach-only, validated (1000–30000), audited,
+// and it touches nothing else in the program.
+export const setStepTarget = async (req, res) => {
+  try {
+    const requester = req.user ? await User.findByPk(req.user.id) : null;
+    if (!requester || !["COACH", "ADMIN"].includes(requester.role)) {
+      return res.status(403).json({ error: "تحديد هدف الخطوات متاح للكوتش فقط" });
+    }
+    const { user_id, client_code, daily_step_target } = req.body || {};
+    const stepTarget = validateStepTarget(daily_step_target);
+    if (stepTarget === null) {
+      return res.status(400).json({
+        code: "INVALID_STEP_TARGET",
+        error: "هدف الخطوات اليومي لازم يكون رقم صحيح بين 1000 و 30000 خطوة.",
+      });
+    }
+    const lookup = user_id || client_code;
+    if (!lookup) {
+      return res.status(400).json({ error: "user_id or client_code is required" });
+    }
+    let user = await User.findOne({ where: { client_code: lookup } });
+    if (!user && !isNaN(lookup)) user = await User.findByPk(parseInt(lookup, 10));
+    if (!user) user = await User.findOne({ where: { phone_number: lookup } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const program = await Program.findOne({ where: { user_id: user.id }, order: [["id", "DESC"]] });
+    if (!program || !program.program_data) {
+      return res.status(404).json({ error: "لا توجد خطة حالية لهذا المتدرب" });
+    }
+    const programData = typeof program.program_data === "string"
+      ? JSON.parse(program.program_data)
+      : JSON.parse(JSON.stringify(program.program_data));
+    const previousStepTarget = Number(
+      programData.cardio_program?.prescription?.daily_step_target ?? NaN,
+    );
+    if (!programData.cardio_program) programData.cardio_program = {};
+    if (!programData.cardio_program.prescription) programData.cardio_program.prescription = {};
+    programData.cardio_program.prescription.daily_step_target = stepTarget;
+    const state = readAdaptationState(programData);
+    programData.adaptation_state = { ...state, coach_step_target: stepTarget };
+    await program.update({
+      program_data: programData,
+      version: (Number(program.version) || 1) + 1,
+    });
+    recordAuditEvent({
+      event: "COACH_STEP_TARGET_SET",
+      req,
+      status: "SUCCESS",
+      userId: req.user?.id || "COACH",
+      userRole: req.user?.role || "COACH",
+      details: {
+        source: "step_target_control",
+        target_user_id: user.id,
+        program_id: program.id,
+        previous_daily_step_target: Number.isFinite(previousStepTarget) ? previousStepTarget : null,
+        daily_step_target: stepTarget,
+      },
+    });
+    return res.status(200).json({
+      message: `تم تحديد هدف الخطوات اليومي (${stepTarget} خطوة) وحفظه في الخطة؛ هيستمر مع المتابعات والتجديدات الجاية.`,
+      program_id: program.id,
+      daily_step_target: stepTarget,
+      previous_daily_step_target: Number.isFinite(previousStepTarget) ? previousStepTarget : null,
+    });
+  } catch (err) {
+    console.error("setStepTarget error:", err);
+    return res.status(500).json({ error: "فشل تحديد هدف الخطوات", details: err.message });
   }
 };
 

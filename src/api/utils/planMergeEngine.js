@@ -8,6 +8,7 @@
 import { calculateSessionDemand, auditWeeklyMuscleVolume } from './trainingNutritionCoupling.js';
 import { splitOversizedPortions, carbPortionLimit, flagHeavyOil, refreshActualMacros } from '../../nutrition-meal-context-v2/build-culinary-meals.js';
 import { CLINICAL_GUIDELINES } from '../../config/clinical-guidelines.js';
+import { endDietBreakState, readAdaptationState } from '../../adaptation-engine/diet-break-state.js';
 
 const MAX_KCAL_PER_KG = 55;
 
@@ -399,11 +400,31 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     }
 
     // 3.2 Diet Break and Refeed metadata preservation
-    const isDietBreak = adaptationResult?.adaptation_action === 'SCHEDULE_DIET_BREAK' || 
-      adaptationResult?.is_diet_break_recommended === true || 
-      adaptationResult?.is_diet_break === true || 
+    const adaptationProposedBreak = adaptationResult?.adaptation_action === 'SCHEDULE_DIET_BREAK' ||
+      adaptationResult?.is_diet_break_recommended === true ||
+      adaptationResult?.is_diet_break === true ||
       adaptationResult?.checkinAnalysis?.is_diet_break === true ||
       adaptationResult?.checkinAnalysis?.decision === 'SCHEDULE_DIET_BREAK';
+    // H1 (CB6): the flag describes the food the client is actually on,
+    // not the proposal. A custom-macro resume pulls the merged calories
+    // below the break's own maintenance target, so the break flag must
+    // clear even though the adaptation that week proposed a break.
+    // The yardstick is the BREAK's maintenance, never the plan's formula
+    // TDEE: observed-TDEE maintenance can legitimately sit below formula
+    // TDEE, and judging a genuine break week against formula TDEE would
+    // wrongly clear the flag on the break itself. The formula-TDEE test
+    // only applies on a non-break week clearing a stale flag.
+    const planTdeeKcal = Number(
+      merged.nutrition_program?.targets?.tdee || merged.nutrition_program?.tdee || NaN,
+    );
+    const breakMaintenanceKcal = Number(
+      adaptationResult?.adaptation_state?.diet_break?.maintenance_calories_kcal
+      ?? (Number.isFinite(engineCalories) ? engineCalories : NaN),
+    );
+    const finalIsDeficit = adaptationProposedBreak
+      ? (Number.isFinite(breakMaintenanceKcal) && finalCalories < breakMaintenanceKcal)
+      : (Number.isFinite(planTdeeKcal) && finalCalories < planTdeeKcal);
+    const isDietBreak = adaptationProposedBreak && !finalIsDeficit;
 
     if (isDietBreak) {
       if (merged.nutrition_program) {
@@ -416,7 +437,11 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
       }
     } else if (merged.nutrition_program?.is_diet_break) {
       merged.nutrition_program.is_diet_break = false;
-      if (merged.nutrition) merged.nutrition.is_diet_break = false;
+      delete merged.nutrition_program.diet_break_note;
+      if (merged.nutrition) {
+        merged.nutrition.is_diet_break = false;
+        delete merged.nutrition.diet_break_note;
+      }
     }
 
     const refeedConfig = adaptationResult?.adapted_nutrition?.refeed_config || adaptationResult?.refeed_config;
@@ -633,7 +658,46 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     merged.nutrition_program.clinical_safety_shield = JSON.parse(JSON.stringify(newClinicalShield));
   }
 
+  // H1 (CB1/CB4/CB6/CB7): persist the diet-break / adaptation state the
+  // adaptation computed, so it survives the next adaptation and the next
+  // cycle. The adaptation's state wins where it carries a value; the
+  // coach-set step target already stored is never dropped by an
+  // adaptation that does not mention it. A break the coach ended early
+  // with custom deficit macros is recorded as ended (COMPLETED) with
+  // the custom macros as the resumed deficit — the flag above already
+  // cleared, and the state must agree with it.
+  const incomingState = adaptationResult?.adaptation_state;
+  if (incomingState && typeof incomingState === "object") {
+    const storedState = readAdaptationState(merged);
+    let nextState = JSON.parse(JSON.stringify(incomingState));
+    if (!Number.isFinite(nextState.coach_step_target) && Number.isFinite(storedState.coach_step_target)) {
+      nextState.coach_step_target = storedState.coach_step_target;
+    }
+    if (adaptationProposedBreakForState(adaptationResult) && !isDietBreakAfterMerge(merged) && finalCalories) {
+      nextState = endDietBreakState({
+        state: nextState,
+        resumedCaloriesKcal: finalCalories,
+        resumedMacros: {
+          protein_g: finalProtein,
+          carbohydrate_g: finalCarbs,
+          fat_g: finalFats,
+        },
+      });
+    }
+    merged.adaptation_state = JSON.parse(JSON.stringify(nextState));
+  }
+
   return merged;
+}
+
+function adaptationProposedBreakForState(adaptationResult) {
+  return adaptationResult?.adaptation_action === "SCHEDULE_DIET_BREAK"
+    || adaptationResult?.is_diet_break_recommended === true
+    || adaptationResult?.is_diet_break === true;
+}
+
+function isDietBreakAfterMerge(merged) {
+  return merged?.nutrition_program?.is_diet_break === true;
 }
 
 /**

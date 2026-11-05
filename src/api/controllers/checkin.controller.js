@@ -602,6 +602,14 @@ export async function submitCheckin(req, res) {
               undefined,
           },
         });
+        // H1 (CB8): a diet-break week raises calories while the analysis
+        // recommended a cut. The stored analysis must agree with what
+        // was actually applied: the cut is deferred to the return week,
+        // and the applied delta replaces the analysis delta on this row.
+        if (adapted?.analysis_delta_override) {
+          analysisOutput.suggested_calorie_delta = adapted.analysis_delta_override.applied_delta_kcal;
+          analysisOutput.diet_break_analysis_note_ar = `تحليل المتابعة اقترح خفض ${Math.abs(adapted.analysis_delta_override.analysis_delta_kcal)} سعرة، لكن أسبوع استراحة الدايت رفع السعرات للصيانة؛ الخفض مؤجل للأسبوع القادم مع استئناف العجز.`;
+        }
         if (adapted) {
           const baseTargets = baseTargetsFromProgram(progData);
           const derived = deriveEngineProposed({
@@ -1311,6 +1319,21 @@ export async function approveCheckin(req, res) {
           safetyCorrectionApplied = alreadyHadSurplus || corrected !== adapted;
           adapted = corrected;
         }
+      }
+
+      // H1 (CB8): same correction as the submit path — a diet-break
+      // approval raises calories while the analysis recommended a cut,
+      // so the stored analysis must carry the applied delta and the
+      // deferral note instead of contradicting the program.
+      if (!alreadyAdaptedForThisCheckin && adapted?.analysis_delta_override) {
+        const prevAnalysis = (checkin.analysis_output && typeof checkin.analysis_output === "object")
+          ? checkin.analysis_output
+          : {};
+        checkin.analysis_output = {
+          ...prevAnalysis,
+          suggested_calorie_delta: adapted.analysis_delta_override.applied_delta_kcal,
+          diet_break_analysis_note_ar: `تحليل المتابعة اقترح خفض ${Math.abs(adapted.analysis_delta_override.analysis_delta_kcal)} سعرة، لكن أسبوع استراحة الدايت رفع السعرات للصيانة؛ الخفض مؤجل للأسبوع القادم مع استئناف العجز.`,
+        };
       }
 
       // Safe, Deterministic, and Idempotent Non-Destructive Deep Merge.

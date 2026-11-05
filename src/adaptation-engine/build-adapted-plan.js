@@ -13,6 +13,18 @@ import {
   autoregulateWorkoutSession,
   evaluateCumulativeFatigue
 } from "../execution-engines/autoregulated-recovery-engine.js";
+import {
+  DIET_BREAK_MIN_STREAK,
+  advanceDeficitWeeksSinceBreak,
+  endDietBreakState,
+  isDietBreakGoalEligible,
+  isNewDietBreakEligible,
+  normalizeGoal,
+  readAdaptationState,
+  resolveDietBreakMaintenance,
+  startDietBreakState,
+} from "./diet-break-state.js";
+import { MINIMUM_STEP_TARGET } from "../steps-source/resolve-daily-steps.js";
 
 function requireObject(value, name) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -199,64 +211,208 @@ export function buildAdaptedPlan(inputs) {
   let adaptedProtein = Math.round(baseProtein);
   let adaptedCarbs = Math.round(baseCarbs);
   let adaptedFat = Math.round(baseFat);
+  // H1 (B4/CB7): a daily step target exists for every client. A program
+  // built before this fix carries none, so the adaptation uses the
+  // coach-set target when one exists, else the system's own minimum
+  // movement target (5000) — never an invented personal number, and
+  // never a coach-review gate. A missing step target no longer blocks
+  // auto-adaptation.
+  const coachStepTarget = Number(
+    options.coach_step_target ?? options.coachStepTarget
+    ?? currentMasterProgram.adaptation_state?.coach_step_target ?? NaN,
+  );
   let adaptedDailySteps = baseDailySteps;
+  let stepTargetDefaulted = false;
+  if (!Number.isFinite(adaptedDailySteps)) {
+    adaptedDailySteps = Number.isFinite(coachStepTarget) && coachStepTarget > 0
+      ? Math.round(coachStepTarget)
+      : MINIMUM_STEP_TARGET;
+    stepTargetDefaulted = true;
+  } else if (Number.isFinite(coachStepTarget) && coachStepTarget > 0) {
+    adaptedDailySteps = Math.round(coachStepTarget);
+  }
   let refeedConfig = null;
 
   let adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
   const reasons = [];
   let requiresCoachApproval = false;
 
-  // P1-B10: a missing step target is not 8000. The plan keeps its existing
-  // steps (the merge falls back to them) and the adaptation goes to coach
-  // review instead of prescribing an invented step count.
-  if (adaptedDailySteps === null) {
-    requiresCoachApproval = true;
+  if (stepTargetDefaulted) {
     reasons.push({
-      code: "BASE_STEP_TARGET_UNREADABLE",
-      message_ar: "هدف الخطوات اليومي للخطة الحالية غير مقروء؛ تم الاحتفاظ بالخطوات الحالية وتوجيه الخطة لمراجعة الكوتش بدلاً من افتراض رقم.",
-      message_en: "Current daily step target is unreadable; existing steps are kept and the plan is routed for coach review instead of assuming a number.",
+      code: "STEP_TARGET_MINIMUM_APPLIED",
+      message_ar: "هدف الخطوات اليومي للخطة الحالية غير موجود؛ تم تطبيق الحد الأدنى للحركة اليومية (5000 خطوة) بدلاً من إيقاف التكييف.",
+      message_en: "Current daily step target is missing; the minimum daily movement target (5000 steps) was applied instead of blocking adaptation.",
     });
   }
 
   const status = checkinAnalysis.analysis_status;
 
+  // H1: the client's goal, from the caller's explicit value first, then
+  // the program's own resolved goal (effective_goal is only a redirect
+  // record — a redirected goal reads as its destination).
+  const primaryGoal = normalizeGoal(
+    options.primary_goal ?? options.primaryGoal ??
+    checkinAnalysis.primary_goal ?? checkinAnalysis.primaryGoal ??
+    currentMasterProgram.nutrition_program?.targets?.resolved_goal ??
+    currentMasterProgram.nutrition_program?.targets?.effective_goal ??
+    currentMasterProgram.nutrition_program?.targets?.goal ??
+    currentMasterProgram.client?.primary_goal ??
+    currentMasterProgram.intake_decision?.profile?.goals?.primary ??
+    null,
+  );
+  // Diet-break state carried in the stored program (the merge writes it
+  // back after every adaptation, so it survives regenerations).
+  const adaptationState = readAdaptationState({
+    ...(currentMasterProgram.adaptation_state && typeof currentMasterProgram.adaptation_state === "object"
+      ? { adaptation_state: currentMasterProgram.adaptation_state }
+      : {}),
+    ...(options.adaptation_state ? { adaptation_state: options.adaptation_state } : {}),
+  });
+  let nextAdaptationState = adaptationState;
+  let dietBreakSummary = {
+    status: adaptationState.diet_break.status,
+    eligible: false,
+    maintenance_calories_kcal: adaptationState.diet_break.maintenance_calories_kcal,
+    pre_break_calories_kcal: adaptationState.diet_break.pre_break_calories_kcal,
+  };
+  let analysisDeltaOverride = null;
+
 
   const consecutiveHighComplianceWeeks = Number(
-    options.consecutive_high_compliance_weeks || 
-    options.consecutiveHighComplianceWeeks || 
-    options.consecutive_deficit_weeks || 
-    options.consecutiveDeficitWeeks || 
-    checkinAnalysis.consecutive_deficit_weeks || 
-    checkinAnalysis.consecutive_high_compliance_weeks || 
+    options.consecutive_high_compliance_weeks ||
+    options.consecutiveHighComplianceWeeks ||
+    options.consecutive_deficit_weeks ||
+    options.consecutiveDeficitWeeks ||
+    checkinAnalysis.consecutive_deficit_weeks ||
+    checkinAnalysis.consecutive_high_compliance_weeks ||
     0
   );
-  const isDietBreakEligible = (consecutiveHighComplianceWeeks >= 6 && (status === CheckinAnalysisStatus.ON_TRACK || status === CheckinAnalysisStatus.HIGH_FATIGUE_WARNING || status === CheckinAnalysisStatus.PLATEAU_DETECTED || status === "CONFIRMED_PLATEAU"))
-    || options.force_diet_break === true
+  // H1 (CB1/CB3/CB5): a break is a one-week, goal-gated event with state
+  // behind it — never a streak that re-fires every week, never for a
+  // client whose goal is not a deficit.
+  const dietBreakForced = options.force_diet_break === true
     || checkinAnalysis.is_diet_break === true
     || checkinAnalysis.decision === "SCHEDULE_DIET_BREAK"
     || status === "DIET_BREAK_RECOMMENDED";
+  const dietBreakActive = adaptationState.diet_break.status === "ACTIVE";
+  const dietBreakStatusAllows = dietBreakForced || [
+    CheckinAnalysisStatus.ON_TRACK,
+    CheckinAnalysisStatus.HIGH_FATIGUE_WARNING,
+    CheckinAnalysisStatus.PLATEAU_DETECTED,
+    "CONFIRMED_PLATEAU",
+  ].includes(status);
+  const isDietBreakEligible = !dietBreakActive && dietBreakStatusAllows && isNewDietBreakEligible({
+    goal: primaryGoal,
+    consecutiveHighComplianceWeeks,
+    adaptationState,
+    forced: dietBreakForced,
+  });
+  dietBreakSummary.eligible = isDietBreakEligible;
 
-  
   const isReverseDieting = options.diet_framework === "REVERSE_DIETING" || options.dietFramework === "REVERSE_DIETING";
 
-  if (isDietBreakEligible) {
+  if (dietBreakActive) {
+    // H1 (CB1/CB5/CB6): the break week is over. The client returns to
+    // the exact pre-break deficit automatically — no new proposal, no
+    // ratchet, and the streak restarts from zero (the state's
+    // deficit-weeks counter is the reset; the check-in streak is not).
+    const preBreakCalories = adaptationState.diet_break.pre_break_calories_kcal;
+    const preBreakMacros = adaptationState.diet_break.pre_break_macros;
+    if (Number.isFinite(preBreakCalories) && preBreakCalories > 0) {
+      adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
+      adaptedCalories = Math.round(preBreakCalories);
+      if (preBreakMacros) {
+        adaptedProtein = Math.round(preBreakMacros.protein_g ?? adaptedProtein);
+        adaptedCarbs = Math.round(preBreakMacros.carbohydrate_g ?? adaptedCarbs);
+        adaptedFat = Math.round(preBreakMacros.fat_g ?? adaptedFat);
+      }
+      const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs, adaptedFat);
+      adaptedCarbs = aligned.carbs;
+      adaptedFat = aligned.fat;
+      nextAdaptationState = endDietBreakState({
+        state: adaptationState,
+        resumedCaloriesKcal: adaptedCalories,
+        resumedMacros: { protein_g: adaptedProtein, carbohydrate_g: adaptedCarbs, fat_g: adaptedFat },
+      });
+      dietBreakSummary = {
+        status: "COMPLETED",
+        eligible: false,
+        maintenance_calories_kcal: adaptationState.diet_break.maintenance_calories_kcal,
+        pre_break_calories_kcal: adaptedCalories,
+        ended_this_week: true,
+      };
+      reasons.push({
+        code: "DIET_BREAK_ENDED_RETURN_TO_DEFICIT",
+        message_ar: `انتهت استراحة الدايت (أسبوع واحد كما وُعد)؛ رجعت السعرات لعجز ما قبل الاستراحة (${adaptedCalories} سعرة) تلقائياً. الاستراحة الجاية تحتاج ${DIET_BREAK_MIN_STREAK} أسابيع التزام جديدة بعد الاستراحة.`,
+        message_en: `Diet break ended after one week as promised; calories returned automatically to the pre-break deficit (${adaptedCalories} kcal).`,
+      });
+    } else {
+      // No pre-break targets were ever stored: staying at maintenance
+      // is the safe failure, and the coach decides the deficit.
+      adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
+      requiresCoachApproval = true;
+      reasons.push({
+        code: "DIET_BREAK_PRE_BREAK_TARGETS_MISSING",
+        message_ar: "انتهت استراحة الدايت لكن أهداف ما قبل الاستراحة غير محفوظة؛ تم تثبيت السعرات على الصيانة وتوجيه الخطة لمراجعة الكوتش لتحديد العجز.",
+        message_en: "Diet break ended but pre-break targets were not stored; calories held at maintenance for coach review.",
+      });
+    }
+  } else if (isDietBreakEligible) {
     adaptationAction = AdaptationAction.SCHEDULE_DIET_BREAK;
     requiresCoachApproval = true;
     const observedTdee = checkinAnalysis.adaptive_tdee?.ready ? Number(checkinAnalysis.adaptive_tdee.observed_tdee_kcal) : null;
     const planTdee = Number(currentMasterProgram.nutrition_program?.targets?.tdee || currentMasterProgram.nutrition_program?.tdee);
-    const maintenanceCalories = Number.isFinite(observedTdee) && observedTdee > baseEnergy
-      ? Math.round(observedTdee)
-      : (Number.isFinite(planTdee) && planTdee > baseEnergy ? Math.round(planTdee) : Math.round(baseEnergy + 350));
+    // H1 (CB2): maintenance is the observed TDEE — even when it EQUALS
+    // the current base — else the formula TDEE, else the base. Never
+    // base + 350: that fallback added +350 every week once base had
+    // been set to observed.
+    const maintenanceCalories = resolveDietBreakMaintenance({
+      observedTdeeKcal: observedTdee,
+      observedReady: checkinAnalysis.adaptive_tdee?.ready === true,
+      planTdeeKcal: planTdee,
+      baseEnergyKcal: baseEnergy,
+    });
 
     adaptedCalories = maintenanceCalories;
     const aligned = alignMacrosWithCalories(adaptedCalories, adaptedProtein, adaptedCarbs, adaptedFat);
     adaptedCarbs = aligned.carbs;
     adaptedFat = aligned.fat;
+    nextAdaptationState = startDietBreakState({
+      state: adaptationState,
+      currentWeekNumber,
+      baseCaloriesKcal: Math.round(baseEnergy),
+      baseMacros: { protein_g: Math.round(baseProtein), carbohydrate_g: Math.round(baseCarbs), fat_g: Math.round(baseFat) },
+      maintenanceCaloriesKcal: adaptedCalories,
+    });
+    dietBreakSummary = {
+      status: "ACTIVE",
+      eligible: true,
+      maintenance_calories_kcal: adaptedCalories,
+      pre_break_calories_kcal: Math.round(baseEnergy),
+      started_this_week: true,
+    };
     reasons.push({
       code: AdaptationReasonCode.DIET_BREAK_TRIGGERED_AFTER_COMPLIANCE,
-      message_ar: `استراحة دايت مبرمجة (Diet Break)! بعد ${consecutiveHighComplianceWeeks} أسابيع متصلة من الالتزام العالي (≥85%)، تم رفع السعرات إلى حد الصيانة (${adaptedCalories} سعرة) لمدة أسبوع لإعادة تنشيط هرمونات الحرق (Leptin و T3) وإراحة الجهاز العصبي قبل استئناف العجز.`,
-      message_en: "Adherence-gated Diet Break activated! Following 6 consecutive weeks of high compliance (≥85%), calories increased to maintenance (+350 kcal) for one week to restore leptin, thyroid output, and metabolic rate.",
+      message_ar: `استراحة دايت مبرمجة (Diet Break)! بعد ${consecutiveHighComplianceWeeks} أسابيع متصلة من الالتزام العالي (≥85%)، تم رفع السعرات إلى حد الصيانة (${adaptedCalories} سعرة) لمدة أسبوع واحد فقط لإعادة تنشيط هرمونات الحرق (Leptin و T3) وإراحة الجهاز العصبي قبل استئناف العجز تلقائياً الأسبوع القادم.`,
+      message_en: "Adherence-gated Diet Break activated! Following 6 consecutive weeks of high compliance (≥85%), calories increased to maintenance for one week only, returning to deficit automatically next week.",
     });
+    // H1 (CB8): the check-in analysis can recommend a cut on the same
+    // week the break raises calories. The two must not contradict each
+    // other silently: the cut is deferred, not applied, and the applied
+    // delta is recorded on the adaptation so the stored analysis can be
+    // corrected to match.
+    if (typeof checkinAnalysis.suggested_calorie_delta === "number" && checkinAnalysis.suggested_calorie_delta < 0) {
+      analysisDeltaOverride = {
+        analysis_delta_kcal: checkinAnalysis.suggested_calorie_delta,
+        applied_delta_kcal: adaptedCalories - Math.round(baseEnergy),
+        reason: "DIET_BREAK_DEFERS_ANALYSIS_CUT",
+      };
+      reasons.push({
+        code: "DIET_BREAK_DEFERS_ANALYSIS_CUT",
+        message_ar: `تحليل المتابعة اقترح خفض ${Math.abs(checkinAnalysis.suggested_calorie_delta)} سعرة هذا الأسبوع، لكن أسبوع استراحة الدايت يرفع السعرات للصيانة بدلاً من ذلك؛ الخفض مؤجل للأسبوع القادم مع استئناف العجز، مش ملغي.`,
+        message_en: `Check-in analysis suggested a cut of ${Math.abs(checkinAnalysis.suggested_calorie_delta)} kcal this week, but the diet-break week raises calories to maintenance instead; the cut is deferred to next week when the deficit resumes, not cancelled.`,
+      });
+    }
   } else if (isReverseDieting) {
     adaptationAction = AdaptationAction.INCREASE_CALORIES_REVERSE_DIETING || "INCREASE_CALORIES_REVERSE_DIETING";
     const weightChange = typeof checkinAnalysis.weight_change_kg === "number" ? checkinAnalysis.weight_change_kg : 0;
@@ -939,6 +1095,39 @@ export function buildAdaptedPlan(inputs) {
     }
   }
 
+  // H1 (CB4): record a real non-break adaptation as history, so a
+  // regeneration starts from the adapted target instead of the formula
+  // target. The offset composes week to week (previous offset + this
+  // week's change); a week with no change keeps the previous offset
+  // instead of erasing it, and a diet-break week never writes one.
+  const dietBreakWeek = adaptationAction === AdaptationAction.SCHEDULE_DIET_BREAK || dietBreakActive;
+  if (!dietBreakWeek && adaptedCalories !== Math.round(baseEnergy)) {
+    const weekDelta = adaptedCalories - Math.round(baseEnergy);
+    nextAdaptationState = {
+      ...nextAdaptationState,
+      last_adapted_calories_kcal: adaptedCalories,
+      last_adapted_macros: {
+        protein_g: adaptedProtein,
+        carbohydrate_g: adaptedCarbs,
+        fat_g: adaptedFat,
+      },
+      calorie_offset_kcal: Math.round(nextAdaptationState.calorie_offset_kcal + weekDelta),
+    };
+    // formula_at_adaptation is the formula target the offset is measured
+    // against: last adapted minus the total offset.
+    nextAdaptationState = {
+      ...nextAdaptationState,
+      formula_calories_at_adaptation_kcal: Math.round(
+        nextAdaptationState.last_adapted_calories_kcal - nextAdaptationState.calorie_offset_kcal,
+      ),
+    };
+  }
+  // H1 (CB1): a compliant deficit week after a break counts toward the
+  // fresh streak a new break needs.
+  if (!dietBreakWeek && nextAdaptationState.diet_break.status === "COMPLETED" && consecutiveHighComplianceWeeks >= 1) {
+    nextAdaptationState = advanceDeficitWeeksSinceBreak(nextAdaptationState);
+  }
+
   return Object.freeze({
     engine_version: ADAPTATION_ENGINE_VERSION,
     source_program_version: currentMasterProgram.engine_version,
@@ -947,6 +1136,13 @@ export function buildAdaptedPlan(inputs) {
     adaptation_reasons: Object.freeze(reasons),
     is_deload_recommended: isDeloadRecommended,
     is_diet_break_recommended: isDietBreakEligible,
+    // H1: the applied calorie delta (the analysis delta can differ — see
+    // DIET_BREAK_DEFERS_ANALYSIS_CUT) and the diet-break state the merge
+    // must store back into the program.
+    suggested_calorie_delta: adaptedCalories - Math.round(baseEnergy),
+    analysis_delta_override: analysisDeltaOverride,
+    diet_break: Object.freeze({ ...dietBreakSummary }),
+    adaptation_state: Object.freeze(nextAdaptationState),
     adapted_nutrition: Object.freeze({
       target_calories_kcal: adaptedCalories,
       protein_g: adaptedProtein,

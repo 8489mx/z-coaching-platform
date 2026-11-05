@@ -19,6 +19,7 @@ import {
   prepareNextCycle,
   runDueCycles,
   calculateTargetsHandler,
+  setStepTarget,
 } from "../controllers/program.controller.js";
 import { requireAuth, requireAdmin } from "../middlewares/auth.middleware.js";
 import { engineCalculatorRateLimiter } from "../middlewares/rateLimiter.js";
@@ -39,6 +40,9 @@ router.get("/mobile/:code", requireAuth, getActiveProgramByUserId);
 
 // Custom Program Editing & Catalog
 router.put("/update-custom", requireAuth, updateCustomProgram);
+// H1 (CB7): dedicated daily step-target control — one number, no full
+// program_data save, and it survives regenerations.
+router.put("/step-target", requireAuth, setStepTarget);
 // S4-7: unified target calculation for the coach macro calculator (writes nothing).
 // S4-7 review fix: rate-limited like the other engine calculator endpoints.
 // Each call decrypts an intake and runs the full engine, so it is not left

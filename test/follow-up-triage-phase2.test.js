@@ -70,10 +70,13 @@ test("base targets are read from the same program paths the adaptation engine us
   const targets = baseTargetsFromProgram(baseProgram());
   assert.equal(targets.baseCaloriesKcal, 2000);
   assert.equal(targets.baseSteps, 8000);
-  // P1-B3: an empty program has no base — never an invented 2000/8000.
+  // P1-B3: an empty program has no calorie base — never an invented 2000.
+  // H1 (B4): steps are different — the adaptation fills a missing step
+  // base with the 5000 minimum, so the gate measures against 5000
+  // instead of blocking auto-apply forever for a missing step target.
   const fallback = baseTargetsFromProgram({});
   assert.equal(fallback.baseCaloriesKcal, null);
-  assert.equal(fallback.baseSteps, null);
+  assert.equal(fallback.baseSteps, 5000);
 });
 
 test("GREEN inside caps with a clean engine result is eligible", () => {

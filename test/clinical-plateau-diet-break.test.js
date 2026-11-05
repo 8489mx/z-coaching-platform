@@ -17,9 +17,11 @@ const nutritionFoodCatalog = JSON.parse(
   fs.readFileSync(new URL('../data/catalogs/core-global-food-batch-v1.json', import.meta.url), 'utf8')
 );
 
-function buildTestProgram() {
+function buildTestProgram(goal = "FAT_LOSS") {
+  const intake = JSON.parse(JSON.stringify(completeIntake()));
+  intake.goals = { ...intake.goals, primary: goal };
   return buildMasterEngineV2({
-    intake: completeIntake(),
+    intake,
     evaluationContext,
     nutritionFoodCatalog,
   });
@@ -31,6 +33,7 @@ test('Milestone 1: Clinical Plateau Breaker & Auto Diet-Break Engine Suite', asy
     const baseProgram = buildTestProgram();
     const baseCalories = baseProgram.nutrition_program.macro_targets.calories_kcal;
     const baseCarbs = baseProgram.nutrition_program.macro_targets.carbohydrate_g;
+    const planTdee = Number(baseProgram.nutrition_program.targets.tdee);
 
     const adapted = buildAdaptedPlan({
       currentMasterProgram: baseProgram,
@@ -47,8 +50,11 @@ test('Milestone 1: Clinical Plateau Breaker & Auto Diet-Break Engine Suite', asy
 
     assert.equal(adapted.adaptation_action, AdaptationAction.SCHEDULE_DIET_BREAK);
     assert.equal(adapted.is_diet_break_recommended, true);
-    assert.equal(adapted.adapted_nutrition.target_calories_kcal, Math.round(baseCalories + 350));
-    assert.equal(adapted.adapted_nutrition.carbohydrate_g, 455);
+    // H1 (CB2): maintenance is the plan TDEE here (no observed TDEE
+    // ready yet) — never base + 350, which ratcheted +350 every week
+    // once base had been set to observed.
+    assert.equal(adapted.adapted_nutrition.target_calories_kcal, planTdee);
+    assert.ok(adapted.adapted_nutrition.carbohydrate_g > baseCarbs);
 
     const reason = adapted.adaptation_reasons.find(
       r => r.code === AdaptationReasonCode.DIET_BREAK_TRIGGERED_AFTER_COMPLIANCE
@@ -75,12 +81,13 @@ test('Milestone 1: Clinical Plateau Breaker & Auto Diet-Break Engine Suite', asy
 
     assert.equal(adapted.adaptation_action, AdaptationAction.REDUCE_CALORIES_FOR_PLATEAU);
     assert.equal(adapted.adapted_nutrition.target_calories_kcal, baseCalories - 125);
-    // P1-B10: the master-engine program carries no step target, so the
-    // old 8000+500 expectation was the invented fallback. Missing step
-    // target is null + coach review; the merge keeps existing steps.
-    assert.equal(adapted.adapted_cardio.daily_step_target, null);
-    assert.equal(adapted.requires_coach_approval, true);
-    assert.ok(adapted.adaptation_reasons.some((r) => r.code === "BASE_STEP_TARGET_UNREADABLE"));
+    // H1 (B4): this program carries a real step target (8000, from the
+    // client's reported steps), so the plateau step increase applies
+    // (8000 + 500). A missing step target now defaults to the 5000
+    // minimum and never blocks adaptation.
+    assert.equal(adapted.adapted_cardio.daily_step_target, 8500);
+    assert.equal(adapted.requires_coach_approval, false);
+    assert.ok(!adapted.adaptation_reasons.some((r) => r.code === "BASE_STEP_TARGET_UNREADABLE"));
 
     const reason = adapted.adaptation_reasons.find(
       r => r.code === AdaptationReasonCode.PLATEAU_DEFICIT_APPLIED

@@ -37,6 +37,14 @@ function writeWeeks(programData, weeks) {
 export function buildNextCycle({ program, progression = {}, flagged_exercises = [], now = new Date() }) {
   const previous = program?.program_data || {};
   const programData = JSON.parse(JSON.stringify(previous));
+  // H1 (CB4/CB7): the deep clone above already carries adaptation_state
+  // (diet-break state, preserved calorie offset, coach step target) and
+  // the step target into the next cycle. Re-assert it explicitly: a
+  // future change to the clone must never silently drop the history
+  // that keeps the next cycle from restarting at formula targets.
+  if (previous.adaptation_state && !programData.adaptation_state) {
+    programData.adaptation_state = JSON.parse(JSON.stringify(previous.adaptation_state));
+  }
   const states = progression.exercises || {};
   const stalled = new Set([...(progression.stalled_exercises || []), ...(progression.dropping_exercises || [])]);
   const flagged = new Set(flagged_exercises.map((code) => String(code).toUpperCase()));
