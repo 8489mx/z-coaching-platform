@@ -187,9 +187,13 @@ test("S4-7 review fix: an explicit 0 never silently reuses the stored intake val
   assert.equal(explicitZero.targets.body_fat_percentage, null);
   assert.equal(explicitZero.targets.bmr, 1758);
 
-  // Steps 0 must not reuse the intake's 8000 steps either: it reaches the
-  // engine (which applies its own 6000 default), so the activity factor
-  // matches an explicit 6000 and differs from the 8000-step answer.
+  // Steps 0 is UNKNOWN, not a real zero (owner decision 6): resolveDailySteps
+  // requires > 0, so an explicit 0 contributes nothing — the activity factor
+  // is the max of the steps factor and the lifestyle factor, and the
+  // lifestyle floor (1.5 here) wins. So 0 answers exactly like the intake's
+  // 8000 steps and like an explicit 6000. Real steps above the floor DO move
+  // the factor (12000 -> 1.7), proving the max() ladder rather than a
+  // silent fixed default.
   const base = buildClientTargets({
     answers: completeIntake(),
     measurements: { weight_kg: 82, height_cm: 178 },
@@ -205,8 +209,15 @@ test("S4-7 review fix: an explicit 0 never silently reuses the stored intake val
     measurements: { weight_kg: 82, height_cm: 178, average_daily_steps: 6000 },
     assessmentDate: ASSESSMENT_CONTEXT.assessmentDate,
   });
+  const stepsTwelveThousand = buildClientTargets({
+    answers: completeIntake(),
+    measurements: { weight_kg: 82, height_cm: 178, average_daily_steps: 12000 },
+    assessmentDate: ASSESSMENT_CONTEXT.assessmentDate,
+  });
+  assert.equal(stepsZero.targets.activity_factor, base.targets.activity_factor, "explicit 0 is unknown: same answer as the intake's 8000 steps");
   assert.equal(stepsZero.targets.activity_factor, stepsSixThousand.targets.activity_factor);
-  assert.notEqual(stepsZero.targets.activity_factor, base.targets.activity_factor);
+  assert.equal(stepsTwelveThousand.targets.activity_factor, 1.7);
+  assert.ok(stepsTwelveThousand.targets.activity_factor > stepsZero.targets.activity_factor, "real steps above the lifestyle floor raise the factor");
 
   // Age 0 is out of range (1-110) when no date of birth exists to win over
   // it: it must be rejected, not treated as "no age supplied" and answered

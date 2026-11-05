@@ -12,7 +12,6 @@ import { generateSmartSwaps, buildAllergenContext } from "../src/nutrition-meal-
  */
 const CATALOG = JSON.parse(fs.readFileSync("data/catalogs/core-global-food-batch-v1.json", "utf8"));
 const CONTEXT = { system_time: "2026-09-22T08:00:00.000Z", assessmentDate: "2026-09-22" };
-const GULF = ["HAMOUR_FISH", "KANAAD_KINGFISH", "CAMEL_MEAT_LEAN"];
 const intake = (extra = {}) => ({
   gender: "female", age: "30", height_cm: "165", weight_kg: "75", circumferences: { neck_cm: "33", waist_cm: "80", hips_cm: "100" },
   primary_goal: "fat_loss", neat_level: "moderate", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
@@ -38,10 +37,25 @@ test("no known country keeps the order", () => {
     codes(generateSmartSwaps("PROTEIN", 160, "CHICKEN_BREAST", "LUNCH", 10, buildAllergenContext({}, {}))));
 });
 
-test("an Egyptian client who dislikes chicken and tuna gets no Gulf food in the plan", () => {
+test("an Egyptian client who dislikes chicken and tuna may still get a Gulf main dish — but its swaps list local food first", () => {
   const program = buildMasterEngineV2({ intake: intake({ client_country: "EG", disliked_foods: ["صدور دجاج", "تونة"] }), evaluationContext: CONTEXT, nutritionFoodCatalog: CATALOG, options: {} });
   const items = program.nutrition_program.culinary_meals.flatMap((m) => m.items.map((i) => i.food_code));
-  for (const code of GULF) assert.ok(!items.includes(code), `${code} in ${items.join(", ")}`);
+  // Decision 9: "local first" in swap ordering is the design — Gulf dishes
+  // are NOT excluded from the plan. With chicken and tuna disliked, the
+  // engine serves camel meat as the main protein on clinical-safety basis.
+  assert.ok(items.includes("CAMEL_MEAT_LEAN"), `a Gulf main dish may still serve; plan: ${items.join(", ")}`);
+  // ...but every plan protein whose swaps include Gulf fish lists the local
+  // fish first — and the Gulf fish stay in the list, after them.
+  const withFishSwaps = [...new Set(items)].filter((code) =>
+    generateSmartSwaps("PROTEIN", 160, code, "LUNCH", 10, buildAllergenContext({}, { client_country: "EG" }))
+      .some((s) => s.food_code === "HAMOUR_FISH"));
+  assert.ok(withFishSwaps.length > 0, "at least one plan protein has Gulf fish in its swaps");
+  for (const code of withFishSwaps) {
+    const eg = generateSmartSwaps("PROTEIN", 160, code, "LUNCH", 10, buildAllergenContext({}, { client_country: "EG" }));
+    assert.ok(index(eg, "TILAPIA_FISH") < index(eg, "HAMOUR_FISH"), codes(eg).join());
+    assert.ok(index(eg, "BOURI_FISH") < index(eg, "KANAAD_KINGFISH"), codes(eg).join());
+    assert.ok(eg.some((s) => s.food_code === "HAMOUR_FISH"), "Gulf fish stay in the list");
+  }
 });
 
 test("generate-draft tells the engine the client's country", () => {

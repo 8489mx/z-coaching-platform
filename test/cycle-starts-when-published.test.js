@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { updateCustomProgram } from "../src/api/controllers/program.controller.js";
 import { resolveTrainingCycleStatus } from "../src/api/services/trainingCycleService.js";
-import { User, Program } from "../src/api/models/index.js";
+import { User, Program, IntakeSubmission } from "../src/api/models/index.js";
 import sequelize from "../src/api/config/database.js";
 
 /**
@@ -24,10 +24,21 @@ async function fresh(code, phone, role) {
   const existing = await User.findOne({ where: { client_code: code } });
   if (existing) {
     await Program.destroy({ where: { user_id: existing.id } });
+    await IntakeSubmission.destroy({ where: { user_id: existing.id } });
     await existing.destroy();
   }
   return User.create({ client_code: code, phone_number: phone, full_name: code, role });
 }
+
+// Publishing is fail-closed: updateCustomProgram returns 409 INTAKE_REQUIRED
+// with no stored intake. A draft therefore needs a complete, healthy intake
+// before it can publish — the same shape the editor-scope test publishes with.
+const HEALTHY_INTAKE = { answers: {
+  gender: "female", age: "34", height_cm: "165", weight_kg: "80", primary_goal: "fat_loss", dangerous_symptoms: ["NONE"],
+  medical_conditions: { has_conditions: false, selected: [], female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false, answered: true } },
+  injuries_map: { has_injuries: false, selected_areas: ["none"] }, strict_allergies: ["none"],
+  training_logistics: { days_per_week: 3, experience_level: "beginner" },
+} };
 
 test("a draft published days after it was prepared starts its cycle on the day it is published", async () => {
   const client = await fresh(CODE, "01099000951", "CLIENT");
@@ -36,6 +47,8 @@ test("a draft published days after it was prepared starts its cycle on the day i
     const prepared = new Date(Date.now() - 5 * DAY).toISOString();
     const draft = await Program.create({ user_id: client.id, status: "DRAFT", program_data: { cycle_number: 2, cycle_started_at: prepared, training_program: { weeks } } });
     assert.equal(resolveTrainingCycleStatus(draft).days_remaining, 30, "precondition: five days already counted");
+
+    await IntakeSubmission.create({ user_id: client.id, answers: HEALTHY_INTAKE, status: "PENDING_COACH_REVIEW" });
 
     const out = {};
     await updateCustomProgram({ user: { id: coach.id }, body: { client_code: CODE, program_data: draft.program_data, publish: true } },
@@ -57,6 +70,7 @@ test("a draft published days after it was prepared starts its cycle on the day i
     assert.equal(draft.program_data.cycle_started_at, started);
   } finally {
     await Program.destroy({ where: { user_id: client.id } }).catch(() => {});
+    await IntakeSubmission.destroy({ where: { user_id: client.id } }).catch(() => {});
     await client.destroy().catch(() => {});
     await coach.destroy().catch(() => {});
   }

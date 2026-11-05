@@ -97,7 +97,16 @@ test("wiring: active program response, coach save carry-over, client meals, swap
   assert.match(hook, /const acc = displayedMeals\.reduce/, "consumed macros follow what the client actually sees");
   assert.match(hook, /meals: displayedMeals/);
   assert.match(hook, /RAMADAN_CARDIO_GUIDANCE_AR/);
-  assert.match(read("frontend/src/pages/ClientInteractiveApp/components/FoodSwapModal.jsx"), /isFoodAllowedDuringFast\(f, fastingContext\)/);
+  // Decision 7 (server-only fasting): P2-C3 moved fasting filtering to the
+  // server, so the web swap modal no longer filters fasting client-side.
+  // The server swap path carries the fasting context (swapContextFor) and
+  // the safety filter applies the fasting diet, and the serve path applies
+  // fasting to the meals it delivers.
+  assert.doesNotMatch(read("frontend/src/pages/ClientInteractiveApp/components/FoodSwapModal.jsx"), /isFoodAllowedDuringFast/);
+  assert.match(controller, /resolveClientFastingContext\(targetClient, activeProg\?\.program_data/);
+  assert.match(read("src/api/services/liveFoodSwapSafety.js"), /isChristianFast/);
+  assert.match(read("src/api/services/liveFoodSwapSafety.js"), /fastingDiet/);
+  assert.match(controller, /applyFastingToMeals\(program\.program_data\?\.nutrition\?\.meals/);
   assert.match(read("frontend/src/pages/ClientInteractiveApp/components/WorkoutTab.jsx"), /cardioAdvisories\.map/);
   assert.match(read("frontend/src/pages/ClientInteractiveApp/components/MealsTab.jsx"), /fastingContext\?\.active/);
   assert.match(read("frontend/src/pages/CoachEditor.jsx"), /<CoachFastingToggle/);

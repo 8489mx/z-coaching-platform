@@ -707,13 +707,14 @@ describe("Tier CS Clinical Fixes & Verification", () => {
 
     test("E2E Subtest 9: Coach Manual Override Safety Check - Warns & Audits Kidney Protein Exceedance in CoachEditor Route", async () => {
       const { updateCustomProgram } = await import("../src/api/controllers/program.controller.js");
-      const { User, Program } = await import("../src/api/models/index.js");
+      const { User, Program, IntakeSubmission } = await import("../src/api/models/index.js");
 
       // Save originals
       const origUserFindByPk = User.findByPk;
       const origUserFindOne = User.findOne;
       const origProgramFindOne = Program.findOne;
       const origProgramCreate = Program.create;
+      const origIntakeFindOne = IntakeSubmission.findOne;
 
       try {
         const mockKidneyUser = {
@@ -869,7 +870,12 @@ describe("Tier CS Clinical Fixes & Verification", () => {
         assert.ok(responseC.data.clinical_warning.includes("ضغط الدم"), "Warning must mention blood pressure");
         assert.equal(savedProgramData.clinical_guardrails.coach_override_hypertension, true);
 
-        // Scenario D: Asthma override (Coach manually enters HIIT cardio)
+        // Scenario D: Asthma + HIIT is BANNED, not warned-and-saved (owner
+        // decision 5, locked design P0-A16). The P0-A16 save guard refuses
+        // a HIIT save for an at-risk client before any write: 409 when no
+        // intake exists to judge from, 400 HIIT_NOT_ALLOWED_FOR_AT_RISK
+        // once the intake confirms the asthma. The old warn branch in the
+        // controller is unreachable for a HIIT save.
         const asthmaUser = {
           id: 997,
           role: "COACH",
@@ -894,6 +900,8 @@ describe("Tier CS Clinical Fixes & Verification", () => {
           }
         };
 
+        // No intake to judge from: the guard refuses with 409, not 400.
+        IntakeSubmission.findOne = async () => null;
         let responseD = null;
         const resD = {
           status: (code) => ({
@@ -903,18 +911,28 @@ describe("Tier CS Clinical Fixes & Verification", () => {
             }
           })
         };
-
         await updateCustomProgram(unsafeAsthmaReq, resD);
+        assert.equal(responseD.statusCode, 409);
+        assert.equal(responseD.data.code, "INTAKE_REQUIRED");
 
-        assert.equal(responseD.statusCode, 200);
-        assert.ok(responseD.data.clinical_warning, "Clinical warning must be returned for asthma HIIT");
-        assert.ok(responseD.data.clinical_warning.includes("الربو"), "Warning must mention asthma");
-        assert.equal(savedProgramData.clinical_guardrails.coach_override_asthma, true);
+        // With a complete intake confirming the asthma: 400, nothing saved.
+        IntakeSubmission.findOne = async () => ({ answers: { answers: {
+          medical_conditions: { selected: ["ASTHMA_OR_RESPIRATORY_CONDITION"] },
+          age: 30, weight_kg: 70, height_cm: 175,
+        } } });
+        savedProgramData = null;
+        responseD = null;
+        await updateCustomProgram(unsafeAsthmaReq, resD);
+        assert.equal(responseD.statusCode, 400);
+        assert.equal(responseD.data.code, "HIIT_NOT_ALLOWED_FOR_AT_RISK");
+        assert.ok(responseD.data.error.includes("الربو"), "the refusal names the asthma");
+        assert.equal(savedProgramData, null, "a refused HIIT save writes nothing");
       } finally {
         User.findByPk = origUserFindByPk;
         User.findOne = origUserFindOne;
         Program.findOne = origProgramFindOne;
         Program.create = origProgramCreate;
+        IntakeSubmission.findOne = origIntakeFindOne;
       }
     });
 
