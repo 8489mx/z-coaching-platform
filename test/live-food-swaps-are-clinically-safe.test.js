@@ -88,15 +88,30 @@ test("an unknown food gets no swaps instead of egg swaps", async () => {
 
 // No food of the same kind and close value exists in the swap list for this one (swapExchangeRules):
 // lupini is the only high-protein, low-carbohydrate snack of its kind. Tuna swaps since the swap
-// data became one source, laban and the milks swap for each other, salmon swaps with olive oil.
+// data became one source, laban and the dairy milks swap for each other, salmon swaps with olive oil.
 // Protein powder is never swapped (isNoSwapFood, owner rule).
+//
+// C13 (decided by the owner 2026-11-05): the three PLANT milks have NO legal swap — by decision,
+// not by missing data. Their rows exist and match USDA (oat milk FDC 2257046, 48 kcal / 0.80 g
+// protein per 100 g), but the protein-based quantity math (0.3–1 g protein) leaves no candidate
+// within 25% energy, and almond has zero candidates under any reclassification. The "workable"
+// swaps data alone would suggest (rice milk -> banana) are absurd and must never be introduced.
+// A client on a plant milk gets an empty swap list, never a wrong food.
+const PLANT_MILKS_NO_SWAP = new Set(["OAT_MILK", "RICE_MILK", "ALMOND_MILK_UNSWEETENED"]);
 const NO_EQUIVALENT_IN_SWAP_LIST = new Set(["LUPINI_BEANS"]);
+
+test("plant milks have no swaps by decision (C13): oat, rice and almond return an empty list", async () => {
+  for (const code of PLANT_MILKS_NO_SWAP) {
+    const codes = await candidatesFor(code, answers([], ["none"]), 100);
+    assert.deepEqual(codes, [], `${code} must have no swaps by decision`);
+  }
+});
 
 test("every food a plan can hold gets swaps, except vegetables and foods with no equivalent", async () => {
   const { FOOD_SWAP_DATABASE } = await import("../src/nutrition-meal-context-v2/index.js");
   const missing = [];
   for (const [code, food] of Object.entries(FOOD_SWAP_DATABASE)) {
-    if (food.category === "VEGGIES" || NO_EQUIVALENT_IN_SWAP_LIST.has(code) || isNoSwapFood(code)) continue;
+    if (food.category === "VEGGIES" || NO_EQUIVALENT_IN_SWAP_LIST.has(code) || PLANT_MILKS_NO_SWAP.has(code) || isNoSwapFood(code)) continue;
     const codes = await candidatesFor(code, answers([], ["none"]), 100);
     if (codes.length === 0) missing.push(code);
   }
