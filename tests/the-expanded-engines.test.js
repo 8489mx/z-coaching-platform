@@ -10,7 +10,8 @@ describe('Expanded Splits & Onboarding Engine Tests', () => {
       age: 26,
       weightKg: 82,
       heightCm: 180,
-      trainingDaysPerWeek: 6
+      trainingDaysPerWeek: 6,
+      goal: 'FAT_LOSS'
     });
 
     expect(plan.training_split.id).toBe('arnold_split');
@@ -27,7 +28,8 @@ describe('Expanded Splits & Onboarding Engine Tests', () => {
       age: 27,
       weightKg: 58,
       heightCm: 165,
-      trainingDaysPerWeek: 4
+      trainingDaysPerWeek: 4,
+      goal: 'FAT_LOSS'
     });
 
     expect(plan4.training_split.id).toBe('female_glute_specialized');
@@ -40,7 +42,8 @@ describe('Expanded Splits & Onboarding Engine Tests', () => {
       age: 29,
       weightKg: 60,
       heightCm: 168,
-      trainingDaysPerWeek: 5
+      trainingDaysPerWeek: 5,
+      goal: 'FAT_LOSS'
     });
 
     expect(plan5.training_split.id).toBe('female_glute_specialized');
@@ -57,7 +60,8 @@ describe('Expanded Splits & Onboarding Engine Tests', () => {
       age: 28,
       weightKg: 85,
       heightCm: 182,
-      trainingDaysPerWeek: 5
+      trainingDaysPerWeek: 5,
+      goal: 'FAT_LOSS'
     });
 
     expect(plan.training_split.id).toBe('ul_arms_hybrid');
