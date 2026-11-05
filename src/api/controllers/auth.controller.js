@@ -51,7 +51,7 @@ const findClientByCodeAndPhone = async (client_code, phone_number) => {
 // requires an authenticated session (changePassword) or a coach reset, so
 // code + phone alone can never overwrite a chosen secret.
 export const setClientPassword = async (req, res) => {
-  const ip = req.clientIp || req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+  const ip = req.clientIp || req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
   try {
     const { client_code, phone_number, new_password } = req.body;
 
@@ -178,7 +178,7 @@ export const resetClientPassword = async (req, res) => {
 };
 
 export const loginFast = async (req, res) => {
-  const ip = req.clientIp || req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+  const ip = req.clientIp || req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
   try {
     const { client_code, phone_number, password } = req.body;
 
@@ -259,7 +259,7 @@ export const loginFast = async (req, res) => {
 };
 
 export const loginEmail = async (req, res) => {
-  const ip = req.clientIp || req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+  const ip = req.clientIp || req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
   try {
     const { email, password } = req.body;
 

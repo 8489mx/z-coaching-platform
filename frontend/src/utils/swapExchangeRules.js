@@ -86,6 +86,7 @@ export const SWAP_FAMILIES = Object.freeze({
   OLIVE_OIL: [COOKING_FAT], NATURAL_BUTTER_GHEE: [COOKING_FAT],
   FRESH_AVOCADO: [NUT_SPREAD], RAW_TAHINI: [NUT_SPREAD], PEANUT_BUTTER: [NUT_SPREAD],
   RAW_ALMONDS: [NUT_SPREAD], ALMONDS_RAW: [NUT_SPREAD], HEMP_CHIA_SEEDS: [NUT_SPREAD], CHIA_SEEDS: [NUT_SPREAD],
+  DARK_CHOCOLATE_85: [NUT_SPREAD], // F2: 85% dark chocolate (IIFM slot) is a fat-dominant snack eaten as-is; without a family the live-swap value check refused every candidate.
 });
 
 /**

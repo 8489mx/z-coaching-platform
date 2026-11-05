@@ -414,8 +414,26 @@ test("the current workbook importer accepts the production workbook", async () =
   assert.equal(catalog.food_catalog_version, "nutrition-food-catalog-v1");
 });
 
-test("the imported workbook catalog deep-equals the committed JSON", async () => {
-  assert.deepEqual(await importedCatalog(), await committedCatalog());
+// F2: the workbook can only reproduce the part of the committed JSON that the
+// workbook schema carries. P2-C2 added reference_items (47 rows) and the
+// per-item canonical-mapping fields (culinary_code, plan_food_code,
+// plan_registry_twin, value_for_registry_codes) to the committed JSON; the
+// workbook has no columns for them and the importer cannot produce them, so a
+// whole-catalog deep-equal can never pass. Those fields are covered by
+// canonical-food-table-sync.test.js. This test guards the workbook mirror:
+// every workbook-produced field must deep-equal the committed JSON.
+test("the imported workbook catalog deep-equals the committed JSON's workbook-produced part", async () => {
+  const committed = await committedCatalog();
+  const workbookPart = structuredClone(committed);
+  delete workbookPart.reference_items;
+  delete workbookPart.reference_items_count;
+  for (const item of workbookPart.items) {
+    delete item.culinary_code;
+    delete item.plan_food_code;
+    delete item.plan_registry_twin;
+    delete item.value_for_registry_codes;
+  }
+  assert.deepEqual(await importedCatalog(), workbookPart);
 });
 
 test("the production catalog contains exactly 29 items", async () => {
