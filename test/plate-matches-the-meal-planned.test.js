@@ -49,9 +49,31 @@ test("no plate keeps a scrap of a few grams, and the coach is told the meal does
   const items = program.culinary_meals.flatMap((meal) => meal.items);
   const scraps = items.filter((item) => item.split_note_ar && Number(item.portion_g) < 40 && (Number(item.carb_g) || 0) < 10);
   assert.deepEqual(scraps.map((item) => `${item.food_code} ${item.portion_g}`), []);
+  // Meal variety (Package 5): this client's meal used to drop its last piece
+  // (13 g of sweet potato beside potatoes and quinoa both at their limits)
+  // and tell the coach it did not fit. The split now grows that piece into
+  // a real 40 g part by shrinking the others instead of dropping its carbs,
+  // so the plate fits and carries no note — and the day's carbohydrate is
+  // kept (meal 1: 132 g for a 133 g target, as before, from rounding).
   const told = items.filter((item) => item.portion_note_ar);
+  assert.deepEqual(told.map((item) => `${item.food_code} ${item.portion_g}`), []);
+  const carbs = items.reduce((s, i) => s + (Number(i.carb_g) || 0), 0);
+  assert.ok(Math.abs(carbs - program.macro_targets.carbohydrate_g) / program.macro_targets.carbohydrate_g < 0.05,
+    `${carbs} for ${program.macro_targets.carbohydrate_g}`);
+});
+
+test("a meal that genuinely cannot fit still tells the coach", async () => {
+  // A diabetic's 500 g of potatoes with only potato swaps: every food on the
+  // plate is capped at the 200 g diabetic ceiling, so the load cannot be
+  // held even after the resize — the note must still appear.
+  const { splitOversizedPortions, carbPortionLimit } = await import("../src/nutrition-meal-context-v2/build-culinary-meals.js");
+  const item = { food_code: "ROASTED_POTATOES", category: "CARBS", portion_g: 500, protein_g: 10, carb_g: 100, fat_g: 1, calories_kcal: 420,
+    swaps: [{ food_code: "SWEET_POTATO", name_ar: "بطاطا", name_en: "Sweet potato", equivalent_grams: 500, protein_g: 8, carb_g: 100, fat_g: 1, calories_kcal: 430, household_desc: "500 جم" }] };
+  const [meal] = splitOversizedPortions([{ items: [item] }], carbPortionLimit({ diabetic: true }));
+  const told = meal.items.filter((i) => i.portion_note_ar);
   assert.ok(told.length > 0, "the meal that could not fit says so");
   assert.match(told[0].portion_note_ar, /وزّع جزء منها على وجبة تانية/);
+  assert.ok(meal.items.every((i) => i.portion_g <= 200), "no clinically capped part is grown past its ceiling");
 });
 
 test("the meal a plate was planned as is never trimmed away", () => {

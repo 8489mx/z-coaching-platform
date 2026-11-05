@@ -36,7 +36,12 @@ test("the split caps fruit at 250 g and dates at 80 g", () => {
   assert.equal(MAX_DATES_PORTION_G, 80);
   for (const code of FRUIT) assert.equal(limit(code), MAX_FRUIT_PORTION_G, code);
   assert.equal(limit("DATES_KHALAS"), MAX_DATES_PORTION_G);
-  assert.equal(limit("BASMATI_RICE"), 400);
+  // Meal variety (Package 5): cooked rice is capped at 250 g and baladi
+  // bread at 180 g per meal, not the general 400 g — the 400 g default now
+  // covers only the other carbohydrates.
+  assert.equal(limit("BASMATI_RICE"), 250);
+  assert.equal(limit("BALADI_BREAD"), 180);
+  assert.equal(limit("SWEET_POTATO"), 400);
 });
 
 test("no plate holds more fruit or dates than that, and the day's carbohydrate is kept", () => {

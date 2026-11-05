@@ -345,30 +345,19 @@ test("a genuinely ready public pipeline propagates READY unchanged", () => {
   );
 });
 
-test("Core Global integration retains REVIEW_REQUIRED for fiber_g", () => {
+test("Core Global integration is READY once the supplement closes the fiber gap", () => {
   const result = buildNutritionEngine(coreInputs());
-  assert.equal(result.status, NutritionEngineStatus.REVIEW_REQUIRED);
+  // Meal variety (Package 5): the portion solver now rebalances a capped
+  // meal with a second food instead of serving it short — the fixture's
+  // main meal gains potato as a second starch, its fiber lands inside
+  // tolerance, and the whole real pipeline is READY with no preflight
+  // issue. The old breakfast-fiber review this test used to pin is gone
+  // because the same rebalance closes it: the fixture is the golden READY
+  // fixture again.
+  assert.equal(result.status, NutritionEngineStatus.READY);
   assert.equal(result.ready_for_coach_review, true);
-  assert.equal(result.stages.plan_preflight.status, "REVIEW_REQUIRED");
-  assert.deepEqual(
-    result.stages.plan_preflight.issues.map((issue) => ({
-      code: issue.code,
-      source_stage: issue.source_stage,
-      meal_sequence: issue.meal_sequence,
-      fields: issue.fields,
-    })),
-    [
-      {
-        // The meal-quality fix closed the old evening fiber miss (egg whites
-        // with dry oats); the single remaining fiber miss in this real
-        // pipeline is now breakfast (oats-based, low 7 g fiber target).
-        code: "PREFLIGHT_MEAL_TARGET_OUTSIDE_TOLERANCE",
-        source_stage: "PORTION_SOLVER",
-        meal_sequence: 1,
-        fields: ["fiber_g"],
-      },
-    ],
-  );
+  assert.equal(result.stages.plan_preflight.status, "READY");
+  assert.deepEqual(result.stages.plan_preflight.issues, []);
   assert.equal(
     result.ready_for_coach_review,
     result.stages.plan_preflight.ready_for_coach_review,

@@ -473,13 +473,37 @@ function addNutrients(total, nutrition) {
   return total;
 }
 
-function objectiveScore(actual, target, tolerance) {
+const GATE_PENALTY = 1e6;
+
+function objectiveScore(actual, target, tolerance, protectedWithin = null) {
   let score = 0;
   for (const nutrient of NUTRIENTS) {
     const normalizedError =
       Math.abs(actual[nutrient.key] - target[nutrient.key]) /
       tolerance[nutrient.key];
     score += nutrient.weight * normalizedError ** 2;
+  }
+  // Meal variety (Package 5): a supplement trial must not break a nutrient
+  // that is already within tolerance — the gate after the search rejects
+  // such trials, but coordinate descent only sees the plain objective, so
+  // it walks straight to a gate-breaking optimum (100 g of bread fixes the
+  // carbs and breaks the fiber) and never visits the gate-feasible one
+  // (25 g of bread). The penalty makes a protected band a wall inside the
+  // search: a trial that breaks one scores 1e6 and loses to any feasible
+  // rebalance. Only supplement trials pass protected bands; every other
+  // caller passes null and the score is exactly as before.
+  if (protectedWithin !== null) {
+    for (const nutrient of NUTRIENTS) {
+      if (!protectedWithin[nutrient.key]) {
+        continue;
+      }
+      if (
+        Math.abs(actual[nutrient.key] - target[nutrient.key]) >
+        tolerance[nutrient.key] - DOMINANCE_TOLERANCE_MARGIN
+      ) {
+        score += GATE_PENALTY;
+      }
+    }
   }
   return score;
 }
@@ -505,7 +529,7 @@ function compareAssignments(left, right) {
     compareCode(left.foodCode, right.foodCode);
 }
 
-function solutionFromGrams(assignments, gramsByCode, target, tolerance) {
+function solutionFromGrams(assignments, gramsByCode, target, tolerance, protectedWithin = null) {
   const totals = zeroNutrients();
   let defaultDeviation = 0;
   for (const assignment of assignments) {
@@ -519,7 +543,7 @@ function solutionFromGrams(assignments, gramsByCode, target, tolerance) {
     assignments,
     gramsByCode,
     totals,
-    objectiveScore: objectiveScore(totals, target, tolerance),
+    objectiveScore: objectiveScore(totals, target, tolerance, protectedWithin),
     defaultDeviation,
   };
 }
@@ -591,12 +615,13 @@ function compareSolutions(left, right) {
   );
 }
 
-function coordinateDescent(assignments, startGrams, target, tolerance) {
+function coordinateDescent(assignments, startGrams, target, tolerance, protectedWithin = null) {
   let current = solutionFromGrams(
     assignments,
     new Map(startGrams),
     target,
     tolerance,
+    protectedWithin,
   );
 
   for (let pass = 0; pass < MAX_COORDINATE_DESCENT_PASSES; pass += 1) {
@@ -611,6 +636,7 @@ function coordinateDescent(assignments, startGrams, target, tolerance) {
           trialGrams,
           target,
           tolerance,
+          protectedWithin,
         );
         if (compareSolutions(trial, bestForCoordinate) < 0) {
           bestForCoordinate = trial;
@@ -628,14 +654,45 @@ function coordinateDescent(assignments, startGrams, target, tolerance) {
   return current;
 }
 
-function solveFoodSet(rawAssignments, target) {
+function solveFoodSet(rawAssignments, target, warmStartGrams = null, protectedWithin = null) {
+  // Meal variety (Package 5): the realistic per-meal caps are visible to the
+  // optimizer itself, not only to the post-pass split. A post-pass split can
+  // only swap one food for another of the same class, and a 275 g carrot
+  // carries more carbohydrate and fiber than any other vegetable can replace
+  // inside the meal's tolerance — so the split refused and the carrot stood.
+  // Capping the legal grams here lets the optimizer rebalance the whole meal
+  // (more starch, more of the other vegetables) instead of loading one food.
+  // Portion rules are untouched: the catalog still says what a food's legal
+  // portions are, and the cap only narrows the grams the solver may choose.
   const assignments = [...rawAssignments]
     .sort(compareAssignments)
-    .map((assignment) => ({
-      ...assignment,
-      legalGrams: legalGramValues(assignment.food.portion_rule_g),
-    }));
+    .map((assignment) => {
+      const cap = SINGLE_FOOD_MEAL_CAPS_G[assignment.foodCode];
+      const legal = cap === undefined
+        ? legalGramValues(assignment.food.portion_rule_g)
+        : legalGramValues(assignment.food.portion_rule_g)
+          .filter((grams) => grams <= cap);
+      const legalGrams = legal.length > 0
+        ? legal
+        : [assignment.food.portion_rule_g.minimum_g];
+      return {
+        ...assignment,
+        legalGrams,
+      };
+    });
   const tolerance = toleranceForTarget(target);
+  // The default start may sit above a cap (carrot defaults to 150 g, capped
+  // at 100 g): start from the nearest legal value instead of an illegal one.
+  const nearestLegalToDefault = (assignment) => {
+    const fallback = assignment.food.portion_rule_g.default_g;
+    let best = assignment.legalGrams[0];
+    for (const grams of assignment.legalGrams) {
+      if (Math.abs(grams - fallback) < Math.abs(best - fallback)) {
+        best = grams;
+      }
+    }
+    return best;
+  };
   const starts = [
     new Map(assignments.map((assignment) => [
       assignment.foodCode,
@@ -643,17 +700,42 @@ function solveFoodSet(rawAssignments, target) {
     ])),
     new Map(assignments.map((assignment) => [
       assignment.foodCode,
-      assignment.food.portion_rule_g.default_g,
+      nearestLegalToDefault(assignment),
     ])),
     new Map(assignments.map((assignment) => [
       assignment.foodCode,
       assignment.legalGrams.at(-1),
     ])),
   ];
+  // A supplement trial starts from the meal as solved, not from scratch:
+  // the rebalancing it needs is a small move (a little less yogurt, a
+  // little cottage cheese), and single-coordinate descent cannot find it
+  // from the cold starts — it would have to lower one food (worse alone)
+  // before the new food pays off. Each warm start is an extra start only;
+  // the three cold starts still run, so a warm start can never beat a
+  // better cold optimum, it only lets the descent see the nearby one.
+  const warmStarts = warmStartGrams instanceof Map
+    ? [warmStartGrams]
+    : Array.isArray(warmStartGrams)
+      ? warmStartGrams
+      : [];
+  for (const warmStartGramsMap of warmStarts) {
+    starts.push(new Map(assignments.map((assignment) => {
+      const warm = warmStartGramsMap.get(assignment.foodCode)
+        ?? assignment.food.portion_rule_g.default_g;
+      let best = assignment.legalGrams[0];
+      for (const grams of assignment.legalGrams) {
+        if (Math.abs(grams - warm) < Math.abs(best - warm)) {
+          best = grams;
+        }
+      }
+      return [assignment.foodCode, best];
+    })));
+  }
 
   let best = null;
   for (const start of starts) {
-    const solution = coordinateDescent(assignments, start, targetNutrients(target), tolerance);
+    const solution = coordinateDescent(assignments, start, targetNutrients(target), tolerance, protectedWithin);
     if (best === null || compareSolutions(solution, best) < 0) {
       best = solution;
     }
@@ -709,6 +791,58 @@ function compareAdditions(left, right) {
     compareCode(left.foodCode, right.foodCode);
 }
 
+// Meal variety (Package 5): a supplement is a second food in a slot that is
+// already full (a second starch in CARBOHYDRATE_BASE, a second dairy in the
+// snack's anchor). The realistic per-meal caps can leave a meal under its
+// target with every food at its cap — 250 g of rice carries 70 g of carbs,
+// and no vegetable can make up a 124 g carb target — and the optimizer can
+// only vary grams of the foods it was given. A supplement rebalances the
+// meal with another food from the slot's own candidate list (already vetted
+// for this client, meal, and pattern), exactly like the dominance split
+// already adds a second item to a max_items = 1 slot. One supplement per
+// slot at most: once a slot holds max_items + 1 foods it is skipped.
+function supplementAdditions(meal, assignments, itemsByCode) {
+  const usedCodes = new Set(assignments.map(({ foodCode }) => foodCode));
+  const countBySlot = new Map();
+  for (const assignment of assignments) {
+    countBySlot.set(
+      assignment.slotSequence,
+      (countBySlot.get(assignment.slotSequence) ?? 0) + 1,
+    );
+  }
+
+  const additions = [];
+  for (const slot of meal.slots) {
+    const count = countBySlot.get(slot.sequence) ?? 0;
+    if (count !== slot.max_items) {
+      continue;
+    }
+    slot.candidate_food_codes.forEach((foodCode, candidateIndex) => {
+      if (!usedCodes.has(foodCode)) {
+        additions.push({
+          foodCode,
+          food: itemsByCode.get(foodCode).item,
+          slotSequence: slot.sequence,
+          slot: slot.slot,
+          selectionSource: SELECTION_SOURCE.PORTION_SOLVER_ADDITION,
+          candidateIndex,
+        });
+      }
+    });
+  }
+  return additions;
+}
+
+function countOutsideTolerance(totals, target, tolerance) {
+  return NUTRIENTS.reduce(
+    (count, { key }) =>
+      Math.abs(totals[key] - target[key]) <= tolerance[key] + SCORE_EPSILON
+        ? count
+        : count + 1,
+    0,
+  );
+}
+
 function solveWithCandidateAdditions(meal, itemsByCode) {
   let assignments = initialAssignments(meal, itemsByCode);
   let solution = solveFoodSet(assignments, meal.target);
@@ -734,6 +868,84 @@ function solveWithCandidateAdditions(meal, itemsByCode) {
         ) === 0 && compareAdditions(addition, bestTrial.addition) < 0)
       ) {
         bestTrial = { addition, solution: trialSolution };
+      }
+    }
+    if (bestTrial === null) {
+      break;
+    }
+    assignments = bestTrial.solution.assignments.map((assignment) => ({
+      foodCode: assignment.foodCode,
+      food: assignment.food,
+      slotSequence: assignment.slotSequence,
+      slot: assignment.slot,
+      selectionSource: assignment.selectionSource,
+      ...(assignment.candidateIndex === undefined
+        ? {}
+        : { candidateIndex: assignment.candidateIndex }),
+    }));
+    solution = bestTrial.solution;
+  }
+
+  // Meal variety (Package 5): rebalance with other foods. When the meal is
+  // still outside tolerance after the room-based additions — every food at
+  // its realistic cap and the target still short — try one supplement per
+  // full slot. A supplement is accepted only when it keeps every
+  // within-tolerance nutrient within tolerance (same gate as the dominance
+  // split: a large-but-whole meal is never traded for a broken one) and it
+  // either brings a nutrient back inside tolerance or improves the objective
+  // score. A meal already in tolerance never gains a supplement.
+  const target = targetNutrients(meal.target);
+  const tolerance = toleranceForTarget(meal.target);
+  while (true) {
+    const within = withinTolerance(solution.totals, target, tolerance);
+    if (Object.values(within).every(Boolean)) {
+      break;
+    }
+    const outsideBefore = countOutsideTolerance(solution.totals, target, tolerance);
+    let bestTrial = null;
+    for (const addition of supplementAdditions(meal, assignments, itemsByCode)) {
+      const trialAssignments = [...assignments, addition];
+      // Two warm starts: the new food at its default portion (a full second
+      // starch) and at its minimum (a small top-up). Descent from the
+      // default can strand on a gate-breaking optimum — 50 g of bread
+      // pushes fiber over while 25 g does not — so the minimum start is
+      // what lets the descent see the gate-feasible rebalance.
+      const warmDefault = new Map(solution.gramsByCode);
+      warmDefault.set(addition.foodCode, addition.food.portion_rule_g.default_g);
+      const warmMinimum = new Map(solution.gramsByCode);
+      warmMinimum.set(addition.foodCode, addition.food.portion_rule_g.minimum_g);
+      // The trial searches with the meal's within-tolerance nutrients as
+      // protected bands, so the descent cannot trade them away for the
+      // nutrient it is fixing. The reported score stays the plain objective
+      // (the penalty is zero for any feasible trial).
+      const trialSolution = solveFoodSet(trialAssignments, meal.target, [warmDefault, warmMinimum], within);
+      const preservesWithin = NUTRIENTS.every(({ key }) =>
+        !within[key] ||
+        Math.abs(trialSolution.totals[key] - target[key]) <=
+          tolerance[key] - DOMINANCE_TOLERANCE_MARGIN);
+      const outsideAfter = countOutsideTolerance(trialSolution.totals, target, tolerance);
+      const improves =
+        outsideAfter < outsideBefore ||
+        trialSolution.objectiveScore < solution.objectiveScore - SCORE_EPSILON;
+      if (!preservesWithin) {
+        continue;
+      }
+      if (!improves) {
+        continue;
+      }
+      if (
+        bestTrial === null ||
+        outsideAfter < bestTrial.outsideAfter ||
+        (outsideAfter === bestTrial.outsideAfter &&
+          trialSolution.objectiveScore <
+            bestTrial.solution.objectiveScore - SCORE_EPSILON) ||
+        (outsideAfter === bestTrial.outsideAfter &&
+          compareNumberWithTolerance(
+            trialSolution.objectiveScore,
+            bestTrial.solution.objectiveScore,
+          ) === 0 && compareAdditions(addition, bestTrial.addition) < 0)
+      ) {
+        bestTrial = { addition, solution: trialSolution, outsideAfter };
       }
     }
     if (bestTrial === null) {
@@ -836,13 +1048,19 @@ function unavailableMealOutput(meal) {
 // original portion stands, because a large-but-whole meal is never traded for
 // a broken one.
 // Thresholds, and why they do not break the golden READY fixture:
-// - Non-vegetable foods: over 400 g splits. Salads (NON_STARCH_VEGETABLE) are
-//   exempt — a 400 g cucumber/tomato salad is normal. The fixture's largest
-//   non-vegetable items are oats 150 g and rice 300 g, both under 400 g.
-// - Dry grains: over 100 g dry splits ONLY when the grain also carries more
-//   than 75% of the meal's carbohydrate target. The fixture's 150 g oats carry
-//   ~103 g of a ~148 g carb target (~70%), so the genuine-need exception keeps
-//   it whole; the problem breakfast's 130 g oats carry ~82% and split.
+// - Non-vegetable foods: over 400 g splits. Vegetables are NOT exempt any
+//   more: 400 g of ONE vegetable in a meal is not a salad, it is one food
+//   dominating the plate. Each food below has its own realistic per-meal cap
+//   (Package 5): the values are the ErgonomicPortionCaps already in
+//   nutrition-meal-context-v2 and the catalog's own default_g — tomato and
+//   cucumber 150 g (one large tomato / a normal salad share), carrot 100 g,
+//   cooked rice and boiled potato 250 g (one large plateful), dry oats 80 g.
+//   Foods with no listed cap keep the 400 g default.
+// - Dry grains: over the dry cap splits ONLY when the grain also carries more
+//   than 75% of the meal's carbohydrate target. A breakfast whose oats carry
+//   ~73% of a 104 g carb target (C06, 110 g oats) still splits; a meal that
+//   genuinely cannot meet its carbs any other way keeps its oats whole with
+//   a warning, never a broken meal.
 // - The partner search tries every same-slot candidate at every legal portion
 //   and keeps the lowest objective score within tolerance (minus a 0.05 display
 //   margin, so display rounding can never push a split meal outside tolerance).
@@ -857,6 +1075,18 @@ const DOMINANCE_MAX_NON_VEGETABLE_G = 400;
 const DOMINANCE_MAX_DRY_GRAIN_G = 100;
 const DOMINANCE_MAX_CARB_SHARE = 0.75;
 const DOMINANCE_TOLERANCE_MARGIN = 0.05;
+// Meal variety (Package 5): realistic single-food caps per meal. Grounded in
+// the ErgonomicPortionCaps in nutrition-meal-context-v2/domain/enums.js
+// (tomato/cucumber 150, carrot 100, cooked rice/potato 250, dry oats 80)
+// and the catalog's own default_g (tomato/cucumber 150, potato 250).
+const SINGLE_FOOD_MEAL_CAPS_G = Object.freeze({
+  TOMATO_RED_RAW: 150,
+  CUCUMBER_WITH_PEEL_RAW: 150,
+  CARROT_RAW: 100,
+  RICE_WHITE_LONG_GRAIN_COOKED: 250,
+  POTATO_BOILED_WITHOUT_SKIN: 250,
+  OATS_ROLLED_DRY: 80,
+});
 // The only uncooked/dry starch in the catalog; cooked starches are wet weight,
 // so a 100 g dry cap would be meaningless for them.
 const DRY_GRAIN_CODES = new Set(["OATS_ROLLED_DRY"]);
@@ -876,13 +1106,14 @@ function splitDominantSingleFoods(items, selectionMeal, itemsByCode, target, tol
   let result = items;
   for (const original of items) {
     const food = itemsByCode.get(original.food_code)?.item;
-    if (!food || food.food_class === "NON_STARCH_VEGETABLE") {
+    if (!food) {
       continue;
     }
     const isDryGrain = DRY_GRAIN_CODES.has(original.food_code);
-    const cap = isDryGrain
-      ? DOMINANCE_MAX_DRY_GRAIN_G
-      : DOMINANCE_MAX_NON_VEGETABLE_G;
+    const cap = SINGLE_FOOD_MEAL_CAPS_G[original.food_code]
+      ?? (isDryGrain
+        ? DOMINANCE_MAX_DRY_GRAIN_G
+        : DOMINANCE_MAX_NON_VEGETABLE_G);
     if (original.grams <= cap) {
       continue;
     }
@@ -926,7 +1157,15 @@ function splitDominantSingleFoods(items, selectionMeal, itemsByCode, target, tol
     const beforeWithin = withinTolerance(beforeTotals, target, tolerance);
     let best = null;
     for (const partner of partners) {
+      // Meal variety (Package 5): a split partner is itself a single food in
+      // the meal, so it obeys its own cap too — a 175 g tomato must never
+      // arrive as the partner of a capped cucumber.
+      const partnerCap = SINGLE_FOOD_MEAL_CAPS_G[partner.food_code]
+        ?? DOMINANCE_MAX_NON_VEGETABLE_G;
       for (const partnerGrams of legalGramValues(partner.portion_rule_g)) {
+        if (partnerGrams > partnerCap) {
+          continue;
+        }
         const totals = zeroNutrients();
         for (const item of result) {
           if (item.food_code === original.food_code) {
@@ -992,7 +1231,22 @@ function solveMeal(meal, itemsByCode) {
     return unavailableMealOutput(meal);
   }
 
-  const solution = solveWithCandidateAdditions(meal, itemsByCode);
+  // Meal variety (Package 5): a yogurt-and-fruit snack never carries added
+  // fat. The pattern's ADDED_FAT slot exists for main meals, but oil stirred
+  // into yogurt and fruit is not a snack a client will eat — the matrix
+  // served it in 19/20 plans. The slot is dropped from the meal BEFORE
+  // solving (not trimmed after), so the optimizer rebalances the snack over
+  // the remaining foods (yogurt, fruit, starch) and the supplement may add
+  // a second dairy (cottage cheese) for fat, instead of serving an
+  // under-target meal; the fat target stays short and the preflight flags
+  // it, which is the honest outcome for a snack with no real fat source.
+  // The pattern catalog keeps its (optional) fat slot: the ban is scoped to
+  // this pattern only, and breakfasts/main meals keep their oil.
+  const mealForSolving = meal.selected_pattern_code === "SNACK_DAIRY_FRUIT"
+    ? { ...meal, slots: (meal.slots || []).filter((slot) => slot.slot !== "ADDED_FAT") }
+    : meal;
+
+  const solution = solveWithCandidateAdditions(mealForSolving, itemsByCode);
   const target = targetNutrients(meal.target);
   const tolerance = toleranceForTarget(meal.target);
   const split = splitDominantSingleFoods(
@@ -1001,7 +1255,7 @@ function solveMeal(meal, itemsByCode) {
         assignment,
         solution.gramsByCode.get(assignment.foodCode),
       )),
-    meal,
+    mealForSolving,
     itemsByCode,
     target,
     tolerance,

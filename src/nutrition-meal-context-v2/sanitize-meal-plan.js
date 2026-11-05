@@ -96,6 +96,13 @@ export function sanitizeMealPlan(rawMealPlan, intakeOrRestrictions = {}) {
       if (foodCode === "POTATO_BOILED_WITHOUT_SKIN" && grams > ErgonomicPortionCaps.POTATO_BOILED_MAX_G) {
         grams = ErgonomicPortionCaps.POTATO_BOILED_MAX_G;
       }
+      // Meal variety (Package 5): the cooked-rice cap existed in
+      // ErgonomicPortionCaps but was never applied here — rice sailed through
+      // at any size while potato, cucumber, carrot, tomato, oil and oats were
+      // all capped.
+      if (foodCode === "RICE_WHITE_LONG_GRAIN_COOKED" && grams > ErgonomicPortionCaps.RICE_COOKED_MAX_G) {
+        grams = ErgonomicPortionCaps.RICE_COOKED_MAX_G;
+      }
       if (foodCode === "CUCUMBER_WITH_PEEL_RAW" && grams > ErgonomicPortionCaps.CUCUMBER_MAX_G) {
         grams = ErgonomicPortionCaps.CUCUMBER_MAX_G;
       }

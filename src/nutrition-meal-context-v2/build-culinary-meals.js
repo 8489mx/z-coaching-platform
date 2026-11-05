@@ -4440,14 +4440,24 @@ export const MAX_DATES_PORTION_G = 80;
 // oats (a starch exchange is 15 g carbohydrate, ADA/AND lists) or half a guava are real portions.
 const MIN_SPLIT_PART_G = 40;
 const MIN_SPLIT_PART_CARB_G = 10;
-// Folding a small part into the others never takes one of them more than this over its limit.
-const SPLIT_SPREAD_MARGIN_G = 10;
 const FRESH_FRUIT = new Set(["BANANA_FRESH", "APPLE_FRESH", "FRESH_GUAVA", "ORANGE_FRESH", "STRAWBERRY_FRESH", "WATERMELON_FRESH"]);
+
+// Meal variety (Package 5): realistic single-food caps per meal. Cooked rice
+// 250 g is the ErgonomicPortionCaps RICE_COOKED_MAX_G already in this
+// package's own domain enums; baladi bread 180 g is two medium loaves at
+// 85-90 g per the food's own unit label ("رغيف متوسط (85-90 جم)"). The
+// general 400 g cap stays for every other carbohydrate (a 271 g sweet potato
+// is one whole potato, not an excess).
+export const MAX_COOKED_RICE_PORTION_G = 250;
+export const MAX_BALADI_BREAD_PORTION_G = 180;
+const COOKED_RICE_CODES = new Set(["BASMATI_RICE", "EGYPTIAN_RICE", "KABSA_SPICED_RICE"]);
 
 export function carbPortionLimit({ diabetic = false } = {}) {
   return (foodCode) => {
     if (FRESH_FRUIT.has(foodCode)) return MAX_FRUIT_PORTION_G;
     if (foodCode === "DATES_KHALAS") return MAX_DATES_PORTION_G;
+    if (COOKED_RICE_CODES.has(foodCode)) return MAX_COOKED_RICE_PORTION_G;
+    if (foodCode === "BALADI_BREAD") return MAX_BALADI_BREAD_PORTION_G;
     return diabetic && isPotato(foodCode) ? DIABETIC_POTATO_PORTION_G : MAX_CARB_PORTION_G;
   };
 }
@@ -4557,18 +4567,51 @@ export function splitOversizedPortions(meals = [], maxGrams = MAX_CARB_PORTION_G
           const roomy = others.find((p) => p.grams * (p.share + tiny.share) <= p.limit);
           const spread = roomy ? [roomy] : others.filter((p) => !isPotato(p.partner?.food_code || item?.food_code));
           const total = spread.reduce((sum, p) => sum + p.share, 0);
-          // "A few grams" over a limit means at most SPLIT_SPREAD_MARGIN_G.
+          // A fold must respect the limit strictly: folding a crumb back
+          // used to be allowed up to limit + 10 g, which served 257 g of
+          // basmati against a 250 g limit (C14 meal 2). If the fold would
+          // pass the limit at all, the crumb becomes a real part instead
+          // (resize branch below) or is dropped with a note.
           const fits = spread.length > 0
-            && !spread.some((p) => p.grams * (p.share + (tiny.share * p.share) / total) > p.limit + SPLIT_SPREAD_MARGIN_G);
+            && !spread.some((p) => p.grams * (p.share + (tiny.share * p.share) / total) > p.limit);
           if (fits) {
             for (const p of spread) p.share += (tiny.share * p.share) / total;
             tiny.share = 0;
             continue;
           }
-          // Every plate is already at its limit, so this last piece has nowhere to go: a 39 g scrap of
-          // sweet potato beside 400 g of quinoa is not a serving, it is the sign that the meal is
-          // carrying more carbohydrate than one sitting can hold. The piece is dropped and the coach
-          // is told to move it to another meal, instead of the plan quietly showing the scrap.
+          // Meal variety (Package 5): dropping the crumb also drops its macros
+          // — the meal lands under its carbohydrate target with only a note
+          // for the coach. Before dropping, make the crumb a real part
+          // instead: grow it to the smallest real portion (40 g and 10 g of
+          // carbohydrate) by shrinking the other parts in proportion. A part
+          // only shrinks while it stays a real part itself, and a clinically
+          // capped part (a diabetic's potato) is never grown past its ceiling.
+          // If the resize cannot be done safely, the piece is still dropped
+          // with the note, exactly as before.
+          const tinyCarbPerShare = Number(tiny.partner?.carb_g) || Number(item.carb_g) || 0;
+          const needShare = Math.max(
+            MIN_SPLIT_PART_G / tiny.grams,
+            tinyCarbPerShare > 0 ? MIN_SPLIT_PART_CARB_G / tinyCarbPerShare : 0,
+          );
+          const delta = needShare - tiny.share;
+          const othersShare = others.reduce((sum, p) => sum + p.share, 0);
+          const canResize = delta > 0
+            && needShare * tiny.grams <= tiny.limit
+            && othersShare > 0
+            && others.every((p) => {
+              const newShare = p.share * (1 - delta / othersShare);
+              if (p.grams * newShare < MIN_SPLIT_PART_G) return false;
+              if (p.partner) {
+                const carbPerShare = Number(p.partner.carb_g) || 0;
+                if (carbPerShare > 0 && carbPerShare * newShare < MIN_SPLIT_PART_CARB_G) return false;
+              }
+              return true;
+            });
+          if (canResize) {
+            for (const p of others) p.share *= (1 - delta / othersShare);
+            tiny.share = needShare;
+            continue;
+          }
           tiny.share = 0;
           plateIsFull = true;
         }

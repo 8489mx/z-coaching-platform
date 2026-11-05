@@ -768,7 +768,13 @@ test("added fat is not added without objective improvement", () => {
   assert.equal(itemByCode(result, "OIL"), undefined);
 });
 
-test("candidate additions never exceed slot max_items", () => {
+test("candidate additions never exceed slot max_items, except one supplement when the meal is out of tolerance", () => {
+  // Each synthetic food is exactly 100 g / 100 kcal, so a 300 kcal target
+  // needs all three foods. The room-based additions stop at max_items (2),
+  // which leaves the meal 100 kcal short — and a meal that short is exactly
+  // what the supplement exists for: one extra food in the full slot
+  // (max_items + 1), only while the meal is outside tolerance. A meal
+  // already in tolerance never gains one (second half of this test).
   const items = ["A_FOOD", "B_FOOD", "C_FOOD"].map((foodCode) =>
     makeItem({ foodCode, nutrition: {
       calories_kcal: 100,
@@ -796,8 +802,30 @@ test("candidate additions never exceed slot max_items", () => {
     selection: makeFoodSelection({ meals: [meal] }),
     items,
   });
-  assert.equal(result.meals[0].items.length, 2);
-  assert.equal(itemByCode(result, "C_FOOD"), undefined);
+  assert.equal(result.meals[0].items.length, 3);
+  assert.equal(itemByCode(result, "C_FOOD").selection_source, "PORTION_SOLVER_ADDITION");
+  assert.equal(result.meals[0].all_targets_within_tolerance, true);
+
+  const inToleranceMeal = makeMeal({
+    slots: [makeSlot({
+      maxItems: 2,
+      selected: ["A_FOOD"],
+      candidates: ["A_FOOD", "B_FOOD", "C_FOOD"],
+    })],
+    target: {
+      planned_calories: 200,
+      protein_g: 0,
+      fat_g: 0,
+      carbohydrate_g: 0,
+      fiber_g: 0,
+    },
+  });
+  const inToleranceResult = buildFrom({
+    selection: makeFoodSelection({ meals: [inToleranceMeal] }),
+    items,
+  });
+  assert.equal(inToleranceResult.meals[0].items.length, 2);
+  assert.equal(itemByCode(inToleranceResult, "C_FOOD"), undefined);
 });
 
 test("foods outside approved candidate_food_codes are never used", () => {
@@ -1411,7 +1439,7 @@ test("real Intake through Food Selection completes Portion Solver with Core data
   );
   assert.equal(
     result.status,
-    NutritionPortionSolverStatus.PROVISIONAL_REVIEW_REQUIRED,
+    NutritionPortionSolverStatus.READY,
   );
   assert.equal(result.meal_count, 3);
   assert.deepEqual(result.meals.map((meal) => meal.selected_pattern_code), [
@@ -1419,23 +1447,25 @@ test("real Intake through Food Selection completes Portion Solver with Core data
     "MAIN_CLASSIC",
     "EVENING_CLASSIC",
   ]);
-  // The meal-quality fix closed the old evening fiber miss (egg whites with
-  // dry oats, fiber 13.01 g vs a 9 g target). The single remaining
-  // out-of-tolerance meal in this real pipeline is now breakfast, whose
-  // low 7 g fiber target is marginally overshot (10.73 g) by the oats-based
-  // breakfast; the meal itself is coherent and the solver still flags the
-  // plan PROVISIONAL_REVIEW_REQUIRED with exactly one such reason.
-  // P1-B6: the issue now also carries the relative residual (a fiber
-  // overshoot here), so the shape is asserted field by field.
-  assert.equal(result.meals[0].issues.length, 1);
-  assert.equal(result.meals[0].issues[0].code, "PORTION_TARGET_OUTSIDE_TOLERANCE");
-  assert.deepEqual(result.meals[0].issues[0].fields, ["fiber_g"]);
-  assert.equal(result.meals[0].issues[0].message, "One or more meal nutrition targets remain outside tolerance.");
-  assert.equal(typeof result.meals[0].issues[0].relative_residual.fiber_g, "number");
-  assert.ok(result.meals[0].issues[0].relative_residual.fiber_g > 0);
+  // Meal variety (Package 5): the single-food caps are visible to the
+  // optimizer, so the breakfast no longer loads 400 g of cucumber to chase
+  // its fiber target — oats 70 g + cucumber 150 g + tomato 50 g lands fiber
+  // at 8.64 g against a 7 g target, inside tolerance. The main's 9 g fiber
+  // target was the one meal the caps alone could not fix (capped vegetables
+  // top out around 6.5 g), so the solver rebalances it with a second starch:
+  // potato 125 g joins rice 125 g as a portion-solver addition, fiber lands
+  // at 8.15 g, and the fixture is READY again with no out-of-tolerance meal
+  // — the golden READY fixture the split thresholds were tuned not to break.
+  assert.deepEqual(result.meals[0].issues, []);
+  assert.deepEqual(result.meals[1].issues, []);
   assert.deepEqual(result.meals[2].issues, []);
+  const mainPotato = result.meals[1].items.find((item) =>
+    item.food_code === "POTATO_BOILED_WITHOUT_SKIN");
+  assert.ok(mainPotato, "main: expected a potato supplement");
+  assert.equal(mainPotato.selection_source, "PORTION_SOLVER_ADDITION");
+  assert.equal(result.meals[1].within_tolerance.fiber_g, true);
   assert.equal(reasonCodes(result).filter((code) =>
-    code === "PORTION_SOLVER_MEAL_TARGET_OUTSIDE_TOLERANCE").length, 1);
+    code === "PORTION_SOLVER_MEAL_TARGET_OUTSIDE_TOLERANCE").length, 0);
 });
 
 test("real integration preserves mandatory foods and uses only legal candidates", () => {

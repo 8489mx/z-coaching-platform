@@ -1019,35 +1019,24 @@ test("inputs remain mutable and unchanged while output is independent and deep f
   }, TypeError);
 });
 
-// The meal-quality fix closed the old evening fiber miss (egg whites with
-// dry oats) and, with it, the daily fiber miss: daily closure now PASSES.
-// The single remaining fiber miss in this real pipeline is breakfast
-// (oats-based, low 7 g fiber target), so meal closure still requires review.
-test("Core Global integration identifies breakfast fiber review with passing daily closure", () => {
+// Meal variety (Package 5): the portion solver now rebalances a capped meal
+// with a second food instead of serving it short, so the fixture's fiber
+// gap is closed and the whole real pipeline is READY — meal closure and
+// daily closure both pass, with no preflight issue. The breakfast-fiber
+// review this test used to pin is gone with the same fix.
+test("Core Global integration is READY with meal and daily closure passing", () => {
   const result = evaluateNutritionPlanPreflight(buildRealInputs());
-  assert.equal(result.status, NutritionPlanPreflightStatus.REVIEW_REQUIRED);
+  assert.equal(result.status, NutritionPlanPreflightStatus.READY);
   assert.equal(result.ready_for_coach_review, true);
   assert.deepEqual(result.checks.map(({ code, status }) => [code, status]), [
-    ["UPSTREAM_STATUS", "REVIEW_REQUIRED"],
+    ["UPSTREAM_STATUS", "PASSED"],
     ["MEAL_PATTERN_COMPLETENESS", "PASSED"],
     ["SELECTED_FOOD_INTEGRITY", "PASSED"],
     ["PORTION_LEGALITY", "PASSED"],
     ["PORTION_CALCULATION_INTEGRITY", "PASSED"],
-    ["MEAL_TARGET_CLOSURE", "REVIEW_REQUIRED"],
+    ["MEAL_TARGET_CLOSURE", "PASSED"],
     ["DAILY_TARGET_CLOSURE", "PASSED"],
     ["SWAP_SAFETY", "PASSED"],
   ]);
-  assert.deepEqual(result.issues.map((issue) => ({
-    code: issue.code,
-    source_stage: issue.source_stage,
-    meal_sequence: issue.meal_sequence,
-    fields: issue.fields,
-  })), [
-    {
-      code: "PREFLIGHT_MEAL_TARGET_OUTSIDE_TOLERANCE",
-      source_stage: "PORTION_SOLVER",
-      meal_sequence: 1,
-      fields: ["fiber_g"],
-    },
-  ]);
+  assert.deepEqual(result.issues, []);
 });

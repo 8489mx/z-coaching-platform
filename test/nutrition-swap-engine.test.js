@@ -1145,9 +1145,13 @@ test("targets, tolerances, closure flag, constraints, and reasons are validated"
 test("real pipeline reaches Swap Engine with the Core Global catalog", () => {
   const inputs = buildRealPipelineInputs();
   const result = buildNutritionSwapEngine(inputs);
+  // Meal variety (Package 5): the portion solver now rebalances the
+  // fixture's capped main meal with a second starch, so its fiber lands
+  // inside tolerance and the solver is READY — the swap engine inherits
+  // READY with no upstream review retained.
   assert.equal(
     result.status,
-    NutritionSwapEngineStatus.PROVISIONAL_REVIEW_REQUIRED,
+    NutritionSwapEngineStatus.READY,
   );
   assert.equal(result.meal_count, 3);
   assert.deepEqual(result.meals.map((meal) => meal.selected_pattern_code), [
@@ -1156,16 +1160,18 @@ test("real pipeline reaches Swap Engine with the Core Global catalog", () => {
     "EVENING_CLASSIC",
   ]);
   assert.deepEqual(reasonCodes(result).slice(-2), [
+    "PORTION_SOLVER_POLICY_APPLIED",
     "SWAP_ENGINE_POLICY_APPLIED",
-    "SWAP_ENGINE_UPSTREAM_REVIEW_RETAINED",
   ]);
 });
 
 test("real closed meals expose only the approved safe Core swaps", () => {
   const result = buildNutritionSwapEngine(buildRealPipelineInputs());
-  // Stage 4: rice moved out of the old breakfast (Stage 2 breakfast fix)
-  // into the main meal; its only approved swap is still pasta, with the
-  // totals recomputed for the new main-meal context.
+  // Meal variety (Package 5): the main meal's rice is now 50 g, not 200 g —
+  // the solver rebalances the capped meal with potato 250 g as a second
+  // starch, so the rice carries only 14 g of its carbs and its pasta swap
+  // shrinks with it (50 g, not 150 g). The swap itself — pasta, and only
+  // pasta — is unchanged, as are the no-swap assertions below.
   const riceAlternative = findItem(result,
     "RICE_WHITE_LONG_GRAIN_COOKED", 1).alternatives[0];
   assert.deepEqual(findItem(result,
@@ -1173,7 +1179,7 @@ test("real closed meals expose only the approved safe Core swaps", () => {
       alternative.food_code,
       alternative.grams,
       alternative.objective_score,
-    ]), [["PASTA_SPAGHETTI_COOKED", 150, 1.95]]);
+    ]), [["PASTA_SPAGHETTI_COOKED", 50, 0.76]]);
   // P1-B6: totals and residuals recalibrated for the relative-tolerance
   // objective (the swap itself — pasta at 150 g, and only pasta — is
   // unchanged, as are the no-swap assertions below). The 175 g -> 150 g
@@ -1186,23 +1192,27 @@ test("real closed meals expose only the approved safe Core swaps", () => {
   // 79 g carbs, so the pasta-swapped meal totals move with it.
   // Q28: the main-meal protein target is now 56 g (its calorie share),
   // so the totals and residuals move again by the same 3 g.
+  // Meal variety (Package 5): the totals move again because the meal the
+  // swap is projected onto changed — rice 50 g + potato 250 g instead of
+  // rice 200 g — so the pasta-swapped meal carries more potato fiber and
+  // less rice carbohydrate than before.
   assert.deepEqual(riceAlternative.projected_meal_totals, {
-    calories_kcal: 744.57,
-    protein_g: 59.17,
-    fat_g: 22.84,
-    carbohydrate_g: 75.37,
-    fiber_g: 10.85,
+    calories_kcal: 751.58,
+    protein_g: 58.49,
+    fat_g: 21.93,
+    carbohydrate_g: 79.41,
+    fiber_g: 9.35,
   });
   // P1-B7: residuals shifted with the totals (same 2-decimal rounding
   // fix; targets unchanged, so each residual moves by its total's delta).
   // Protein reconciliation: residuals are now measured against the
   // 53 g protein / 79 g carbs main-meal target (56 g under Q28).
   assert.deepEqual(riceAlternative.projected_meal_residual, {
-    calories_kcal: 15.57,
-    protein_g: 3.17,
-    fat_g: 1.84,
-    carbohydrate_g: -3.63,
-    fiber_g: 1.85,
+    calories_kcal: 22.58,
+    protein_g: 2.49,
+    fat_g: 0.93,
+    carbohydrate_g: 0.41,
+    fiber_g: 0.35,
   });
   // The fixed breakfast (egg, oats, salad) exposes no swaps.
   assert.deepEqual(findItem(result, "TOMATO_RED_RAW").alternatives, []);
@@ -1218,31 +1228,35 @@ test("real closed meals expose only the approved safe Core swaps", () => {
   // Protein reconciliation: the fish portions grow 130 g -> 170 g because
   // the main-meal protein target grew 43 g -> 53 g. Q28: they grow again
   // 170 g -> 180 g because the target is now 56 g (its calorie share).
+  // Meal variety (Package 5): they grow again 180 g -> 190 g because the
+  // main meal's chicken is now 160 g (the rebalanced meal carries more
+  // protein from the potato-rice split), so the fish that replaces it
+  // grows with it.
   assert.deepEqual(findItem(result,
     "CHICKEN_BREAST_ROASTED_SKINLESS", 1).alternatives, [
     {
       food_code: "KING_MACKEREL_COOKED",
-      grams: 180,
+      grams: 190,
       nutrition: {
-        calories_kcal: 241.2,
-        protein_g: 46.8,
-        fat_g: 4.61,
+        calories_kcal: 254.6,
+        protein_g: 49.4,
+        fat_g: 4.86,
         carbohydrate_g: 0,
         fiber_g: 0,
       },
       projected_meal_totals: {
-        calories_kcal: 730.27,
-        protein_g: 55.51,
-        fat_g: 21.2,
-        carbohydrate_g: 78.62,
-        fiber_g: 8.85,
+        calories_kcal: 728.68,
+        protein_g: 56.73,
+        fat_g: 20.76,
+        carbohydrate_g: 78.14,
+        fiber_g: 8.65,
       },
       projected_meal_residual: {
-        calories_kcal: 1.27,
-        protein_g: -0.49,
-        fat_g: 0.2,
-        carbohydrate_g: -0.39,
-        fiber_g: -0.15,
+        calories_kcal: -0.32,
+        protein_g: 0.72,
+        fat_g: -0.24,
+        carbohydrate_g: -0.86,
+        fiber_g: -0.35,
       },
       projected_within_tolerance: {
         calories_kcal: true,
@@ -1251,31 +1265,31 @@ test("real closed meals expose only the approved safe Core swaps", () => {
         carbohydrate_g: true,
         fiber_g: true,
       },
-      objective_score: 0.03,
+      objective_score: 0.07,
     },
     {
       food_code: "TILAPIA_COOKED",
-      grams: 180,
+      grams: 190,
       nutrition: {
-        calories_kcal: 230.4,
-        protein_g: 47.07,
-        fat_g: 4.77,
+        calories_kcal: 243.2,
+        protein_g: 49.69,
+        fat_g: 5.04,
         carbohydrate_g: 0,
         fiber_g: 0,
       },
       projected_meal_totals: {
-        calories_kcal: 719.47,
-        protein_g: 55.78,
-        fat_g: 21.36,
-        carbohydrate_g: 78.62,
-        fiber_g: 8.85,
+        calories_kcal: 717.28,
+        protein_g: 57.01,
+        fat_g: 20.93,
+        carbohydrate_g: 78.14,
+        fiber_g: 8.65,
       },
       projected_meal_residual: {
-        calories_kcal: -9.53,
-        protein_g: -0.23,
-        fat_g: 0.36,
-        carbohydrate_g: -0.39,
-        fiber_g: -0.15,
+        calories_kcal: -11.72,
+        protein_g: 1.01,
+        fat_g: -0.07,
+        carbohydrate_g: -0.86,
+        fiber_g: -0.35,
       },
       projected_within_tolerance: {
         calories_kcal: true,
@@ -1284,7 +1298,7 @@ test("real closed meals expose only the approved safe Core swaps", () => {
         carbohydrate_g: true,
         fiber_g: true,
       },
-      objective_score: 0.08,
+      objective_score: 0.17,
     },
   ]);
   // P1-B6: the main meal no longer carried cucumber — under the relative-
@@ -1292,7 +1306,9 @@ test("real closed meals expose only the approved safe Core swaps", () => {
   // tomato alone. Protein reconciliation changed the main-meal target
   // (53 g protein / 79 g carbs, now 56 g under Q28), so the optimizer fits
   // cucumber back in (125 g) — it offers no safe swap (NO_SAFE_SWAP_AVAILABLE).
-  assert.equal(findItem(result, "CUCUMBER_WITH_PEEL_RAW", 1).grams, 125);
+  // Meal variety (Package 5): the rebalanced main meal carries cucumber
+  // at 50 g (the potato-rice split takes the plate), still with no safe swap.
+  assert.equal(findItem(result, "CUCUMBER_WITH_PEEL_RAW", 1).grams, 50);
   assert.deepEqual(
     findItem(result, "CUCUMBER_WITH_PEEL_RAW", 1).alternatives,
     [],
@@ -1308,8 +1324,17 @@ test("real closed meals expose only the approved safe Core swaps", () => {
   // refuses it. This is a visible Q25 consequence, flagged to the owner:
   // if the swap should survive, that is a follow-up decision about swap
   // acceptance, not a reason to reintroduce absolute floors here.
+  // Meal variety (Package 5): the evening potato offers its pasta swap
+  // AGAIN. The supplement closed the evening meal's fiber gap (10.15 g
+  // against the 9 g target), so the pasta-swapped projection now carries
+  // 8.8 g of fiber — a 0.2 g shortfall, inside the 25% tolerance — and
+  // acceptance correctly takes it. The swap is pasta, and only pasta.
   assert.deepEqual(findItem(result,
-    "POTATO_BOILED_WITHOUT_SKIN", 2).alternatives, []);
+    "POTATO_BOILED_WITHOUT_SKIN", 2).alternatives.map((alternative) => [
+      alternative.food_code,
+      alternative.grams,
+      alternative.objective_score,
+    ]), [["PASTA_SPAGHETTI_COOKED", 175, 3.37]]);
 });
 
 // The real evening meal used to be unclosed (egg whites with dry oats,
