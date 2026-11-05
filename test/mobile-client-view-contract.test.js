@@ -43,7 +43,7 @@ async function setup({ phone, religion }) {
     await Program.destroy({ where: { user_id: user.id } });
     await user.destroy();
   }
-  user = await User.create({ client_code: CODE, phone_number: phone, full_name: "Client View", role: "CLIENT" });
+  user = await User.create({ client_code: CODE, phone_number: phone, full_name: "Client View", role: "CLIENT", plan_approval_status: "APPROVED" });
   await Program.create({
     user_id: user.id,
     status: "ACTIVE",
@@ -146,7 +146,7 @@ test("a client with a respiratory condition never receives HIIT through client_v
     await Program.destroy({ where: { user_id: user.id } });
     await user.destroy();
   }
-  user = await User.create({ client_code: CODE, phone_number: "01099000921", full_name: "Asthma", role: "CLIENT" });
+  user = await User.create({ client_code: CODE, phone_number: "01099000921", full_name: "Asthma", role: "CLIENT", plan_approval_status: "APPROVED" });
   await Program.create({
     user_id: user.id,
     status: "ACTIVE",

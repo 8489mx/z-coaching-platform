@@ -48,7 +48,10 @@ test('R1. Healthy Adult Trainee Intake Produces Valid Master Program V2 Without 
     medical_conditions: {
       has_conditions: false,
       selected: []
-    }
+    },
+    // A completed intake answers the walking question: EASY means the
+    // healthy adult has confirmed walking capacity (P1-B4 fail-closed rule).
+    cardio: { walkingAbility: 'EASY', averageDailySteps: 8000 }
   };
 
   const adapted = adaptIntakePayloadToCanonicalEngine(rawIntake);

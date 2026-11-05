@@ -27,7 +27,7 @@ const bench = (w, r, effort = "OK") => ({ exercise_code: "BARBELL_BENCH_PRESS", 
 
 test("client logs one summary per exercise; the API returns the updated progression", async (t) => {
   await cleanup(CODE); await cleanup(OTHER);
-  const client = await User.create({ client_code: CODE, phone_number: "01099000910", full_name: "Prog", role: "CLIENT" });
+  const client = await User.create({ client_code: CODE, phone_number: "01099000910", full_name: "Prog", role: "CLIENT", plan_approval_status: "APPROVED" });
   const other = await User.create({ client_code: OTHER, phone_number: "01099000911", full_name: "Other", role: "CLIENT" });
   await Program.create({ user_id: client.id, status: "ACTIVE", program_data: { training: { weeks: [] } } });
   const post = async (body, userId) => {

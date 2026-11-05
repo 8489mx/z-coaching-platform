@@ -180,7 +180,7 @@ test("a prepared draft never reaches the client's app before the coach publishes
     await Program.destroy({ where: { user_id: existing.id } });
     await existing.destroy();
   }
-  const client = await User.create({ client_code: code, phone_number: "01099000926", full_name: "Shadow", role: "CLIENT" });
+  const client = await User.create({ client_code: code, phone_number: "01099000926", full_name: "Shadow", role: "CLIENT", plan_approval_status: "APPROVED" });
   const active = await Program.create({ user_id: client.id, status: "ACTIVE", program_data: { ...PLAN, cycle_number: 1 } });
   const draft = await Program.create({ user_id: client.id, status: "DRAFT", program_data: { ...PLAN, cycle_number: 2 } });
 

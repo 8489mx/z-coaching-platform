@@ -100,10 +100,27 @@ test("Decoupled Check-in Approval: Coach reviews and gives feedback WITHOUT modi
     assert.equal(kcalOf(activeProgram.program_data), initialActiveKcal, "Active program calories must NOT change");
     assert.equal(kcalOf(draftProgram.program_data), initialDraftKcal, "Draft program calories must NOT change");
 
-    // 2. Coach explicitly decides to adapt program (apply_program_adaptation: true)
+    // 2. Coach explicitly decides to adapt program (apply_program_adaptation: true).
+    // P0-A12: a review-only approval permanently closes its check-in, so the
+    // adaptation is requested on a second PENDING_REVIEW check-in, not by
+    // re-approving the first one.
+    const checkin2 = await CheckinSubmission.create({
+      user_id: client.id,
+      week_number: 2,
+      daily_weights_kg: [82.8],
+      average_weight_kg: 82.8,
+      nutrition_adherence_percent: 95,
+      workouts_completed: 4,
+      workouts_scheduled: 4,
+      biofeedback: {},
+      pain_reports: [],
+      analysis_status: "RAPID_LOSS_WARNING",
+      analysis_output: { analysis_status: "RAPID_LOSS_WARNING", suggested_calorie_delta: 150 },
+      status: "PENDING_REVIEW",
+    });
     const out2 = {};
     await approveCheckin(
-      { user: { id: coach.id, role: "COACH" }, params: { checkinId: checkin.id }, body: { coach_notes: "تم تعديل السعرات لكسر النزول السريع", apply_program_adaptation: true } },
+      { user: { id: coach.id, role: "COACH" }, params: { checkinId: checkin2.id }, body: { coach_notes: "تم تعديل السعرات لكسر النزول السريع", apply_program_adaptation: true } },
       { status(c) { out2.status = c; return this; }, json(b) { out2.body = b; return this; } }
     );
 
@@ -116,8 +133,8 @@ test("Decoupled Check-in Approval: Coach reviews and gives feedback WITHOUT modi
     assert.equal(kcalOf(activeProgram.program_data), initialActiveKcal + 150, "Active program calories should now take the +150 adjustment");
     assert.equal(kcalOf(draftProgram.program_data), initialDraftKcal + 150, "Draft program calories should now take the +150 adjustment");
 
-    await checkin.reload();
-    assert.equal(checkin.adapted_program_id, activeProgram.id);
+    await checkin2.reload();
+    assert.equal(checkin2.adapted_program_id, activeProgram.id);
   } finally {
     await CheckinSubmission.destroy({ where: { user_id: client.id } }).catch(() => {});
     await Program.destroy({ where: { user_id: client.id } }).catch(() => {});

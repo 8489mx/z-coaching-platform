@@ -359,6 +359,7 @@ test('S10. Clinical Lock Persistence Across Subsequent Check-ins, Re-submissions
     await t.test('Step 1: Week 1 Check-in triggers CRITICAL_CARDIAC_FLAG and locks training', async () => {
       const r = mockRes();
       await submitCheckin({
+        user: { id: trainee.id },
         body: {
           user_id: TRAINEE_CODE,
           week_number: 1,
@@ -397,6 +398,7 @@ test('S10. Clinical Lock Persistence Across Subsequent Check-ins, Re-submissions
     await t.test('Step 3: Subsequent Week 2 Check-in without symptoms MAINTAINS clinical lock', async () => {
       const r = mockRes();
       await submitCheckin({
+        user: { id: trainee.id },
         body: {
           user_id: TRAINEE_CODE,
           week_number: 2,

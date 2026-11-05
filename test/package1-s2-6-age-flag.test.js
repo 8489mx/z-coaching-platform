@@ -26,6 +26,11 @@ test("S2-6: when dateOfBirth is present, heart_rate_target flags real age", () =
     training_logistics: { days_per_week: 4, experience_level: "intermediate" },
     recent_training: "ACTIVE",
     training_environment: "commercial_gym",
+    // A completed intake answers the walking question: EASY means the
+    // client has confirmed walking capacity (P1-B4 fail-closed rule).
+    // Steps are a reported number inside cardio: the top-level
+    // average_daily_steps is a form band key, not a number (P1-B1).
+    cardio: { walkingAbility: "EASY", averageDailySteps: 10000 },
   };
 
   const program = buildMasterEngineV2({

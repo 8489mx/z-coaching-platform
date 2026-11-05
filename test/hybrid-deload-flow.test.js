@@ -41,7 +41,7 @@ test("performance drop + low energy -> coach-approved deload -> active deload wi
     let checkinId;
     await t.test("check-in with low energy produces a recommendation, not an automatic deload", async () => {
       const r = mockRes();
-      await submitCheckin({ body: { user_id: CODE, week_number: 3, weight_kg: 85, nutrition_adherence_percent: 90, biofeedback_scale: 10, biofeedback: { energyLevel: 3, sleepQuality: 6, hungerLevel: 5 } } }, r.res);
+      await submitCheckin({ user: { id: client.id }, body: { user_id: CODE, week_number: 3, weight_kg: 85, nutrition_adherence_percent: 90, biofeedback_scale: 10, biofeedback: { energyLevel: 3, sleepQuality: 6, hungerLevel: 5 } } }, r.res);
       assert.equal(r.out.status, 201, JSON.stringify(r.out.body));
       const rec = r.out.body.analysis.deload_recommendation;
       assert.equal(rec.recommended, true);

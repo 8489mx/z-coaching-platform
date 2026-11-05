@@ -20,7 +20,7 @@ test("web check-in 1-10 sliders are converted to the engine's 1-5 scale", async 
   try {
     const submit = async (week, biofeedback, extra = {}) => {
       const r = mockRes();
-      await submitCheckin({ body: { user_id: CODE, week_number: week, weight_kg: 80, nutrition_adherence_percent: 90, biofeedback, ...extra } }, r.res);
+      await submitCheckin({ user: { id: user.id, role: "CLIENT" }, body: { user_id: CODE, week_number: week, weight_kg: 80, nutrition_adherence_percent: 90, biofeedback, ...extra } }, r.res);
       assert.equal(r.out.status, 201, JSON.stringify(r.out.body));
       return r.out.body;
     };

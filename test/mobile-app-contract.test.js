@@ -28,7 +28,7 @@ test("mobile app: token-only active program and the mobile check-in payload", as
     await Program.destroy({ where: { user_id: user.id } });
     await user.destroy();
   }
-  user = await User.create({ client_code: CODE, phone_number: "+966501234919", full_name: "Mobile", role: "CLIENT" });
+  user = await User.create({ client_code: CODE, phone_number: "+966501234919", full_name: "Mobile", role: "CLIENT", plan_approval_status: "APPROVED" });
   await Program.create({
     user_id: user.id,
     status: "ACTIVE",
@@ -53,7 +53,7 @@ test("mobile app: token-only active program and the mobile check-in payload", as
       for (const [weight, expectedWeek] of [[84.5, 1], [84.1, 2]]) {
         const r = mockRes();
         // Same keys as mobile_app/lib/features/checkin/services/checkin_service.dart
-        await submitCheckin({ body: {
+        await submitCheckin({ user: { id: user.id }, body: {
           user_id: CODE, weight_kg: weight, waist_circumference_cm: 92, nutrition_adherence_percent: 85,
           sleep_hours: 7, client_notes: "متوسط النوم: 7 ساعات", photos: [],
         } }, r.res);

@@ -44,7 +44,7 @@ test("three web check-ins produce an observed TDEE that the adaptation engine ap
 
     const submit = async (week, body) => {
       const r = mockRes();
-      await submitCheckin({ body: { user_id: CODE, week_number: week, nutrition_adherence_percent: 90, workouts_completed: 3, occupation_type: "FIELD_MOBILE", sleep_stress_composite: 4, ...body } }, r.res);
+      await submitCheckin({ user: { id: user.id, role: "CLIENT" }, body: { user_id: CODE, week_number: week, nutrition_adherence_percent: 90, workouts_completed: 3, occupation_type: "FIELD_MOBILE", sleep_stress_composite: 4, ...body } }, r.res);
       assert.equal(r.out.status, 201, JSON.stringify(r.out.body));
       return r.out.body.analysis;
     };

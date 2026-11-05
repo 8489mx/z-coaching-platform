@@ -18,7 +18,7 @@ test('Red Team Item 6: Unique Check-in Submission per Week & 409 Conflict Guard'
     let statusCode = 200;
     let jsonOutput = null;
 
-    const req = { body };
+    const req = { user: { id: 9991, role: "CLIENT" }, body };
     const res = {
       status(code) {
         statusCode = code;

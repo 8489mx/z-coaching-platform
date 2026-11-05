@@ -6,6 +6,9 @@ import { approveCheckin } from '../src/api/controllers/checkin.controller.js';
 import { CheckinSubmission, Program } from '../src/api/models/index.js';
 import programRouter from '../src/api/routes/program.routes.js';
 
+// Closes the shared Sequelize pool after this file so the test child exits.
+import "./db-teardown.js";
+
 test('Tier 1 Suite: Check-in Plan Preservation & Idempotent Plan Merge Engine', async (t) => {
 
   const sampleMasterProgram = {
@@ -275,7 +278,7 @@ test('Tier 1 Suite: Check-in Plan Preservation & Idempotent Plan Merge Engine', 
       id: 501,
       user_id: 42,
       week_number: 1,
-      status: 'PENDING',
+      status: 'PENDING_REVIEW',
       coach_notes: '',
       analysis_output: {
         suggested_calorie_delta: -150,

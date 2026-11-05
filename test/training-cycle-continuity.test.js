@@ -75,7 +75,7 @@ test("the active program response carries the cycle, and the coach list names th
       await existing.destroy();
     }
   }
-  const client = await User.create({ client_code: CODE, phone_number: "01099000922", full_name: "Cycle", role: "CLIENT" });
+  const client = await User.create({ client_code: CODE, phone_number: "01099000922", full_name: "Cycle", role: "CLIENT", plan_approval_status: "APPROVED" });
   const coach = await User.create({ client_code: COACH, phone_number: "01099000923", full_name: "Coach", role: "ADMIN" });
   const startedLongAgo = new Date(Date.now() - 60 * DAY);
   await Program.create({ user_id: client.id, status: "ACTIVE", program_data: planOf(5, startedLongAgo.toISOString()) });

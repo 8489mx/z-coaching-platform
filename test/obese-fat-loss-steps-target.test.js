@@ -13,7 +13,7 @@ import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, "data/catalogs/core-global-food-batch-v1.json"), "utf8"));
 
-function cardioFor({ weight, neat, goal = "fat_loss" }) {
+function cardioFor({ weight, neat, goal = "fat_loss", walkingAbility }) {
   const program = buildMasterEngineV2({
     intake: {
       gender: "female", age: "35", height_cm: "160", weight_kg: String(weight), circumferences: { neck_cm: "38", waist_cm: "110", hips_cm: "130" },
@@ -21,6 +21,9 @@ function cardioFor({ weight, neat, goal = "fat_loss" }) {
       medical_conditions: { has_conditions: false, selected: ["none"] }, injuries_map: { has_injuries: false, selected_areas: ["none"] },
       religion: "MUSLIM", strict_allergies: ["none"], meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" },
       training_environment: "commercial_gym", training_logistics: { days_per_week: 3, experience_level: "beginner" }, recent_training: "ACTIVE",
+      // A completed intake answers the walking question; only the
+      // cardio-capacity test passes EASY (P1-B4 fail-closed rule).
+      ...(walkingAbility ? { cardio: { walkingAbility, averageDailySteps: 8000 } } : {}),
     },
     evaluationContext: { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" },
     nutritionFoodCatalog: CATALOG,
@@ -42,5 +45,5 @@ test("a lean fat-loss client with cardio capacity gets formal sessions", () => {
   // formal sessions even when daily activity is already adequate. The old
   // "very active needs no cardio" expectation is intentionally overridden;
   // a reviewer may refine it later with a high-activity exception.
-  assert.equal(cardioFor({ weight: 58, neat: "very_active" }), "CARDIO_SESSIONS");
+  assert.equal(cardioFor({ weight: 58, neat: "very_active", walkingAbility: "EASY" }), "CARDIO_SESSIONS");
 });

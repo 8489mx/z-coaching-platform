@@ -112,7 +112,9 @@ test("FIX-09 & FIX-10: Clinical unlock requires clearance notes, and repeated ap
     await activeProgram.reload();
     assert.equal(kcalOf(activeProgram.program_data), initialActiveKcal + 150);
 
-    // 4. FIX-10: Calling approveCheckin a second time on the already-adapted checkin must NOT add +150 kcal again
+    // 4. FIX-10: Calling approveCheckin a second time on the already-adapted checkin
+    // is rejected by the P0-A12 guard (409 CHECKIN_NOT_PENDING), so +150 kcal
+    // can never be applied twice.
     const approve2 = {};
     await approveCheckin(
       {
@@ -122,7 +124,8 @@ test("FIX-09 & FIX-10: Clinical unlock requires clearance notes, and repeated ap
       },
       { status(c) { approve2.status = c; return this; }, json(b) { approve2.body = b; return this; } }
     );
-    assert.equal(approve2.status, 200);
+    assert.equal(approve2.status, 409);
+    assert.equal(approve2.body.code, "CHECKIN_NOT_PENDING");
     await activeProgram.reload();
     assert.equal(
       kcalOf(activeProgram.program_data),

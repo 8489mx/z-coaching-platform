@@ -8,12 +8,16 @@ import {
   createRateLimiter, 
   authRateLimiter, 
   uploadRateLimiter, 
-  exportRateLimiter 
+  exportRateLimiter,
+  recordAuthFailedAttempt
 } from '../src/api/middlewares/rateLimiter.js';
 import { 
   recordAuditEvent, 
   readRecentAuditEvents 
 } from '../src/api/services/auditLog.service.js';
+
+// Closes the shared Sequelize pool after this file so the test child exits.
+import "./db-teardown.js";
 
 test('Security Tier 1: Hardening and Governance Suite', async (t) => {
 
@@ -56,6 +60,10 @@ test('Security Tier 1: Hardening and Governance Suite', async (t) => {
   // ==========================================
   // 2. Authentication Rate Limiting (Brute-Force)
   // ==========================================
+  // P1-B12: the auth limiter is failures-only — calling the middleware
+  // alone never consumes the budget, so the budget is spent by simulating
+  // 5 failed logins via recordAuthFailedAttempt (what the login handlers
+  // call), then the 6th middleware call is blocked with 429.
   await t.test('2. authRateLimiter blocks on 6th attempt within window with HTTP 429', async () => {
     const testIp = '198.51.100.15';
     authRateLimiter.reset(testIp);
@@ -85,16 +93,22 @@ test('Security Tier 1: Hardening and Governance Suite', async (t) => {
       return { statusCode, jsonPayload, nextCalled, responseHeaders };
     };
 
-    // First 5 attempts should pass
+    // Calling the middleware alone must NOT consume the budget:
+    // 5 clean passes still leave the full 5 attempts.
     for (let i = 1; i <= 5; i++) {
       const res = makeRequest();
-      assert.equal(res.nextCalled, true, `Attempt ${i} should be allowed through`);
+      assert.equal(res.nextCalled, true, `Clean attempt ${i} should be allowed through`);
       assert.equal(res.statusCode, 200);
       assert.equal(res.responseHeaders['X-RateLimit-Limit'], 5);
-      assert.equal(res.responseHeaders['X-RateLimit-Remaining'], 5 - i);
+      assert.equal(res.responseHeaders['X-RateLimit-Remaining'], 5, 'Middleware alone must not consume the failures-only budget');
     }
 
-    // 6th attempt must be rejected with 429
+    // 5 failed logins spend the whole budget.
+    for (let i = 1; i <= 5; i++) {
+      await recordAuthFailedAttempt(testIp);
+    }
+
+    // 6th attempt (after 5 failures) must be rejected with 429
     const blockedRes = makeRequest();
     assert.equal(blockedRes.nextCalled, false, '6th attempt must be blocked from continuing');
     assert.equal(blockedRes.statusCode, 429);

@@ -29,7 +29,7 @@ let client; let original;
 test.before(async () => {
   const u = await User.findOne({ where: { client_code: CODE } });
   if (u) { await Program.destroy({ where: { user_id: u.id } }); await u.destroy(); }
-  client = await User.create({ client_code: CODE, phone_number: "01099000991", full_name: "Cardio", role: "CLIENT" });
+  client = await User.create({ client_code: CODE, phone_number: "01099000991", full_name: "Cardio", role: "CLIENT", plan_approval_status: "APPROVED" });
   original = IntakeSubmission.findOne;
 });
 test.after(async () => {

@@ -4,6 +4,9 @@ import assert from 'node:assert/strict';
 import { approveCheckin } from '../src/api/controllers/checkin.controller.js';
 import { CheckinSubmission, Program } from '../src/api/models/index.js';
 
+// Closes the shared Sequelize pool after this file so the test child exits.
+import "./db-teardown.js";
+
 test('Check-in Approval Custom Macros Suite (weekly-audit tests retired in S3-4/S4-5)', async (t) => {
 
   await t.test('10. approveCheckin controller updates program nutrition targets when custom_macros are provided', async () => {
@@ -12,7 +15,7 @@ test('Check-in Approval Custom Macros Suite (weekly-audit tests retired in S3-4/
       id: 99,
       user_id: 1,
       analysis_output: { suggested_calorie_delta: 0 },
-      status: 'PENDING',
+      status: 'PENDING_REVIEW',
       coach_notes: '',
       save: async () => {}
     };

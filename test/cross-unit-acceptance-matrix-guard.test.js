@@ -122,6 +122,9 @@ test('Phase 15: Cross-Unit Acceptance Test Matrix & Scientific Equations Audit (
       training_environment: 'commercial_gym',
       training_logistics: { days_per_week: 4, experience_level: 'intermediate' },
       recent_training: 'ACTIVE',
+      // A completed intake answers the walking question: EASY means the
+      // healthy adult has confirmed walking capacity (P1-B4 fail-closed rule).
+      cardio: { walkingAbility: 'EASY', averageDailySteps: 8000 },
     };
 
     const plan = buildMasterEngineV2({

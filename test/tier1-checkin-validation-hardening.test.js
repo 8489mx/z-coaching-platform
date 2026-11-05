@@ -20,7 +20,7 @@ test('Tier 1 Suite: Check-in Identity Validation (canonical submitCheckin)', asy
     let statusCode = 200;
     let jsonOutput = null;
 
-    const req = { body };
+    const req = { user: { id: 105, role: "CLIENT" }, body };
     const res = {
       status(code) {
         statusCode = code;

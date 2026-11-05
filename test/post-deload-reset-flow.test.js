@@ -33,7 +33,7 @@ const ex = (code, w, r) => ({ exercise_code: code, weight_kg: w, last_set_reps: 
 
 test("after an approved deload window ends, the next targets are the post-deload reset", async () => {
   await cleanup();
-  const user = await User.create({ client_code: CODE, phone_number: "01099000914", full_name: "Reset", role: "CLIENT" });
+  const user = await User.create({ client_code: CODE, phone_number: "01099000914", full_name: "Reset", role: "CLIENT", plan_approval_status: "APPROVED" });
   try {
     await Program.create({ user_id: user.id, status: "ACTIVE", program_data: { training: { weeks: [] } } });
     // Bench progressing; overhead press stalled twice at 60 kg before the deload.

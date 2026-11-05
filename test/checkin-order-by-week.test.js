@@ -29,7 +29,7 @@ test("four check-ins sent back to back are each compared with the week before", 
     // 95 kg losing half a kilo a week: about 0.5% of bodyweight, the textbook pace, never "rapid".
     for (const weight of [96, 95.5, 95, 94.5]) {
       const r = mockRes();
-      await submitCheckin({ body: { user_id: CODE, weight_kg: weight, nutrition_adherence_percent: 90 } }, r.res);
+      await submitCheckin({ user: { id: user.id, role: "CLIENT" }, body: { user_id: CODE, weight_kg: weight, nutrition_adherence_percent: 90 } }, r.res);
       assert.equal(r.out.status, 201, JSON.stringify(r.out.body));
       statuses.push(r.out.body.analysis.analysis_status);
     }

@@ -23,7 +23,7 @@ test("joint pain from the check-in form flags the injury and recommends a deload
   user = await User.create({ client_code: CODE, phone_number: "01099000915", full_name: "Pain", role: "CLIENT" });
   try {
     const r = mockRes();
-    await submitCheckin({ body: { user_id: CODE, week_number: 1, weight_kg: 80, nutrition_adherence_percent: 90, pain_reports: [{ area: "KNEE", body_part: "الركبة", pain_level: 8 }] } }, r.res);
+    await submitCheckin({ user: { id: user.id, role: "CLIENT" }, body: { user_id: CODE, week_number: 1, weight_kg: 80, nutrition_adherence_percent: 90, pain_reports: [{ area: "KNEE", body_part: "الركبة", pain_level: 8 }] } }, r.res);
     assert.equal(r.out.status, 201, JSON.stringify(r.out.body));
     assert.equal(r.out.body.analysis.analysis_status, "INJURY_FLAGGED");
     assert.equal(r.out.body.analysis.deload_recommendation.recommended, true);

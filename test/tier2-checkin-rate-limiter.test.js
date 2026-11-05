@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import jwt from 'jsonwebtoken';
 import app from '../src/api/server.js';
 import { checkinRateLimiter } from '../src/api/middlewares/rateLimiter.js';
+import { User } from '../src/api/models/index.js';
 
 test('Tier 2 Item 3: Checkin Submission Rate Limiter Suite', async (t) => {
   let server;
@@ -88,13 +90,15 @@ test('Tier 2 Item 3: Checkin Submission Rate Limiter Suite', async (t) => {
   await t.test('2. Isolation: Different clients/users have independent rate limit quotas', async () => {
     const userA = 'client_quota_user_A';
     const userB = 'client_quota_user_B';
-    checkinRateLimiter.reset(userA);
-    checkinRateLimiter.reset(userB);
+    // P0-A1: the limiter keys on the verified req.user.id, so reset takes
+    // the key-generator identifier ('user_<id>'), not the body user_id.
+    checkinRateLimiter.reset('user_' + userA);
+    checkinRateLimiter.reset('user_' + userB);
 
     // Max out user A
     for (let i = 0; i < 10; i++) {
       const res = { setHeader: () => {}, status: () => res, json: () => {} };
-      await checkinRateLimiter({ headers: {}, socket: { remoteAddress: '10.0.0.2' }, body: { user_id: userA } }, res, () => {});
+      await checkinRateLimiter({ user: { id: userA }, headers: {}, socket: { remoteAddress: '10.0.0.2' }, body: { user_id: userA } }, res, () => {});
     }
 
     // Verify user A is blocked
@@ -104,31 +108,58 @@ test('Tier 2 Item 3: Checkin Submission Rate Limiter Suite', async (t) => {
       status: (code) => { if (code === 429) userABlocked = true; return resA; },
       json: () => {}
     };
-    await checkinRateLimiter({ headers: {}, socket: { remoteAddress: '10.0.0.2' }, body: { user_id: userA } }, resA, () => {});
+    await checkinRateLimiter({ user: { id: userA }, headers: {}, socket: { remoteAddress: '10.0.0.2' }, body: { user_id: userA } }, resA, () => {});
     assert.equal(userABlocked, true, 'User A should be rate limited');
 
     // Verify user B can still submit cleanly
     let userBCalledNext = false;
     const resB = { setHeader: () => {}, status: () => resB, json: () => {} };
-    await checkinRateLimiter({ headers: {}, socket: { remoteAddress: '10.0.0.2' }, body: { user_id: userB } }, resB, () => {
+    await checkinRateLimiter({ user: { id: userB }, headers: {}, socket: { remoteAddress: '10.0.0.2' }, body: { user_id: userB } }, resB, () => {
       userBCalledNext = true;
     });
     assert.equal(userBCalledNext, true, 'User B must not be affected by User A quota exhaustion');
 
     // Clean up
-    checkinRateLimiter.reset(userA);
-    checkinRateLimiter.reset(userB);
+    checkinRateLimiter.reset('user_' + userA);
+    checkinRateLimiter.reset('user_' + userB);
   });
 
   await t.test('3. Full HTTP Route integration: POST /api/v1/checkin triggers 429 after 10 calls', async () => {
-    const integrationUser = 'integration_client_checkin_55';
-    checkinRateLimiter.reset(integrationUser);
+    // P0-A1: the route runs requireAuth BEFORE the limiter, so the calls
+    // must carry a real JWT for a seeded user (same pattern as
+    // package2-stage2-auth-sessions.test.js); without it every call 401s
+    // before the limiter ever runs.
+    const secret = process.env.JWT_SECRET || "test_jwt_secret_for_stage_2";
+    const user = await User.create({ client_code: "TEST_LIMIT_HTTP_55", phone_number: "01099000955", full_name: "Limiter HTTP", role: "CLIENT", token_version: 3, subscription_status: "ACTIVE" });
+    const token = jwt.sign({ id: user.id, token_version: 3 }, secret);
+    const integrationUser = "TEST_LIMIT_HTTP_55";
+    checkinRateLimiter.reset('user_' + user.id);
 
-    for (let i = 1; i <= 10; i++) {
-      const res = await fetch(`${baseUrl}/api/v1/checkin`, {
+    try {
+      for (let i = 1; i <= 10; i++) {
+        const res = await fetch(`${baseUrl}/api/v1/checkin`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'X-Forwarded-For': '198.51.100.42'
+          },
+          body: JSON.stringify({
+            user_id: integrationUser,
+            week_number: 1
+          })
+        });
+        // Requests 1-10 should not be 429 (they may be 400 on validation, but NOT 429)
+        assert.notEqual(res.status, 429, `Call ${i} must not be rate limited`);
+        assert.ok(res.headers.get('x-ratelimit-limit'), 'Must include X-RateLimit-Limit header');
+      }
+
+      // 11th call must return 429
+      const res11 = await fetch(`${baseUrl}/api/v1/checkin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
           'X-Forwarded-For': '198.51.100.42'
         },
         body: JSON.stringify({
@@ -136,31 +167,16 @@ test('Tier 2 Item 3: Checkin Submission Rate Limiter Suite', async (t) => {
           week_number: 1
         })
       });
-      // Requests 1-10 should not be 429 (they may be 400 user not found, but NOT 429)
-      assert.notEqual(res.status, 429, `Call ${i} must not be rate limited`);
-      assert.ok(res.headers.get('x-ratelimit-limit'), 'Must include X-RateLimit-Limit header');
+
+      assert.equal(res11.status, 429, '11th call must return HTTP 429 Too Many Requests');
+      assert.equal(res11.headers.get('x-ratelimit-remaining'), '0');
+      assert.ok(res11.headers.get('retry-after'), 'Must include Retry-After header');
+      const data = await res11.json();
+      assert.equal(data.blocked, true);
+    } finally {
+      // Clean up
+      checkinRateLimiter.reset('user_' + user.id);
+      await user.destroy().catch(() => {});
     }
-
-    // 11th call must return 429
-    const res11 = await fetch(`${baseUrl}/api/v1/checkin`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Forwarded-For': '198.51.100.42'
-      },
-      body: JSON.stringify({
-        user_id: integrationUser,
-        week_number: 1
-      })
-    });
-
-    assert.equal(res11.status, 429, '11th call must return HTTP 429 Too Many Requests');
-    assert.equal(res11.headers.get('x-ratelimit-remaining'), '0');
-    assert.ok(res11.headers.get('retry-after'), 'Must include Retry-After header');
-    const data = await res11.json();
-    assert.equal(data.blocked, true);
-
-    // Clean up
-    checkinRateLimiter.reset(integrationUser);
   });
 });

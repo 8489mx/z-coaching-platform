@@ -9,6 +9,9 @@ import { approveCheckin } from "../src/api/controllers/checkin.controller.js";
 import { resolveTrainingCycleStatus } from "../src/api/services/trainingCycleService.js";
 import { CheckinSubmission, Program } from "../src/api/models/index.js";
 
+// Closes the shared Sequelize pool after this file so the test child exits.
+import "./db-teardown.js";
+
 /**
  * A check-in's week_number counts weeks of the subscription (week 14 of an eight-month plan); the
  * plan's weeks count weeks of the current five-week cycle. Approving a week-14 check-in used to
@@ -42,6 +45,7 @@ async function approve(programData, subscriptionWeek) {
   const row = { id: 7, user_id: 1, program_data: programData, createdAt: new Date(), async update(values) { Object.assign(this, values); } };
   const checkin = {
     id: 9, user_id: 1, week_number: subscriptionWeek, biofeedback: {}, pain_reports: [],
+    status: "PENDING_REVIEW",
     analysis_output: { analysis_status: "ON_TRACK" }, async save() {},
   };
   const originals = [CheckinSubmission.findByPk, Program.findOne];
