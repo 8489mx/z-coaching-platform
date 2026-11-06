@@ -7,6 +7,7 @@ import {
   bulkApproveCheckins,
   updateCheckinMeasurements,
   logWorkout,
+  logMeal,
   decideDeload,
   unlockClinicalSafety,
   openLateWindow,
@@ -37,5 +38,10 @@ router.post("/:checkinId/unlock-clinical-safety", requireAuth, unlockClinicalSaf
 // are deleted (zero UI callers). Workout-log writes (POST /workout-logs)
 // and the late-window POST stay wired.
 router.post("/workout-logs", requireAuth, logWorkout);
+
+// B2-SYNC: meal-completion writes (POST /meal-logs) — the server end of the
+// client offline queue. Mirrors POST /workout-logs (auth, ownership,
+// idempotent by actionId); see logMeal in checkin.controller.js.
+router.post("/meal-logs", requireAuth, logMeal);
 
 export default router;

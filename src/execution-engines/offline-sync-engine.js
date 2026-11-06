@@ -60,7 +60,10 @@ export function enqueueOfflineAction({
  */
 export async function flushPendingQueue({
   queue = [],
-  syncHandler = async (_action) => ({ success: true })
+  // Fail-closed default: a caller that forgets its sync handler must never
+  // report success. SYNCED requires an explicit server acknowledgement
+  // (response.success === true) from a real handler.
+  syncHandler = async (_action) => ({ success: false, error: 'NO_SYNC_HANDLER' })
 }) {
   const safeQueue = Array.isArray(queue) ? [...queue] : [];
   const processedActions = [];
@@ -83,7 +86,11 @@ export async function flushPendingQueue({
 
     try {
       const response = await syncHandler(item);
-      if (response && response.success !== false) {
+      // B2-SYNC: SYNCED only on an explicit server acknowledgement.
+      // A bare {} (or any response without success === true) used to count
+      // as success, which marked queued completions SYNCED without the
+      // server ever seeing them.
+      if (response && response.success === true) {
         syncedActionIds.add(item.actionId);
         processedActions.push({
           ...item,
@@ -94,7 +101,8 @@ export async function flushPendingQueue({
         processedActions.push({
           ...item,
           syncStatus: SYNC_STATUS.FAILED,
-          retryCount: (item.retryCount || 0) + 1
+          retryCount: (item.retryCount || 0) + 1,
+          errorMessage: response?.error || response?.errorMessage || 'SYNC_NOT_ACKNOWLEDGED'
         });
       }
     } catch (err) {
@@ -115,6 +123,78 @@ export async function flushPendingQueue({
     pending_remaining_count: pendingRemaining,
     is_fully_synced: pendingRemaining === 0,
     status_badge_ar: pendingRemaining === 0 ? 'متزامن بالكامل مع الخادم' : `متبقي ${pendingRemaining} عمليات قيد المزامنة`
+  };
+}
+
+/**
+ * Builds a real sync handler that sends each queued action to its server
+ * endpoint and returns the server's own acknowledgement.
+ *
+ * B2-SYNC: this replaces the stub that reported { success: true } without
+ * sending anything. Routing per action type (inventory at the base head):
+ * - LOG_SET -> POST /api/v1/checkin/workout-logs (exists, mirrors the
+ *   direct session-log submit).
+ * - CHECK_MEAL -> POST /api/v1/checkin/meal-logs (new in this package;
+ *   idempotent by actionId, see logMeal in checkin.controller.js).
+ * - LOG_WATER / SAVE_CHECKIN_DRAFT -> NO server endpoint exists and no UI
+ *   producer enqueues them, so the handler fails closed ({ success: false })
+ *   and the action stays FAILED for retry instead of being marked SYNCED.
+ * - Unknown action types fail closed the same way.
+ *
+ * A transport error or a non-2xx response is returned as
+ * { success: false } so flushPendingQueue marks the action FAILED — never
+ * SYNCED. Only an explicit { success: true } body marks it SYNCED.
+ */
+export function buildSyncHandler({ apiBase = '', fetchImpl = globalThis.fetch } = {}) {
+  const post = async (path, body) => {
+    try {
+      const res = await fetchImpl(`${apiBase}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return { success: false, error: data?.error || `HTTP_${res.status}` };
+      return data && typeof data === 'object' ? data : {};
+    } catch (err) {
+      return { success: false, error: err?.message || 'NETWORK_ERROR' };
+    }
+  };
+
+  return async (action) => {
+    const payload = action?.payload || {};
+    switch (action?.actionType) {
+      case ACTION_TYPES.CHECK_MEAL:
+        return post('/api/v1/checkin/meal-logs', {
+          user_id: action.clientId,
+          action_id: action.actionId,
+          day_number: payload.day ?? null,
+          week_number: payload.week ?? null,
+          meal_id: payload.mealId,
+          meal_title: payload.mealTitle,
+          completed: payload.completed !== false,
+          logged_at: action.timestamp,
+        });
+      case ACTION_TYPES.LOG_SET:
+        return post('/api/v1/checkin/workout-logs', {
+          user_id: action.clientId,
+          action_id: action.actionId,
+          program_id: payload.program_id ?? null,
+          week_number: payload.week_number ?? 1,
+          day_number: payload.day_number ?? payload.day ?? 1,
+          session_title: payload.session_title ?? null,
+          is_quick_completed: payload.is_quick_completed === true,
+          logged_exercises: payload.logged_exercises ?? [],
+          duration_minutes: payload.duration_minutes ?? 60,
+          session_rpe: payload.session_rpe ?? 8,
+          notes: payload.notes ?? '',
+        });
+      case ACTION_TYPES.LOG_WATER:
+      case ACTION_TYPES.SAVE_CHECKIN_DRAFT:
+        return { success: false, error: `NO_ENDPOINT_FOR_ACTION_TYPE:${action.actionType}` };
+      default:
+        return { success: false, error: `UNKNOWN_ACTION_TYPE:${action?.actionType}` };
+    }
   };
 }
 

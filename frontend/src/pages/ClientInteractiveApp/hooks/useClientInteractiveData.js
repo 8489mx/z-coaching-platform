@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { API_BASE } from '../../../config/api.js';
 import { extractClientFastingProfile } from '../../../utils/seasonalFastingRadar.js';
 import { getGulfHeatAdvisory } from '../../../utils/cardioZonesEngine.js';
-import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, ACTION_TYPES } from '../../../utils/offlineSyncEngine.js';
+import { enqueueOfflineAction, flushPendingQueue, getQueueSyncStatus, buildSyncHandler, ACTION_TYPES } from '../../../utils/offlineSyncEngine.js';
 import { adaptProgramToInteractiveMeals, adaptSessionToInteractiveWorkout } from '../utils/programAdapters.js';
 import { cacheProgramLocally, getCachedProgram, cacheGymRushCatalogLocally } from '../../../utils/offlineWorkoutSync.js';
 import { applyDeloadToSession, EFFORT_LEVELS } from '../../../utils/progressionEngine.js';
@@ -571,9 +571,11 @@ export function useClientInteractiveData() {
     if (isSyncing || offlineQueue.length === 0) return;
     setIsSyncing(true);
     try {
+      // B2-SYNC: real server sync per action type — never the old stub that
+      // reported success without sending anything.
       const res = await flushPendingQueue({
         queue: offlineQueue,
-        syncHandler: async () => ({ success: true })
+        syncHandler: buildSyncHandler({ apiBase: API_BASE })
       });
       setOfflineQueue(res.queue);
       try {

@@ -1,5 +1,5 @@
 import sequelize from "../config/database.js";
-import { User, Program, IntakeSubmission, CheckinSubmission, ProgressPhoto, WorkoutLog, Order, NutritionPlan, WorkoutPlan, RateLimitLog } from "../models/index.js";
+import { User, Program, IntakeSubmission, CheckinSubmission, ProgressPhoto, WorkoutLog, MealLog, Order, NutritionPlan, WorkoutPlan, RateLimitLog } from "../models/index.js";
 
 async function runSync() {
   try {

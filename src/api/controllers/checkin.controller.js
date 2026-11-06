@@ -1,5 +1,5 @@
 import sequelize from "../config/database.js";
-import { CheckinSubmission, Program, User, WorkoutLog, ProgressPhoto } from "../models/index.js";
+import { CheckinSubmission, Program, User, WorkoutLog, MealLog, ProgressPhoto } from "../models/index.js";
 import { evaluateCheckin } from "../../checkin-engine/evaluate-checkin.js";
 import { estimateAdaptiveTdee } from "../../checkin-engine/adaptive-tdee.js";
 import { CheckinAnalysisStatus } from "../../checkin-engine/domain/enums.js";
@@ -2028,6 +2028,81 @@ export async function logWorkout(req, res) {
     });
   } catch (error) {
     console.error("Error logging workout:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
+
+/**
+ * Log a Meal Completion (B2-SYNC — the server end of the offline queue).
+ * Mirrors logWorkout's contract: auth, user resolution (client code / id /
+ * phone), ownership (own account, or COACH/ADMIN), 201 with the created row.
+ * Idempotent by actionId: a replayed queue flush with the same action_id
+ * returns the existing row (200, duplicate: true) and never stores a
+ * second row. No clinical-lockout check: recording that a meal was eaten
+ * is observational adherence data, not exertion and not a program change.
+ */
+export async function logMeal(req, res) {
+  try {
+    const {
+      user_id,
+      action_id,
+      day_number = 1,
+      week_number = 1,
+      meal_id,
+      meal_title,
+      completed = true,
+      logged_at,
+    } = req.body;
+
+    if (!user_id) {
+      return res.status(400).json({ success: false, error: "user_id is required" });
+    }
+    if (!action_id) {
+      return res.status(400).json({ success: false, error: "action_id is required" });
+    }
+    if (!meal_id) {
+      return res.status(400).json({ success: false, error: "meal_id is required" });
+    }
+
+    // Resolve the client (id, client code or phone) and only let the client or a coach write their logs.
+    const cleanCode = String(user_id).replace('#', '').trim();
+    let userObj = await User.findOne({ where: { client_code: cleanCode } });
+    if (!userObj && !isNaN(cleanCode)) userObj = await User.findByPk(parseInt(cleanCode, 10));
+    if (!userObj) userObj = await User.findOne({ where: { phone_number: cleanCode } });
+    if (!userObj) {
+      return res.status(404).json({ success: false, error: "المستخدم غير موجود" });
+    }
+
+    if (!req.user || req.user.id !== userObj.id) {
+      const requester = req.user?.role
+      ? req.user
+      : (req.user?.id ? await User.findByPk(req.user.id) : null);
+      if (!requester || !['COACH', 'ADMIN'].includes(requester.role)) {
+        return res.status(403).json({ success: false, error: "غير مصرح لك بتسجيل وجبات لمتدرب آخر" });
+      }
+    }
+
+    // Idempotent replay: the offline queue retries a flush after a lost
+    // response, so the same action_id must never create a second row.
+    const existing = await MealLog.findOne({ where: { user_id: userObj.id, action_id: String(action_id) } });
+    if (existing) {
+      return res.status(200).json({ success: true, log: existing, duplicate: true });
+    }
+
+    const log = await MealLog.create({
+      user_id: userObj.id,
+      action_id: String(action_id),
+      day_number: Number(day_number) || 1,
+      week_number: Number(week_number) || 1,
+      meal_id: String(meal_id),
+      meal_title: meal_title != null ? String(meal_title) : null,
+      completed: completed !== false,
+      logged_at: logged_at ? new Date(logged_at) : new Date(),
+    });
+
+    return res.status(201).json({ success: true, log });
+  } catch (error) {
+    console.error("Error logging meal:", error);
     return res.status(500).json({ success: false, error: error.message });
   }
 }

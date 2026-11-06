@@ -4,6 +4,7 @@ import IntakeSubmission from "./IntakeSubmission.js";
 import CheckinSubmission from "./CheckinSubmission.js";
 import ProgressPhoto from "./ProgressPhoto.js";
 import WorkoutLog from "./WorkoutLog.js";
+import MealLog from "./MealLog.js";
 import Order from "./Order.js";
 import NutritionPlan from "./NutritionPlan.js";
 import WorkoutPlan from "./WorkoutPlan.js";
@@ -38,6 +39,10 @@ Program.hasMany(WorkoutLog, { foreignKey: "program_id", as: "workoutLogs", onDel
 
 WorkoutLog.belongsTo(Program, { foreignKey: "program_id", as: "program" });
 
+User.hasMany(MealLog, { foreignKey: "user_id", as: "mealLogs", onDelete: "CASCADE" });
+
+MealLog.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
 User.hasMany(Notification, { foreignKey: "user_id", as: "notifications", onDelete: "CASCADE" });
 
 Notification.belongsTo(User, { foreignKey: "user_id", as: "user" });
@@ -69,6 +74,7 @@ export {
   CheckinSubmission, 
   ProgressPhoto, 
   WorkoutLog,
+  MealLog,
   Order,
   NutritionPlan,
   WorkoutPlan,
