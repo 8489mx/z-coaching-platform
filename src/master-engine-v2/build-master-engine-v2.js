@@ -1969,14 +1969,92 @@ export function buildMasterEngineV2(inputs) {
     is_lactating: femaleCases.is_lactating === true,
   });
 
+  // H4: a withheld program (MEDICAL_REVIEW_REQUIRED or BLOCKED) must not
+  // carry a servable plan. The generate handlers already save it DRAFT and
+  // the serve path withholds it from the client, but the engine object
+  // itself leaked a complete nutrition plan (culinary meals, targets,
+  // quantized plan) and a full 5-week training program — any path returning
+  // the object verbatim would serve a full plan to a refused client.
+  // Strip both programs down to a review stub: the reason and the safety
+  // metadata the coach needs, never meals with quantities and never a
+  // training program. The stage statuses stay WITHHELD (the check-in
+  // auto-apply gate reads them), and adults keep only the clinical
+  // guardrails inside targets (the hypoglycemia guard the safety tests
+  // and the coach rely on). Minors carry no nutrition numbers at all.
+  // Circadian timing carries per-meal macro targets, so it takes the same
+  // held shape shift workers already get. COACH_REVIEW_REQUIRED is
+  // servable-with-review and is NOT stripped.
+  const isWithheldProgram =
+    intake_decision?.plan_status === "MEDICAL_REVIEW_REQUIRED" ||
+    intake_decision?.plan_status === "BLOCKED";
+  const withheldFlagCodes = [
+    ...new Set(
+      (intake_decision?.review_flags || []).map((flag) => flag.code).filter(Boolean)
+    ),
+  ];
+  const isMinorWithheld =
+    isWithheldProgram &&
+    (intake_decision?.review_flags || []).some(
+      (flag) =>
+        flag.code === "MINOR_WITHOUT_GUARDIAN_CONSENT" ||
+        flag.code === "MINOR_REQUIRES_SEPARATE_PATH"
+    );
+  const withheldReasonAr =
+    "الخطة محجوبة لمراجعة طبية — لا وجبات ولا برنامج تدريبي في هذا الكائن حتى يراجع الكوتش والفريق الطبي السبب.";
+  const withheldNutritionProgram = isWithheldProgram
+    ? Object.freeze({
+        status: "WITHHELD",
+        withheld: true,
+        reason_ar: withheldReasonAr,
+        review_flag_codes: withheldFlagCodes,
+        stages: Object.freeze({
+          energy_target: Object.freeze({ status: "WITHHELD" }),
+          macro_targets: Object.freeze({ status: "WITHHELD" }),
+        }),
+        // Adults keep only the clinical guardrails (safety limits and
+        // notices, never calorie or macro numbers). Minors keep no
+        // targets object at all.
+        ...(isMinorWithheld
+          ? {}
+          : {
+              targets: Object.freeze({
+                clinical_guardrails: universalTargets.clinical_guardrails ?? null,
+              }),
+            }),
+      })
+    : nutrition_program_v2;
+  const withheldTrainingProgram = isWithheldProgram
+    ? Object.freeze({
+        status: "WITHHELD",
+        withheld: true,
+        reason_ar: withheldReasonAr,
+        review_flag_codes: withheldFlagCodes,
+        weeks: [],
+        total_weeks: 0,
+      })
+    : enrichedTrainingMesocycle;
+  const withheldCircadianTiming = isWithheldProgram
+    ? Object.freeze({
+        held_for_coach_review: true,
+        status: "HELD_FOR_COACH_REVIEW",
+        workout_time: null,
+        bedtime: reportedBedtime,
+        wake_time: reportedWakeTime,
+        timeline: [],
+        caffeine_cutoff: null,
+        hold_reason_ar: "الخطة محجوبة لمراجعة طبية: توقيت الوجبات والتمرين محجوز لمراجعة الكوتش.",
+        circadian_summary_ar: "توقيت النوم والتمرين محجوز لمراجعة الكوتش (خطة محجوبة).",
+      })
+    : circadianTiming;
+
   return Object.freeze({
     engine_version: MASTER_ENGINE_V2_VERSION,
     client_profile,
     intake_decision,
-    training_program: enrichedTrainingMesocycle,
+    training_program: withheldTrainingProgram,
     cardio_program: cardio_program_v2,
     mobility_program,
-    nutrition_program: nutrition_program_v2,
+    nutrition_program: withheldNutritionProgram,
     // H1: the adaptation history (diet-break state, preserved calorie
     // offset, coach step target) travels with the program, so a
     // regeneration or a new cycle starts from it instead of from zero.
@@ -1984,7 +2062,7 @@ export function buildMasterEngineV2(inputs) {
     hypoglycemia_guard: masterHypoglycemiaGuard,
     biomarker_analysis: universalTargets.biomarker_analysis,
     clinical_safety_shield: universalTargets.clinical_safety_shield,
-    circadian_timing: Object.freeze(circadianTiming),
+    circadian_timing: Object.freeze(withheldCircadianTiming),
     recovery_autoregulation: Object.freeze({
       readiness_baseline: calculateTrainingReadiness({
         sleep_quality: canonicalIntake.lifestyle?.sleep?.quality || "GOOD",

@@ -142,6 +142,25 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     throw new TypeError('currentMasterProgram must be a valid non-null object');
   }
 
+  // H4: a withheld program (medical review / blocked) must never have its
+  // targets rewritten. The hands-on test caught a kidney program's targets
+  // moving 2105 -> 2631 while its status stayed WITHHELD. Refuse loudly so
+  // neither the check-in auto-apply path nor a coach approval can silently
+  // serve a refused client a new target; the coach reviews the program
+  // itself instead. The auto-apply gate already blocks withheld stages;
+  // this is the backstop for every other caller.
+  const programStatus = currentMasterProgram?.intake_decision?.plan_status;
+  const programWithheld =
+    programStatus === "MEDICAL_REVIEW_REQUIRED" ||
+    programStatus === "BLOCKED" ||
+    currentMasterProgram?.nutrition_program?.withheld === true ||
+    currentMasterProgram?.training_program?.withheld === true;
+  if (programWithheld) {
+    const error = new Error("Cannot merge into a withheld program: the plan is held for medical review and its targets must not change.");
+    error.code = "PROGRAM_WITHHELD";
+    throw error;
+  }
+
   // 1. Deep clone original program to guarantee immutability of input
   const merged = JSON.parse(JSON.stringify(currentMasterProgram));
 

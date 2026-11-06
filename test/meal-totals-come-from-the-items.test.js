@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
 import { adaptProgramToInteractiveMeals } from "../frontend/src/pages/ClientInteractiveApp/utils/programAdapters.js";
+import { servedMealsFor } from "./culinary-pipeline-helper.js";
 
 /**
  * The client's meal page and the coach editor read a meal's totals as actual_macros.calories /
@@ -47,21 +48,19 @@ test("the coach editor builds meal totals the same way", () => {
 });
 
 test("the engine's stored meal totals match the items after the last steps (split plates, fat sources)", () => {
-  const extreme = buildMasterEngineV2({
-    intake: {
-      gender: "male", age: "27", height_cm: "200", weight_kg: "130", circumferences: { neck_cm: "44", waist_cm: "100", hips_cm: "110" },
-      primary_goal: "lean_bulk", neat_level: "very_active", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
-      medical_conditions: { has_conditions: true, selected: ["diabetes", "renal", "hepatic"], diabetes: { type: "type2", uses_insulin: false } },
-      injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: ["gluten_celiac", "peanuts_tree_nuts"],
-      meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
-      training_logistics: { days_per_week: 4, training_age: "1_2_years" }, recent_training: "ACTIVE",
-    },
-    evaluationContext: { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" },
-    nutritionFoodCatalog: CATALOG,
-    options: {},
-  });
-  for (const p of [program, extreme]) {
-    for (const meal of p.nutrition_program.culinary_meals) {
+  // H4: the extreme client below is withheld (kidney + liver disease), so
+  // the master object ships no meals. The stored totals are checked at the
+  // culinary pipeline layer instead.
+  const { meals: extremeMeals } = servedMealsFor({
+    gender: "male", age: "27", height_cm: "200", weight_kg: "130", circumferences: { neck_cm: "44", waist_cm: "100", hips_cm: "110" },
+    primary_goal: "lean_bulk", neat_level: "very_active", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
+    medical_conditions: { has_conditions: true, selected: ["diabetes", "renal", "hepatic"], diabetes: { type: "type2", uses_insulin: false } },
+    injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: ["gluten_celiac", "peanuts_tree_nuts"],
+    meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
+    training_logistics: { days_per_week: 4, training_age: "1_2_years" }, recent_training: "ACTIVE",
+  }, { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" });
+  for (const meals of [program.nutrition_program.culinary_meals, extremeMeals]) {
+    for (const meal of meals) {
       const kcal = meal.items.reduce((s, i) => s + (Number(i.calories_kcal) || 0), 0);
       const fat = meal.items.reduce((s, i) => s + (Number(i.fat_g) || 0), 0);
       assert.ok(Math.abs(meal.actual_macros.calories_kcal - kcal) <= 2, `meal ${meal.meal_number}: stored ${meal.actual_macros.calories_kcal} kcal, items ${kcal}`);

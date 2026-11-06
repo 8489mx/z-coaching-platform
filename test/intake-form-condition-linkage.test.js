@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { adaptIntakePayloadToCanonicalEngine } from '../src/intake-decision-engine/adapters/intake-adapter.js';
 import { buildMasterEngineV2 } from '../src/master-engine-v2/index.js';
+import { targetsFor } from './culinary-pipeline-helper.js';
 
 // Payload shape sent by frontend/src/pages/FullIntakeForm.jsx (answers object).
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -65,13 +66,14 @@ test('renal from the form is read and the case is refused by the service', async
 
 test('hepatic from the form forces medical review without a protein cap', () => {
   assert.deepEqual(codes(formAnswers(['hepatic'])), ['LIVER_CONDITION']);
-  const program = build(formAnswers(['hepatic']));
-  const targets = program.nutrition_program.targets;
+  // H4: a liver client is withheld, so the master object ships no targets.
+  // The protein cap (or its absence) is computed in the targets layer.
+  const { targets } = targetsFor(formAnswers(['hepatic']), ctx);
   assert.equal(targets.clinical_guardrails.kidney_protein_capped, false);
   assert.equal(targets.protein_per_kg, 2.2);
   assert.equal(targets.clinical_guardrails.liver_review_required, true);
   assert.ok(targets.clinical_guardrails.liver_guidance_ar);
-  assert.equal(program.intake_decision.plan_status, 'MEDICAL_REVIEW_REQUIRED');
+  assert.equal(build(formAnswers(['hepatic'])).intake_decision.plan_status, 'MEDICAL_REVIEW_REQUIRED');
 });
 
 test('legacy renal_hepatic intakes keep the safer kidney reading', () => {
@@ -128,7 +130,10 @@ test('injury pain that does not settle with rest is a red flag for medical revie
 
 test('post-bariatric clients get at least 5 small meals and never an auto fasting protocol', () => {
   const answers = formAnswers(['bariatric_surgery'], { meal_structure: { meals_count: '3_meals', intermittent_fasting: '16_8' } });
-  const targets = build(answers).nutrition_program.targets;
+  // H4: a post-bariatric client is withheld, so the master object ships no
+  // targets. The meal count and the fasting framework are computed in the
+  // targets layer; they are checked there.
+  const { targets } = targetsFor(answers, ctx);
   assert.ok(targets.meals_count >= 5);
   assert.notEqual(targets.diet_framework, 'INTERMITTENT_FASTING');
 });

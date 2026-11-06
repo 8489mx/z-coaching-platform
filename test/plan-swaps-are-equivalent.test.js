@@ -8,6 +8,7 @@ import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
 import { generateSmartSwaps, buildAllergenContext, enforceClinicalSafety } from "../src/nutrition-meal-context-v2/build-culinary-meals.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../src/intake-decision-engine/adapters/intake-adapter.js";
 import { isEquivalentSwap } from "../frontend/src/utils/swapExchangeRules.js";
+import { servedMealsFor } from "./culinary-pipeline-helper.js";
 
 /**
  * The swap lists stored in the plan matched only the main nutrient: chicken became foul (+187%
@@ -60,10 +61,13 @@ test("every swap stored in a plan is the same kind of food with close energy and
 test("safety before taste: an egg allergy never keeps an egg dish when no equivalent swap exists", () => {
   // The bariatric template places eggs directly; with only equivalent swaps allowed, the allergy
   // replacement found none and the omelette stayed (caught by the 306-client stress run).
+  // H4: a bariatric client is withheld, so the master object ships no meals.
+  // The allergy replacement is checked at the culinary pipeline layer.
   for (const selected of [["bariatric_surgery"], ["renal", "bariatric_surgery", "gi_tract"]]) {
-    const n = plan({ gender: "female", age: "40", height_cm: "160", weight_kg: "70", primary_goal: "fat_loss", neat_level: "sedentary",
-      medical_conditions: { has_conditions: true, selected }, strict_allergies: ["eggs"], meal_structure: { meals_count: "5_meals" } });
-    const eggs = n.culinary_meals.flatMap((m) => m.items).filter((i) => ["EGGS_OMELETTE", "SHAKSHOUKA_EGGS", "WHOLE_EGG", "EGG_WHITE"].includes(i.food_code));
+    const client = { gender: "female", age: "40", height_cm: "160", weight_kg: "70", primary_goal: "fat_loss", neat_level: "sedentary",
+      medical_conditions: { has_conditions: true, selected }, strict_allergies: ["eggs"], meal_structure: { meals_count: "5_meals" } };
+    const { meals } = servedMealsFor({ ...base, ...client, meal_structure: { intermittent_fasting: "none", ...client.meal_structure } }, { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" });
+    const eggs = meals.flatMap((m) => m.items).filter((i) => ["EGGS_OMELETTE", "SHAKSHOUKA_EGGS", "WHOLE_EGG", "EGG_WHITE"].includes(i.food_code));
     assert.deepEqual(eggs.map((i) => i.food_code), [], selected.join("+"));
   }
 });

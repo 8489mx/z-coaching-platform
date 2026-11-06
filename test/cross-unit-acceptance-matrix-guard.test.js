@@ -89,6 +89,8 @@ import {
   buildMasterEngineV2
 } from '../src/master-engine-v2/index.js';
 
+import { targetsFor } from './culinary-pipeline-helper.js';
+
 import {
   normalizeLoggedExercise,
   resolveIncrementKg
@@ -256,15 +258,14 @@ test('Phase 15: Cross-Unit Acceptance Test Matrix & Scientific Equations Audit (
       consent: { guardian_approved: true }
     };
 
-    const youthPlan = buildMasterEngineV2({
-      intake: youthIntake,
-      evaluationContext: { system_time: '2026-10-27T12:00:00.000Z', assessmentDate: '2026-10-27' },
-      nutritionFoodCatalog: CATALOG,
-      options: {}
-    });
+    // H4: this 15-year-old is BLOCKED (guardian consent is not recorded
+    // from consent.guardian_approved), so the master object ships no
+    // targets. The Schofield youth formula is computed in the targets
+    // layer; it is checked there.
+    const { targets } = targetsFor(youthIntake, { system_time: '2026-10-27T12:00:00.000Z', assessmentDate: '2026-10-27' });
 
-    assert.equal(youthPlan.nutrition_program.targets.bmr_formula, 'SCHOFIELD_YOUTH');
-    assert.ok(youthPlan.nutrition_program.targets.calories_kcal >= youthPlan.nutrition_program.targets.tdee, 'Youth must never be in caloric deficit');
+    assert.equal(targets.bmr_formula, 'SCHOFIELD_YOUTH');
+    assert.ok(targets.calories_kcal >= targets.tdee, 'Youth must never be in caloric deficit');
   });
 
   await suite.test('Scenario 06: Mandatory Clinical Review Gate (High-risk conditions withhold plan)', () => {

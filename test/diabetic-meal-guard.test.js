@@ -1,11 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
 import { getFoodClinicalProperties } from "../frontend/src/utils/foodSwapEngine.js";
+import { servedMealsFor } from "./culinary-pipeline-helper.js";
 
 /**
  * The swap engine refused high glycemic foods for a diabetic client, but the meal generator that
@@ -13,8 +10,6 @@ import { getFoodClinicalProperties } from "../frontend/src/utils/foodSwapEngine.
  * own table marks as high glycemic. Two causes: the generator had no diabetes flag, and it names the
  * bread BALADI_BREAD while the table knows it as EGYPTIAN_BALADI_BREAD.
  */
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, "data/catalogs/core-global-food-batch-v1.json"), "utf8"));
 const CTX = Object.freeze({ system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" });
 
 const INTAKE = {
@@ -30,13 +25,10 @@ const INTAKE = {
 };
 
 function mealCodes(medicalConditions) {
-  const program = buildMasterEngineV2({
-    intake: { ...INTAKE, medical_conditions: medicalConditions },
-    evaluationContext: CTX,
-    nutritionFoodCatalog: CATALOG,
-    options: {},
-  });
-  const meals = program.nutrition_program?.culinary_meals || [];
+  // H4: a diabetic on insulin is withheld, so the master object ships no
+  // meals. The generator's output is checked at the culinary pipeline
+  // layer instead.
+  const { meals } = servedMealsFor({ ...INTAKE, medical_conditions: medicalConditions }, CTX);
   return meals.flatMap((meal) => (meal.items || []).map((item) => item.food_code));
 }
 

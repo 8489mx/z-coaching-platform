@@ -6,6 +6,7 @@ import { assessServiceScope } from "../src/api/services/serviceScope.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../src/intake-decision-engine/adapters/intake-adapter.js";
 import { evaluateIntake } from "z-coaching-intake-decision-engine";
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
+import { buildTrainingMesoCycle } from "../src/training-engine-v2/index.js";
 import { collectCoachAlerts } from "../frontend/src/utils/coachAlerts.js";
 
 /**
@@ -46,7 +47,16 @@ test("a served heart client's plan waits for medical review and trains the caref
   assert.equal(decision.plan_status, "MEDICAL_REVIEW_REQUIRED");
   const program = buildMasterEngineV2({ intake: intake(CLEARED), evaluationContext: CONTEXT, nutritionFoodCatalog: CATALOG, options: {} });
   assert.equal(program.cardio_program.clinical_guardrails.hiit_banned, true);
-  const rirs = program.training_program.weeks[0].sessions.flatMap((s) => s.exercises.map((e) => Number(e.target_rir ?? e.rir)));
+  // H4: a served heart client is withheld, so the master object ships no
+  // training weeks. The careful training (every set ≥ 2 in reserve) is built
+  // by the training mesocycle; it is checked there.
+  const canonical = adaptIntakePayloadToCanonicalEngine(structuredClone(intake(CLEARED)));
+  const mesocycle = buildTrainingMesoCycle(decision, {
+    weeksCount: 5,
+    rawIntake: canonical,
+    experience: canonical.training?.experience,
+  });
+  const rirs = mesocycle.weeks[0].sessions.flatMap((s) => s.exercises.map((e) => Number(e.target_rir ?? e.rir)));
   assert.ok(rirs.every((r) => r >= 2), `every set keeps at least 2 in reserve: ${rirs.join(",")}`);
   const alerts = collectCoachAlerts(JSON.parse(JSON.stringify(program)));
   assert.ok(alerts.some((a) => /ملح|صوديوم/.test(a)), `the heart diet note reaches the coach: ${alerts.join(" | ")}`);

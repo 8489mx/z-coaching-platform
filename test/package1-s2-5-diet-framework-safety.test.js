@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
+import { targetsFor } from "./culinary-pipeline-helper.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = JSON.parse(
@@ -37,13 +38,11 @@ test("S2-5: manual INTERMITTENT_FASTING choice is rejected for Type 1 diabetic a
     },
   };
 
-  const program = buildMasterEngineV2({
-    intake,
-    evaluationContext: EVALUATION_CONTEXT,
-    nutritionFoodCatalog: CATALOG,
-  });
+  // H4: a Type 1 diabetic is withheld, so the master object ships no
+  // targets. The fasting rejection is computed in the targets layer; it is
+  // checked there.
+  const { targets } = targetsFor(intake, EVALUATION_CONTEXT);
 
-  const targets = program.nutrition_program?.targets;
   assert.ok(targets, "Nutrition targets must be present");
 
   // Safety gate: Intermittent fasting must NOT be applied to Type 1 Diabetic

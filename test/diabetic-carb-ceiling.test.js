@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
 import { buildAdaptedPlan } from "../src/adaptation-engine/index.js";
+import { servedMealsFor } from "./culinary-pipeline-helper.js";
 
 /**
  * Diabetes had no carbohydrate ceiling. With protein capped for the kidneys every remaining
@@ -17,17 +18,23 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, "data/catalogs/core-global-food-batch-v1.json"), "utf8"));
 const share = (m) => (m.carbohydrate_g * 4) / m.calories_kcal;
 
-function plan({ weight, conditions, goal = "fat_loss", gender = "male" }) {
+const CTX = { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" };
+
+function intakeFor({ weight, conditions, goal = "fat_loss", gender = "male" }) {
+  return {
+    gender, age: "27", height_cm: "185", weight_kg: String(weight), circumferences: { neck_cm: "46", waist_cm: "125", hips_cm: "120" },
+    primary_goal: goal, neat_level: "very_active", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
+    medical_conditions: { has_conditions: true, selected: conditions, diabetes: { type: "type2", uses_insulin: false } },
+    injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: ["none"],
+    meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
+    training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
+  };
+}
+
+function plan(args) {
   return buildMasterEngineV2({
-    intake: {
-      gender, age: "27", height_cm: "185", weight_kg: String(weight), circumferences: { neck_cm: "46", waist_cm: "125", hips_cm: "120" },
-      primary_goal: goal, neat_level: "very_active", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
-      medical_conditions: { has_conditions: true, selected: conditions, diabetes: { type: "type2", uses_insulin: false } },
-      injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: ["none"],
-      meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
-      training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
-    },
-    evaluationContext: { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" },
+    intake: intakeFor(args),
+    evaluationContext: CTX,
     nutritionFoodCatalog: CATALOG,
     options: {},
   });
@@ -43,14 +50,22 @@ for (const [label, args, maxShare] of [
   ["55 kg diabetic, gaining", { weight: 55, conditions: ["diabetes"], goal: "lean_bulk" }, 0.451],
 ]) {
   test(`${label}: carbohydrate stays bounded (45%, or 57% with a kidney protein cap) and the macros still add up`, () => {
-    const program = plan(args);
-    const m = program.nutrition_program.macro_targets;
+    // H4: the kidney cases below are withheld, so the master object ships no
+    // macro targets or meals. The balance is computed in the targets layer
+    // and the portions in the culinary pipeline; both are checked there.
+    const { targets, meals } = servedMealsFor(intakeFor(args), CTX);
+    const m = {
+      calories_kcal: targets.target_calories,
+      protein_g: targets.protein_g,
+      carbohydrate_g: targets.carb_g,
+      fat_g: targets.fat_g,
+    };
     assert.ok(share(m) <= maxShare, `${Math.round(share(m) * 100)}% of energy from carbohydrate`);
     assert.ok((m.fat_g * 9) / m.calories_kcal <= 0.355, `${Math.round((m.fat_g * 900) / m.calories_kcal)}% of energy from fat`);
-    if (maxShare > 0.451 && share(m) > 0.451) assert.ok(program.nutrition_program.targets.clinical_guardrails.energy_balance_note_ar);
+    if (maxShare > 0.451 && share(m) > 0.451) assert.ok(targets.clinical_guardrails.energy_balance_note_ar);
     const atwater = m.protein_g * 4 + m.carbohydrate_g * 4 + m.fat_g * 9;
     assert.ok(Math.abs(atwater - m.calories_kcal) / m.calories_kcal < 0.03, `${atwater} vs ${m.calories_kcal}`);
-    const portions = (program.nutrition_program.culinary_meals || []).flatMap((meal) => meal.items || []).map((item) => Number(item.portion_g) || 0);
+    const portions = meals.flatMap((meal) => meal.items || []).map((item) => Number(item.portion_g) || 0);
     assert.ok(Math.max(...portions) <= 900, `a ${Math.max(...portions)} g portion`);
   });
 }

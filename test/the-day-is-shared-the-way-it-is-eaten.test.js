@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
 import { trimMealsToTarget } from "../src/nutrition-meal-context-v2/index.js";
 import { collectCoachAlerts } from "../frontend/src/utils/coachAlerts.js";
+import { servedMealsFor } from "./culinary-pipeline-helper.js";
 
 /**
  * How a day is shared between its sittings. Every plate used to take the same share of everything,
@@ -21,16 +22,18 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, "data/catalogs/core-global-food-batch-v1.json"), "utf8"));
 const CTX = { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" };
 
-const plan = ({ weight = "85", height = "178", goal = "fat_loss", neat = "moderate", meals = "3_meals_snack", medical, allergies = ["none"] } = {}) => buildMasterEngineV2({
-  intake: {
-    gender: "male", age: "30", height_cm: height, weight_kg: weight, circumferences: { neck_cm: "40", waist_cm: "95", hips_cm: "100" },
-    primary_goal: goal, neat_level: neat, occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
-    medical_conditions: medical || { has_conditions: false, selected: ["none"] },
-    injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: allergies,
-    meal_structure: { meals_count: meals, intermittent_fasting: "none" }, training_environment: "commercial_gym",
-    training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
-  },
+const plan = (args) => buildMasterEngineV2({
+  intake: intakeFor(args),
   evaluationContext: CTX, nutritionFoodCatalog: CATALOG, options: {},
+});
+
+const intakeFor = ({ weight = "85", height = "178", goal = "fat_loss", neat = "moderate", meals = "3_meals_snack", medical, allergies = ["none"] } = {}) => ({
+  gender: "male", age: "30", height_cm: height, weight_kg: weight, circumferences: { neck_cm: "40", waist_cm: "95", hips_cm: "100" },
+  primary_goal: goal, neat_level: neat, occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
+  medical_conditions: medical || { has_conditions: false, selected: ["none"] },
+  injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: allergies,
+  meal_structure: { meals_count: meals, intermittent_fasting: "none" }, training_environment: "commercial_gym",
+  training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
 });
 
 const kcalOf = (meal) => (meal.items || []).reduce((total, item) => total + (Number(item.calories_kcal) || 0), 0);
@@ -81,8 +84,10 @@ test("five meals a day are three meals and two snacks, named as they are cooked"
 
 test("the plates written for an operated stomach are not resized to hit a target", () => {
   const operated = { has_conditions: true, selected: ["bariatric_surgery"], bariatric: { is_operated: true, meal_capacity_grams: "150_200", dumping_syndrome: false } };
-  const program = plan({ weight: "95", goal: "lean_bulk", neat: "very_active", medical: operated });
-  const meals = program.nutrition_program.culinary_meals;
+  // H4: a bariatric client is withheld, so the master object ships no meals.
+  // The fixed plates and the coach note are checked at the culinary
+  // pipeline layer instead.
+  const { targets, meals } = servedMealsFor(intakeFor({ weight: "95", goal: "lean_bulk", neat: "very_active", medical: operated }), CTX);
   assert.ok(meals.length >= 5, "an operated stomach eats more often");
   for (const meal of meals) {
     assert.equal(meal.fixed_portions, true, `${meal.meal_name_ar} lost its fixed size`);
@@ -90,15 +95,17 @@ test("the plates written for an operated stomach are not resized to hit a target
     assert.ok(grams <= 260, `${meal.meal_name_ar}: ${grams} g on one plate`);
   }
   // Fixed plates and a big target cannot both be met, and the coach is told in numbers.
-  const told = collectCoachAlerts(program).filter((alert) => /الأكل اللي في الأطباق/.test(alert));
+  const told = collectCoachAlerts({ nutrition_program: { targets, culinary_meals: meals } }).filter((alert) => /الأكل اللي في الأطباق/.test(alert));
   assert.equal(told.length, 1, "the coach is told once, with both numbers");
 });
 
 test("a client who says his stomach takes more than 200 g eats ordinary meals", () => {
   const operated = { has_conditions: true, selected: ["bariatric_surgery"], bariatric: { is_operated: true, meal_capacity_grams: "over_200", dumping_syndrome: false } };
-  const program = plan({ weight: "95", goal: "lean_bulk", neat: "very_active", medical: operated });
-  const served = program.nutrition_program.culinary_meals.reduce((total, meal) => total + kcalOf(meal), 0);
-  const target = program.nutrition_program.macro_targets.calories_kcal;
+  // H4: a bariatric client is withheld, so the master object ships no meals
+  // or macro targets. The served-vs-target check runs at the culinary
+  // pipeline layer instead.
+  const { targets, servedCalories: served } = servedMealsFor(intakeFor({ weight: "95", goal: "lean_bulk", neat: "very_active", medical: operated }), CTX);
+  const target = targets.target_calories;
   assert.ok(Math.abs(served - target) / target < 0.12, `${served} kcal served against ${target}`);
 });
 

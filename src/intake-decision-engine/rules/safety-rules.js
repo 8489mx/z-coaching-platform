@@ -140,10 +140,17 @@ export function evaluateDangerousSymptoms(input) {
 // the coach still confirms he saw that paper before the plan is published (ACSM preparticipation
 // screening, Riebe 2015).
 const CLEARANCE_BEFORE_EXERCISE_CONDITIONS = new Set(["HEART_CONDITION"]);
-const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["LIVER_CONDITION", "BARIATRIC_SURGERY", "TYPE_1_DIABETES", "INSULIN_DEPENDENT_DIABETES"]);
+// H4: type 1 diabetes and insulin-dependent diabetes are NOT here — they
+// carry their own insulin flag above, with their own message. Sharing this
+// set made every diabetes client see the liver/stomach message.
+const MANDATORY_MEDICAL_REVIEW_CONDITIONS = new Set(["LIVER_CONDITION", "BARIATRIC_SURGERY"]);
 
 export function evaluateMedicalConditions(input) {
   const result = emptyRuleResult();
+  // H4: one insulin flag per intake. A type 1 client on insulin arrives
+  // with both TYPE_1_DIABETES and INSULIN_DEPENDENT_DIABETES, and the
+  // loop below used to raise the same flag once per entry.
+  let insulinFlagRaised = false;
   input.medical.conditions.forEach((condition, index) => {
     const sourcePath = `medical.conditions[${index}]`;
     if (CLEARANCE_BEFORE_EXERCISE_CONDITIONS.has(condition.conditionCode)) {
@@ -159,23 +166,26 @@ export function evaluateMedicalConditions(input) {
       );
     }
     if (condition.conditionCode === "TYPE_1_DIABETES" || condition.conditionCode === "INSULIN_DEPENDENT_DIABETES") {
-      result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "INSULIN_SAFETY_REVIEW_REQUIRED"));
-      result.reviewFlags.push(
-        reviewFlag(
-          "INSULIN_SAFETY_REVIEW_REQUIRED",
-          Scope.GLOBAL,
-          ReviewLevel.MEDICAL,
-          "Type 1 diabetes or insulin therapy requires physician coordination before plan publication. The platform does not alter medication doses.",
-          `${sourcePath}.conditionCode`,
-        ),
-      );
-      result.reasons.push(
-        reason(
-          "INSULIN_SAFETY_REVIEW_REQUIRED",
-          Scope.GLOBAL,
-          "Type 1 diabetes or insulin dependency mandates physician coordination before publishing the plan.",
-        ),
-      );
+      if (!insulinFlagRaised) {
+        insulinFlagRaised = true;
+        result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "INSULIN_SAFETY_REVIEW_REQUIRED"));
+        result.reviewFlags.push(
+          reviewFlag(
+            "INSULIN_SAFETY_REVIEW_REQUIRED",
+            Scope.GLOBAL,
+            ReviewLevel.MEDICAL,
+            "Type 1 diabetes or insulin therapy requires physician coordination before plan publication. The platform does not alter medication doses.",
+            `${sourcePath}.conditionCode`,
+          ),
+        );
+        result.reasons.push(
+          reason(
+            "INSULIN_SAFETY_REVIEW_REQUIRED",
+            Scope.GLOBAL,
+            "Type 1 diabetes or insulin dependency mandates physician coordination before publishing the plan.",
+          ),
+        );
+      }
     }
     // P0-A2: kidney disease agrees with the service-scope refusal — it never
     // yields a clean READY plan. The scope gate refuses it outright at
@@ -201,14 +211,23 @@ export function evaluateMedicalConditions(input) {
         ),
       );
     }
+    // H4: one flag code, one message per condition. Liver disease and an
+    // operated stomach used to share a single hardcoded message ("Liver
+    // disease or a stomach that has been operated on"), so a diabetes
+    // client — and a bariatric client — both read the liver wording. The
+    // code stays ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW; only the message
+    // and the reason name the client's own condition.
     if (MANDATORY_MEDICAL_REVIEW_CONDITIONS.has(condition.conditionCode)) {
+      const isLiver = condition.conditionCode === "LIVER_CONDITION";
       result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW"));
       result.reviewFlags.push(
         reviewFlag(
           "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW",
           Scope.GLOBAL,
           ReviewLevel.MEDICAL,
-          "Liver disease or a stomach that has been operated on: the targets depend on the type, or on how far past the surgery the client is, and must be confirmed with the treating team.",
+          isLiver
+            ? "Liver disease: the targets depend on the type of liver disease, and must be confirmed with the treating team."
+            : "A stomach that has been operated on: the targets depend on how far past the surgery the client is, and must be confirmed with the treating team.",
           `${sourcePath}.conditionCode`,
         ),
       );
@@ -216,7 +235,9 @@ export function evaluateMedicalConditions(input) {
         reason(
           "ORGAN_CONDITION_REQUIRES_MEDICAL_REVIEW",
           Scope.GLOBAL,
-          "Kidney or liver disease prevents approval until medical review is confirmed.",
+          isLiver
+            ? "Liver disease prevents approval until medical review is confirmed."
+            : "A stomach that has been operated on prevents approval until medical review is confirmed.",
         ),
       );
     }
@@ -487,7 +508,14 @@ export function evaluateUnclassifiedTextAndMedication(input) {
     const s = String(m || "").toUpperCase();
     return INSULIN_MED_KEYS.some(k => s.includes(k));
   });
-  if (usesInsulin) {
+  // H4: when the conditions already say insulin (type 1 diabetes or
+  // insulin-dependent diabetes), the medication scan must not raise the
+  // same flag a second time — one insulin flag per intake. The scan stays
+  // the sole source when insulin appears only in the medication list.
+  const insulinAlreadyFlagged = (input.medical.conditions || []).some(
+    (c) => c?.conditionCode === "TYPE_1_DIABETES" || c?.conditionCode === "INSULIN_DEPENDENT_DIABETES"
+  );
+  if (usesInsulin && !insulinAlreadyFlagged) {
     result.statusCandidates.push(statusCandidate(PlanStatus.MEDICAL_REVIEW_REQUIRED, "INSULIN_SAFETY_REVIEW_REQUIRED"));
     result.reviewFlags.push(
       reviewFlag(

@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
 import { CLINICAL_GUIDELINES } from "../src/config/clinical-guidelines.js";
+import { targetsFor, servedMealsFor } from "./culinary-pipeline-helper.js";
 
 /**
  * Energy above a diabetic's carbohydrate ceiling went to fat with no limit: 46% of energy from fat
@@ -16,18 +17,18 @@ import { CLINICAL_GUIDELINES } from "../src/config/clinical-guidelines.js";
  */
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, "data/catalogs/core-global-food-batch-v1.json"), "utf8"));
-const plan = (selected, { weight = "130", height = "200", goal = "lean_bulk", allergies = ["none"] } = {}) => buildMasterEngineV2({
-  intake: {
-    gender: "male", age: "27", height_cm: height, weight_kg: weight, circumferences: { neck_cm: "44", waist_cm: "100", hips_cm: "110" },
-    primary_goal: goal, neat_level: "very_active", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
-    medical_conditions: { has_conditions: selected.length > 0, selected: selected.length ? selected : ["none"], diabetes: { type: "type2", uses_insulin: false } },
-    injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: allergies,
-    meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
-    training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
-  },
-  evaluationContext: { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" },
-  nutritionFoodCatalog: CATALOG,
-  options: {},
+const CTX = { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" };
+const intakeFor = (selected, { weight = "130", height = "200", goal = "lean_bulk", allergies = ["none"] } = {}) => ({
+  gender: "male", age: "27", height_cm: height, weight_kg: weight, circumferences: { neck_cm: "44", waist_cm: "100", hips_cm: "110" },
+  primary_goal: goal, neat_level: "very_active", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
+  medical_conditions: { has_conditions: selected.length > 0, selected: selected.length ? selected : ["none"], diabetes: { type: "type2", uses_insulin: false } },
+  injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: allergies,
+  meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
+  training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE",
+});
+const plan = (selected, opts) => buildMasterEngineV2({
+  intake: intakeFor(selected, opts),
+  evaluationContext: CTX, nutritionFoodCatalog: CATALOG, options: {},
 }).nutrition_program;
 
 const shares = (t) => {
@@ -40,15 +41,18 @@ const shares = (t) => {
 // is checked here is the balance itself on a diabetic client with a liver condition and allergies.
 test("fat stays within 35% of energy for diabetes with a liver condition and allergies", () => {
   assert.equal(CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_FAT_ENERGY_SHARE, 0.35);
-  const n = plan(["diabetes", "hepatic"], { allergies: ["gluten_celiac", "peanuts_tree_nuts"] });
-  const t = n.targets;
+  // H4: a liver client is withheld, so the master object ships no targets.
+  // The fat-share balance is computed in the targets layer.
+  const { targets: t } = targetsFor(intakeFor(["diabetes", "hepatic"], { allergies: ["gluten_celiac", "peanuts_tree_nuts"] }), CTX);
   const s = shares(t);
   assert.ok(s.fat <= 0.355, `fat ${Math.round(s.fat * 100)}%`);
 });
 
 test("olive oil stays under two tablespoons a meal after the balance", () => {
-  const n = plan(["diabetes", "hepatic"], { allergies: ["gluten_celiac", "peanuts_tree_nuts"] });
-  const oils = n.culinary_meals.flatMap((m) => m.items).filter((i) => i.food_code === "OLIVE_OIL").map((i) => i.portion_g);
+  // H4: a liver client is withheld, so the master object ships no meals.
+  // The oil portions are checked at the culinary pipeline layer.
+  const { meals } = servedMealsFor(intakeFor(["diabetes", "hepatic"], { allergies: ["gluten_celiac", "peanuts_tree_nuts"] }), CTX);
+  const oils = meals.flatMap((m) => m.items).filter((i) => i.food_code === "OLIVE_OIL").map((i) => i.portion_g);
   assert.ok(oils.every((g) => g <= 30), oils.join(","));
 });
 
@@ -68,19 +72,16 @@ test("an ordinary plan is not touched (fat 22%)", () => {
 });
 
 test("the PCOS lower-carb never turns into more than 35% fat, and energy is never cut while breastfeeding or under the floor", () => {
-  const pcos = (selected, extra = {}) => buildMasterEngineV2({
-    intake: {
-      gender: "female", age: "18", height_cm: "160", weight_kg: "42", circumferences: { neck_cm: "29", waist_cm: "58", hips_cm: "80" },
-      primary_goal: "lean_bulk", neat_level: "very_active", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
-      medical_conditions: { has_conditions: true, selected, diabetes: { type: "type2", uses_insulin: false } },
-      injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: ["none"],
-      meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
-      training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE", ...extra,
-    },
-    evaluationContext: { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" },
-    nutritionFoodCatalog: CATALOG,
-    options: {},
-  }).nutrition_program.targets;
+  // H4: the breastfeeding case below is withheld, so the master object ships
+  // no targets. The lower-carb balance is computed in the targets layer.
+  const pcos = (selected, extra = {}) => targetsFor({
+    gender: "female", age: "18", height_cm: "160", weight_kg: "42", circumferences: { neck_cm: "29", waist_cm: "58", hips_cm: "80" },
+    primary_goal: "lean_bulk", neat_level: "very_active", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
+    medical_conditions: { has_conditions: true, selected, diabetes: { type: "type2", uses_insulin: false } },
+    injuries_map: { has_injuries: false, selected_areas: ["none"] }, religion: "MUSLIM", strict_allergies: ["none"],
+    meal_structure: { meals_count: "3_meals", intermittent_fasting: "none" }, training_environment: "commercial_gym",
+    training_logistics: { days_per_week: 4, experience_level: "intermediate" }, recent_training: "ACTIVE", ...extra,
+  }, CTX).targets;
   for (const [selected, extra] of [[["pcos"], {}], [["pcos", "diabetes"], { female_pregnancy: "BREASTFEEDING" }], [["diabetes"], {}]]) {
     const t = pcos(selected, extra);
     const s = shares(t);

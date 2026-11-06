@@ -1339,8 +1339,10 @@ export async function approveCheckin(req, res) {
       // Safe, Deterministic, and Idempotent Non-Destructive Deep Merge.
       // S3-2: out-of-range custom macros are a coach-facing 400, not a 500:
       // nothing has been written yet at this point, so the coach fixes the
-      // numbers and re-approves. Any other merge failure still surfaces as a
-      // 500 through the outer handler catch.
+      // numbers and re-approves. H4: a withheld program is a coach-facing
+      // 409, not a 500, for the same reason — the merge engine refuses it
+      // and the coach reviews the program itself. Any other merge failure
+      // still surfaces as a 500 through the outer handler catch.
       let mergedProgramData;
       let preMergeMacros = null;
       try {
@@ -1354,6 +1356,9 @@ export async function approveCheckin(req, res) {
       } catch (err) {
         if (err?.code === "CUSTOM_MACROS_OUT_OF_RANGE") {
           return res.status(400).json({ success: false, error: err.message, code: err.code });
+        }
+        if (err?.code === "PROGRAM_WITHHELD") {
+          return res.status(409).json({ success: false, error: err.message, code: err.code });
         }
         throw err;
       }
