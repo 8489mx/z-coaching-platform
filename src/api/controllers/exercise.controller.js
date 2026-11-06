@@ -3,6 +3,7 @@ import { getExercisesCatalogFile } from "./admin-settings.controller.js";
 import { getExercisesEtag, handleConditionalGet } from "../services/catalogCache.service.js";
 import { trainingProfileFromAnswers, effectiveSetup, resolveRequestClient, mayEditProgram } from "../services/clientTrainingProfile.js";
 import { loadLatestIntakeAnswers } from "./program.controller.js";
+import { getActiveClinicalLockout } from "../services/clinicalSafetyService.js";
 
 /** The signed-in client's (or the named client's) setup and injuries from their intake. */
 async function swapProfileFor(req, clientCode) {
@@ -352,6 +353,17 @@ export const swapProgramExerciseHandler = async (req, res) => {
     if (!mayEditProgram(requester, program)) {
       return res.status(403).json({ error: "غير مسموح لك بتعديل هذا البرنامج" });
     }
+    // B2-EX #3: same clinical lock as the food swap (P0-A4) — a locked client's
+    // plan is not to be changed at all, by the client or by a coach. The lock
+    // is checked on the program's owner, whoever requests the swap.
+    const swapLock = await getActiveClinicalLockout(program.user_id);
+    if (swapLock?.locked) {
+      return res.status(403).json({
+        error: "تم إيقاف تبديل التمرين بقرار أمان سريري (أعراض قلبية أو إغماء مرتبطة بالمجهود). يرجى التوقف الفوري عن المجهود ومراجعة الطبيب المختص وتزويد الكوتش بالتقرير الطبي لإلغاء القفل.",
+        code: "CLINICAL_SAFETY_LOCKOUT",
+        details: { locked: true, directive_ar: swapLock.directive_ar || null },
+      });
+    }
     if (requester.role === "CLIENT") {
       const { getSmartExerciseSwaps } = await import("../../exercise-swap-engine/index.js");
       const current = program.program_data?.training_program?.weeks?.[0]?.sessions?.[sessionIndex]?.exercises?.[exerciseIndex];
@@ -426,6 +438,16 @@ export const gymRushSwapHandler = async (req, res) => {
     if (!mayEditProgram(requester, program)) {
       return res.status(403).json({ error: "غير مسموح لك بتعديل هذا البرنامج" });
     }
+    // B2-EX #3: same clinical lock as the food swap (P0-A4) — a locked client's
+    // plan is not to be changed at all, by the client or by a coach.
+    const rushLock = await getActiveClinicalLockout(program.user_id);
+    if (rushLock?.locked) {
+      return res.status(403).json({
+        error: "تم إيقاف تبديل التمرين بقرار أمان سريري (أعراض قلبية أو إغماء مرتبطة بالمجهود). يرجى التوقف الفوري عن المجهود ومراجعة الطبيب المختص وتزويد الكوتش بالتقرير الطبي لإلغاء القفل.",
+        code: "CLINICAL_SAFETY_LOCKOUT",
+        details: { locked: true, directive_ar: rushLock.directive_ar || null },
+      });
+    }
 
     const { applyGymRushSwapToProgram } = await import("../../execution-engines/biomechanics-firewall-engine.js");
     const result = applyGymRushSwapToProgram(program.program_data, {
@@ -461,6 +483,16 @@ import { fileURLToPath as fu2p } from 'url';
 
 export const uploadExerciseImage = async (req, res) => {
   try {
+    // B2-EX #6: replacing a public exercise image is a coach/admin action —
+    // the only callers are the coach-only library pages (ExerciseLibrary,
+    // MobilityLibrary, both behind RequireAuth ADMIN/COACH). A signed-in
+    // trainee must never be able to overwrite a public image.
+    const { User } = await import("../models/index.js");
+    const uploadRequester = req.user?.id ? await User.findByPk(req.user.id).catch(() => null) : null;
+    if (!uploadRequester || !["COACH", "ADMIN"].includes(uploadRequester.role)) {
+      return res.status(403).json({ success: false, error: "رفع صور التمارين متاح للكوتش والإدارة فقط" });
+    }
+
     const { exercise_id, image_index, image_base64 } = req.body;
     
     if (!exercise_id || image_index === undefined || !image_base64) {
