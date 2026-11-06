@@ -99,7 +99,9 @@ function intakeDisagreementWeeks(weeks) {
  *   check-ins in any order (week_number orders them).
  * @param {number} input.formula_tdee_kcal       TDEE from the prediction formula (fallback and sanity anchor).
  * @param {number} input.current_target_kcal     calories currently prescribed.
- * @param {string} [input.primary_goal]          canonical goal (FAT_LOSS, MUSCLE_GAIN, ...); BODY_RECOMPOSITION allowed.
+ * @param {string} input.primary_goal          canonical goal (FAT_LOSS, MUSCLE_GAIN, ...); BODY_RECOMPOSITION allowed.
+ *   Required for a recommendation — a missing or unknown goal refuses
+ *   (ready: false) instead of silently applying fat-loss factors (B3-1 #33).
  * @param {boolean} [input.is_female]
  */
 export function estimateAdaptiveTdee({ weeks = [], formula_tdee_kcal, current_target_kcal, primary_goal = null, is_female = false } = {}) {
@@ -164,8 +166,26 @@ export function estimateAdaptiveTdee({ weeks = [], formula_tdee_kcal, current_ta
     }
   }
 
-  const goal = String(primary_goal || "FAT_LOSS").toUpperCase();
-  const factor = GOAL_ENERGY_FACTOR[goal] ?? GOAL_ENERGY_FACTOR.FAT_LOSS;
+  // B3-1 (#33): the goal is required for a recommendation. A missing or
+  // unknown goal used to silently fall back to FAT_LOSS factors (0.8), so a
+  // caller with no goal got a fat-loss cut it never asked for. Refuse
+  // instead: report the measured burn but recommend nothing, so the current
+  // target is kept and the coach sees why.
+  const rawGoal = typeof primary_goal === "string" ? primary_goal.trim().toUpperCase() : "";
+  const factor = GOAL_ENERGY_FACTOR[rawGoal];
+  if (factor === undefined) {
+    return Object.freeze({
+      ...base,
+      ready: false,
+      observed_tdee_kcal: Math.round(observed),
+      weight_trend_kg_per_week: Math.round(trend * 100) / 100,
+      mean_intake_kcal: Math.round(meanIntake),
+      weeks_used: ordered.length,
+      intake_sources: intakes.map((i) => i.source),
+      clamped,
+      reason_ar: "الهدف غير محدد أو غير معروف — لا يمكن حساب السعرات المستهدفة من الحرق الفعلي بدون هدف معلن، لذلك بقيت السعرات الحالية كما هي.",
+    });
+  }
   const floor = is_female ? 1200 : 1500;
   let ideal = observed * factor;
   if (ideal < floor) ideal = floor;

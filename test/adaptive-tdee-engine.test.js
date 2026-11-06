@@ -132,3 +132,33 @@ test('fortnightly check-ins are one unbroken trend', () => {
   assert.equal(r.ready, true);
   assert.equal(r.weeks_used, 4);
 });
+
+// B3-1 (#33): a missing or unknown goal used to silently fall back to
+// FAT_LOSS factors (0.8) — a caller with no goal got a fat-loss cut it never
+// asked for. The goal is now required for a recommendation: the estimate
+// refuses (ready: false) and keeps the current target, while still reporting
+// the measured burn.
+test('a missing goal refuses the recommendation instead of silently applying fat-loss factors', () => {
+  const stable = losingWeeks(4, 0).map((w) => ({ ...w, planned_target_kcal: 2600 }));
+  const r = estimateAdaptiveTdee({ weeks: stable, formula_tdee_kcal: 2500, current_target_kcal: 2600 });
+  assert.equal(r.ready, false);
+  assert.equal(r.observed_tdee_kcal, 2600, 'the measured burn is still reported');
+  assert.equal(r.recommended_target_kcal, 2600, 'no silent fat-loss cut is applied');
+  assert.equal(r.calorie_delta, 0);
+  assert.match(r.reason_ar, /الهدف/);
+});
+
+test('an unknown goal refuses the recommendation instead of falling back to fat loss', () => {
+  const stable = losingWeeks(4, 0).map((w) => ({ ...w, planned_target_kcal: 2600 }));
+  const r = estimateAdaptiveTdee({ weeks: stable, formula_tdee_kcal: 2500, current_target_kcal: 2600, primary_goal: 'BULKING' });
+  assert.equal(r.ready, false);
+  assert.equal(r.recommended_target_kcal, 2600);
+  assert.equal(r.calorie_delta, 0);
+});
+
+test('a goal given in lowercase still applies exactly as before', () => {
+  const stable = losingWeeks(4, 0).map((w) => ({ ...w, planned_target_kcal: 2600 }));
+  const r = estimateAdaptiveTdee({ weeks: stable, formula_tdee_kcal: 2500, current_target_kcal: 2600, primary_goal: 'fat_loss' });
+  assert.equal(r.ready, true);
+  assert.equal(r.recommended_target_kcal, 2450);
+});
