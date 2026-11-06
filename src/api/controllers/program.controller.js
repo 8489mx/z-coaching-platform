@@ -764,7 +764,7 @@ export const getSwapCandidatesHandler = async (req, res) => {
     // Only what the client's own meal plan could contain: allergies, conditions, and the diabetic
     // potato portion.
     // ...and eaten the same way with about the same energy (swapExchangeRules).
-    const safeCandidates = enrichedCandidates.filter((cand) => isSwapFoodSafe(cand.food_code, clinicalContext, cand.target_grams)
+    const safeCandidates = enrichedCandidates.filter((cand) => isSwapFoodSafe(cand.food_code, clinicalContext, cand.target_grams, mealCategory)
       && isLiveSwapEquivalent(valueCode, grams, cand.food_code, cand.target_grams));
     return res.status(200).json({ candidates: safeCandidates });
   } catch (err) {
@@ -832,7 +832,7 @@ export const calculateSwapHandler = async (req, res) => {
       current_portion_g: fromGrams,
       target_food_code: toCode,
       meal_category: category,
-      isTargetSafe: (code, grams) => isSwapFoodSafe(code, clinicalContext, grams),
+      isTargetSafe: (code, grams) => isSwapFoodSafe(code, clinicalContext, grams, category),
     });
     // Portion from the same food data the value check and the plan use (as in swap-candidates),
     // judged on the food the client actually has (P2-C3 valueCode), not its twin.
@@ -851,7 +851,7 @@ export const calculateSwapHandler = async (req, res) => {
         }
       : computed;
 
-    if (!isSwapFoodSafe(toCode, clinicalContext, result.target_food.portion_g)) {
+    if (!isSwapFoodSafe(toCode, clinicalContext, result.target_food.portion_g, category)) {
       return res.status(409).json({ error: "البديل ده مش مناسب لحالتك الصحية أو الحساسية المسجلة", code: "SWAP_NOT_CLINICALLY_SAFE" });
     }
     if (!isLiveSwapEquivalent(valueCode, fromGrams, toCode, result.target_food.portion_g)) {

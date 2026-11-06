@@ -3,6 +3,7 @@ import {
   IntakeValidationError,
   validateIntake,
 } from "../intake-decision-engine/index.js";
+import { isLevothyroxineMedicationList } from "../execution-engines/drug-interaction-firewall.js";
 import { NUTRITION_PLANNING_SNAPSHOT_VERSION } from "./domain/contracts.js";
 
 function isObject(value) {
@@ -192,6 +193,16 @@ export function buildNutritionPlanningSnapshot({
       intolerances: intake.nutrition.intolerances,
       digestive_issues: intake.nutrition.digestiveIssues,
       disliked_foods: intake.nutrition.dislikedFoods,
+    },
+
+    // Clinical flags the food pipeline must enforce when it picks foods.
+    // Levothyroxine (Euthyrox) is taken on an empty stomach in the morning
+    // and must stay 4 hours away from dairy and calcium, so a client on the
+    // drug gets no dairy food at breakfast. The flag follows the drug, not
+    // the thyroid diagnosis.
+    clinical_flags: {
+      levothyroxine_breakfast_dairy_lock:
+        isLevothyroxineMedicationList(intake.medical?.medications || []),
     },
 
     decision_context: {

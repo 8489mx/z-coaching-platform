@@ -137,6 +137,11 @@ test("actual example intake and decision produce the complete snapshot contract"
       digestive_issues: intake.nutrition.digestiveIssues,
       disliked_foods: intake.nutrition.dislikedFoods,
     },
+    // The example intake names no levothyroxine, so the breakfast dairy
+    // lock is off.
+    clinical_flags: {
+      levothyroxine_breakfast_dairy_lock: false,
+    },
     decision_context: {
       plan_status: intakeDecision.plan_status,
       hard_constraints: intakeDecision.hard_constraints,
@@ -565,6 +570,7 @@ test("snapshot contains no calorie, macro, meal, or food planning fields", () =>
     "recovery",
     "meal_preferences",
     "food_restrictions",
+    "clinical_flags",
     "decision_context",
   ]);
 });

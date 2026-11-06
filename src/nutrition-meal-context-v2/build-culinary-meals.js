@@ -5,6 +5,7 @@ import { CLINICAL_GUIDELINES } from "../config/clinical-guidelines.js";
 import { dislikedFoodCodes, applyDislikedNames, expandFoodExclusionCodes } from "../intake-decision-engine/adapters/disliked-foods.js";
 import { isEquivalentSwap, sharesSwapFamily, isNoSwapFood, NO_SWAP_NOTE_AR } from "../../frontend/src/utils/swapExchangeRules.js";
 import { canonicalMacros } from "../nutrition-food-catalog/canonical-food-table.js";
+import { isLevothyroxineMedicationList } from "../execution-engines/drug-interaction-firewall.js";
 
 /**
  * Advanced Contextual Culinary Meal Archetype, Dynamic Fat Offset & Extreme Edge-Case Engine
@@ -901,12 +902,22 @@ function orderByCountry(swaps, country) {
   return [...swaps].sort((a, b) => foreignFoodRank(a.food_code, country) - foreignFoodRank(b.food_code, country));
 }
 
-export function isFoodClinicallySafe(foodCode, allergenContext = {}) {
+export function isFoodClinicallySafe(foodCode, allergenContext = {}, mealContext = null) {
   const food = FOOD_SWAP_DATABASE[foodCode];
   if (!food) return false;
 
   if (allergenContext.isVegan && !food.is_vegan) return false;
   if (allergenContext.isDairyExcluded && food.is_dairy) return false;
+  // Levothyroxine breakfast lock: the morning dose is taken on an empty
+  // stomach and dairy/calcium must stay 4 hours away from it, so a dairy
+  // food is refused at breakfast for a client on the drug — and only at
+  // breakfast. Without a meal context the old behaviour is kept, so every
+  // existing caller that does not name a meal is untouched.
+  if (
+    allergenContext.isLevothyroxineBreakfastDairyLocked &&
+    String(mealContext || "").toUpperCase() === "BREAKFAST" &&
+    food.is_dairy
+  ) return false;
   if (allergenContext.isEggsExcluded && (foodCode === "EGGS_OMELETTE" || foodCode === "SHAKSHOUKA_EGGS")) return false;
   if (allergenContext.isFishExcluded && food.is_fish) return false;
   if (allergenContext.isPoultryExcluded && (foodCode === "CHICKEN_BREAST" || foodCode === "SMOKED_TURKEY")) return false;
@@ -1044,7 +1055,7 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
       if (!candidate || candidate.protein_per_100g <= 0) continue;
 
       // Clinical Safety & Allergen Filters
-      if (!isFoodClinicallySafe(code, allergenContext)) continue;
+      if (!isFoodClinicallySafe(code, allergenContext, mealContext)) continue;
       if (allergenContext.isLowBudget && !candidate.is_economic) continue;
 
       const equivGrams = Math.round((baseProtein / candidate.protein_per_100g) * 100);
@@ -1175,7 +1186,7 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
       if (!candidate || candidate.carb_per_100g <= 0) continue;
 
       // Every clinical filter applies here, not gluten alone.
-      if (!isFoodClinicallySafe(code, allergenContext)) continue;
+      if (!isFoodClinicallySafe(code, allergenContext, mealContext)) continue;
 
       const equivGrams = Math.round((baseCarbs / candidate.carb_per_100g) * 100);
       let householdDesc = `${equivGrams} جم`;
@@ -1256,7 +1267,7 @@ function buildSmartSwapCandidates(category, baseGrams, baseFoodCode, mealContext
       if (code === baseFoodCode) continue;
       const candidate = FOOD_SWAP_DATABASE[code];
       if (!candidate || !(candidate.fat_per_100g > 0) || !(baseFat > 0)) continue;
-      if (!isFoodClinicallySafe(code, allergenContext)) continue;
+      if (!isFoodClinicallySafe(code, allergenContext, mealContext)) continue;
       if (allergenContext.isLowBudget && !candidate.is_economic) continue;
 
       const equivGrams = Math.round((baseFat / candidate.fat_per_100g) * 100);
@@ -2073,11 +2084,26 @@ export function buildAllergenContext(canonicalIntake = {}, rawIntake = {}) {
     budgetTier === "ECONOMIC" ||
     budgetTier === "SAVER";
 
+  // Levothyroxine (Euthyrox / Eltroxin) must be kept 4 hours away from dairy
+  // and calcium: the morning dose is taken on an empty stomach, so breakfast
+  // is inside the isolation window. The lock follows the drug, not the
+  // thyroid diagnosis, and it is read from every place the medication can be
+  // named: the canonical medical list, the raw meds list, and the raw meds
+  // free text.
+  const levothyroxineMeds = [
+    ...(Array.isArray(medical.medications) ? medical.medications : []),
+    ...(Array.isArray(effectiveRaw.medical?.medications) ? effectiveRaw.medical.medications : []),
+    ...(Array.isArray(effectiveRaw.current_meds_supplements_list) ? effectiveRaw.current_meds_supplements_list : []),
+    ...String(effectiveRaw.current_meds_supplements || "").split(/[,;،\n]+/),
+  ];
+  const isLevothyroxineBreakfastDairyLocked = isLevothyroxineMedicationList(levothyroxineMeds);
+
   return {
     excludedFoods,
     isVegan,
     isGlutenExcluded,
     isDairyExcluded,
+    isLevothyroxineBreakfastDairyLocked,
     isEggsExcluded,
     isFishExcluded,
     isPoultryExcluded,
@@ -2173,7 +2199,12 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
   const budgetTier = (nutrition.budget || nutrition.budgetTier || "MODERATE").toUpperCase();
 
   const allergenContext = buildAllergenContext(canonicalIntake, effectiveRaw);
-  const { excludedFoods, isVegan, isGlutenExcluded, isDairyExcluded, isEggsExcluded, isFishExcluded, isPoultryExcluded, isRedMeatExcluded, isMeatExcluded, isSoyExcluded, isNutsExcluded, isGout, isFavism, isLegumesExcluded, isLowBudget, isDumpingSyndrome, isPostBariatric, needsMiniPlates, isDiabetic, isSesameExcluded } = allergenContext;
+  const { excludedFoods, isVegan, isGlutenExcluded, isDairyExcluded, isEggsExcluded, isFishExcluded, isPoultryExcluded, isRedMeatExcluded, isMeatExcluded, isSoyExcluded, isNutsExcluded, isGout, isFavism, isLegumesExcluded, isLowBudget, isDumpingSyndrome, isPostBariatric, needsMiniPlates, isDiabetic, isSesameExcluded, isLevothyroxineBreakfastDairyLocked } = allergenContext;
+  // At breakfast, dairy is also out when the client takes levothyroxine
+  // (Euthyrox): the morning dose must stay 4 hours away from dairy and
+  // calcium. Outside breakfast the lock does not apply, so lunch, dinner
+  // and snacks keep their own isDairyExcluded rule.
+  const isDairyExcludedAtBreakfast = isDairyExcluded || isLevothyroxineBreakfastDairyLocked;
 
   const totalMeals = meal_distribution.length;
 
@@ -2674,7 +2705,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           swaps: [],
         });
 
-        if (!isDairyExcluded) {
+        if (!isDairyExcludedAtBreakfast) {
           items.push({
             food_code: "WHEY_PROTEIN",
             name_ar: "بودرة واي بروتين معزول مدعمة للوجبة",
@@ -3051,7 +3082,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         let currentF = 15;
         let currentC = 1;
 
-        if (!isDairyExcluded) {
+        if (!isDairyExcludedAtBreakfast) {
           // Cottage cheese capped at 150g (18g P, 4.5g C, 2.2g F, 112 kcal)
           items.push({
             food_code: "COTTAGE_CHEESE",
@@ -3296,7 +3327,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
         recipeNameAr = isGlutenExcluded
           ? "وجبة الإفطار (بيض مع صدور دجاج وبطاطس مشوية وسلطة)"
-          : (isDairyExcluded
+          : (isDairyExcludedAtBreakfast
             ? "وجبة الإفطار (بيض مع صدور دجاج/تونة وخبز بلدي)"
             : (isGout
               ? "وجبة الإفطار (بيض مع جبن قريش وصدور دجاج وخبز بلدي)"
@@ -3309,7 +3340,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         // What the bread (or the potatoes) will bring of protein, before anything is placed: the
         // carbohydrate item is sized by the carbohydrate target, and its protein lands on the plate
         // whether the meal has room for it or not. Everything else is fitted into what is left.
-        const carbForBread = Math.max(5, targetC - 4 - 1 - (isDairyExcluded ? 0 : 3));
+        const carbForBread = Math.max(5, targetC - 4 - 1 - (isDairyExcludedAtBreakfast ? 0 : 3));
         const carbProteinEstimate = isGlutenExcluded
           ? Math.round((carbForBread / 0.20) * 0.02)
           : Math.round((carbForBread / 0.52) * 0.09);
@@ -3362,7 +3393,7 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         let cheeseC = 0;
         let cheeseF = 0;
         let cheeseP = 0;
-        if (!isDairyExcluded) {
+        if (!isDairyExcludedAtBreakfast) {
           // The cheese takes what the eggs and the bread left, up to the ideal 150 g portion, and is
           // left off the plate altogether when there is no room worth a portion.
           const cheeseRoomG = Math.round((Math.max(0, proteinLeftForTable - (currentP - 2)) / 12) * 100);
@@ -3396,6 +3427,11 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
             // dropped for being too small to count as a portion.
             droppedCheeseNoteAr = `الجبن القريش اتشالت من الإفطار لأن حصتها كانت ${cheeseGrams} جم بس، أقل من 40 جم اللي تتعدّ حصة.`;
           }
+        } else if (isLevothyroxineBreakfastDairyLocked) {
+          // The cheese is not a portion problem: it is kept off breakfast
+          // because the morning levothyroxine dose must stay 4 hours away
+          // from dairy. The coach sees why, instead of a silent omission.
+          droppedCheeseNoteAr = "الجبن القريش اتشالت من الإفطار لأن العميل بياخد دواء الغدة (ليفوثيروكسين)، والألبان لازم تتفصل 4 ساعات عن الدواء.";
         }
 
         // Breakfast Carb Selection (exact remaining carb)
@@ -3443,7 +3479,16 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
         // Additional Protein via Chicken Breast slices (to avoid overloading cottage cheese)
         const finalRemP = Math.max(0, targetP - currentP);
-        if (finalRemP >= 6) {
+        // When the levothyroxine lock keeps the cheese off breakfast, the
+        // top-up must also cover the small remainder the cheese would have
+        // filled (a 40 g cheese portion is about 5 g of protein): otherwise
+        // the meal lands a few grams short on protein at every regeneration.
+        // A 13-16 g chicken slice is a real portion, the same scale as the
+        // 19 g slice the day-0 breakfast already serves. Dairy-excluded
+        // clients keep the old 6 g threshold: their shortfall predates the
+        // lock and is not this package's to change.
+        const topUpMinP = isLevothyroxineBreakfastDairyLocked ? 4 : 6;
+        if (finalRemP >= topUpMinP) {
           if (!isPoultryExcluded) {
             const chickenGrams = Math.round(finalRemP / 0.31);
             const chkF = Math.round(chickenGrams * 0.03);
@@ -4715,7 +4760,7 @@ export function applyCulinaryProteinFallback(meals = [], allergenContext = {}) {
       : (/عشاء|عشا|dinner/i.test(nameHaystack) ? "DINNER" : "LUNCH");
     const safe = CULINARY_PROTEIN_FALLBACKS.filter(({ code }) => {
       const food = FOOD_SWAP_DATABASE[code];
-      return food && Number(food.protein_per_100g) > 0 && isFoodClinicallySafe(code, allergenContext);
+      return food && Number(food.protein_per_100g) > 0 && isFoodClinicallySafe(code, allergenContext, mealContext);
     });
     const picked = safe.find(({ code }) => !dayProteinCodes.has(code)) || safe[0];
     if (!picked) return meal;
@@ -5043,12 +5088,21 @@ export function keepEquivalentSwaps(meals = []) {
 export function enforceClinicalSafety(meals = [], allergenContext = {}) {
   if (!Array.isArray(meals)) return meals;
   const known = (code) => Boolean(FOOD_SWAP_DATABASE[code]);
-  const unsafe = (code) => known(code) && !isFoodClinicallySafe(code, allergenContext);
-  // Disliked but clinically fine: replaced when an alternative exists, otherwise kept with a coach note.
-  const withoutDislikes = { ...allergenContext, dislikedFoodCodes: undefined };
-  const onlyDisliked = (code) => isFoodClinicallySafe(code, withoutDislikes);
 
   return meals.map((meal) => {
+    // The meal's own context: an explicit label wins; otherwise meal 1 is
+    // breakfast (the generated meals carry a number, not a label). The
+    // levothyroxine breakfast lock needs this — without it a dairy item
+    // placed directly on the breakfast plate would be judged as lunch.
+    const mealContext = String(
+      meal.meal_context || meal.context || meal.meal_type ||
+      (meal.meal_number === 1 ? "BREAKFAST" : "LUNCH")
+    ).toUpperCase();
+    const unsafe = (code) => known(code) && !isFoodClinicallySafe(code, allergenContext, mealContext);
+    // Disliked but clinically fine: replaced when an alternative exists, otherwise kept with a coach note.
+    const withoutDislikes = { ...allergenContext, dislikedFoodCodes: undefined };
+    const onlyDisliked = (code) => isFoodClinicallySafe(code, withoutDislikes, mealContext);
+
     const items = meal.items || [];
     if (!items.some((item) => unsafe(item.food_code))) return meal;
     // Foods already on this plate: a replacement takes another food when one exists (two items
@@ -5066,18 +5120,16 @@ export function enforceClinicalSafety(meals = [], allergenContext = {}) {
         if (!chosen) {
           // Some templates place an item with no swap list at all (the bariatric omelette): compute
           // the equivalents now, for the same portion and meal, already filtered for this client.
-          const context = String(meal.meal_context || meal.context || meal.meal_type || "LUNCH").toUpperCase();
           const category = String(item.category || "PROTEIN").toUpperCase();
-          swaps = generateSmartSwaps(category, Number(item.portion_g) || 100, item.food_code, context, 0, allergenContext);
+          swaps = generateSmartSwaps(category, Number(item.portion_g) || 100, item.food_code, mealContext, 0, allergenContext);
           chosen = pick(swaps);
         }
         if (!chosen) {
           // Safety comes before taste: with no equivalent safe swap, take the closest safe food of
           // the same kind first, then the closest in energy.
-          const context = String(meal.meal_context || meal.context || meal.meal_type || "LUNCH").toUpperCase();
           const category = String(item.category || "PROTEIN").toUpperCase();
           const kcal = Number(item.calories_kcal) || 1;
-          swaps = buildSmartSwapCandidates(category, Number(item.portion_g) || 100, item.food_code, context, 0, allergenContext)
+          swaps = buildSmartSwapCandidates(category, Number(item.portion_g) || 100, item.food_code, mealContext, 0, allergenContext)
             .filter((swap) => swap?.food_code && known(swap.food_code) && !unsafe(swap.food_code))
             .sort((a, b) => (sharesSwapFamily(item.food_code, b.food_code) - sharesSwapFamily(item.food_code, a.food_code))
               || (foreignFoodRank(a.food_code, allergenContext.country) - foreignFoodRank(b.food_code, allergenContext.country))

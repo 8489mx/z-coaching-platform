@@ -694,7 +694,7 @@ function hasMatchingTag(tags, excludedValues) {
   return tags.some((tag) => excludedValues.has(tag));
 }
 
-function rejectionCodesFor(food, context) {
+function rejectionCodesFor(food, context, patternCode = null) {
   const codes = [];
   const rejectionCode = NutritionFoodCandidateRejectionCode;
 
@@ -731,6 +731,15 @@ function rejectionCodesFor(food, context) {
   ) {
     codes.push(rejectionCode.DISLIKED_FOOD);
   }
+  // Levothyroxine breakfast lock: a dairy food is medically excluded from a
+  // breakfast pattern for a client on the drug. Other patterns are untouched.
+  if (
+    context.levothyroxineBreakfastDairyLock &&
+    String(patternCode || "").startsWith("BREAKFAST") &&
+    food.food_class === NutritionFoodClass.DAIRY_PROTEIN
+  ) {
+    codes.push(rejectionCode.MEDICAL_EXCLUDED);
+  }
   return codes;
 }
 
@@ -740,6 +749,11 @@ function buildSelectionContext(snapshot) {
     budget: snapshot.meal_preferences.budget,
     storageAvailable: snapshot.meal_preferences.food_storage_available,
     reheatingAvailable: snapshot.meal_preferences.food_reheating_available,
+    // Levothyroxine (Euthyrox) is taken on an empty stomach in the morning
+    // and must stay 4 hours away from dairy and calcium: no dairy food is
+    // selected for a breakfast pattern while this flag is on.
+    levothyroxineBreakfastDairyLock:
+      Boolean(snapshot.clinical_flags?.levothyroxine_breakfast_dairy_lock),
     ...makeRestrictionSets(snapshot.food_restrictions),
   };
 }
@@ -763,7 +777,7 @@ function evaluateSlot({
   const rejectedFoods = [];
 
   for (const food of candidateUniverse) {
-    const reasonCodes = rejectionCodesFor(food, context);
+    const reasonCodes = rejectionCodesFor(food, context, patternCode);
     if (reasonCodes.length === 0) {
       eligibleFoods.push(food);
     } else {
@@ -824,7 +838,7 @@ function evaluateSlot({
         !candidateCodes.has(food.food_code),
     );
     for (const food of fallbackUniverse) {
-      const reasonCodes = rejectionCodesFor(food, context);
+      const reasonCodes = rejectionCodesFor(food, context, patternCode);
       if (reasonCodes.length === 0) {
         eligibleFoods.push(food);
       }

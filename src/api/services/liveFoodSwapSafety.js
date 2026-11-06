@@ -54,8 +54,11 @@ const isPotato = (code) => /POTATO/.test(String(code || ""));
 /**
  * Whether a swap-registry food is safe for these restrictions. A food the generator does not know
  * is refused (fail closed), except peanut butter, judged here: a nut, and a legume for favism.
+ * mealCategory names the meal being swapped ("BREAKFAST", "SNACK", "MAIN_MEAL"): a dairy food is
+ * refused at breakfast for a client on levothyroxine (Euthyrox), whose morning dose must stay
+ * 4 hours away from dairy and calcium.
  */
-export function isSwapFoodSafe(registryCode, context = {}, targetGrams = null) {
+export function isSwapFoodSafe(registryCode, context = {}, targetGrams = null, mealCategory = null) {
   const code = String(registryCode || "").toUpperCase();
   if (context.dislikedFoodCodes?.has(code)) return false;
   const isChristianFast = Boolean(
@@ -75,7 +78,7 @@ export function isSwapFoodSafe(registryCode, context = {}, targetGrams = null) {
     return !(context.isNutsExcluded || context.isFavism || context.isLegumesExcluded);
   }
   const planFood = REGISTRY_TO_PLAN_FOOD[code] || code;
-  if (!isFoodClinicallySafe(planFood, context)) return false;
+  if (!isFoodClinicallySafe(planFood, context, mealCategory)) return false;
   // Potatoes stay for a diabetic, in a moderate portion only.
   if (context.isDiabetic && isPotato(planFood) && Number(targetGrams) > DIABETIC_POTATO_PORTION_G) return false;
   return true;

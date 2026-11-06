@@ -78,7 +78,7 @@ export function evaluatePharmacologicalFirewall(medicationsList = []) {
     .map(m => String(m || '').toUpperCase());
 
   for (const [key, rule] of Object.entries(PHARMACOLOGICAL_RULES)) {
-    const isMatch = rule.identifiers.some(id => 
+    const isMatch = rule.identifiers.some(id =>
       normalizedMeds.some(med => med.includes(id))
     );
 
@@ -96,6 +96,24 @@ export function evaluatePharmacologicalFirewall(medicationsList = []) {
     active_firewall_rules: activeRules,
     isolation_directives_ar: activeRules.map(r => r.rule_directive_ar || r.timing_rule_ar)
   };
+}
+
+/**
+ * Whether the medication list names levothyroxine (Euthyrox / Eltroxin /
+ * thyroxine) under any name the firewall knows. The served-plan breakfast
+ * dairy lock follows the drug, not the thyroid diagnosis: a client with a
+ * thyroid condition but no levothyroxine on file is not locked. The same
+ * identifier list as PHARMACOLOGICAL_RULES.LEVOTHYROXINE, so the two can
+ * never drift apart.
+ */
+export function isLevothyroxineMedicationList(medicationsList = []) {
+  const normalizedMeds = (Array.isArray(medicationsList) ? medicationsList : [medicationsList])
+    .map(m => String(m || '').toUpperCase())
+    .filter(Boolean);
+  if (normalizedMeds.length === 0) return false;
+  return PHARMACOLOGICAL_RULES.LEVOTHYROXINE.identifiers.some(id =>
+    normalizedMeds.some(med => med.includes(String(id).toUpperCase()))
+  );
 }
 
 /**

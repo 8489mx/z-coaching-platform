@@ -12,6 +12,7 @@ export const NUTRITION_PLANNING_SNAPSHOT_VERSION =
  * @property {NutritionPlanningRecovery} recovery
  * @property {NutritionPlanningMealPreferences} meal_preferences
  * @property {NutritionPlanningFoodRestrictions} food_restrictions
+ * @property {NutritionPlanningClinicalFlags} clinical_flags
  * @property {NutritionPlanningDecisionContext} decision_context
  */
 
@@ -77,6 +78,11 @@ export const NUTRITION_PLANNING_SNAPSHOT_VERSION =
  * @property {Object[]} intolerances
  * @property {Object[]} digestive_issues
  * @property {string[]} disliked_foods
+ */
+
+/**
+ * @typedef {Object} NutritionPlanningClinicalFlags
+ * @property {boolean} levothyroxine_breakfast_dairy_lock
  */
 
 /**
