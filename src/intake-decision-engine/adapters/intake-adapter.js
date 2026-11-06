@@ -272,6 +272,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     const VALID_LOCATION_MAP = {
       GYM: 'GYM',
       COMMERCIAL_GYM: 'GYM',
+      // H7: the public form now offers a machines-only gym. It is still a gym
+      // location; the equipment list (not the location) is what narrows it.
+      MACHINES_ONLY: 'GYM',
       'جيم': 'GYM',
       'صالة رياضية': 'GYM',
       HOME: 'HOME',
@@ -436,6 +439,7 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   if (!intake.training && (intake.training_environment || intake.training_logistics || intake.injuries_map || intake.training_location || intake.available_days_per_week || intake.experience_level || intake.injuries)) {
     const locMap = {
       commercial_gym: 'GYM',
+      machines_only: 'GYM',
       home_gym: 'HOME',
       minimal_equipment: 'HOME',
       calisthenics_bands: 'HOME',
@@ -505,7 +509,13 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       selectedInjuries: trainingInjuries.map(i => i.area),
       injuries: trainingInjuries,
       targetFocusMuscles: Array.isArray(intake.focus_muscles) ? intake.focus_muscles.map(m => m.toUpperCase()) : [],
-      recentTraining: intake.recent_training || undefined
+      recentTraining: intake.recent_training || undefined,
+      // H7: a machines-only gym declares exactly one piece of equipment, so the
+      // engine never prescribes free weights to this client. The equipment
+      // section below maps the string to its canonical object form.
+      ...(String(intake.training_environment || '').toLowerCase() === 'machines_only'
+        ? { equipment: ['SELECTORIZED_MACHINES'] }
+        : {})
     };
   }
 
@@ -535,6 +545,14 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
       excludedFoodsList: (intake.strict_allergies || rawAllergyDislikes).map(a => String(a).toUpperCase()),
       // The form sends Arabic labels; the canonical intake takes food codes (disliked-foods.js).
       dislikedFoods: dislikedFoodCodes(Array.isArray(intake.disliked_foods) ? intake.disliked_foods : rawAllergyDislikes),
+      // H7: the form's dairy_lactose tick is a lactose intolerance, not only an
+      // allergy — carry it into nutrition.intolerances so the engine's
+      // intolerance layer (food selection, planning snapshot, culinary
+      // context) sees it. Self-reported, so medicallyDiagnosed stays false
+      // (P1-B4: a form tick is never stamped as diagnosed).
+      intolerances: (intake.strict_allergies || rawAllergyDislikes).some(a => String(a).toUpperCase() === 'DAIRY_LACTOSE')
+        ? [{ substance: 'LACTOSE', severity: 'MODERATE', medicallyDiagnosed: false, notes: null }]
+        : [],
       // Deep intake form v2: structured digestive, budget, and food prep fields
       digestiveIssues: (intake.digestive_issues && intake.digestive_issues !== 'NONE')
         ? [{ name: intake.digestive_issues === 'IBS' ? 'IBS' : (intake.digestive_issues === 'GERD' ? 'ACID_REFLUX' : 'BLOATING'), severity: 'MODERATE' }]
@@ -1056,6 +1074,15 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
   }
   if (digestiveList.includes("LACTOSE") && !intolerances.some(i => i.substance === "LACTOSE")) {
     intolerances.push({ substance: "LACTOSE", severity: "MODERATE", medicallyDiagnosed: true });
+  }
+  // H7: backstop for canonical intakes that declare DAIRY_LACTOSE as an
+  // excluded food without an intolerances entry (the flat form's tick reaches
+  // here through excludedFoodsList, and the normalisation block above already
+  // sets it — this covers any other canonical producer). The allergy path
+  // alone never reaches the intolerance layer, so without this the food
+  // selection, snapshot and culinary context see no lactose restriction.
+  if (excludedFoods.includes("DAIRY_LACTOSE") && !intolerances.some(i => i.substance === "LACTOSE")) {
+    intolerances.push({ substance: "LACTOSE", severity: "MODERATE", medicallyDiagnosed: false, notes: null });
   }
 
   // Format Digestive Issues: [{ name: "IBS", severity: "MODERATE" }]

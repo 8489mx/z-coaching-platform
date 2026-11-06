@@ -36,6 +36,7 @@ const OCCUPATION_MAP = {
 
 const ENVIRONMENT_MAP = {
   commercial_gym: 'جيم تجاري متكامل',
+  machines_only: 'جيم أجهزة فقط',
   home_gym: 'جيم منزلي متطور',
   minimal_equipment: 'أدوات منزلية خفيفة',
   calisthenics_bands: 'وزن الجسم فقط (Calisthenics)'

@@ -8,6 +8,8 @@ import { User } from "../models/index.js";
 // Intake training_environment -> the swap engine's setups.
 const SETUP_BY_ENVIRONMENT = Object.freeze({
   commercial_gym: "GYM",
+  // H7: a machines-only gym is a gym setup for swaps, not a narrower one.
+  machines_only: "GYM",
   home_gym: "HOME",
   minimal_equipment: "HOME",
   calisthenics_bands: "BANDS",

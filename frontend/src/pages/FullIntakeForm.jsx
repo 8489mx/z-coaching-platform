@@ -2220,6 +2220,7 @@ export default function FullIntakeForm() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                   {[
                     { id: 'commercial_gym', title: 'جيم تجاري متكامل', desc: 'أجهزة، كابلات، وأوزان حرة كاملة' },
+                    { id: 'machines_only', title: 'جيم أجهزة فقط', desc: 'أجهزة انتقائية فقط، بدون أوزان حرة (دمبل وبار)' },
                     { id: 'home_gym', title: 'جيم منزلي متطور', desc: 'دمبلز قابلة للتعديل + بنش + عقلة' },
                     { id: 'minimal_equipment', title: 'أدوات منزلية خفيفة', desc: 'دمبلز وزن ثابت أو أشرطة مقاومة' },
                     { id: 'calisthenics_bands', title: 'وزن الجسم فقط (Calisthenics)', desc: 'تمارين بوزن الجسم بدون أوزان خارجية' }
