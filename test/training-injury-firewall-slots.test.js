@@ -7,13 +7,17 @@ import { buildTrainingMesoCycle } from '../src/training-engine-v2/index.js';
 
 const ctx = { assessmentDate: '2026-09-19' };
 
-function mesocycle({ injuries = [], experience = 'BEGINNER', days = 3, location = 'GYM' } = {}) {
+function mesocycle({ injuries = [], experience = 'BEGINNER', days = 3, location = 'GYM', setup } = {}) {
   const canonical = adaptIntakePayloadToCanonicalEngine({
     personal: { sex: 'MALE', age: 30 },
     body: { weightKg: 85, heightCm: 178 },
     goals: { primary: 'FAT_LOSS' },
     medical: { hasInjuries: injuries.length > 0, injuries, conditions: [] },
     cardio: { averageDailySteps: 7000, walkingAbility: 'EASY' },
+    // setup names the home room (e.g. home_bodyweight = bodyweight only);
+    // without it the adapter defaults an undeclared home client to
+    // dumbbells + bodyweight.
+    ...(setup ? { training_environment: setup } : {}),
     training: { preferredDaysPerWeek: days, experience, environment: location === 'HOME' ? 'HOME' : 'COMMERCIAL_GYM', location },
     lifestyle: {},
   });
@@ -101,7 +105,7 @@ test('shoulder injury (gym): overhead triceps extensions become rope pushdowns i
   assert.ok(pushdown.prescription.injury_safety_cues_ar?.length > 0, 'pushdown must carry the shoulder safety cue');
 });
 
-test('shoulder injury (home): overhead triceps slot is held for coach review, never served overhead', () => {
+test('shoulder injury (home, dumbbells): overhead triceps slot becomes a kickback, never served overhead', () => {
   const meso = mesocycle({ injuries: ['SHOULDER'], location: 'HOME' });
   for (const week of meso.weeks) {
     for (const session of week.sessions) {
@@ -110,18 +114,47 @@ test('shoulder injury (home): overhead triceps slot is held for coach review, ne
       }
     }
   }
+  // H8: the home client owns dumbbells via the adapter default, so the
+  // kickback (arm at the side) fills the slot instead of a hold.
+  const kickback = sessions(meso).flatMap((s) => s.exercises).find((e) => e.slot_code === 'ELBOW_EXTENSION');
+  assert.ok(kickback, 'home: elbow-extension slot must be filled');
+  assert.equal(kickback.exercise_code, 'DUMBBELL_TRICEPS_KICKBACK');
+  assert.ok(!kickback.held_for_review, 'home: the kickback is served, not held');
+  assert.ok(kickback.prescription.injury_safety_cues_ar?.length > 0, 'kickback must carry the shoulder safety cue');
+});
+
+test('shoulder injury (home, bodyweight only): overhead triceps slot is held for coach review, never served overhead or as a dip', () => {
+  const meso = mesocycle({ injuries: ['SHOULDER'], location: 'HOME', setup: 'home_bodyweight' });
+  for (const week of meso.weeks) {
+    for (const session of week.sessions) {
+      for (const ex of session.exercises) {
+        assert.doesNotMatch(ex.exercise_code || '', OVERHEAD_ARM_TRICEPS, `week ${week.week_number} ${session.session_code}: ${ex.exercise_code}`);
+        // A bench dip loads the front of the shoulder, so it must never
+        // slip in as the equipment guard's substitute for a shoulder client.
+        assert.notEqual(ex.exercise_code, 'BENCH_DIPS_BODYWEIGHT', `week ${week.week_number} ${session.session_code}: a dip must not replace the overhead extension`);
+        // A push-up is a press, not an elbow extension, and it loads the
+        // shoulder too: the secondary-muscle fallback must not serve it.
+        assert.notEqual(ex.exercise_code, 'FEET_ELEVATED_PUSH_UP', `week ${week.week_number} ${session.session_code}: a push-up must not fill the elbow-extension slot`);
+      }
+    }
+  }
   const held = sessions(meso).flatMap((s) => s.exercises).find((e) => e.slot_code === 'ELBOW_EXTENSION' && e.held_for_review);
-  assert.ok(held, 'home: elbow-extension slot should be held for review when no safe substitute exists');
+  assert.ok(held, 'bodyweight-only home: elbow-extension slot should be held for review when no safe substitute exists');
   assert.equal(held.held_reason, 'SHOULDER_OVERHEAD_ARM_HELD');
   assert.equal(held.selection_status, 'REVIEW_REQUIRED');
 });
 
-test('shoulder injury: final check flags a surviving overhead triceps extension', async () => {
+test('shoulder injury: final check flags a surviving overhead triceps extension or bench dip', async () => {
   const { evaluateFinalTrainingWeeks } = await import('../src/training-engine-v2/build-training-mesocycle.js');
   const weeks = [{ week_number: 1, sessions: [{ session_code: 'FULL_BODY_B', exercises: [{ exercise_code: 'OVERHEAD_CABLE_TRICEPS_EXTENSION', slot_code: 'ELBOW_EXTENSION' }] }] }];
   const result = evaluateFinalTrainingWeeks(weeks, { hasShoulderInjury: true });
   assert.equal(result.status, 'REVIEW_REQUIRED');
   assert.ok(result.violations.some((v) => v.exercise_code === 'OVERHEAD_CABLE_TRICEPS_EXTENSION'));
+  // A dip loads the front of the shoulder, so it is flagged the same way.
+  const dipWeeks = [{ week_number: 1, sessions: [{ session_code: 'FULL_BODY_B', exercises: [{ exercise_code: 'BENCH_DIPS_BODYWEIGHT', slot_code: 'ELBOW_EXTENSION' }] }] }];
+  const dipResult = evaluateFinalTrainingWeeks(dipWeeks, { hasShoulderInjury: true });
+  assert.equal(dipResult.status, 'REVIEW_REQUIRED');
+  assert.ok(dipResult.violations.some((v) => v.exercise_code === 'BENCH_DIPS_BODYWEIGHT'));
   const clean = evaluateFinalTrainingWeeks(weeks, { hasShoulderInjury: false });
   assert.equal(clean.status, 'PASSED');
 });

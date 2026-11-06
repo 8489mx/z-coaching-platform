@@ -674,7 +674,11 @@ test("fiber follows adult sex and age bands without reducing carbohydrate", () =
     [Sex.FEMALE, 51, 21],
     [Sex.FEMALE, 80, 21],
   ];
-  let carbohydrateTarget = null;
+  // H8: protein is capped at 1.6 g/kg from age 65, so an 80-year-old's
+  // carbohydrate target is HIGHER than a younger client's (the capped
+  // protein frees calories for carbohydrate). Fiber still follows the age
+  // bands, and carbohydrate is identical across the ages below the cap.
+  let youngCarbohydrateTarget = null;
 
   for (const [sex, ageYears, expectedFiber] of cases) {
     const snapshot = makeSnapshot({
@@ -682,8 +686,13 @@ test("fiber follows adult sex and age bands without reducing carbohydrate", () =
     });
     const targets = buildFrom(snapshot, makeEnergyTarget(snapshot));
     assert.equal(targets.fiber_target_g, expectedFiber);
-    carbohydrateTarget ??= targets.carbohydrate.target_g;
-    assert.equal(targets.carbohydrate.target_g, carbohydrateTarget);
+    if (ageYears < 65) {
+      youngCarbohydrateTarget ??= targets.carbohydrate.target_g;
+      assert.equal(targets.carbohydrate.target_g, youngCarbohydrateTarget);
+    } else {
+      assert.ok(targets.carbohydrate.target_g > youngCarbohydrateTarget,
+        `age ${ageYears}: capped protein must free calories for carbohydrate (young ${youngCarbohydrateTarget} g, got ${targets.carbohydrate.target_g} g)`);
+    }
   }
 });
 

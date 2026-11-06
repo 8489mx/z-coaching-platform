@@ -57,9 +57,9 @@ export {
 // fill for them. (INCLINE_PUSH does prescribe: INCLINE_DUMBBELL_BENCH_PRESS.)
 //
 // POOL CAVEAT: the home equipment-fallback pool (equipmentSafeAlternative) and
-// the exercise-swap pool (getSmartExerciseSwaps) both draw from all 91 V2 records,
+// the exercise-swap pool (getSmartExerciseSwaps) both draw from all 92 V2 records,
 // so other V2 records remain reachable as fallbacks/swaps even though they are not
-// in the prescribed set above. 58 of 91 V2 records were never prescribed in the
+// in the prescribed set above. 58 of 92 V2 records were never prescribed in the
 // 16 measured profiles. The catalog itself stays: it is live for enrichment,
 // equipment checks, fallbacks, swaps, and display names — only its role as "the
 // prescription source" is what this decision declines to wire.

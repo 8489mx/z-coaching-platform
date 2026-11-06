@@ -164,10 +164,11 @@ import { buildMobilityEngine } from "../mobility-engine/index.js";
 import { buildSessionMobilityProtocol } from "../mobility-warmup-engine-v2/index.js";
 import { buildNutritionEngine } from "../nutrition-engine/index.js";
 import { rebalanceMacrosToTarget } from "../nutrition-engine/build-nutrition-engine.js";
-import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, enforceClinicalSafety, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, trimMealsToTarget, refreshActualMacros, applyCulinaryProteinFallback, isFoodClinicallySafe } from "../nutrition-meal-context-v2/index.js";
+import { sanitizeMealPlan, buildCulinaryRecipeMeals, enforceDiabeticCarbChoice, enforceClinicalSafety, splitOversizedPortions, carbPortionLimit, isDiabeticIntake, diversifyFatSources, buildAllergenContext, trimMealsToTarget, refreshActualMacros, applyCulinaryProteinFallback, isFoodClinicallySafe, splitOversizedProteinPortions, capWholeEggsForCholesterol, ensureLegumeForNoAnimalProtein, renameOmelettesToActualEggs, dropTokenPortions, reconcileDayCaloriesToTarget } from "../nutrition-meal-context-v2/index.js";
 import { evaluateCulinaryPreflight } from "../nutrition-plan-preflight/evaluate-culinary-preflight.js";
 import { quantizeNutritionPlan } from "../nutrition-serving-quantizer-v2/index.js";
 import { adaptIntakePayloadToCanonicalEngine } from "../intake-decision-engine/adapters/intake-adapter.js";
+import { applyDislikedNames } from "../intake-decision-engine/adapters/disliked-foods.js";
 import { MASTER_ENGINE_V2_VERSION } from "./domain/enums.js";
 import { resolveDailySteps, resolveTdeeActivityFactor } from "../steps-source/resolve-daily-steps.js";
 import { readAdaptationState } from "../adaptation-engine/diet-break-state.js";
@@ -609,6 +610,33 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     }
   }
 
+  // H8: at 65+ the protein rate is capped at 1.6 g/kg while kidney function
+  // is unknown. The 2.2 g/kg deficit rate left an 85-year-old at 154 g
+  // protein and 52 g carbs a day — near-ketogenic at the 1200 kcal floor.
+  // A bloodwork cap still wins when it is lower. The cap is recorded in
+  // clinical_guardrails and flagged in the decision
+  // (ELDERLY_PROTEIN_KIDNEY_CHECK); it is a population rate change, never
+  // a silent cut.
+  let elderlyProteinCapped = false;
+  if (Number.isFinite(age) && age >= 65 && proteinPerKg > 1.6) {
+    proteinPerKg = 1.6;
+    elderlyProteinCapped = true;
+    calorieAdjustmentDesc += " (تم تحديد البروتين عند 1.6 جم/كجم لأن وظائف الكلى غير معروفة في السن ده — راجع الكلى قبل ما ترفع البروتين)";
+  }
+
+  // H8: hypertension gets a sodium limit in the plan, not just in the
+  // guidance text. 2300 mg/day (AHA 2021) lands in the biomarker
+  // modifications the plate reads, and in clinical_guardrails next to the
+  // heart note. A bloodwork sodium limit still wins when one exists.
+  const hasHypertension =
+    conditionsList.some((c) => c.includes("HYPERTENSION") || c.includes("HIGH_BLOOD_PRESSURE"));
+  if (hasHypertension && biomarkerAnalysis.dietary_modifications?.sodium_limit_mg == null) {
+    biomarkerAnalysis.dietary_modifications = {
+      ...(biomarkerAnalysis.dietary_modifications || {}),
+      sodium_limit_mg: 2300,
+    };
+  }
+
   // Clinical Guard: Diabetes & Insulin Resistance Hypoglycemia Protection (ADA Guidelines)
   const hasDiabetesOrInsulinResistance =
     medical.hasDiabetes === true ||
@@ -772,6 +800,27 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       : null,
   ].filter(Boolean).join("؛ ") + ".";
 
+  // H8: the carbohydrate floor. A deficit split must never collapse to
+  // near-ketogenic by arithmetic: at the 1200 kcal floor an elderly
+  // client landed on 52 g carbs a day (17%). Carbs stay at least 30% of
+  // energy by moving fat calories to carbs, bounded by fat's 0.6 g/kg
+  // minimum — the floor can be short only when fat is already at its own
+  // floor, never by silence. The PCOS/low-carb caps sit at 30% too, so
+  // this guard and those caps agree.
+  let carbFloor30Applied = false;
+  {
+    const minCarbG = Math.floor((targetCalories * 0.3) / 4);
+    if (carbG < minCarbG) {
+      const moveKcal = Math.min((minCarbG - carbG) * 4, Math.max(0, (fatG - minFatG) * 9));
+      const moveCarbG = Math.floor(moveKcal / 4);
+      if (moveCarbG > 0) {
+        carbG += moveCarbG;
+        fatG -= Math.round((moveCarbG * 4) / 9);
+        carbFloor30Applied = true;
+        balanceSteps.push("CARB_FLOOR_30");
+      }
+    }
+  }
 
   // 5. Diet Framework Resolution
   const rawDietChoice = (
@@ -1295,6 +1344,13 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       // The key keeps its name: a plan already saved carries it, and the merge that preserves a
       // capped protein reads it. What changed is where the cap comes from - the bloodwork only.
       kidney_protein_capped: Boolean(kidneyProteinCapped),
+      // H8: the elderly protein cap (1.6 g/kg at 65+, kidney function
+      // unknown) and the 30% carbohydrate floor, recorded like the kidney
+      // cap — a coach reads them from the plan, never guesses.
+      elderly_protein_capped: Boolean(elderlyProteinCapped),
+      elderly_protein_cap_per_kg: elderlyProteinCapped ? 1.6 : null,
+      carb_floor_30_applied: Boolean(carbFloor30Applied),
+      carb_floor_30_share: carbFloor30Applied ? 0.3 : null,
       energy_reference_weight_kg: referenceWeight,
       energy_balance_steps: balanceSteps,
       energy_balance_note_ar: energyBalanceNoteAr(),
@@ -1306,6 +1362,16 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       // advice his doctor gives (AHA 2021 dietary guidance - less salt, less saturated fat).
       heart_diet_note_ar: conditionsList.some((c) => c.includes("HEART") || c.includes("CARDIAC"))
         ? "مريض قلب: خفّف الملح في الطبخ وعلى السفرة (أقل من معلقة صغيرة ملح في اليوم)، وقلّل الدهون المشبعة (السمن والزبدة واللحوم الدسمة)، وخلي الدهون من زيت الزيتون والمكسرات والسمك. ولو دكتوره ادّاه تعليمات أكل، تعليماته هي الأصل."
+        : null,
+      // H8: hypertension carries the same salt advice as the heart note,
+      // with the number on it (2300 mg/day, AHA 2021), and high
+      // cholesterol carries its own egg and saturated-fat limits.
+      hypertension_sodium_limit_mg: hasHypertension ? 2300 : null,
+      hypertension_diet_note_ar: hasHypertension
+        ? "ضغط عالي: الملح في اليوم كله 2300 مجم كحد أقصى (أقل من معلقة صغيرة ملح)، وقلّل الأكل المملح والمعلب والمخللات، وخلي الدهون من زيت الزيتون والمكسرات والسمك. ولو دكتوره ادّاه تعليمات أكل، تعليماته هي الأصل."
+        : null,
+      cholesterol_guidance_ar: conditionsList.some((c) => c.includes("CHOLESTEROL"))
+        ? "كوليسترول عالي: بيضة كاملة واحدة في اليوم كحد أقصى (بيضتين في اليوم كله لو مفيش بديل)، والدهون المشبعة أقل من 7% من السعرات (من غير سمن وزبدة ولحوم دسمة)، والألياف من الشوفان والبقوليات والخضار كل يوم."
         : null,
       max_protein_per_kg: kidneyProteinCapped ? (biomarkerAnalysis?.dietary_modifications?.protein_cap_g_per_kg || null) : null,
       max_protein_g: kidneyProteinCapped ? proteinG : null,
@@ -1413,19 +1479,47 @@ export function buildMasterEngineV2(inputs) {
   const earlyRequestedGoal = (earlyRawNormalized === "BODY_RECOMPOSITION" || earlyRawNormalized === "COACH_DECIDES")
     ? earlyRawNormalized
     : (normalizeGoal(canonicalIntake.goals?.primary) ?? earlyRawNormalized);
-  const earlyResolved = resolvePrimaryGoal({
+  const earlyResolution = resolvePrimaryGoal({
     goal: earlyRequestedGoal,
     bodyFat: earlyBodyFat,
     bmi: bodyWeight / ((bodyHeight / 100) ** 2),
     isMale: earlyIsMale,
     isYoungTrainee: Number.isFinite(earlyAge) && earlyAge > 0 && earlyAge < 18,
-  }).resolved;
+  });
+  const earlyResolved = earlyResolution.resolved;
+  const earlyGoalRedirect = earlyResolution.redirect || null;
   // The original goal is kept as requested_primary so the plan-time
   // resolution below can still record its redirect (see there).
   canonicalIntake.goals = { ...canonicalIntake.goals, primary: earlyResolved, requested_primary: canonicalIntake.goals?.primary };
 
   // 1. Evaluate Intake
   const intake_decision = evaluateIntake(canonicalIntake, evaluationContext);
+
+  // H8: a goal the engine redirected (an underweight client asking for fat
+  // loss is moved to muscle gain) used to reach the plan with ZERO review
+  // flags and a READY decision — the redirect lived only in
+  // targets.goal_redirect, which the decision never saw, because the early
+  // resolution above discarded it before evaluateIntake ran. A redirect is
+  // a coach decision, so it is flagged here and a READY decision is
+  // downgraded to COACH_REVIEW_REQUIRED. A stricter status (BLOCKED,
+  // MEDICAL_REVIEW_REQUIRED) is never softened.
+  if (earlyGoalRedirect) {
+    const redirectFlag = {
+      code: "GOAL_REDIRECTED_REQUIRES_COACH_REVIEW",
+      scope: "GLOBAL",
+      level: "COACH",
+      message: earlyGoalRedirect.reason_ar || "The requested goal was redirected by the engine and needs coach confirmation.",
+      sourcePath: "goals.primary",
+    };
+    intake_decision.review_flags = [...(intake_decision.review_flags || []), redirectFlag];
+    intake_decision.decision_reasons = [
+      ...(intake_decision.decision_reasons || []),
+      { code: "GOAL_REDIRECTED_REQUIRES_COACH_REVIEW", scope: "GLOBAL", message: redirectFlag.message },
+    ];
+    if (intake_decision.plan_status === "READY_FOR_DRAFT") {
+      intake_decision.plan_status = "COACH_REVIEW_REQUIRED";
+    }
+  }
 
   // P0-A10 (Q36): the weekly mobility prescription is the gate for automatic
   // warm-ups. This prescription-only run reads exactly the status the full
@@ -1767,10 +1861,46 @@ export function buildMasterEngineV2(inputs) {
   // Valid meals are untouched: annotation fields are added only when a meal
   // actually fails or was rescued, so a passing plate serializes as before.
   const fallbackCulinaryMeals = refreshActualMacros(applyCulinaryProteinFallback(builtCulinaryMeals, culinaryAllergenContext));
-  const culinaryPreflight = evaluateCulinaryPreflight(fallbackCulinaryMeals, {
+  // H8: portion passes on the FINAL plate (after the trims and the protein
+  // fallback, before the preflight audits it). Order matters: the
+  // cholesterol yolk cap first (it may replace an omelette with a vetted
+  // swap), then the legume plate for a client with no animal protein (the
+  // selection stage picks legume patterns, but the recipe-built plate never
+  // saw them), then the protein split (an oversized tuna/cottage/omelette is
+  // split into two real portions, not cut), then the omelette rename (the
+  // trim scales portions without renaming them), then token cleanup, then
+  // the day reconciliation (each meal's few-kcal trim residual adds up to
+  // +16..+64 a day). The passes only move food already on the plate.
+  const hasHighCholesterol = (canonicalIntake?.medical?.conditions || []).some(
+    (c) => String(c?.conditionCode || "").toUpperCase() === "HIGH_CHOLESTEROL",
+  );
+  const h8CulinaryMeals = refreshActualMacros(
+    // A pass that introduces a new food (the protein split's swap partner)
+    // runs after buildCulinaryRecipeMeals already applied the disliked
+    // names, so the new food's name is never adjusted: a shakshouka partner
+    // keeps "وزيت الزيتون" in its name for a client who dislikes olive oil.
+    // Re-apply the same adjustment here, on the final plate.
+    applyDislikedNames(
+      reconcileDayCaloriesToTarget(
+        dropTokenPortions(
+          renameOmelettesToActualEggs(
+            splitOversizedProteinPortions(
+              ensureLegumeForNoAnimalProtein(
+                capWholeEggsForCholesterol(fallbackCulinaryMeals, hasHighCholesterol),
+                culinaryAllergenContext,
+              ),
+            ),
+          ),
+        ),
+        universalTargets.target_calories,
+      ),
+      effectiveIntake?.disliked_foods,
+    ),
+  );
+  const culinaryPreflight = evaluateCulinaryPreflight(h8CulinaryMeals, {
     isSafe: (code) => isFoodClinicallySafe(code, culinaryAllergenContext),
   });
-  const culinaryRecipeMeals = fallbackCulinaryMeals.map((meal) => {
+  const culinaryRecipeMeals = h8CulinaryMeals.map((meal) => {
     const result = culinaryPreflight.meals.find((m) => m.meal_number === meal.meal_number) || {};
     return {
       ...meal,

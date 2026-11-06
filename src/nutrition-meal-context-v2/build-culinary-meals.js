@@ -124,6 +124,24 @@ const FOOD_SWAP_DATABASE_ENTRIES = {
     is_economic: true,
     is_gout_safe: true,
   },
+  // H8: the boiled-egg top-up serves this code as a real plate item, so it
+  // needs a swap-database row of its own — without one, isFoodClinicallySafe
+  // refuses it for want of a row and the culinary preflight flags the whole
+  // plate as forbidden. Same food as the omelette for safety purposes, with
+  // the canonical-table macros (USDA FDC:173424: P 12.58, F 10.61, C 1.12).
+  EGG_WHOLE_HARD_BOILED: {
+    code: "EGG_WHOLE_HARD_BOILED",
+    name_ar: "بيض كامل مسلوق",
+    name_en: "Hard-Boiled Whole Egg",
+    fat_tier: FoodFatTier.FATTY,
+    unit_label: "بيضة كاملة مسلوقة (55 جم)",
+    category: "PROTEIN",
+    is_gluten_free: true,
+    is_dairy_free: true,
+    is_fish_free: true,
+    is_economic: true,
+    is_gout_safe: true,
+  },
   SMOKED_TURKEY: {
     code: "SMOKED_TURKEY",
     name_ar: "شرائح صدور رومي مدخن فاخرة",
@@ -918,7 +936,7 @@ export function isFoodClinicallySafe(foodCode, allergenContext = {}, mealContext
     String(mealContext || "").toUpperCase() === "BREAKFAST" &&
     food.is_dairy
   ) return false;
-  if (allergenContext.isEggsExcluded && (foodCode === "EGGS_OMELETTE" || foodCode === "SHAKSHOUKA_EGGS")) return false;
+  if (allergenContext.isEggsExcluded && (foodCode === "EGGS_OMELETTE" || foodCode === "SHAKSHOUKA_EGGS" || foodCode === "EGG_WHOLE_HARD_BOILED")) return false;
   if (allergenContext.isFishExcluded && food.is_fish) return false;
   if (allergenContext.isPoultryExcluded && (foodCode === "CHICKEN_BREAST" || foodCode === "SMOKED_TURKEY")) return false;
   if (allergenContext.isRedMeatExcluded && (foodCode === "LEAN_BEEF" || foodCode === "CAMEL_MEAT_LEAN")) return false;
@@ -3479,15 +3497,41 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
         // Additional Protein via Chicken Breast slices (to avoid overloading cottage cheese)
         const finalRemP = Math.max(0, targetP - currentP);
-        // When the levothyroxine lock keeps the cheese off breakfast, the
-        // top-up must also cover the small remainder the cheese would have
-        // filled (a 40 g cheese portion is about 5 g of protein): otherwise
-        // the meal lands a few grams short on protein at every regeneration.
-        // A 13-16 g chicken slice is a real portion, the same scale as the
-        // 19 g slice the day-0 breakfast already serves. Dairy-excluded
-        // clients keep the old 6 g threshold: their shortfall predates the
-        // lock and is not this package's to change.
-        const topUpMinP = isLevothyroxineBreakfastDairyLocked ? 4 : 6;
+        // H8: a chicken slice is only added when it is a real slice. The
+        // old 4-6 g protein threshold served a 13-42 g sliver of chicken —
+        // a token, not a serving (the catalog minimum for chicken is 50 g).
+        // A smaller remainder is left for the trim's protein re-add, which
+        // scales a real protein item up instead of inventing a sliver. 16 g
+        // of protein is about a 52 g slice, the smallest real one.
+        const topUpMinP = 16;
+        // But a small remainder still has to be covered: a locked breakfast
+        // (no dairy) leaves about 5 g of protein unfilled, and the recipe
+        // builder is also called on its own (no trim runs after it), so the
+        // remainder cannot be left for the trim alone. One whole boiled egg
+        // (55 g, 6.5 g protein) is a real portion that covers a 4-6 g
+        // remainder without inventing a sliver of anything.
+        const eggGramsOnPlate = items.filter((i) => i.food_code === "EGGS_OMELETTE").reduce((s, i) => s + Number(i.portion_g || 0), 0);
+        // EGG_WHOLE_HARD_BOILED is a canonical-table code, not a swap-database
+        // code, so isFoodClinicallySafe would refuse it for want of a row;
+        // the omelette is the same food for safety purposes (egg exclusion,
+        // vegan, fasting).
+        if (finalRemP >= 4 && finalRemP < topUpMinP && !isEggsExcluded && eggGramsOnPlate < 165 && isFoodClinicallySafe("EGGS_OMELETTE", allergenContext)) {
+          items.push({
+            food_code: "EGG_WHOLE_HARD_BOILED",
+            name_ar: "بيضة كاملة مسلوقة",
+            name_en: "1 Whole Boiled Egg",
+            category: "PROTEIN",
+            portion_g: 55,
+            household_measurement: "بيضة كاملة مسلوقة",
+            protein_g: 6.5,
+            carb_g: 0,
+            fat_g: 5,
+            calories_kcal: 71,
+            swaps: generateSmartSwaps("PROTEIN", 55, "EGG_WHOLE_HARD_BOILED", "BREAKFAST", 5, allergenContext),
+          });
+          currentP += 6.5;
+          currentF += 5;
+        }
         if (finalRemP >= topUpMinP) {
           if (!isPoultryExcluded) {
             const chickenGrams = Math.round(finalRemP / 0.31);

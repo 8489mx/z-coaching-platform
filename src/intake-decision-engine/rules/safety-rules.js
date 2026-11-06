@@ -241,6 +241,50 @@ export function evaluateMedicalConditions(input) {
         ),
       );
     }
+    // H8: high cholesterol is a real condition code now. It never blocks
+    // the plan on its own, but a coach must see it: the plan carries an
+    // egg-yolk cap and a saturated-fat note, and the decision must say so.
+    if (condition.conditionCode === "HIGH_CHOLESTEROL") {
+      result.statusCandidates.push(statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "HIGH_CHOLESTEROL_REQUIRES_COACH_REVIEW"));
+      result.reviewFlags.push(
+        reviewFlag(
+          "HIGH_CHOLESTEROL_REQUIRES_COACH_REVIEW",
+          Scope.GLOBAL,
+          ReviewLevel.COACH,
+          "High cholesterol: the plan caps whole eggs at two a day and limits saturated fat, and a coach confirms the client's own lipid target before approving.",
+          `${sourcePath}.conditionCode`,
+        ),
+      );
+      result.reasons.push(
+        reason(
+          "HIGH_CHOLESTEROL_REQUIRES_COACH_REVIEW",
+          Scope.GLOBAL,
+          "High cholesterol prevents automatic approval until a coach reviews the diet limits.",
+        ),
+      );
+    }
+    // H8: osteoporosis is a real condition code now. A coach must see it:
+    // the training guard regresses axial barbell squats and loaded spinal
+    // hinges for the whole block, and the decision must say so.
+    if (condition.conditionCode === "OSTEOPOROSIS") {
+      result.statusCandidates.push(statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "OSTEOPOROSIS_REQUIRES_COACH_REVIEW"));
+      result.reviewFlags.push(
+        reviewFlag(
+          "OSTEOPOROSIS_REQUIRES_COACH_REVIEW",
+          Scope.GLOBAL,
+          ReviewLevel.COACH,
+          "Osteoporosis: loaded spinal flexion and axial barbell squats are regressed for the whole block, and a coach confirms the client's own bone-health plan before approving.",
+          `${sourcePath}.conditionCode`,
+        ),
+      );
+      result.reasons.push(
+        reason(
+          "OSTEOPOROSIS_REQUIRES_COACH_REVIEW",
+          Scope.GLOBAL,
+          "Osteoporosis prevents automatic approval until a coach reviews the training regressions.",
+        ),
+      );
+    }
     if (condition.otherConditionText?.trim()) {
       result.statusCandidates.push(
         statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "UNCLASSIFIED_MEDICAL_CONDITION"),
@@ -542,11 +586,95 @@ export function evaluateUnclassifiedTextAndMedication(input) {
   return result;
 }
 
+export function evaluateElderlySafety(input, context) {
+  const result = emptyRuleResult();
+  const ageYears = calculateAgeYears(input.personal.dateOfBirth, context.assessmentDate);
+  const heightM = Number(input.body?.heightCm) / 100;
+  const bmi = heightM > 0 ? Number(input.body?.weightKg) / (heightM * heightM) : null;
+  const isBeginner =
+    input.training?.experience === "BEGINNER" || input.training?.experience === "NEVER_TRAINED";
+  // Q13 (owner-decided): the elderly guard threshold is age 65+ and/or BMI
+  // 35+, for BEGINNER clients. It used to live only in the training
+  // program's coach_review_flags, so a coach reading only the decision
+  // saw nothing. It is a decision-level flag now.
+  if (isBeginner && (ageYears >= 65 || (bmi !== null && bmi >= 35))) {
+    result.statusCandidates.push(statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "ELDERLY_HIGH_BMI"));
+    result.reviewFlags.push(
+      reviewFlag(
+        "ELDERLY_HIGH_BMI",
+        Scope.GLOBAL,
+        ReviewLevel.COACH,
+        "Older or high-BMI beginner: the plan starts conservatively with an intro week, and a coach confirms the starting loads before approving.",
+        "personal.dateOfBirth",
+      ),
+    );
+    result.reasons.push(
+      reason(
+        "ELDERLY_HIGH_BMI",
+        Scope.GLOBAL,
+        "Age 65+ or BMI 35+ with a beginner prevents automatic approval until a coach reviews the conservative start.",
+      ),
+    );
+  }
+  // H8: at 65+ the protein rate is capped at 1.6 g/kg (kidney function is
+  // unknown for these clients), so the decision must carry a visible
+  // kidney-check flag — a cap the coach cannot see is a silent cap.
+  if (ageYears >= 65) {
+    result.statusCandidates.push(statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "ELDERLY_PROTEIN_KIDNEY_CHECK"));
+    result.reviewFlags.push(
+      reviewFlag(
+        "ELDERLY_PROTEIN_KIDNEY_CHECK",
+        Scope.GLOBAL,
+        ReviewLevel.COACH,
+        "Protein is capped at 1.6 g/kg because kidney function is unknown at this age; confirm the kidneys before raising protein.",
+        "personal.dateOfBirth",
+      ),
+    );
+    result.reasons.push(
+      reason(
+        "ELDERLY_PROTEIN_KIDNEY_CHECK",
+        Scope.GLOBAL,
+        "The elderly protein cap needs a kidney check before a coach raises protein.",
+      ),
+    );
+  }
+  return result;
+}
+
+export function evaluateSleepSafety(input) {
+  const result = emptyRuleResult();
+  // Only a REPORTED short sleep fires: the canonical value defaults to
+  // 7.5 h when the client reported nothing, and a default must never flag.
+  const hours = input.lifestyle?.sleep?.averageHours;
+  if (typeof hours === "number" && hours < 6) {
+    result.statusCandidates.push(statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "SHORT_SLEEP_REQUIRES_COACH_REVIEW"));
+    result.reviewFlags.push(
+      reviewFlag(
+        "SHORT_SLEEP_REQUIRES_COACH_REVIEW",
+        Scope.GLOBAL,
+        ReviewLevel.COACH,
+        `Only ${hours} hours of sleep a night: recovery and readiness are limited, and a coach confirms the sleep plan before approving.`,
+        "lifestyle.sleep.averageHours",
+      ),
+    );
+    result.reasons.push(
+      reason(
+        "SHORT_SLEEP_REQUIRES_COACH_REVIEW",
+        Scope.GLOBAL,
+        "Less than 6 hours of sleep prevents automatic approval until a coach reviews the recovery plan.",
+      ),
+    );
+  }
+  return result;
+}
+
 export function evaluateSafetyRules(input, context) {
   const result = mergeRuleResults([
     evaluateAgeSafety(input, context),
     evaluateDangerousSymptoms(input),
     evaluateMedicalConditions(input),
+    evaluateElderlySafety(input, context),
+    evaluateSleepSafety(input),
     evaluatePregnancySafety(input),
     evaluateInjurySafety(input),
     evaluateMedicalMovementRestrictions(input),

@@ -266,13 +266,17 @@ function calculateProteinFactor(snapshot, energyTarget) {
   // Br J Sports Med). The old training-load ladder (1.2-2.0 g/kg) was
   // never served: the master engine overwrote it on every plan, so the
   // two stages disagreed on protein for every client.
+  // H8: at 65+ the rate is capped at 1.6 g/kg while kidney function is
+  // unknown — the same population cap the master engine applies, so the
+  // two stages keep agreeing.
+  const elderlyCap = snapshot.client?.age_years >= 65 ? 1.6 : Infinity;
   if (energyTarget.calorie_direction === CalorieDirection.DEFICIT) {
-    return 2.2;
+    return Math.min(2.2, elderlyCap);
   }
   if (energyTarget.calorie_direction === CalorieDirection.SURPLUS) {
-    return 2.0;
+    return Math.min(2.0, elderlyCap);
   }
-  return 1.8;
+  return Math.min(1.8, elderlyCap);
 }
 
 function calculateFiberTarget(snapshot) {

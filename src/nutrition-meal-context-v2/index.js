@@ -23,3 +23,12 @@ export {
   FOOD_SWAP_DATABASE,
 } from "./build-culinary-meals.js";
 
+export {
+  splitOversizedProteinPortions,
+  capWholeEggsForCholesterol,
+  ensureLegumeForNoAnimalProtein,
+  renameOmelettesToActualEggs,
+  dropTokenPortions,
+  reconcileDayCaloriesToTarget,
+} from "./culinary-portion-passes.js";
+

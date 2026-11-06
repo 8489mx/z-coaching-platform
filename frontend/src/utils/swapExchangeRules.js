@@ -44,6 +44,9 @@ export const SWAP_FAMILIES = Object.freeze({
 
   // Savory breakfast / light dinner protein: eggs, white cheeses, foul, cold cuts.
   EGGS_OMELETTE: [SAVORY_PROTEIN], WHOLE_EGG: [SAVORY_PROTEIN], EGG_WHITE: [SAVORY_PROTEIN],
+  // H8: the boiled-egg top-up serves this code; it is the same food as
+  // WHOLE_EGG for swap purposes.
+  EGG_WHOLE_HARD_BOILED: [SAVORY_PROTEIN],
   SHAKSHOUKA_EGGS: [SAVORY_PROTEIN],
   COTTAGE_CHEESE: [SAVORY_PROTEIN], CHEESE_COTTAGE_LOW_FAT: [SAVORY_PROTEIN],
   LABNEH_LIGHT: [SAVORY_PROTEIN], HALLOUMI_LIGHT: [SAVORY_PROTEIN], LOW_FAT_MOZZARELLA: [SAVORY_PROTEIN],

@@ -1931,7 +1931,10 @@ export const UNIFIED_FOOD_CODE_ALIASES = {
   OAT_MILK: 'SKIM_MILK',
   MIXED_LEGUMES_STEW: 'COOKED_WHITE_BEANS',
   SAUTEED_VEGGIES: 'GREEN_BEANS',
-  MEDITERRANEAN_SALAD: 'FRESH_CUCUMBER'
+  MEDITERRANEAN_SALAD: 'FRESH_CUCUMBER',
+  // H8: the boiled-egg top-up serves EGG_WHOLE_HARD_BOILED (the canonical
+  // catalog code); the frontend base entry for the same food is WHOLE_EGG.
+  EGG_WHOLE_HARD_BOILED: 'WHOLE_EGG'
 };
 
 for (const [aliasCode, targetCode] of Object.entries(UNIFIED_FOOD_CODE_ALIASES)) {

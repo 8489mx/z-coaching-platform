@@ -88,7 +88,7 @@ function fullProgram(intake) {
   return buildMasterEngineV2({ intake, evaluationContext: CTX, nutritionFoodCatalog: CATALOG, options: {} });
 }
 
-test("C03 (shoulder, home dumbbells): 5 held elbow-extension slots are named placeholders, plan still withheld", () => {
+test("C03 (shoulder, home dumbbells): the kickback fills the elbow-extension slot, no hold, training preflight passes", () => {
   const program = fullProgram({
     ...BASE_INTAKE,
     gender: "female", age: "31", height_cm: "160", weight_kg: "82",
@@ -100,14 +100,20 @@ test("C03 (shoulder, home dumbbells): 5 held elbow-extension slots are named pla
   });
   assertNoNullCodeExercises(program, "C03");
   const held = allExercises(program).filter((ex) => ex.held_for_review);
-  assert.equal(held.length, 5, `C03 must hold exactly 5 slots, got ${held.length}`);
-  assert.ok(held.every((ex) => ex.slot_code === "ELBOW_EXTENSION"), "C03 held slots must all be ELBOW_EXTENSION");
-  assert.ok(held.every((ex) => ex.held_reason === "SHOULDER_OVERHEAD_ARM_HELD"), "C03 held reason must be SHOULDER_OVERHEAD_ARM_HELD");
-  assert.equal(program.training_program.final_preflight.status, "REVIEW_REQUIRED", "C03 final preflight must still withhold");
-  assert.equal(program.nutrition_program.status, "REVIEW_REQUIRED", "C03 plan must still be REVIEW_REQUIRED");
+  // H8: the elbow-extension slot used to be held at home because the
+  // catalog had no non-overhead triceps substitute there. The kickback
+  // (arm at the side, light dumbbell) fills it now, so no slot is held.
+  assert.equal(held.length, 0, `C03 must hold no slots, got ${held.length}`);
+  const elbow = allExercises(program).filter((ex) => ex.slot_code === "ELBOW_EXTENSION");
+  assert.ok(elbow.length > 0, "C03 must still train elbow extension");
+  assert.ok(elbow.every((ex) => ex.exercise_code === "DUMBBELL_TRICEPS_KICKBACK"),
+    `C03 elbow-extension slots must be the kickback, got ${JSON.stringify(elbow.map((e) => e.exercise_code))}`);
+  assert.equal(program.training_program.final_preflight.status, "PASSED", "C03 training preflight must pass with no holds");
+  assert.equal(program.nutrition_program.status, "REVIEW_REQUIRED", "C03 plan must still be REVIEW_REQUIRED at nutrition level");
+  assert.equal(program.intake_decision.plan_status, "COACH_REVIEW_REQUIRED", "C03 decision must still withhold the plan");
 });
 
-test("C06 (home, no equipment): 15 held slots are named placeholders, plan still withheld", () => {
+test("C06 (home, no equipment): 20 held slots are named placeholders, plan still withheld", () => {
   const program = fullProgram({
     ...BASE_INTAKE,
     gender: "male", age: "22", height_cm: "175", weight_kg: "78",
@@ -119,13 +125,18 @@ test("C06 (home, no equipment): 15 held slots are named placeholders, plan still
   });
   assertNoNullCodeExercises(program, "C06");
   const held = allExercises(program).filter((ex) => ex.held_for_review);
-  assert.equal(held.length, 15, `C06 must hold exactly 15 slots, got ${held.length}`);
+  // H8: 20, not 15 — the Nordic curl and the 45-degree hyperextension
+  // used to be served to a bodyweight-only client (the catalog mislabels
+  // them BODYWEIGHT). They are now honest EQUIPMENT_EXHAUSTED holds: no
+  // bodyweight knee-flexion exists in the catalog, and the hyper bench is
+  // a machine. The plan stays READY with coach-fill slots.
+  assert.equal(held.length, 20, `C06 must hold exactly 20 slots, got ${held.length}`);
   assert.ok(held.every((ex) => ex.held_reason === "EQUIPMENT_EXHAUSTED"), "C06 held reason must be EQUIPMENT_EXHAUSTED");
   assert.equal(program.training_program.final_preflight.status, "REVIEW_REQUIRED", "C06 final preflight must still withhold");
   assert.equal(program.nutrition_program.status, "REVIEW_REQUIRED", "C06 plan must still be REVIEW_REQUIRED");
 });
 
-test("C15 (home, no equipment, 2 days): 10 held slots are named placeholders, plan still withheld", () => {
+test("C15 (home, no equipment, 2 days): 15 held slots are named placeholders, plan still withheld", () => {
   const program = fullProgram({
     ...BASE_INTAKE,
     gender: "female", age: "23", height_cm: "158", weight_kg: "55",
@@ -138,13 +149,15 @@ test("C15 (home, no equipment, 2 days): 10 held slots are named placeholders, pl
   });
   assertNoNullCodeExercises(program, "C15");
   const held = allExercises(program).filter((ex) => ex.held_for_review);
-  assert.equal(held.length, 10, `C15 must hold exactly 10 slots, got ${held.length}`);
+  // H8: 15, not 10 — same honest holds as C06 (Nordic + hyperextension
+  // are no longer served to a bodyweight-only client).
+  assert.equal(held.length, 15, `C15 must hold exactly 15 slots, got ${held.length}`);
   assert.ok(held.every((ex) => ex.held_reason === "EQUIPMENT_EXHAUSTED"), "C15 held reason must be EQUIPMENT_EXHAUSTED");
   assert.equal(program.training_program.final_preflight.status, "REVIEW_REQUIRED", "C15 final preflight must still withhold");
   assert.equal(program.nutrition_program.status, "REVIEW_REQUIRED", "C15 plan must still be REVIEW_REQUIRED");
 });
 
-test("C16 (knee + back, gym): 10 held unilateral-lower slots are named placeholders, plan still withheld", () => {
+test("C16 (knee + back, gym): the knee-guard substitute fills the unilateral-lower slot, no hold, training preflight passes", () => {
   const program = fullProgram({
     ...BASE_INTAKE,
     gender: "male", age: "37", height_cm: "178", weight_kg: "120",
@@ -159,11 +172,13 @@ test("C16 (knee + back, gym): 10 held unilateral-lower slots are named placehold
   });
   assertNoNullCodeExercises(program, "C16");
   const held = allExercises(program).filter((ex) => ex.held_for_review);
-  assert.equal(held.length, 10, `C16 must hold exactly 10 slots, got ${held.length}`);
-  assert.ok(held.every((ex) => ex.slot_code === "UNILATERAL_LOWER"), "C16 held slots must all be UNILATERAL_LOWER");
-  assert.ok(held.every((ex) => ex.held_reason === "DEDUP_EXHAUSTED"), "C16 held reason must be DEDUP_EXHAUSTED");
-  assert.equal(program.training_program.final_preflight.status, "REVIEW_REQUIRED", "C16 final preflight must still withhold");
-  assert.equal(program.nutrition_program.status, "REVIEW_REQUIRED", "C16 plan must still be REVIEW_REQUIRED");
+  // H8: the knee-guard substitute (a hip thrust in the KNEE_DOMINANT
+  // slot) is exempt from the hip-extension family dedup, so the
+  // unilateral-lower slot is filled instead of held.
+  assert.equal(held.length, 0, `C16 must hold no slots, got ${held.length}`);
+  assert.equal(program.training_program.final_preflight.status, "PASSED", "C16 training preflight must pass with no holds");
+  assert.equal(program.nutrition_program.status, "REVIEW_REQUIRED", "C16 plan must still be REVIEW_REQUIRED at nutrition level");
+  assert.equal(program.intake_decision.plan_status, "COACH_REVIEW_REQUIRED", "C16 decision must still withhold the plan");
 });
 
 test("clean gym client (no held slots): no placeholders, every exercise a real code with a dose", () => {

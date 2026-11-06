@@ -36,6 +36,11 @@ test("every exercise the plan writes is counted against a muscle", () => {
     for (const env of ["commercial_gym", "home_gym", "calisthenics_bands"]) {
       for (const session of weekOf({ days, env, experience: days >= 5 ? "advanced" : "intermediate" })) {
         for (const exercise of session.exercises || []) {
+          // A held placeholder is a row the coach must fill, not an exercise
+          // the plan writes: it has no muscle by design (P4). A bands-only
+          // client holds the hip-extension slot because the session's one
+          // bodyweight hip-extension is already the hinge's substitute.
+          if (String(exercise.exercise_code || "").startsWith("HELD_SLOT")) continue;
           if (resolveMuscleGroupKey(exercise) === "OTHER") unknown.add(String(exercise.exercise_code || exercise.code));
         }
       }

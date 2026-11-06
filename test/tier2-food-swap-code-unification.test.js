@@ -8,7 +8,7 @@ import {
   calculateDynamicFoodSwap 
 } from '../frontend/src/utils/foodSwapEngine.js';
 
-test('Tier 2 Item 4: Food Swap Code Unification & 23-Code Full Compatibility Suite', async (t) => {
+test('Tier 2 Item 4: Food Swap Code Unification & 24-Code Full Compatibility Suite', async (t) => {
   // 1. Extract all food codes produced by culinary meal engine
   const mealEngineFile = 'src/nutrition-meal-context-v2/build-culinary-meals.js';
   const content = fs.readFileSync(mealEngineFile, 'utf8');
@@ -20,7 +20,9 @@ test('Tier 2 Item 4: Food Swap Code Unification & 23-Code Full Compatibility Sui
   }
 
   await t.test('1. Every unique culinary meal code exists directly or via UNIFIED_FOOD_CODE_ALIASES in FOOD_DATABASE', () => {
-    assert.equal(mealCodes.size, 23, 'Expected exactly 23 unique meal codes from culinary meal engine');
+    // H8: 24, not 23 — the boiled-egg top-up serves EGG_WHOLE_HARD_BOILED,
+    // aliased to the WHOLE_EGG base entry.
+    assert.equal(mealCodes.size, 24, 'Expected exactly 24 unique meal codes from culinary meal engine');
 
     for (const code of mealCodes) {
       const foodItem = FOOD_DATABASE[code];
@@ -30,7 +32,7 @@ test('Tier 2 Item 4: Food Swap Code Unification & 23-Code Full Compatibility Sui
     }
   });
 
-  await t.test('2. Every one of the 23 codes produces non-empty compatible swap candidates and computes dynamic swap', () => {
+  await t.test('2. Every one of the 24 codes produces non-empty compatible swap candidates and computes dynamic swap', () => {
     for (const code of mealCodes) {
       const foodItem = FOOD_DATABASE[code];
       // P2-C3: getCompatibleSwaps is deleted; with taste not enforced its filter

@@ -804,11 +804,17 @@ function compareAdditions(left, right) {
 function supplementAdditions(meal, assignments, itemsByCode) {
   const usedCodes = new Set(assignments.map(({ foodCode }) => foodCode));
   const countBySlot = new Map();
+  const classesBySlot = new Map();
   for (const assignment of assignments) {
     countBySlot.set(
       assignment.slotSequence,
       (countBySlot.get(assignment.slotSequence) ?? 0) + 1,
     );
+    const foodClass = String(itemsByCode.get(assignment.foodCode)?.item?.food_class || "").toUpperCase();
+    if (foodClass) {
+      if (!classesBySlot.has(assignment.slotSequence)) classesBySlot.set(assignment.slotSequence, new Set());
+      classesBySlot.get(assignment.slotSequence).add(foodClass);
+    }
   }
 
   const additions = [];
@@ -818,16 +824,22 @@ function supplementAdditions(meal, assignments, itemsByCode) {
       continue;
     }
     slot.candidate_food_codes.forEach((foodCode, candidateIndex) => {
-      if (!usedCodes.has(foodCode)) {
-        additions.push({
-          foodCode,
-          food: itemsByCode.get(foodCode).item,
-          slotSequence: slot.sequence,
-          slot: slot.slot,
-          selectionSource: SELECTION_SOURCE.PORTION_SOLVER_ADDITION,
-          candidateIndex,
-        });
-      }
+      if (usedCodes.has(foodCode)) return;
+      // A second starch here is the P5 capped-meal rebalance, not a clash:
+      // when the first starch is capped, the solver rebalances the meal with
+      // a second starch instead of serving an under-target meal. (H8 first
+      // barred it; the P5 tests prove the rebalance is the locked design, so
+      // the bar is reverted. The dual-starch fault the brief names lives in
+      // the culinary plate - three starches, or a token second starch - and
+      // is fixed there, not in the solver.)
+      additions.push({
+        foodCode,
+        food: itemsByCode.get(foodCode).item,
+        slotSequence: slot.sequence,
+        slot: slot.slot,
+        selectionSource: SELECTION_SOURCE.PORTION_SOLVER_ADDITION,
+        candidateIndex,
+      });
     });
   }
   return additions;
@@ -1079,6 +1091,9 @@ const DOMINANCE_TOLERANCE_MARGIN = 0.05;
 // the ErgonomicPortionCaps in nutrition-meal-context-v2/domain/enums.js
 // (tomato/cucumber 150, carrot 100, cooked rice/potato 250, dry oats 80)
 // and the catalog's own default_g (tomato/cucumber 150, potato 250).
+// H8 adds the three protein caps the rejected-plans sweep found: cottage
+// cheese 150 g (a tub, not a bowl), canned tuna 120 g (one drained can),
+// whole-egg omelette 100 g (two eggs).
 const SINGLE_FOOD_MEAL_CAPS_G = Object.freeze({
   TOMATO_RED_RAW: 150,
   CUCUMBER_WITH_PEEL_RAW: 150,
@@ -1086,6 +1101,9 @@ const SINGLE_FOOD_MEAL_CAPS_G = Object.freeze({
   RICE_WHITE_LONG_GRAIN_COOKED: 250,
   POTATO_BOILED_WITHOUT_SKIN: 250,
   OATS_ROLLED_DRY: 80,
+  COTTAGE_CHEESE_LOW_FAT_2_PERCENT: 150,
+  TUNA_LIGHT_CANNED_WATER_DRAINED: 120,
+  EGG_WHOLE_HARD_BOILED: 100,
 });
 // The only uncooked/dry starch in the catalog; cooked starches are wet weight,
 // so a 100 g dry cap would be meaningless for them.

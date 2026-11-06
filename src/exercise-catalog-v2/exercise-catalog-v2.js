@@ -791,6 +791,24 @@ const EXERCISES_V2 = Object.freeze([
     beginnerFriendly: true,
     compound: false,
   }),
+  // H8: the home triceps substitute a shoulder injury can actually do.
+  // The overhead extension narrows the subacromial space, and bench dips
+  // load the front of the shoulder with body weight, so a shoulder client
+  // at home used to get a held slot and zero triceps work all week. The
+  // kickback trains the same muscle with the arm at the side and a light
+  // dumbbell — no overhead arm, no bodyweight anterior load.
+  createExerciseV2({
+    exerciseCode: "DUMBBELL_TRICEPS_KICKBACK",
+    nameEn: "Dumbbell Triceps Kickback",
+    nameAr: "ترايسبس بالدمبل للخلف (كيك باك)",
+    slotCode: MovementSlotCodeV2.ELBOW_EXTENSION,
+    primaryMuscle: MuscleGroup.TRICEPS,
+    secondaryMuscles: [],
+    equipmentCode: EquipmentCode.DUMBBELLS,
+    minimumLoadCapacity: EquipmentLoadCapacity.LIGHT,
+    beginnerFriendly: true,
+    compound: false,
+  }),
   createExerciseV2({
     exerciseCode: "BENCH_DIPS_BODYWEIGHT",
     nameEn: "Bench Dips",

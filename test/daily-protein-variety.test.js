@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
-import { FOOD_SWAP_DATABASE } from "../src/nutrition-meal-context-v2/index.js";
+import { FOOD_SWAP_DATABASE, diversifyDailyProteins } from "../src/nutrition-meal-context-v2/index.js";
 import { isNoSwapFood } from "../frontend/src/utils/swapExchangeRules.js";
 
 /**
@@ -55,18 +55,28 @@ test("no meal holds the same food twice", () => {
 });
 
 test("a food changed for variety keeps the value, fits the budget and can be switched back", () => {
+  // H8: the breakfast chicken sliver is gone, so no protein repeats in
+  // three meals in any of the cases above and the diversifier never fires
+  // on a real plate. Exercise it directly instead: force the plain plan's
+  // chicken into all three meals, then check the replacement it picks.
+  const plain = meals();
+  const chicken = plain.flatMap((m) => m.items).find((i) => i.food_code === "CHICKEN_BREAST");
+  assert.ok(chicken, "the plain plan must still serve chicken somewhere");
+  assert.ok(Array.isArray(chicken.swaps) && chicken.swaps.length > 0, "the chicken must carry swaps");
+  const forced = plain.map((meal) => {
+    const items = meal.items.map((item) =>
+      item.category === "PROTEIN" && !isNoSwapFood(item.food_code) ? { ...chicken } : item);
+    return { ...meal, items };
+  });
   let changed = 0;
-  for (const [name, extra] of Object.entries(CASES)) {
-    for (const meal of meals(extra)) {
-      for (const item of meal.items.filter((i) => i.replaced_for_variety_from)) {
-        changed += 1;
-        const back = (item.swaps || []).find((s) => s.food_code === item.replaced_for_variety_from);
-        assert.ok(back, `${name}: ${item.replaced_for_variety_from} is offered back`);
-        assert.ok(Math.abs(item.calories_kcal - back.calories_kcal) <= 0.25 * back.calories_kcal, `${name}: energy close`);
-        assert.ok(Math.abs(item.fat_g - back.fat_g) <= 10, `${name}: fat close`);
-        if (extra.food_budget === "LOW") assert.ok(FOOD_SWAP_DATABASE[item.food_code]?.is_economic, `${name}: ${item.food_code} fits a low budget`);
-      }
+  for (const meal of diversifyDailyProteins(forced)) {
+    for (const item of meal.items.filter((i) => i.replaced_for_variety_from)) {
+      changed += 1;
+      const back = (item.swaps || []).find((s) => s.food_code === item.replaced_for_variety_from);
+      assert.ok(back, `${item.replaced_for_variety_from} is offered back`);
+      assert.ok(Math.abs(item.calories_kcal - back.calories_kcal) <= 0.25 * back.calories_kcal, "energy close");
+      assert.ok(Math.abs(item.fat_g - back.fat_g) <= 10, "fat close");
     }
   }
-  assert.ok(changed > 0, "the plain plan had chicken in three meals, so something changed");
+  assert.ok(changed > 0, "forcing chicken into three meals must change at least one");
 });

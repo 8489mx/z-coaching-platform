@@ -46,9 +46,21 @@ function exerciseFitsEquipment(code, available) {
  */
 function equipmentSafeAlternative(code, slotCode, available, used, excluded = null) {
   const original = getExerciseV2ByCode(code);
+  // H8: a press must never fill an arm-isolation slot. A decline push-up
+  // (triceps as a secondary muscle) used to fill the elbow-extension slot
+  // for a bodyweight-only shoulder client — a press in an isolation slot
+  // that also loads the injured shoulder. A compound with the same primary
+  // muscle is NOT the same problem: a Romanian deadlift for a Nordic curl,
+  // or a glute bridge for a bodyweight-only client, is the right substitute.
+  // The Nordic / hyperextension exclusion for home clients lives in the
+  // callers' homeSafeExcludedCodes, not here: at the gym both are real
+  // equipment, so a bodyweight-only gym client may still be offered them.
+  const ARM_ISOLATION_SLOTS = new Set(["ELBOW_EXTENSION", "ELBOW_FLEXION"]);
+  const PRESS_SLOTS = new Set(["HORIZONTAL_PUSH", "VERTICAL_PUSH", "INCLINE_PUSH"]);
   const pool = EXERCISE_CATALOG_V2.exercises.filter((candidate) =>
     !used.has(candidate.exercise_code) &&
     !(excluded instanceof Set && excluded.has(candidate.exercise_code)) &&
+    !(original && ARM_ISOLATION_SLOTS.has(original.slot_code) && PRESS_SLOTS.has(candidate.slot_code)) &&
     (candidate.equipment_requirements || []).every((req) => available.has(String(req.equipment_code).toUpperCase())));
   return (
     pool.find((candidate) => candidate.slot_code === slotCode) ||
@@ -358,6 +370,13 @@ const OVERHEAD_ARM_TRICEPS_EXTENSIONS = new Set([
   "OVERHEAD_DUMBBELL_TRICEPS_EXTENSION",
   "ARMS_OVERHEAD_TRICEPS_EXTENSION",
 ]);
+// Bench dips load the front of the shoulder, so for a shoulder-injured
+// client they are the same hazard as an overhead extension: the equipment
+// guard used to substitute a dip for the dumbbell overhead extension when
+// the client owned no dumbbells, and the dip slipped past the shoulder
+// guard because it is not overhead. The kickback (home, dumbbells) and the
+// rope pushdown (gym) are the safe substitutes; with no load the slot holds.
+const SHOULDER_UNSAFE_ELBOW_EXTENSION = new Set([...OVERHEAD_ARM_TRICEPS_EXTENSIONS, "BENCH_DIPS_BODYWEIGHT"]);
 // P0-A9: elbow/wrist loading sets. V1 already holds push/pull slots for these injuries; the
 // mesocycle must not refill them. The catalog carries no grip data, so elbow and wrist share
 // the same exclusion sets.
@@ -419,6 +438,61 @@ const ANKLE_LOADED = new Set([
   "SEATED_CALF_RAISE",
   "DUMBBELL_CALF_RAISE",
 ]);
+// H8: mild-hip regressions. A hip ache of 1-3/10 regresses instead of
+// holding: the load comes off the hip but the slot keeps its pattern — a
+// bodyweight squat for a loaded squat, a bodyweight bridge for a hinge or
+// a thrust. Lunges regress to a static split squat (not in this map: they
+// are matched by set below). None of the targets is in HIP_LOADED, so the
+// guard below does not re-fire on its own regression.
+const MILD_HIP_REGRESSIONS = Object.freeze({
+  BARBELL_BACK_SQUAT: "BODYWEIGHT_SQUAT",
+  BARBELL_FRONT_SQUAT: "BODYWEIGHT_SQUAT",
+  SMITH_MACHINE_SQUAT: "BODYWEIGHT_SQUAT",
+  BARBELL_SQUAT: "BODYWEIGHT_SQUAT",
+  GOBLET_SQUAT: "BODYWEIGHT_SQUAT",
+  LEG_PRESS_MACHINE: "BODYWEIGHT_SQUAT",
+  HACK_SQUAT_MACHINE: "BODYWEIGHT_SQUAT",
+  INCLINE_LEG_PRESS: "BODYWEIGHT_SQUAT",
+  BARBELL_DEADLIFT: "BODYWEIGHT_GLUTE_BRIDGE",
+  BARBELL_CONVENTIONAL_DEADLIFT: "BODYWEIGHT_GLUTE_BRIDGE",
+  BARBELL_ROMANIAN_DEADLIFT: "BODYWEIGHT_GLUTE_BRIDGE",
+  DUMBBELL_ROMANIAN_DEADLIFT: "BODYWEIGHT_GLUTE_BRIDGE",
+  B_STANCE_RDL: "BODYWEIGHT_GLUTE_BRIDGE",
+  BARBELL_HIP_THRUST: "BODYWEIGHT_GLUTE_BRIDGE",
+  HIP_THRUST: "BODYWEIGHT_GLUTE_BRIDGE",
+  GLUTE_BRIDGE: "BODYWEIGHT_GLUTE_BRIDGE",
+  DUMBBELL_GLUTE_BRIDGE: "BODYWEIGHT_GLUTE_BRIDGE",
+});
+// Two guards that both convert to a thrust used to serve the same movement
+// three times in one session; a second family member in the same session is
+// a duplicate and is swapped for a non-family alternative, or held.
+const HIP_EXTENSION_FAMILY = new Set([
+  "BARBELL_HIP_THRUST",
+  "HIP_THRUST",
+  "GLUTE_BRIDGE",
+  "BODYWEIGHT_GLUTE_BRIDGE",
+  "KAS_GLUTE_BRIDGE",
+  "DUMBBELL_GLUTE_BRIDGE",
+]);
+// H8: two exercises no home client can do. The Nordic curl needs a foot
+// anchor and the 45-degree hyperextension needs a bench — both used to
+// reach home plans verbatim. (The hyperextension even carries a BODYWEIGHT
+// label in the catalog, which is wrong; the taxonomy fix needs a new
+// equipment code and is filed as remaining.)
+const HOME_UNSUPPORTED_EXERCISES = new Set([
+  "NORDIC_HAMSTRING_CURL",
+  "GLUTE_BIASED_45_HYPEREXTENSION",
+]);
+// H8: the equipment pool for a direct caller who declared nothing. The
+// declared-equipment rule stays (a declared list is enforced); this set
+// only stands in where no list exists, matching the old leave-as-is
+// behaviour for undeclared clients.
+const FULL_ROOM_EQUIPMENT = new Set([
+  "BODYWEIGHT",
+  ...EXERCISE_CATALOG_V2.exercises.flatMap((e) =>
+    (e.equipment_requirements || []).map((r) => String(r.equipment_code).toUpperCase()),
+  ),
+]);
 // When a substitution would repeat an exercise already in the session, use this instead.
 const DUPLICATE_ALTERNATIVES = Object.freeze({
   DUMBBELL_LATERAL_RAISE: "ROTATOR_CUFF_EXTERNAL_ROTATION",
@@ -443,6 +517,8 @@ const INJURY_CUES_AR = Object.freeze({
   ELBOW: "حماية الكوع: تم حذف التمارين المحملة على الكوع من الخطة؛ راجع المدرب لاختيار بدائل مناسبة.",
   WRIST: "حماية الرسغ: تم حذف التمارين المحملة على الرسغ من الخطة؛ راجع المدرب لاختيار بدائل مناسبة.",
   HIP: "حماية الحوض: تم حذف التمارين المحملة على الحوض من الخطة؛ راجع المدرب لاختيار بدائل مناسبة.",
+  // H8: a mild hip ache regresses instead of holding — the cue says so.
+  HIP_MILD: "ألم خفيف في الحوض (3 من 10 أو أقل): التمارين المحملة على الحوض اتبدلت ببدائل خفيفة بدون وزن (سكوات بوزن الجسم وجسر الجلوت بوزن الجسم)؛ اشتغل في مدى بدون ألم، ولو الألم زاد عن 3 من 10 أو استمر بعد التمرين، وقف وراجع المدرب.",
   ANKLE: "حماية الكاحل: تم حذف التمارين المحملة على الكاحل من الخطة؛ راجع المدرب لاختيار بدائل مناسبة.",
 });
 
@@ -490,7 +566,7 @@ export function evaluateFinalTrainingWeeks(weeks, context = {}) {
   const forbiddenByJoint = [
     ["LOWER_BACK", context.hasLowerBackInjury, new Set([...AXIAL_SQUATS, ...LOADED_HINGES, ...STANDING_OVERHEAD_PRESSES, "BARBELL_BENT_OVER_ROW"])],
     ["KNEE", context.hasKneeInjury, new Set([...AXIAL_SQUATS, "HACK_SQUAT_MACHINE", ...KNEE_DOMINANT_LOADED, ...LUNGE_PATTERNS, "BODYWEIGHT_SQUAT"])],
-    ["SHOULDER", context.hasShoulderInjury, new Set(["BARBELL_BENCH_PRESS", "BARBELL_FLAT_BENCH_PRESS", ...INCLINE_DECLINE_PRESSES, ...OVERHEAD_PRESSES, ...OVERHEAD_ARM_TRICEPS_EXTENSIONS])],
+    ["SHOULDER", context.hasShoulderInjury, new Set(["BARBELL_BENCH_PRESS", "BARBELL_FLAT_BENCH_PRESS", ...INCLINE_DECLINE_PRESSES, ...OVERHEAD_PRESSES, ...SHOULDER_UNSAFE_ELBOW_EXTENSION])],
     ["ELBOW", context.hasElbowInjury, new Set([...ELBOW_WRIST_PRESS, ...ELBOW_WRIST_PULL, ...ELBOW_WRIST_ARM])],
     ["WRIST", context.hasWristInjury, new Set([...ELBOW_WRIST_PRESS, ...ELBOW_WRIST_PULL, ...ELBOW_WRIST_ARM])],
     ["HIP", context.hasHipInjury, HIP_LOADED],
@@ -678,6 +754,22 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     STANDING_DUMBBELL_SHOULDER_PRESS: "BARBELL_OVERHEAD_PRESS",
   });
 
+  // H8: the reverse map for a beginner's week 1. The FULL_BODY templates
+  // name barbell compounds directly for gym clients (not only via the
+  // upgrade map above), so week 1 is technique-first by downgrading the
+  // final code here: a 40 kg beginner learns the squat as a goblet squat
+  // before any barbell touches her back. From week 2 the barbell applies.
+  const BEGINNER_WEEK1_DOWNGRADES = Object.freeze({
+    BARBELL_BACK_SQUAT: "GOBLET_SQUAT",
+    BARBELL_FRONT_SQUAT: "GOBLET_SQUAT",
+    BARBELL_SQUAT: "GOBLET_SQUAT",
+    BARBELL_BENCH_PRESS: "DUMBBELL_FLOOR_PRESS",
+    BARBELL_FLAT_BENCH_PRESS: "DUMBBELL_FLOOR_PRESS",
+    BARBELL_BENT_OVER_ROW: "ONE_ARM_DUMBBELL_ROW",
+    BARBELL_OVERHEAD_PRESS: "SEATED_DUMBBELL_SHOULDER_PRESS",
+    STANDING_OVERHEAD_BARBELL_PRESS: "SEATED_DUMBBELL_SHOULDER_PRESS",
+  });
+
   const HOME_EQUIPMENT_REPLACEMENTS = Object.freeze({
     BARBELL_BACK_SQUAT: "GOBLET_SQUAT",
     BARBELL_BENCH_PRESS: "DUMBBELL_FLOOR_PRESS",
@@ -750,6 +842,36 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     constraints.some((c) => String(c.code).includes("INJURY")) ||
     rawInjuriesList.length > 0;
 
+  // H8: the pain level rides with the injury area. The guards below used to
+  // see only the area, so a mild hip ache (3/10) was treated like a severe
+  // one and both leg days were held. A mild injury (1-3/10) regresses; an
+  // unknown or moderate-or-worse injury keeps the hold (fail closed).
+  const injuryPainByArea = new Map();
+  for (const source of [
+    rawIntake.injuries,
+    rawIntake.training?.injuries,
+    rawIntake.training?.selectedInjuries,
+    rawIntake.medical?.injuries,
+  ]) {
+    for (const item of Array.isArray(source) ? source : []) {
+      if (item && typeof item === "object") {
+        const area = String(item.area || item.code || item.location || "").toUpperCase();
+        const pain = Number(item.painLevel ?? item.pain_level);
+        if (area && Number.isFinite(pain)) injuryPainByArea.set(area, pain);
+      }
+    }
+  }
+
+  // H8: the equipment pool a regression may draw from. Declared equipment
+  // wins; an undeclared home client is assumed to own bodyweight only, and
+  // an undeclared gym client the full room — matching the old leave-as-is
+  // behaviour for direct callers that declare nothing.
+  const regressionEquipment = hasDeclaredEquipment
+    ? availableEquipment
+    : isHome
+      ? new Set(["BODYWEIGHT"])
+      : FULL_ROOM_EQUIPMENT;
+
   // Clinical Guard: Hypertension & Cardiovascular Conditions (ACSM/AHA Guidelines)
   const medical = rawIntake.medical || {};
   const rawMedicalConditions = [
@@ -764,6 +886,13 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
     rawIntake.hasHypertension === true ||
     rawMedicalConditions.some(c => c.includes("HYPERTENSION") || c.includes("HEART_CONDITION") || c.includes("HIGH_BLOOD_PRESSURE"));
 
+  // H8: osteoporosis is a real condition code now (the drug-interaction
+  // firewall already carries it as NO_LOADED_SPINAL_FLEXION_AND_TWISTING).
+  // The served-plan guard below regresses axial barbell squats and loaded
+  // spinal hinges for the whole block; the hip thrust stays — it is
+  // spine-neutral and loads the hip, which is the point for bone health.
+  const hasOsteoporosis = rawMedicalConditions.includes("OSTEOPOROSIS");
+
   // Exercises the clinical guards below remove for this client, as sets — the equipment
   // fallback must never propose one of them as a "closest" alternative. Without this, a
   // guard's removal is undone whenever its own substitute does not fit the declared
@@ -777,11 +906,20 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
   };
   if (hasLowerBackInjury) excludeClinical(AXIAL_SQUATS, LOADED_HINGES, STANDING_OVERHEAD_PRESSES, new Set(["BARBELL_BENT_OVER_ROW"]));
   if (hasKneeInjury) excludeClinical(AXIAL_SQUATS, KNEE_DOMINANT_LOADED, LUNGE_PATTERNS, new Set(["HACK_SQUAT_MACHINE", "BODYWEIGHT_SQUAT"]));
-  if (hasShoulderInjury) excludeClinical(INCLINE_DECLINE_PRESSES, OVERHEAD_PRESSES, OVERHEAD_ARM_TRICEPS_EXTENSIONS, new Set(["BARBELL_BENCH_PRESS", "BARBELL_FLAT_BENCH_PRESS"]));
+  if (hasShoulderInjury) excludeClinical(INCLINE_DECLINE_PRESSES, OVERHEAD_PRESSES, SHOULDER_UNSAFE_ELBOW_EXTENSION, new Set(["BARBELL_BENCH_PRESS", "BARBELL_FLAT_BENCH_PRESS"]));
   if (hasElbowInjury || hasWristInjury) excludeClinical(ELBOW_WRIST_PRESS, ELBOW_WRIST_PULL, ELBOW_WRIST_ARM);
   if (hasHipInjury) excludeClinical(HIP_LOADED);
   if (hasAnkleInjury) excludeClinical(ANKLE_LOADED);
   if (hasHypertensionOrHeart) excludeClinical(CLINICAL_GUIDELINES.HYPERTENSION.CONTRAINDICATED_EXERCISES);
+
+  // H8: at home the Nordic curl and the 45-degree hyperextension are never
+  // available, whatever the catalog labels say — the Nordic needs a foot
+  // anchor and the hyperextension needs a bench, and a home client has
+  // neither. The pool must never hand either back as a substitute, at any
+  // call site; at the gym both are real equipment and stay available.
+  const homeSafeExcludedCodes = isHome
+    ? new Set([...clinicallyExcludedCodes, ...HOME_UNSUPPORTED_EXERCISES])
+    : clinicallyExcludedCodes;
 
   // P0-A9: elderly / high-BMI guard (owner decision Q13: age 65+ and/or BMI 35+, beginners).
   // Age sources, in order: explicit option, raw personal.age, date of birth (the canonical
@@ -1037,14 +1175,29 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           else if (ex.slot_code === "KNEE_FLEXION") finalCode = isHome ? "GLUTE_BRIDGE" : "LYING_LEG_CURL_MACHINE";
           else if (ex.slot_code === "UNILATERAL_LOWER") finalCode = "DUMBBELL_REVERSE_LUNGE";
           else finalCode = isHome ? "ONE_ARM_DUMBBELL_ROW" : "CHEST_SUPPORTED_ROW";
-        } else if (!isHome && !hasInjuries && GYM_COMPOUND_UPGRADES[finalCode] && exerciseFitsEquipment(GYM_COMPOUND_UPGRADES[finalCode], availableEquipment)) {
+        } else if (!isHome && !hasInjuries && GYM_COMPOUND_UPGRADES[finalCode] && exerciseFitsEquipment(GYM_COMPOUND_UPGRADES[finalCode], availableEquipment) && !(isBeginner && config.week_number === 1)) {
           // A compound upgrade is only a gym upgrade when the client owns what it
           // needs: a machines-only client keeps the fallback movement, and the
           // equipment guard below swaps it for a machine they actually have.
+          // H8: a beginner's week 1 is technique-first — no barbell on the
+          // opening lifts. The upgrade applies from week 2, once the
+          // movement pattern is learned.
           finalCode = GYM_COMPOUND_UPGRADES[finalCode];
           const upgradedV2 = getExerciseV2ByCode(finalCode);
           if (upgradedV2) {
             finalNameEn = upgradedV2.name_en;
+          }
+        }
+
+        // H8: the template names barbell compounds directly for gym clients,
+        // so the upgrade skip above is not enough — a beginner's week 1
+        // still opened with a barbell back squat. Downgrade the final code
+        // to the dumbbell/goblet fallback for week 1 only.
+        if (isBeginner && config.week_number === 1 && !isHome && BEGINNER_WEEK1_DOWNGRADES[finalCode]) {
+          finalCode = BEGINNER_WEEK1_DOWNGRADES[finalCode];
+          const downgradedV2 = getExerciseV2ByCode(finalCode);
+          if (downgradedV2) {
+            finalNameEn = downgradedV2.name_en;
           }
         }
 
@@ -1056,7 +1209,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         // for a machine (or bodyweight) movement they actually have, and held for the coach
         // when nothing they own fits the slot.
         if (hasDeclaredEquipment && !exerciseFitsEquipment(finalCode, availableEquipment)) {
-          const alternative = equipmentSafeAlternative(finalCode, ex.slot_code, availableEquipment, usedSessionCodes, clinicallyExcludedCodes);
+          const alternative = equipmentSafeAlternative(finalCode, ex.slot_code, availableEquipment, usedSessionCodes, homeSafeExcludedCodes);
           if (alternative) {
             finalCode = alternative.exercise_code;
             finalNameEn = alternative.name_en;
@@ -1065,6 +1218,30 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
 
         if (isHome && HOME_EQUIPMENT_REPLACEMENTS[finalCode] && exerciseFitsEquipment(HOME_EQUIPMENT_REPLACEMENTS[finalCode], availableEquipment)) {
           finalCode = HOME_EQUIPMENT_REPLACEMENTS[finalCode];
+        }
+
+        // H8: two exercises no home client can do, whatever the template or
+        // the fallback pool says. The Nordic curl needs a foot anchor; the
+        // 45-degree hyperextension needs a bench. Substitute from what the
+        // client owns (a dumbbell Romanian deadlift for the Nordic at home
+        // with dumbbells, a glute bridge for bodyweight-only). When nothing
+        // fits, or the pool's best answer is itself one of the two (the
+        // hyperextension's catalog label says BODYWEIGHT, so the pool hands
+        // it back as the Nordic's replacement), the slot is held for the
+        // coach — a null here would be filtered by the fit-check below and
+        // the session would silently lose the row.
+        if (isHome && HOME_UNSUPPORTED_EXERCISES.has(finalCode)) {
+          // The original code is added to `used`: the pool would otherwise
+          // return the Nordic itself, because its catalog equipment says
+          // BODYWEIGHT and that label is exactly what is wrong.
+          const unsupportedBefore = finalCode;
+          const alternative = equipmentSafeAlternative(finalCode, ex.slot_code, regressionEquipment, new Set([...usedSessionCodes, finalCode]), homeSafeExcludedCodes);
+          if (alternative && !HOME_UNSUPPORTED_EXERCISES.has(alternative.exercise_code)) {
+            finalCode = alternative.exercise_code;
+            finalNameEn = alternative.name_en;
+          } else {
+            return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", unsupportedBefore, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
+          }
         }
 
         // Active injury overrides for safety: each substitute keeps the slot's movement pattern
@@ -1112,17 +1289,30 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             // Pressing overhead narrows the subacromial space; external-rotation strengthening is
             // first-line exercise therapy for subacromial shoulder pain, and lateral raises stay in the week.
             finalCode = "ROTATOR_CUFF_EXTERNAL_ROTATION";
-          } else if (OVERHEAD_ARM_TRICEPS_EXTENSIONS.has(finalCode)) {
+          } else if (SHOULDER_UNSAFE_ELBOW_EXTENSION.has(finalCode)) {
             // The arm is overhead even though this is elbow extension, not a
             // press: the same subacromial narrowing applies. In the gym the
             // rope pushdown trains the same muscle with the arms down (the
-            // swap registry's safe swap). At home the catalog has no
-            // non-overhead triceps substitute, so the slot is held for the
-            // coach instead of serving an overhead movement.
+            // swap registry's safe swap). H8: at home the kickback does the
+            // same with a light dumbbell and the arm at the side — no
+            // overhead arm, no bodyweight anterior load — so the slot is
+            // filled when the client owns dumbbells and held only when they
+            // own no load at all. A bench dip is the same hazard (it loads
+            // the front of the shoulder), so it takes the same branch.
             if (isHome) {
-              return heldEntryFor(ex, "SHOULDER_OVERHEAD_ARM_HELD", beforeShoulder, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
+              // regressionEquipment, not availableEquipment: an undeclared
+              // home client owns bodyweight only (availableEquipment is null
+              // there and exerciseFitsEquipment(null) is always true), so
+              // the kickback must not be served to a client who never said
+              // they own dumbbells.
+              if (exerciseFitsEquipment("DUMBBELL_TRICEPS_KICKBACK", regressionEquipment)) {
+                finalCode = "DUMBBELL_TRICEPS_KICKBACK";
+              } else {
+                return heldEntryFor(ex, "SHOULDER_OVERHEAD_ARM_HELD", beforeShoulder, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
+              }
+            } else {
+              finalCode = "CABLE_TRICEPS_ROPE_PUSHDOWN";
             }
-            finalCode = "CABLE_TRICEPS_ROPE_PUSHDOWN";
           }
           if (finalCode !== beforeShoulder) injuryCues.push(INJURY_CUES_AR.SHOULDER);
         }
@@ -1176,10 +1366,23 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           finalCode = null;
         }
         if (hasHipInjury && HIP_LOADED.has(finalCode)) {
-          flagHeldSlot("HIP", ex.slot_code, finalCode);
-          jointHeldReason = "HIP_INJURY_HELD";
-          jointHeldCodeBefore = finalCode;
-          finalCode = null;
+          // H8: a mild hip ache (1-3/10) regresses instead of holding. The
+          // old guard held the whole leg day for any hip pain, so a client
+          // with a 3/10 ache got two gutted leg days a week. Pain that is
+          // unknown or 4+ keeps the hold (fail closed).
+          const hipPain = injuryPainByArea.get("HIP");
+          const regressed = Number.isFinite(hipPain) && hipPain <= 3
+            ? (MILD_HIP_REGRESSIONS[finalCode] ?? (LUNGE_PATTERNS.has(finalCode) ? "BODYWEIGHT_SPLIT_SQUAT" : null))
+            : null;
+          if (regressed) {
+            finalCode = regressed;
+            injuryCues.push(INJURY_CUES_AR.HIP_MILD);
+          } else {
+            flagHeldSlot("HIP", ex.slot_code, finalCode);
+            jointHeldReason = "HIP_INJURY_HELD";
+            jointHeldCodeBefore = finalCode;
+            finalCode = null;
+          }
         }
         if (hasAnkleInjury && ANKLE_LOADED.has(finalCode)) {
           flagHeldSlot("ANKLE", ex.slot_code, finalCode);
@@ -1201,6 +1404,23 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           }
         }
 
+        // H8: osteoporosis — no axial barbell squats and no loaded spinal
+        // hinges for the whole block (the drug-interaction firewall already
+        // carries this rule as NO_LOADED_SPINAL_FLEXION_AND_TWISTING; this
+        // is the served-plan half). The regression reuses the lower-back
+        // guard's substitutes. The hip thrust stays on purpose: it is
+        // spine-neutral and loads the hip, which is the point for bone
+        // health — the fault was "no code, no adaptation", not the thrust.
+        if (hasOsteoporosis) {
+          const beforeOsteoporosis = finalCode;
+          if (AXIAL_SQUATS.has(finalCode)) {
+            finalCode = isHome ? "GOBLET_SQUAT" : "LEG_PRESS_MACHINE";
+          } else if (LOADED_HINGES.has(finalCode)) {
+            finalCode = isHome ? "GLUTE_BRIDGE" : "BARBELL_HIP_THRUST";
+          }
+          if (finalCode !== beforeOsteoporosis) injuryCues.push("هشاشة عظام: تم استبدال السكوات بالبار والانحناء المحمل ببدائل بظهر مسنود؛ الجسر والهيب ثراست محايدين للعمود الفقري وبيحمّلوا الحوض، ومراجعة المدرب مطلوبة قبل أي تحميل محوري.");
+        }
+
         // The clinical guards above name dumbbell substitutes for "home"; a bodyweight-and-bands
         // client owns none, so the substitute is checked again against the declared equipment and,
         // when it does not fit, swapped for the closest exercise of the substitute's own slot. When
@@ -1211,7 +1431,7 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
         const fitDeclaredEquipment = (code) => {
           if (!hasDeclaredEquipment || exerciseFitsEquipment(code, availableEquipment)) return code;
           const own = getExerciseV2ByCode(code);
-          const alternative = equipmentSafeAlternative(code, own?.slot_code || ex.slot_code, availableEquipment, usedSessionCodes, clinicallyExcludedCodes);
+          const alternative = equipmentSafeAlternative(code, own?.slot_code || ex.slot_code, availableEquipment, usedSessionCodes, homeSafeExcludedCodes);
           return alternative ? alternative.exercise_code : null;
         };
         // P1-B9: a slot the equipment guard empties stays held for review instead of
@@ -1230,10 +1450,37 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
 
         // The equipment fit above can reintroduce an overhead-arm movement:
         // the home replacement for a rope pushdown is a dumbbell overhead
-        // extension. Re-check the final code for a shoulder injury; at home
-        // there is no safe substitute, so the slot is held for the coach.
-        if (hasShoulderInjury && OVERHEAD_ARM_TRICEPS_EXTENSIONS.has(finalCode)) {
+        // extension, and for a client with no dumbbells it is a bench dip,
+        // which loads the front of the shoulder. Re-check the final code for
+        // a shoulder injury; at home there is no safe substitute, so the slot
+        // is held for the coach.
+        if (hasShoulderInjury && SHOULDER_UNSAFE_ELBOW_EXTENSION.has(finalCode)) {
           return heldEntryFor(ex, "SHOULDER_OVERHEAD_ARM_HELD", finalCode, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
+        }
+
+        // H8: the hip-extension family is one movement. Two guards that
+        // both convert to a thrust used to serve barbell hip thrust + hip
+        // thrust + glute bridge in a single session. A second family member
+        // is a duplicate: find a non-family alternative the client owns and
+        // may do, or hold the slot. One exception: a knee-guard substitute.
+        // A hip thrust in the KNEE_DOMINANT slot is the only safe quad-slot
+        // work a knee-injured client has - the alternative search would hand
+        // the slot a bodyweight squat, which is knee-dominant work the guard
+        // exists to remove. That substitute survives even as a second family
+        // member; the template's own duplicate is the one that gets swapped.
+        const kneeGuardSubstitute = hasKneeInjury && ex.slot_code === "KNEE_DOMINANT" && HIP_EXTENSION_FAMILY.has(finalCode);
+        if (!kneeGuardSubstitute && HIP_EXTENSION_FAMILY.has(finalCode) && [...usedSessionCodes].some((c) => HIP_EXTENSION_FAMILY.has(c))) {
+          const familyAlternative = equipmentSafeAlternative(
+            finalCode,
+            ex.slot_code,
+            regressionEquipment,
+            new Set([...usedSessionCodes, ...HIP_EXTENSION_FAMILY]),
+            homeSafeExcludedCodes,
+          );
+          if (!familyAlternative) return heldEntryFor(ex, "DEDUP_EXHAUSTED", finalCode, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
+          finalCode = fitDeclaredEquipment(familyAlternative.exercise_code);
+          if (!finalCode) return heldEntryFor(ex, "EQUIPMENT_EXHAUSTED", familyAlternative.exercise_code, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
+          if (usedSessionCodes.has(finalCode)) return heldEntryFor(ex, "DEDUP_EXHAUSTED", finalCode, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
         }
 
         // Never repeat an exercise inside one session after substitutions.

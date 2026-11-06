@@ -106,6 +106,8 @@ export const MedicalConditionCode = Object.freeze({
   DIAGNOSED_DIGESTIVE_CONDITION: "DIAGNOSED_DIGESTIVE_CONDITION",
   PCOS: "PCOS",
   BARIATRIC_SURGERY: "BARIATRIC_SURGERY",
+  HIGH_CHOLESTEROL: "HIGH_CHOLESTEROL",
+  OSTEOPOROSIS: "OSTEOPOROSIS",
 });
 
 export const PregnancyStatus = Object.freeze({

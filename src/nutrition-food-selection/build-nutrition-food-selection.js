@@ -925,7 +925,28 @@ function evaluatePattern(pattern, catalogItems, usageCounts, context) {
 function selectMeal(meal, catalogItems, usageCounts, context) {
   const patternAttempts = [];
 
-  for (const pattern of meal.allowed_patterns) {
+  // H8: a vegetarian never got a legume. The catalog order tries
+  // MAIN_CLASSIC before MAIN_LEGUME, and MAIN_CLASSIC is always feasible
+  // for a vegetarian (eggs and dairy carry the anchor), so the legume
+  // pattern was never reached — eight weeks of protein from eggs and dairy
+  // alone. When no animal protein is eligible for this client at all, the
+  // legume patterns go first. (The only pattern-dependent rejection is the
+  // Euthyrox dairy lock, which touches DAIRY, not animal protein, so
+  // probing with the first pattern's code is exact for this question.)
+  const probePattern = meal.allowed_patterns[0]?.code;
+  const hasAnimalProtein = catalogItems.some(
+    (food) =>
+      food.food_class === "ANIMAL_PROTEIN" &&
+      rejectionCodesFor(food, context, probePattern).length === 0,
+  );
+  const orderedPatterns = hasAnimalProtein
+    ? meal.allowed_patterns
+    : [
+        ...meal.allowed_patterns.filter((pattern) => String(pattern.code).includes("LEGUME")),
+        ...meal.allowed_patterns.filter((pattern) => !String(pattern.code).includes("LEGUME")),
+      ];
+
+  for (const pattern of orderedPatterns) {
     const evaluation = evaluatePattern(
       pattern,
       catalogItems,
