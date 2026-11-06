@@ -359,3 +359,34 @@ test("class API uses its injected trusted context", () => {
   const engine = new IntakeDecisionEngine(ASSESSMENT_CONTEXT);
   assert.equal(engine.evaluate(completeIntake()).plan_status, PlanStatus.READY_FOR_DRAFT);
 });
+
+test("Batch 1 HO-3: two non-red-flag injuries produce the injury flag exactly once", () => {
+  const injury = (area) => ({
+    area,
+    painLevel: 2,
+    movementImpact: MovementImpact.LIMITS,
+    worsening: false,
+    numbnessOrWeakness: false,
+    affectedMovements: [Movement.RUNNING],
+    medicalRestrictions: [],
+  });
+  const result = evaluate(
+    completeIntake({
+      training: { injuries: [injury("KNEE"), injury("SHOULDER")] },
+    }),
+  );
+  assert.equal(result.plan_status, PlanStatus.COACH_REVIEW_REQUIRED);
+  const count = result.review_flags.filter((f) => f.code === "ACTIVE_INJURY_REQUIRES_COACH_REVIEW").length;
+  assert.equal(count, 1, `injury flag must appear once for two injuries, got ${count}: ${JSON.stringify(result.review_flags.map((f) => f.code))}`);
+});
+
+test("Batch 1 HO-7: medication flag text no longer claims nothing is ever inferred", () => {
+  const result = evaluate(completeIntake({ medical: { medications: ["MEDICATION_ID"] } }));
+  assert.ok(hasCode(result.review_flags, "MEDICATION_REPORTED_NO_AUTOMATIC_INTERPRETATION"));
+  const flag = result.review_flags.find((f) => f.code === "MEDICATION_REPORTED_NO_AUTOMATIC_INTERPRETATION");
+  assert.ok(!String(flag.message || "").includes("never infers"), `flag text must not contradict the working medication rules, got: ${flag.message}`);
+  assert.ok(
+    String(flag.message || "").includes("levothyroxine"),
+    `flag text must say known medication rules still apply, got: ${flag.message}`,
+  );
+});

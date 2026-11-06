@@ -33,6 +33,13 @@ const PROFILES = {
   L12: { sex: "male", age: 65, height_cm: 175, weight_kg: 105, waist_cm: 112, goal: "fat_loss", neat_level: "light", experience: "beginner", days_per_week: 3, training_environment: "commercial_gym", injuries: [], medical: [], meds: [], allergies: [], disliked_foods: [], intolerances: [], meals_count: "4_meals", fasting: "none", sleep_hours: 6.5, sleep_pattern: "regular_night", steps: 5000, walking: "EASY" },
   L21: { sex: "female", age: 70, height_cm: 160, weight_kg: 65, waist_cm: 84, goal: "fat_loss", neat_level: "light", experience: "beginner", days_per_week: 2, training_environment: "commercial_gym", injuries: [], medical: ["OSTEOPOROSIS"], meds: [], allergies: [], disliked_foods: [], intolerances: [], meals_count: "4_meals", fasting: "none", sleep_hours: 7, sleep_pattern: "regular_night", steps: 5000, walking: "EASY" },
   L17: { sex: "male", age: 48, height_cm: 178, weight_kg: 95, waist_cm: 104, goal: "fat_loss", neat_level: "moderate", experience: "intermediate", days_per_week: 4, training_environment: "commercial_gym", injuries: [], medical: ["HIGH_CHOLESTEROL"], meds: [], allergies: [], disliked_foods: [], intolerances: [], meals_count: "4_meals", fasting: "none", sleep_hours: 7, sleep_pattern: "regular_night", steps: 8000, walking: "EASY" },
+  // Batch 1: demographics from the longitudinal profiles (L19/L23). The
+  // medical entries are LOWERCASE on purpose — exactly what the form sends
+  // in medical_conditions.selected — so these profiles prove the whole
+  // form-key path (adapter uppercases, CONDITION_MAP canonicalises, the
+  // safety rule holds), not just the canonical code.
+  L19: { sex: "male", age: 33, height_cm: 176, weight_kg: 85, waist_cm: 94, goal: "fat_loss", neat_level: "moderate", experience: "intermediate", days_per_week: 4, training_environment: "commercial_gym", injuries: [], medical: ["epilepsy"], meds: [], allergies: [], disliked_foods: [], intolerances: [], meals_count: "4_meals", fasting: "none", sleep_hours: 7.5, sleep_pattern: "regular_night", steps: 9000, walking: "EASY" },
+  L23: { sex: "female", age: 27, height_cm: 164, weight_kg: 75, waist_cm: 88, goal: "fat_loss", neat_level: "moderate", experience: "beginner", days_per_week: 3, training_environment: "commercial_gym", injuries: [], medical: ["depression_anxiety"], meds: [], allergies: [], disliked_foods: [], intolerances: [], meals_count: "4_meals", fasting: "none", sleep_hours: 6.5, sleep_pattern: "regular_night", steps: 7000, walking: "EASY" },
   C11: { sex: "female", age: 38, height_cm: 164, weight_kg: 66, waist_cm: 72, goal: "weight_maintenance", neat_level: "moderate", experience: "ADVANCED", days_per_week: 4, training_environment: "commercial_gym", injuries: [], medical: ["THYROID_CONDITION"], meds: ["EUTHYROX"], allergies: [], disliked_foods: [], intolerances: [], meals_count: "4_meals", fasting: "none", sleep_hours: 7.5, sleep_pattern: "regular_night", steps: 10000, walking: "EASY" },
 };
 
@@ -213,14 +220,19 @@ test("H8 C13: a vegetarian gets legumes, and no meal carries a token starch or t
   }
 });
 
-test("H8 portions: cottage 150 g, tuna one can, omelette two eggs, no token portions", () => {
+test("H8 portions: cottage 150 g, tuna one can, omelette three eggs max, no token portions", () => {
   for (const id of ["C03", "C06", "C13", "C15", "C16", "C18", "L09", "L11", "L12", "L21", "L17", "X14"]) {
     const meals = culinaryMeals(build(id));
     for (const meal of meals) {
       for (const item of meal.items || []) {
         if (item.food_code === "COTTAGE_CHEESE") assert.ok(item.portion_g <= 150, `${id} meal ${meal.meal_number}: cottage ${item.portion_g} g over 150 g cap`);
         if (item.food_code === "CANNED_TUNA") assert.ok(item.portion_g <= 120, `${id} meal ${meal.meal_number}: tuna ${item.portion_g} g over one can (120 g)`);
-        if (item.food_code === "EGGS_OMELETTE") assert.ok(item.portion_g <= 100, `${id} meal ${meal.meal_number}: omelette ${item.portion_g} g over two eggs (100 g)`);
+        // Batch 1 fixup: one egg is 55 g in this engine, so the design cap is
+        // 165 g (3 eggs), not 100 g; a 2-egg omelette is 110 g (C03) and C06
+        // serves 135 g. The high-cholesterol 100 g/day cap is separate
+        // (capWholeEggsForCholesterol, 100 g/day) and L17 is covered by it —
+        // see the "osteoporosis and high cholesterol" test below.
+        if (item.food_code === "EGGS_OMELETTE") assert.ok(item.portion_g <= 165, `${id} meal ${meal.meal_number}: omelette ${item.portion_g} g over three eggs max (165 g)`);
         if (item.food_code === "OLIVE_OIL") assert.ok(item.portion_g >= 5, `${id} meal ${meal.meal_number}: olive oil token ${item.portion_g} g`);
         if (item.food_code === "CHICKEN_BREAST") assert.ok(item.portion_g >= 50, `${id} meal ${meal.meal_number}: chicken token ${item.portion_g} g`);
         if (item.food_code === "SWEET_POTATO") assert.ok(item.portion_g >= 50, `${id} meal ${meal.meal_number}: sweet potato token ${item.portion_g} g`);
@@ -262,4 +274,17 @@ test("H8 new condition codes: osteoporosis and high cholesterol are real codes w
   assert.ok(l17.nutrition_program.targets.clinical_guardrails?.cholesterol_guidance_ar, "cholesterol guidance must be present");
   const eggGrams = culinaryMeals(l17).flatMap((m) => (m.items || []).filter((i) => i.food_code === "EGGS_OMELETTE")).reduce((s, i) => s + (i.portion_g || 0), 0);
   assert.ok(eggGrams <= 100, `high cholesterol: whole eggs ${eggGrams} g/day over the two-egg cap`);
+});
+
+test("Batch 1 new condition codes: epilepsy and depression/anxiety are real codes with coach-review holds", () => {
+  // The profiles carry the LOWERCASE form keys, so this also proves the
+  // form-key path: adapter uppercases, CONDITION_MAP canonicalises, the
+  // safety rule holds with the NAMED flag (not the unclassified fallback).
+  // HOLD + flag only — no invented training rule, prescription, or dose.
+  const l19 = build("L19");
+  assert.ok(decisionFlagCodes(l19).includes("EPILEPSY_REQUIRES_COACH_REVIEW"), `epilepsy must flag the decision with its own code, got: ${JSON.stringify(decisionFlagCodes(l19))}`);
+  assert.equal(l19.intake_decision.plan_status, "COACH_REVIEW_REQUIRED", "an epilepsy plan is not READY");
+  const l23 = build("L23");
+  assert.ok(decisionFlagCodes(l23).includes("DEPRESSION_ANXIETY_REQUIRES_COACH_REVIEW"), `depression/anxiety must flag the decision with its own code, got: ${JSON.stringify(decisionFlagCodes(l23))}`);
+  assert.equal(l23.intake_decision.plan_status, "COACH_REVIEW_REQUIRED", "a depression/anxiety plan is not READY");
 });

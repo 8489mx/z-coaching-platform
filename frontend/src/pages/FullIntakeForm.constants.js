@@ -4,7 +4,8 @@
  * the form. Keys are the values the form stores in
  * medical_conditions.selected; the adapter maps them to canonical
  * condition codes (HIGH_CHOLESTEROL / OSTEOPOROSIS included — S1 item 15:
- * the engine already accepted those codes, the form could not send them).
+ * the engine already accepted those codes, the form could not send them;
+ * EPILEPSY / DEPRESSION_ANXIETY added in Batch 1 the same way).
  */
 export const MEDICAL_CONDITION_OPTIONS = Object.freeze([
   { key: "bariatric_surgery", label: "تكميم معدة / تحويل مسار" },
@@ -20,6 +21,8 @@ export const MEDICAL_CONDITION_OPTIONS = Object.freeze([
   { key: "heart_condition", label: "مرض في القلب (مشخص من دكتور)" },
   { key: "high_cholesterol", label: "كوليسترول مرتفع" },
   { key: "osteoporosis", label: "هشاشة عظام" },
+  { key: "epilepsy", label: "صرع" },
+  { key: "depression_anxiety", label: "اكتئاب / قلق" },
 ]);
 
 /**

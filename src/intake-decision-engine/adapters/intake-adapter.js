@@ -841,7 +841,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     HIGH_CHOLESTEROL: "HIGH_CHOLESTEROL",
     HYPERCHOLESTEROLEMIA: "HIGH_CHOLESTEROL",
     OSTEOPOROSIS: "OSTEOPOROSIS",
-    OSTEOPENIA: "OSTEOPOROSIS"
+    OSTEOPENIA: "OSTEOPOROSIS",
+    EPILEPSY: "EPILEPSY",
+    DEPRESSION_ANXIETY: "DEPRESSION_ANXIETY"
   };
 
   const VALID_CANONICAL_CONDITIONS = new Set([
@@ -858,7 +860,9 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     "PCOS",
     "BARIATRIC_SURGERY",
     "HIGH_CHOLESTEROL",
-    "OSTEOPOROSIS"
+    "OSTEOPOROSIS",
+    "EPILEPSY",
+    "DEPRESSION_ANXIETY"
   ]);
 
   const conditions = [];

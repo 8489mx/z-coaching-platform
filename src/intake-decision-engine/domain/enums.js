@@ -108,6 +108,8 @@ export const MedicalConditionCode = Object.freeze({
   BARIATRIC_SURGERY: "BARIATRIC_SURGERY",
   HIGH_CHOLESTEROL: "HIGH_CHOLESTEROL",
   OSTEOPOROSIS: "OSTEOPOROSIS",
+  EPILEPSY: "EPILEPSY",
+  DEPRESSION_ANXIETY: "DEPRESSION_ANXIETY",
 });
 
 export const PregnancyStatus = Object.freeze({

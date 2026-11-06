@@ -285,6 +285,51 @@ export function evaluateMedicalConditions(input) {
         ),
       );
     }
+    // Batch 1: epilepsy is a real condition code now. A coach must see it.
+    // No training rule is invented here: the plan is held for coach review
+    // with a clear flag, and the coach decides with the treating team.
+    if (condition.conditionCode === "EPILEPSY") {
+      result.statusCandidates.push(statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "EPILEPSY_REQUIRES_COACH_REVIEW"));
+      result.reviewFlags.push(
+        reviewFlag(
+          "EPILEPSY_REQUIRES_COACH_REVIEW",
+          Scope.GLOBAL,
+          ReviewLevel.COACH,
+          "Epilepsy: the plan is held for coach review, and a coach confirms the client's own seizure-safety plan with the treating team before approving.",
+          `${sourcePath}.conditionCode`,
+        ),
+      );
+      result.reasons.push(
+        reason(
+          "EPILEPSY_REQUIRES_COACH_REVIEW",
+          Scope.GLOBAL,
+          "Epilepsy prevents automatic approval until a coach reviews the plan with the treating team.",
+        ),
+      );
+    }
+    // Batch 1: depression/anxiety is a real condition code now. A coach
+    // must see it. No nutrition prescription or training rule is invented
+    // here: the plan is held for coach review with a clear flag, and the
+    // coach decides with the treating team.
+    if (condition.conditionCode === "DEPRESSION_ANXIETY") {
+      result.statusCandidates.push(statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "DEPRESSION_ANXIETY_REQUIRES_COACH_REVIEW"));
+      result.reviewFlags.push(
+        reviewFlag(
+          "DEPRESSION_ANXIETY_REQUIRES_COACH_REVIEW",
+          Scope.GLOBAL,
+          ReviewLevel.COACH,
+          "Depression/anxiety: the plan is held for coach review, and a coach confirms the client's own care plan with the treating team before approving.",
+          `${sourcePath}.conditionCode`,
+        ),
+      );
+      result.reasons.push(
+        reason(
+          "DEPRESSION_ANXIETY_REQUIRES_COACH_REVIEW",
+          Scope.GLOBAL,
+          "Depression/anxiety prevents automatic approval until a coach reviews the plan with the treating team.",
+        ),
+      );
+    }
     if (condition.otherConditionText?.trim()) {
       result.statusCandidates.push(
         statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "UNCLASSIFIED_MEDICAL_CONDITION"),
@@ -413,6 +458,11 @@ export function evaluatePregnancySafety(input) {
 
 export function evaluateInjurySafety(input) {
   const result = emptyRuleResult();
+  // Batch 1 (HO-3): the non-red-flag injury review is one statement about
+  // the client, not one per injury — emit it once, on the first qualifying
+  // injury. (The per-injury sourcePath is what defeated the S1 dedupe,
+  // which keys on the whole flag object.)
+  let injuryReviewEmitted = false;
   input.training.injuries.forEach((injury, index) => {
     const sourcePath = `training.injuries[${index}]`;
     const hasRedFlag =
@@ -463,7 +513,7 @@ export function evaluateInjurySafety(input) {
       );
     }
 
-    if (!hasRedFlag && !hasHighPain) {
+    if (!hasRedFlag && !hasHighPain && !injuryReviewEmitted) {
       result.statusCandidates.push(statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "ACTIVE_INJURY"));
       result.reviewFlags.push(
         reviewFlag(
@@ -474,6 +524,7 @@ export function evaluateInjurySafety(input) {
           sourcePath,
         ),
       );
+      injuryReviewEmitted = true;
     }
 
     injury.affectedMovements.forEach((movement) => {
@@ -578,7 +629,7 @@ export function evaluateUnclassifiedTextAndMedication(input) {
         "MEDICATION_REPORTED_NO_AUTOMATIC_INTERPRETATION",
         Scope.GLOBAL,
         ReviewLevel.COACH,
-        "Medication names are recorded but V1 never infers interactions or restrictions from them.",
+        "Medication names are recorded for coach review. Known medication rules (such as the levothyroxine breakfast dairy lock) still apply; no new interaction is inferred from a medication name alone.",
         "medical.medications",
       ),
     );

@@ -84,6 +84,12 @@ describe("S1 items 9 and 15: the intake form's option lists", () => {
     expect(keys).toContain("hypertension");
   });
 
+  it("Batch 1: offers the epilepsy and depression/anxiety conditions", () => {
+    const keys = MEDICAL_CONDITION_OPTIONS.map((o) => o.key);
+    expect(keys).toContain("epilepsy");
+    expect(keys).toContain("depression_anxiety");
+  });
+
   it("offers the vegetarian dietary preference", () => {
     const keys = DIETARY_PREFERENCE_OPTIONS.map((o) => o.key);
     expect(keys).toContain("vegetarian");
