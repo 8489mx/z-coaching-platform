@@ -85,7 +85,7 @@ const REASON_MESSAGES = Object.freeze({
   UPSTREAM_COACH_REVIEW_REQUIRED:
     "The nutrition energy target requires coach review because the upstream intake decision requires coach review.",
   LOW_NUTRITION_DECISION_CONFIDENCE:
-    "The nutrition decision confidence is not HIGH, so the energy target requires coach review.",
+    "The nutrition decision confidence is LOW, so the energy target requires coach review.",
   UNKNOWN_LIFESTYLE_ACTIVITY_REQUIRES_REVIEW:
     "Lifestyle activity is UNKNOWN, so the calculated energy target requires coach review.",
   CALORIE_DIRECTION_REQUIRES_REVIEW:
@@ -519,7 +519,14 @@ export function buildNutritionEnergyTarget(nutritionPlanningSnapshot) {
     output.status = NutritionEnergyTargetStatus.PROVISIONAL_REVIEW_REQUIRED;
     addReason(output.reasons, reasonCodes, "UPSTREAM_COACH_REVIEW_REQUIRED");
   }
-  if (snapshot.goal.decision_confidence !== Confidence.HIGH) {
+  // P6: only LOW confidence withholds the target. MEDIUM is the
+  // first-generation estimate — no weight history exists yet and no intake
+  // path records measurement quality, so it is served with the conservative
+  // adjustment (shouldUseConservativeAdjustment still fires below) and its
+  // standing calibration obligation, not held. LOW means positive evidence
+  // of unreliability (a review gate or an explicitly unreliable
+  // measurement), and that still withholds.
+  if (snapshot.goal.decision_confidence === Confidence.LOW) {
     output.status = NutritionEnergyTargetStatus.PROVISIONAL_REVIEW_REQUIRED;
     addReason(
       output.reasons,

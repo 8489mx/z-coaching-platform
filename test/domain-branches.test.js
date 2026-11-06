@@ -289,7 +289,7 @@ test("intolerance and digestive issue remain separate from allergy and trigger r
   assert.equal(hasCode(result.hard_constraints, "FOOD_ALLERGY_EXCLUSION"), false);
 });
 
-test("uncertain measurements lower confidence and are exposed without inventing a calorie direction", () => {
+test("uncertain measurements cap confidence at medium and are exposed without inventing a calorie direction", () => {
   const result = evaluate(
     completeIntake({
       body: {
@@ -300,7 +300,11 @@ test("uncertain measurements lower confidence and are exposed without inventing 
     }),
   );
   assert.equal(result.nutrition_decision.calorie_direction, "MAINTENANCE");
-  assert.equal(result.nutrition_decision.confidence, "LOW");
+  // P6: UNKNOWN trend/quality is absence of follow-up data, not evidence
+  // against the estimate — confidence is lowered from HIGH to MEDIUM (the
+  // conservative adjustment still applies), not forced to LOW. Only an
+  // explicitly unreliable measurement forces LOW.
+  assert.equal(result.nutrition_decision.confidence, "MEDIUM");
   assert.ok(hasCode(result.missing_or_uncertain_data, "WEIGHT_TREND_UNKNOWN"));
   assert.ok(hasCode(result.missing_or_uncertain_data, "MEASUREMENT_QUALITY_UNKNOWN"));
   assert.ok(hasCode(result.missing_or_uncertain_data, "MENSTRUAL_STATUS_UNKNOWN"));

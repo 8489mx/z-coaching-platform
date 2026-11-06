@@ -259,11 +259,16 @@ export function determineCalorieConfidence(input, reviewRequired = false) {
   if (reviewRequired) return Confidence.LOW;
   const trendKnown = input.body.weightTrend !== WeightTrend.UNKNOWN;
   const highQuality = input.body.measurementQuality === MeasurementQuality.HIGH;
-  const unreliableQuality = [MeasurementQuality.LOW, MeasurementQuality.UNKNOWN].includes(
-    input.body.measurementQuality,
-  );
+  // P6: an explicitly unreliable measurement is real uncertainty — it holds
+  // the plan even when the trend is known. But a first intake structurally
+  // has no weight history, and no intake path records how the weight was
+  // measured, so UNKNOWN trend/quality is absence of follow-up data, not
+  // evidence against the estimate: it caps confidence at MEDIUM (the
+  // conservative adjustment still applies) instead of forcing LOW and
+  // withholding every first plan.
+  const lowQuality = input.body.measurementQuality === MeasurementQuality.LOW;
+  if (lowQuality) return Confidence.LOW;
   if (trendKnown && highQuality) return Confidence.HIGH;
-  if (!trendKnown && unreliableQuality) return Confidence.LOW;
   return Confidence.MEDIUM;
 }
 

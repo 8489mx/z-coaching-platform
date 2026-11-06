@@ -680,12 +680,34 @@ test("review-required calorie direction retains maintenance but no target", () =
   assert.equal(reasonCodes(target).includes("CALIBRATION_REQUIRED"), false);
 });
 
-test("non-high nutrition confidence is provisional and uses conservative adjustment", () => {
+test("medium nutrition confidence is served with the conservative adjustment (P6: only LOW withholds)", () => {
   const target = buildNutritionEnergyTarget(
     makeSnapshot({
       goal: {
         calorie_direction: CalorieDirection.DEFICIT,
         decision_confidence: Confidence.MEDIUM,
+      },
+    }),
+  );
+
+  assert.equal(target.status, NutritionEnergyTargetStatus.READY);
+  assert.equal(target.adjustment_percent, 10);
+  assert.notEqual(target.target_calories, null);
+  assert.equal(
+    reasonCodes(target).includes("LOW_NUTRITION_DECISION_CONFIDENCE"),
+    false,
+  );
+  // The calibration obligation stays on every served first estimate.
+  assert.equal(target.calibration_required, true);
+  assert.ok(reasonCodes(target).includes("CALIBRATION_REQUIRED"));
+});
+
+test("low nutrition confidence is provisional and uses conservative adjustment", () => {
+  const target = buildNutritionEnergyTarget(
+    makeSnapshot({
+      goal: {
+        calorie_direction: CalorieDirection.DEFICIT,
+        decision_confidence: Confidence.LOW,
       },
     }),
   );

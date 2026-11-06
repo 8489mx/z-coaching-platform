@@ -148,6 +148,24 @@ test("calorie confidence follows the explicit confidence lattice", () => {
     ),
     Confidence.LOW,
   );
+  // P6: a first intake structurally has no weight history and the intake
+  // never records how the weight was measured, so UNKNOWN trend/quality is
+  // absence of follow-up data — it caps confidence at MEDIUM instead of
+  // forcing LOW and withholding every first plan.
+  assert.equal(
+    determineCalorieConfidence(
+      completeIntake({ body: { weightTrend: WeightTrend.UNKNOWN, measurementQuality: MeasurementQuality.UNKNOWN } }),
+    ),
+    Confidence.MEDIUM,
+  );
+  // P6: an explicitly unreliable measurement is real uncertainty — it holds
+  // the plan even when the trend is known.
+  assert.equal(
+    determineCalorieConfidence(
+      completeIntake({ body: { weightTrend: WeightTrend.STABLE, measurementQuality: MeasurementQuality.LOW } }),
+    ),
+    Confidence.LOW,
+  );
 });
 
 test("training schedule mode is independent from work schedule", () => {
