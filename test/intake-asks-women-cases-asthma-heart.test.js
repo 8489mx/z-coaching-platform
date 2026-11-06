@@ -12,6 +12,9 @@ import { evaluateIntake } from "z-coaching-intake-decision-engine";
  * required before submitting, and two more conditions in the existing list.
  */
 const FORM = fs.readFileSync("frontend/src/pages/FullIntakeForm.jsx", "utf8");
+// S1: the medical-conditions list moved out of the form into this constants
+// module (it also carries the new high_cholesterol + osteoporosis pills).
+const FORM_CONSTANTS = fs.readFileSync("frontend/src/pages/FullIntakeForm.constants.js", "utf8");
 const MODAL = fs.readFileSync("frontend/src/components/intake/IntakeAuditDetailModal.jsx", "utf8");
 const CONTEXT = { system_time: "2026-09-22T08:00:00.000Z", assessmentDate: "2026-09-22" };
 
@@ -30,8 +33,8 @@ test("a woman must answer it before submitting, and a man never sends it", () =>
 });
 
 test("asthma and heart disease are in the conditions list and on the coach's intake view", () => {
-  assert.ok(FORM.includes("{ key: 'asthma', label:"));
-  assert.ok(FORM.includes("{ key: 'heart_condition', label:"));
+  assert.ok(FORM_CONSTANTS.includes("{ key: \"asthma\", label:"));
+  assert.ok(FORM_CONSTANTS.includes("{ key: \"heart_condition\", label:"));
   assert.match(MODAL, /asthma: '/);
   assert.match(MODAL, /heart_condition: '/);
   assert.match(MODAL, /label="حامل" value=\{answers\.female_pregnancy === 'PREGNANT'\}/);

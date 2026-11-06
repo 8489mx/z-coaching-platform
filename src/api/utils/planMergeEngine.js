@@ -389,6 +389,21 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     }
 
     // 3.1 Rebalance culinary meal ingredient grams and macros to match final targets
+    // B-API-5 (S1): at a zero delta the targets did not move, yet the
+    // re-quantization still ran and drifted grams by rounding (a 99 g
+    // portion became 100 g, a 167 kcal meal 169 kcal). A merge that changes
+    // nothing must change nothing: when every final target equals the
+    // program's current target (within half a unit — rounding noise), the
+    // whole re-quantization block is skipped. The training-week advance
+    // below is a separate block and still rides the same merge.
+    const isZeroDeltaMerge =
+      finalCalories !== null &&
+      programCalories !== null && programProtein !== null && programCarbs !== null && programFats !== null &&
+      Math.abs(finalCalories - programCalories) <= 0.5 &&
+      Math.abs((finalProtein ?? 0) - programProtein) <= 0.5 &&
+      Math.abs((finalCarbs ?? 0) - programCarbs) <= 0.5 &&
+      Math.abs((finalFats ?? 0) - programFats) <= 0.5;
+    if (!isZeroDeltaMerge) {
     const targetPayload = { finalCalories, finalProtein, finalCarbs, finalFats };
     const portionLimit = carbPortionLimit({ diabetic: merged.nutrition_program?.targets?.clinical_guardrails?.hypoglycemia_guard_active === true });
 
@@ -416,6 +431,7 @@ export function mergeAdaptedPlanIntoProgram(currentMasterProgram, adaptationResu
     if (Array.isArray(merged.nutrition?.meals) &&
         merged.nutrition.meals.some(m => Array.isArray(m?.items) && m.items.some(it => Boolean(it?.category || it?.food_code)))) {
       rebalanceCulinaryMeals(merged.nutrition.meals, targetPayload);
+    }
     }
 
     // 3.2 Diet Break and Refeed metadata preservation

@@ -936,6 +936,44 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
 
   // 6. Nutrition
   const nutrition = intake.nutrition || {};
+
+  // S1: a dedicated vegetarian field. dietary_preference "vegetarian" means
+  // no meat or fish (eggs and dairy stay). It maps to the same five
+  // disliked-food codes C13's encoding used, whose family identities
+  // (CHICKEN/POULTRY, BEEF/RED_MEAT, TUNA/SALMON/TILAPIA/FISH) exclude
+  // every meat and fish the catalogs can serve, and to the MEAT/FISH
+  // exclusion labels so the meal generator's meat/fish flags fire too.
+  const VEGETARIAN_DISLIKED_FOOD_CODES = Object.freeze([
+    "CHICKEN_BREAST",
+    "LEAN_BEEF",
+    "CANNED_TUNA",
+    "SALMON_FISH",
+    "TILAPIA_FISH",
+  ]);
+  const isVegetarianPreference =
+    String(intake.dietary_preference || nutrition.dietaryPreference || "").toUpperCase() === "VEGETARIAN";
+  if (isVegetarianPreference) {
+    nutrition.dietType = "VEGETARIAN";
+    nutrition.dislikedFoods = [
+      ...new Set([
+        ...(Array.isArray(nutrition.dislikedFoods) ? nutrition.dislikedFoods : []),
+        ...VEGETARIAN_DISLIKED_FOOD_CODES,
+      ]),
+    ];
+    nutrition.excludedFoodsList = [
+      ...new Set([
+        ...(Array.isArray(nutrition.excludedFoodsList) ? nutrition.excludedFoodsList : []),
+        "MEAT",
+        "FISH",
+        "CHICKEN",
+        "BEEF",
+        "TUNA",
+        "SALMON",
+        "TILAPIA",
+      ]),
+    ];
+  }
+
   const rawExcluded = [
     ...(Array.isArray(nutrition.excludedFoodsList) ? nutrition.excludedFoodsList : []),
     ...(Array.isArray(nutrition.excludedFoodCodes) ? nutrition.excludedFoodCodes : []),
@@ -1122,6 +1160,10 @@ export function adaptIntakePayloadToCanonicalEngine(raw) {
     allergies,
     medicalExclusions: Array.isArray(nutrition.medicalExclusions) ? nutrition.medicalExclusions : [],
     dislikedFoods,
+    // S1: the dietary preference the client declared (VEGETARIAN from the
+    // form's dietary_preference field); the meal generator reads it for its
+    // vegan check, and the coach sees it on the canonical intake.
+    dietType: nutrition.dietType || null,
     intolerances,
     digestiveIssues
   };

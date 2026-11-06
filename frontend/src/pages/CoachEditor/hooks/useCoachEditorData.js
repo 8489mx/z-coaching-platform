@@ -17,6 +17,7 @@ import { cleanMealTitle } from '../../ClientInteractiveApp/utils/programAdapters
 import { evaluateCardioModality } from '../../../utils/cardioModalitySafety.js';
 import { exerciseConflicts } from '../../../utils/exerciseSafety.js';
 import { getClientTier } from '../../../utils/tierBadgeHelper';
+import { doseForEditorExercise } from '../utils/exerciseDose.js';
 
 import {
   cloneExercise,
@@ -288,10 +289,9 @@ export function useCoachEditorData() {
           exercises: (s.exercises || []).map((ex, exIdx) => {
             const code = ex.exercise_code || ex.code || ex.id;
             const presc = ex.prescription || {};
-            const sets = presc.sets || ex.sets || 3;
-            const reps = (presc.target_min && presc.target_max)
-              ? `${presc.target_min} - ${presc.target_max}`
-              : (ex.reps || '10 - 12');
+            // S1 (item 13): a held row keeps a null dose — the coach must fill
+            // it — instead of the old invented 3 sets / '10 - 12'.
+            const { sets, reps } = doseForEditorExercise(ex);
             const rir = presc.target_rir !== undefined ? presc.target_rir : (ex.rir !== undefined ? ex.rir : (w.target_rir || 2));
             const rest = presc.rest_seconds || ex.restSec || ex.rest_seconds || 75;
 

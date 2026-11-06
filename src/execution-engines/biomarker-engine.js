@@ -43,7 +43,12 @@ export function analyzeBloodworkBiomarkers(rawInput = {}) {
     withhold_creatine: false,
     complex_carbs_only: false,
     purine_restriction: false,
-    daily_water_target_liters: 3.5,
+    // S1: the old 3.5 L floor dominated the weight formula (40 ml/kg) for
+    // everyone under ~88 kg, so a 55 kg woman was told 3.5 L. The floor is
+    // now 2.0 L — only very light clients feel it — and the weight formula
+    // rules above it. The clinical raises below (renal / gout to 4.0 L)
+    // still override it.
+    daily_water_target_liters: 2.0,
     sodium_limit_mg: null
   };
   const supplementRecommendations = [];

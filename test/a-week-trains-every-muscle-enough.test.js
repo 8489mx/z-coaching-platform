@@ -17,7 +17,7 @@ import { auditWeeklyMuscleVolume, resolveMuscleGroupKey } from "../src/api/utils
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = JSON.parse(fs.readFileSync(path.join(ROOT, "data/catalogs/core-global-food-batch-v1.json"), "utf8"));
 
-const weekOf = ({ days = 4, experience = "intermediate", env = "commercial_gym", gender = "male" } = {}) => buildMasterEngineV2({
+const weekOf = ({ days = 4, experience = "intermediate", env = "commercial_gym", gender = "male", week = 0 } = {}) => buildMasterEngineV2({
   intake: {
     gender, age: "30", height_cm: "178", weight_kg: "85", circumferences: { neck_cm: "38", waist_cm: "90", hips_cm: "100" },
     primary_goal: "lean_bulk", neat_level: "moderate", occupation_type: "DESK_OFFICE", dangerous_symptoms: ["NONE"],
@@ -28,7 +28,7 @@ const weekOf = ({ days = 4, experience = "intermediate", env = "commercial_gym",
   },
   evaluationContext: { system_time: "2026-09-21T08:00:00.000Z", assessmentDate: "2026-09-21" },
   nutritionFoodCatalog: CATALOG, options: {},
-}).training_program.weeks[0].sessions || [];
+}).training_program.weeks[week].sessions || [];
 
 test("every exercise the plan writes is counted against a muscle", () => {
   const unknown = new Set();
@@ -116,12 +116,19 @@ test("the glutes are trained on their own, not only inside the squats", () => {
   for (const days of [3, 4, 5, 6]) {
     for (const env of ["commercial_gym", "home_gym"]) {
       const experience = days >= 5 ? "advanced" : days === 3 ? "beginner" : "intermediate";
-      const week = weekOf({ days, env, experience });
-      const audit = auditWeeklyMuscleVolume(week, experience);
-      assert.ok(audit.analysis.GLUTES.weekly_sets >= 3, `${days} days ${env}: ${audit.analysis.GLUTES.weekly_sets} glute sets`);
-      const direct = week.flatMap((session) => session.exercises || [])
+      // S1: week 1 is a calibration week (2 sets an exercise), so a beginner's
+      // week-1 glute total is 2 — the >= 3 set threshold is judged from week 2,
+      // once the intro cap lifts. Week 1 must still carry a direct glute movement.
+      const week1 = weekOf({ days, env, experience });
+      const direct1 = week1.flatMap((session) => session.exercises || [])
         .filter((exercise) => /HIP_THRUST|GLUTE_BRIDGE/.test(String(exercise.exercise_code || "")));
-      assert.ok(direct.length > 0, `${days} days ${env}: no direct glute movement`);
+      assert.ok(direct1.length > 0, `${days} days ${env}: no direct glute movement in week 1`);
+      const week2 = weekOf({ days, env, experience, week: 1 });
+      const audit = auditWeeklyMuscleVolume(week2, experience);
+      assert.ok(audit.analysis.GLUTES.weekly_sets >= 3, `${days} days ${env}: ${audit.analysis.GLUTES.weekly_sets} glute sets in week 2`);
+      const direct = week2.flatMap((session) => session.exercises || [])
+        .filter((exercise) => /HIP_THRUST|GLUTE_BRIDGE/.test(String(exercise.exercise_code || "")));
+      assert.ok(direct.length > 0, `${days} days ${env}: no direct glute movement in week 2`);
     }
   }
 });

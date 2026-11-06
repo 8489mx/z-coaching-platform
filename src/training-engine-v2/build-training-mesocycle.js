@@ -1275,7 +1275,28 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             LUNGE_PATTERNS.has(finalCode) ||
             finalCode === "BODYWEIGHT_SQUAT"
           ) {
-            finalCode = isHome ? "GLUTE_BRIDGE" : "BARBELL_HIP_THRUST";
+            // S1: a mild-to-moderate knee (pain 6 or less, known) regresses the
+            // KNEE_DOMINANT slot to the leg extension machine instead of losing
+            // all direct quad work — open-chain knee extension loads the knee
+            // far less than a squat, and the slot stays knee-dominant. The
+            // regression is scoped to the quad slot on purpose: a lunge in
+            // another slot (a reverse lunge in UNILATERAL_LOWER) is unilateral
+            // hip/glute work, and converting it to a second leg extension
+            // collides with the quad slot's own leg extension and holds the
+            // slot. Severe pain (7+) or unknown pain keeps the fail-closed
+            // hip-extension conversion, and a client without a machine keeps
+            // it too.
+            const kneePain = injuryPainByArea.get("KNEE");
+            if (
+              ex.slot_code === "KNEE_DOMINANT" &&
+              Number.isFinite(kneePain) &&
+              kneePain <= 6 &&
+              exerciseFitsEquipment("LEG_EXTENSION_MACHINE", regressionEquipment)
+            ) {
+              finalCode = "LEG_EXTENSION_MACHINE";
+            } else {
+              finalCode = isHome ? "GLUTE_BRIDGE" : "BARBELL_HIP_THRUST";
+            }
           }
           if (finalCode !== beforeKnee || KNEE_DOMINANT_LOADED.has(finalCode)) injuryCues.push(INJURY_CUES_AR.KNEE);
         }
@@ -1283,6 +1304,25 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
           const beforeShoulder = finalCode;
           if (finalCode === "BARBELL_BENCH_PRESS" || finalCode === "BARBELL_FLAT_BENCH_PRESS") {
             finalCode = isHome ? "DUMBBELL_FLOOR_PRESS" : "MACHINE_CHEST_PRESS";
+          } else if (
+            (finalCode === "PUSH_UP" || finalCode === "INCLINE_PUSH_UP") &&
+            ex.slot_code === "HORIZONTAL_PUSH"
+          ) {
+            // S1: a push-up in the horizontal-push slot loads the front of the
+            // shoulder with bodyweight, exactly what the bench-press branch
+            // already regresses. The floor press (home, dumbbells owned) or the
+            // machine chest press (gym) keeps the press pattern without the
+            // bodyweight anterior load; a home client who owns no load gets the
+            // slot held instead of invented dumbbell work.
+            if (isHome) {
+              if (exerciseFitsEquipment("DUMBBELL_FLOOR_PRESS", regressionEquipment)) {
+                finalCode = "DUMBBELL_FLOOR_PRESS";
+              } else {
+                return heldEntryFor(ex, "SHOULDER_PUSH_UP_HELD", beforeShoulder, config.week_number, baseSession.session_code, heldCodeFor(ex.slot_code));
+              }
+            } else {
+              finalCode = "MACHINE_CHEST_PRESS";
+            }
           } else if (INCLINE_DECLINE_PRESSES.has(finalCode)) {
             finalCode = "DUMBBELL_FLOOR_PRESS";
           } else if (OVERHEAD_PRESSES.has(finalCode)) {
@@ -1333,6 +1373,12 @@ export function buildTrainingMesoCycle(intakeDecision, options = {}) {
             finalCode = "BODYWEIGHT_SPLIT_SQUAT";
           } else if (LOADED_HINGES.has(finalCode)) {
             finalCode = "DUMBBELL_ROMANIAN_DEADLIFT";
+          } else if (finalCode === "BARBELL_HIP_THRUST" || finalCode === "HIP_THRUST") {
+            // S1: a loaded barbell hip thrust is barbell axial loading too — the
+            // week-1 guard regressed squats and hinges but left it standing
+            // (C20 week 1). The bodyweight glute bridge is the same regression
+            // the mild-hip map already blesses for a hip thrust.
+            finalCode = "BODYWEIGHT_GLUTE_BRIDGE";
           }
           if (finalCode !== beforeElderly) injuryCues.push(INJURY_CUES_AR.ELDERLY_HIGH_BMI);
         }

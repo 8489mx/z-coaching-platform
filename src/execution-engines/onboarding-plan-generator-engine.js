@@ -169,7 +169,10 @@ export function generateInitialPlan({
     targetProteinGrams,
     targetCarbGrams,
     targetFatGrams,
-    waterLiters: Math.max(3.5, Math.round((weightNum * 0.045) * 10) / 10)
+    // S1 (item 8): the water target scales with body weight at 40 ml/kg
+    // (the same rate the master engine uses), with a 2.0 L floor instead of
+    // the old 3.5 L floor that dominated everyone under ~88 kg.
+    waterLiters: Math.max(2.0, Math.round((weightNum * 0.04) * 10) / 10)
   });
 
   // Re-adjust carbs if calories or protein changed

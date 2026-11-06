@@ -430,6 +430,10 @@ function validateNutrition(input, issues) {
       "allergies",
       "medicalExclusions",
       "dislikedFoods",
+      // S1: the dietary preference the client declared (VEGETARIAN from
+      // the form's dietary_preference field); the meal generator reads it
+      // for its vegan check.
+      "dietType",
       "intolerances",
       "digestiveIssues",
     ],
@@ -484,6 +488,12 @@ function validateNutrition(input, issues) {
     }
   }
   enumValue(nutrition.budget, BudgetLevel, "nutrition.budget", issues);
+  // S1: dietType is nullable; when present it must be a diet the engine
+  // understands (VEGAN is read by the meal generator's vegan check,
+  // VEGETARIAN is the form's dietary_preference value).
+  if (nutrition.dietType !== null && nutrition.dietType !== undefined) {
+    allowedEnumValue(nutrition.dietType, ["VEGAN", "VEGETARIAN"], "nutrition.dietType", issues);
+  }
   requiredBoolean(nutrition.foodStorageAvailable, "nutrition.foodStorageAvailable", issues);
   requiredBoolean(nutrition.foodReheatingAvailable, "nutrition.foodReheatingAvailable", issues);
 

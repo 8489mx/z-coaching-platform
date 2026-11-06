@@ -51,6 +51,11 @@ const NUTRIENTS = Object.freeze([
     targetKey: "fiber_g",
     minimumTolerance: 1,
     toleranceRate: 0.25,
+    // S1 (reverted): raising fiber to weight 2 was measured on the 20-client
+    // matrix and changed nothing meaningful (9 clients improved, 11 worsened;
+    // worst case C20 -13.0 g -> -12.1 g) — the served food pool, not the
+    // objective weight, is what limits fiber. Weight stays 1; the shortfall
+    // is filed as a food-pool problem for a later package.
     weight: 1,
   }),
 ]);

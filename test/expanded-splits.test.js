@@ -98,7 +98,9 @@ test('Expanded Splits Generator Suite', async (t) => {
 
     assert.ok(plan.daily_targets.fiber_grams > 0);
     assert.equal(plan.daily_targets.fiber_grams, plan.daily_targets.target_fiber_g);
-    assert.equal(plan.daily_targets.water_liters, 3.5);
+    // S1 (item 8): the water target scales with body weight (75 kg x 40 ml/kg
+    // = 3.0 L); the old 3.5 L floor dominated everyone under ~88 kg.
+    assert.equal(plan.daily_targets.water_liters, 3.0);
   });
 
 });

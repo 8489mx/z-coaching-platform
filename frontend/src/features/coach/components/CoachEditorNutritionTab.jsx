@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, X, ArrowRightLeft, Zap, Target, ShieldAlert, Copy, Sparkles } from 'lucide-react';
 import { balanceMealItems, dynamicRippleRebalanceDailyPlan } from '../../../utils/mealPortionBalancer.js';
+import { pcosProtocolCard } from './pcosProtocol.js';
 
 function getCleanMealTitle(rawName) {
   if (!rawName) return 'وجبة';
@@ -41,6 +42,10 @@ export default function CoachEditorNutritionTab(props) {
   // never reaches the editor (src/api/services/serviceScope.js).
   const maxSafeProtein = Number(clinicalGuardrails?.max_protein_g) || 0;
   const hasProteinCap = Boolean(clinicalGuardrails?.kidney_protein_capped) && maxSafeProtein > 0;
+
+  // S1 (item 1): the PCOS protocol the engine applied, made visible to the
+  // coach. Null when no PCOS handling applies to this plan.
+  const pcosCard = pcosProtocolCard(program);
 
   const _activeSessions = (program?.training?.sessions && program.training.sessions.length > 0)
     ? program.training.sessions
@@ -639,6 +644,35 @@ export default function CoachEditorNutritionTab(props) {
                 );
               })}
             </div>
+
+            {/* PCOS protocol (S1 item 1): the engine's PCOS carb cap, made visible to the coach */}
+            {pcosCard && (
+              <div style={{
+                background: '#FDF2F8',
+                border: '1px solid #F9A8D4',
+                borderRadius: '12px',
+                padding: '10px 14px',
+                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.02)'
+              }}>
+                <div style={{ fontSize: '12px', fontWeight: 800, color: '#9D174D' }}>
+                  تكيس المبايض (PCOS) — {pcosCard.frameworkNameAr}
+                  {pcosCard.carbCapSharePercent != null && (
+                    <span style={{ fontWeight: 700, color: '#BE185D' }}> — سقف الكارب {pcosCard.carbCapSharePercent}%</span>
+                  )}
+                </div>
+                {pcosCard.noteAr && (
+                  <div style={{ fontSize: '11.5px', color: '#831843', marginTop: '4px', lineHeight: 1.6 }}>{pcosCard.noteAr}</div>
+                )}
+                {pcosCard.carbTimingAr && (
+                  <div style={{ fontSize: '11.5px', color: '#831843', marginTop: '4px', lineHeight: 1.6 }}>{pcosCard.carbTimingAr}</div>
+                )}
+                {pcosCard.carbCapRelaxed && (
+                  <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#9D174D', marginTop: '4px' }}>
+                    تم تخفيف سقف الكارب إلى 40% لأن البروتين والدهون وصلا لسقفهما — معلَّم للمراجعة، مش سكوت.
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Meals Grid (2-Column Balanced Sleek Grid) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: '12px' }}>

@@ -7,6 +7,7 @@ import { optimizeImageFile, optimizeMultipleFiles } from '../utils/imageOptimize
 import { formatWhatsAppPhone } from '../utils/whatsappRemindersEngine';
 import CurvedSelect from '../components/common/CurvedSelect';
 import { HEALTH_DATA_CONSENT_TEXT_AR, hasHealthDataConsent, buildHealthDataConsent } from '../config/healthDataConsent';
+import { MEDICAL_CONDITION_OPTIONS, DIETARY_PREFERENCE_OPTIONS } from './FullIntakeForm.constants.js';
 
 const DEFAULT_MASTER_INTAKE = {
   // Mandatory health-data processing consent (PDPL), given before any answer leaves the device.
@@ -79,6 +80,9 @@ const DEFAULT_MASTER_INTAKE = {
     bedtime_hour: '23:00'
   },
   disliked_foods: [],
+  // S1 (item 9): the dedicated vegetarian field. 'none' is the default;
+  // 'vegetarian' means no meat or fish (eggs and dairy stay).
+  dietary_preference: 'none',
 
   // Screen 4: Training & Media
   training_environment: 'commercial_gym',
@@ -1267,19 +1271,7 @@ export default function FullIntakeForm() {
                       اختر الحالات الطبية أو العمليات التي تنطبق عليك:
                     </label>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
-                      {[
-                        { key: 'bariatric_surgery', label: 'تكميم معدة / تحويل مسار' },
-                        { key: 'diabetes', label: 'سكري / مقاومة أنسولين' },
-                        { key: 'favism_g6pd', label: 'أنيميا الفول (G6PD)' },
-                        { key: 'renal', label: 'أمراض الكلى / ضعف وظائف الكلى' },
-                        { key: 'hepatic', label: 'أمراض الكبد / دهون على الكبد' },
-                        { key: 'thyroid', label: 'اضطرابات الغدة الدرقية' },
-                        { key: 'gi_tract', label: 'قولون عصبي / ارتجاع مريء' },
-                        { key: 'hypertension', label: 'ضغط دم مرتفع' },
-                        { key: 'gout', label: 'نقرس / يوريك أسيد مرتفع' },
-                        { key: 'asthma', label: 'ربو / حساسية صدر' },
-                        { key: 'heart_condition', label: 'مرض في القلب (مشخص من دكتور)' }
-                      ].map((c) => {
+                      {MEDICAL_CONDITION_OPTIONS.map((c) => {
                         const isChecked = medSelected.includes(c.key);
                         return (
                           <button 
@@ -1960,6 +1952,40 @@ export default function FullIntakeForm() {
                           {sug.desc}
                         </span>
                       </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Dietary Preference (S1 item 9): a dedicated vegetarian field */}
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
+                  نظامك الغذائي:
+                </label>
+                <p style={{ fontSize: '11px', color: '#64748B', margin: '0 0 8px 0' }}>
+                  لو نباتي هنستبعد كل اللحوم والأسماك من خطتك (البيض والألبان بيفضلوا):
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {DIETARY_PREFERENCE_OPTIONS.map((option) => {
+                    const isChecked = (formData.dietary_preference || 'none') === option.key;
+                    return (
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => setFormData(p => ({ ...p, dietary_preference: option.key }))}
+                        style={{
+                          padding: '5px 11px',
+                          borderRadius: '16px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          border: isChecked ? '1px solid #16A34A' : '1px solid #CBD5E1',
+                          background: isChecked ? '#F0FDF4' : '#FFFFFF',
+                          color: isChecked ? '#166534' : '#475569'
+                        }}
+                      >
+                        {option.label}
+                      </button>
                     );
                   })}
                 </div>

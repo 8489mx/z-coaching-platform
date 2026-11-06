@@ -25,6 +25,29 @@ export function evaluateFoodConstraints(input) {
   const result = emptyRuleResult();
   const decisionConstraints = [];
 
+  // S1: one reported allergy expands into several substances in the
+  // canonical list (FISH becomes FISH + SEAFOOD + FISH_SEAFOOD, so the
+  // food filter can match every tag). Each substance still gets its own
+  // exclusion constraint, but the coach-facing flag is one per reported
+  // allergy family, not one per expanded substance — C17 showed the same
+  // UNCONFIRMED_FOOD_ALLERGY flag three times for a single fish allergy.
+  // The families mirror the adapter's expansion groups; two genuinely
+  // different allergies (PEANUT + SHELLFISH) keep two independent flags.
+  const ALLERGY_ALIAS_FAMILIES = [
+    ["EGG", "EGGS"],
+    ["MILK", "DAIRY"],
+    ["FISH", "SEAFOOD", "FISH_SEAFOOD", "FISH_SHELLFISH"],
+    ["PEANUT", "PEANUTS", "TREE_NUT"],
+    ["WHEAT", "GLUTEN"],
+  ];
+  const allergyFamilyOf = (substance) => {
+    for (const family of ALLERGY_ALIAS_FAMILIES) {
+      if (family.includes(substance)) return family[0];
+    }
+    return substance;
+  };
+  const unconfirmedAllergyFlagsEmitted = new Set();
+
   input.nutrition.allergies.forEach((allergy, index) => {
     const item = constraint(
       "FOOD_ALLERGY_EXCLUSION",
@@ -35,7 +58,9 @@ export function evaluateFoodConstraints(input) {
     result.hardConstraints.push(item);
     decisionConstraints.push(item);
 
-    if (allergy.medicallyConfirmed === false) {
+    const family = allergyFamilyOf(String(allergy.substance || "").toUpperCase());
+    if (allergy.medicallyConfirmed === false && !unconfirmedAllergyFlagsEmitted.has(family)) {
+      unconfirmedAllergyFlagsEmitted.add(family);
       const sourcePath = `nutrition.allergies[${index}].medicallyConfirmed`;
       result.statusCandidates.push(
         statusCandidate(PlanStatus.COACH_REVIEW_REQUIRED, "UNCONFIRMED_FOOD_ALLERGY"),

@@ -43,11 +43,20 @@ test("the six training ages map to the engine's experience levels", () => {
 
 test("weekly volume grows with training age, step by step (full body 3 days and upper/lower 4 days)", () => {
   for (const days of [3, 4]) {
-  const totals = TRAINING_AGES.map((age) => weeklySets(plan({ training_age: age }, days)));
+  // S1: week 1 is a calibration week for every beginner (2 sets an exercise),
+  // so the training-age gradient is measured from week 2, once the intro cap lifts.
+  const totals = TRAINING_AGES.map((age) => weeklySets(plan({ training_age: age }, days), 1));
   for (let i = 1; i < totals.length; i++) assert.ok(totals[i] >= totals[i - 1], `${TRAINING_AGES[i]} ${totals[i]} < ${TRAINING_AGES[i - 1]} ${totals[i - 1]}`);
   assert.ok(totals[0] < totals[2], `never ${totals[0]} vs 6-12 months ${totals[2]}`);
   assert.ok(totals[1] < totals[2], `under 6 months ${totals[1]} vs 6-12 months ${totals[2]}`);
   assert.ok(totals[4] > totals[3], `2-4 years ${totals[4]} vs 1-2 years ${totals[3]}`);
+  }
+});
+
+test("week 1 is a calibration week for every beginner: the three beginner ages share the same week-1 total", () => {
+  for (const days of [3, 4]) {
+    const week1 = TRAINING_AGES.slice(0, 3).map((age) => weeklySets(plan({ training_age: age }, days), 0));
+    assert.ok(week1.every((t) => t === week1[0]), `beginner week-1 totals must match, got ${week1.join(",")}`);
   }
 });
 

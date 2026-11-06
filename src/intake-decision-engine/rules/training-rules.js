@@ -106,6 +106,7 @@ export function decideScheduleMode(input) {
 
 export function decideIntroWeek(input) {
   const newClient = input.training.experience === TrainingExperience.NEVER_TRAINED;
+  const beginner = input.training.experience === TrainingExperience.BEGINNER;
   const returning = [
     RecentTraining.NONE_LAST_4_WEEKS,
     RecentTraining.RETURNING_AFTER_LONG_BREAK,
@@ -113,11 +114,19 @@ export function decideIntroWeek(input) {
   const uncertain =
     input.training.experience === TrainingExperience.UNKNOWN ||
     input.training.recentTraining === RecentTraining.UNKNOWN;
-  const required = newClient || returning || uncertain;
+  // S1: a beginner with known history is still new to structured training:
+  // the first week calibrates loads at 2 sets instead of opening at full
+  // volume (C01 opened at 87 sets in week 1, the same as week 2).
+  const required = newClient || beginner || returning || uncertain;
   const reasons = [];
   if (newClient) {
     reasons.push(
       reason("INTRO_WEEK_NEW_CLIENT", Scope.TRAINING, "A never-trained client starts with calibration."),
+    );
+  }
+  if (beginner) {
+    reasons.push(
+      reason("INTRO_WEEK_BEGINNER", Scope.TRAINING, "A beginner starts with a calibration week at reduced sets."),
     );
   }
   if (returning) {
