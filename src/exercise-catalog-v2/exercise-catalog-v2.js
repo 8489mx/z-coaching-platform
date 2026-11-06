@@ -234,6 +234,30 @@ const EXERCISES_V2 = Object.freeze([
     beginnerFriendly: true,
     compound: true,
   }),
+  // R1 (HO-1): the unilateral twin of the glute bridge. A bodyweight-only
+  // home client has exactly one hip-extension exercise in the catalog, so a
+  // session with two glute slots (HIP_HINGE + HIP_EXTENSION) spends it on
+  // the hinge and holds the extension slot for the coach. The single-leg
+  // bridge is a distinct, standard bodyweight exercise — same movement
+  // family, different limb loading and a per-side dose — so the second slot
+  // fills with real work instead of a held placeholder. It is deliberately
+  // NOT in HIP_EXTENSION_FAMILY (build-training-mesocycle.js): that set
+  // stops one movement pattern triplicated by guard conversions, and this
+  // exercise is the second distinct glute movement in two distinct template
+  // slots, not a triplication. Adding it there would re-hold the very slot
+  // it exists to fill.
+  createExerciseV2({
+    exerciseCode: "SINGLE_LEG_GLUTE_BRIDGE",
+    nameEn: "Single-Leg Glute Bridge",
+    nameAr: "جلوت بريدج برجل واحدة بوزن الجسم",
+    slotCode: MovementSlotCodeV2.HIP_EXTENSION,
+    primaryMuscle: MuscleGroup.GLUTES,
+    secondaryMuscles: [MuscleGroup.HAMSTRINGS],
+    equipmentCode: EquipmentCode.BODYWEIGHT,
+    beginnerFriendly: true,
+    compound: true,
+    prescriptionUnit: ExercisePrescriptionUnit.REPS_PER_SIDE,
+  }),
 
   // ==========================================
   // 3. UNILATERAL_LOWER (Single Leg)

@@ -1572,6 +1572,56 @@ export function buildMasterEngineV2(inputs) {
     weeks: Object.freeze(enrichedTrainingWeeks),
   });
 
+  // R1 (HO-1): a held training slot must never be silent at the decision
+  // level. The mesocycle flags held slots on the training program
+  // (coach_review_flags), but the intake decision is computed BEFORE the
+  // program is built, so a plan whose only fault is an equipment-held slot
+  // reached the coach as READY_FOR_DRAFT with zero decision-level flags —
+  // the coach reading only the decision saw nothing wrong. When the built
+  // program holds a slot because no exercise fits the client's declared
+  // equipment (EQUIPMENT_EXHAUSTED / DEDUP_EXHAUSTED), the decision gains
+  // one flag per held slot and a READY decision is downgraded to
+  // COACH_REVIEW_REQUIRED (the H8 redirect pattern above). Injury-held
+  // slots are not added here: the safety rules already flag the injury
+  // itself, so the decision is already held for review. A stricter status
+  // (BLOCKED, MEDICAL_REVIEW_REQUIRED) is never softened.
+  const heldEquipmentSlots = new Map();
+  for (const week of training_mesocycle?.weeks || []) {
+    for (const session of week.sessions || []) {
+      for (const exercise of session.exercises || []) {
+        if (!String(exercise?.exercise_code || "").startsWith("HELD_SLOT")) continue;
+        if (exercise.held_reason !== "EQUIPMENT_EXHAUSTED" && exercise.held_reason !== "DEDUP_EXHAUSTED") continue;
+        const slot = exercise.slot_code || exercise.exercise_code;
+        if (!heldEquipmentSlots.has(slot)) heldEquipmentSlots.set(slot, new Set());
+        heldEquipmentSlots.get(slot).add(week.week_number);
+      }
+    }
+  }
+  if (heldEquipmentSlots.size > 0) {
+    const existingHeldFlags = (intake_decision.review_flags || [])
+      .filter((f) => f.code === "EQUIPMENT_SLOT_HELD_FOR_REVIEW")
+      .map((f) => f.message || "");
+    for (const [slot, weeks] of heldEquipmentSlots) {
+      const message = `الخطة فيها خانة ${slot} محجوزة للمدرب في ${weeks.size} أسابيع — مفيش تمرين مناسب بمعدات العميل المعلنة، ولازم المدرب يختار بديل قبل التسليم.`;
+      if (existingHeldFlags.some((m) => m.includes(slot))) continue;
+      intake_decision.review_flags = [...(intake_decision.review_flags || []), {
+        code: "EQUIPMENT_SLOT_HELD_FOR_REVIEW",
+        scope: "TRAINING",
+        level: "COACH",
+        message,
+        sourcePath: "training_program.weeks",
+      }];
+      intake_decision.decision_reasons = [...(intake_decision.decision_reasons || []), {
+        code: "EQUIPMENT_SLOT_HELD_FOR_REVIEW",
+        scope: "TRAINING",
+        message,
+      }];
+    }
+    if (intake_decision.plan_status === "READY_FOR_DRAFT") {
+      intake_decision.plan_status = "COACH_REVIEW_REQUIRED";
+    }
+  }
+
   // Base weekly schedule for downstream cardio/mobility dependencies
   const baseWeeklySchedule =
     enrichedTrainingWeeks.length > 0 ? enrichedTrainingWeeks[0].sessions : [];
@@ -1880,17 +1930,29 @@ export function buildMasterEngineV2(inputs) {
     // names, so the new food's name is never adjusted: a shakshouka partner
     // keeps "وزيت الزيتون" in its name for a client who dislikes olive oil.
     // Re-apply the same adjustment here, on the final plate.
+    // R1 (HO-2): the protein fallback runs a SECOND time here, after the
+    // token pass and before the day reconciliation. The first fallback (above)
+    // already ran — but the token pass can delete a meal's only protein AFTER
+    // it: a template chicken anchor of 48 g, trimmed to 38 g / 22 g by the
+    // trim passes, sits below the 50 g real-portion minimum and is dropped
+    // as a token, leaving lunch and dinner protein-less while the plan is
+    // still served. A rescue after every removal guarantees no served plate
+    // ends up without a protein food; the reconciliation after it re-balances
+    // the day total (it only moves starch and oil, never the rescued protein).
     applyDislikedNames(
       reconcileDayCaloriesToTarget(
-        dropTokenPortions(
-          renameOmelettesToActualEggs(
-            splitOversizedProteinPortions(
-              ensureLegumeForNoAnimalProtein(
-                capWholeEggsForCholesterol(fallbackCulinaryMeals, hasHighCholesterol),
-                culinaryAllergenContext,
+        applyCulinaryProteinFallback(
+          dropTokenPortions(
+            renameOmelettesToActualEggs(
+              splitOversizedProteinPortions(
+                ensureLegumeForNoAnimalProtein(
+                  capWholeEggsForCholesterol(fallbackCulinaryMeals, hasHighCholesterol),
+                  culinaryAllergenContext,
+                ),
               ),
             ),
           ),
+          culinaryAllergenContext,
         ),
         universalTargets.target_calories,
       ),

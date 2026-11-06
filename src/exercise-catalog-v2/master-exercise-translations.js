@@ -305,6 +305,12 @@ export const MASTER_EXERCISE_DICTIONARY = Object.freeze({
     name_en: "Glute Bridge",
     name_ar: "جلوت بريدج بوزن الجسم للأرداف",
   },
+  // R1 (HO-1): the unilateral glute bridge that fills a bodyweight-only
+  // client's second glute slot instead of holding it for the coach.
+  SINGLE_LEG_GLUTE_BRIDGE: {
+    name_en: "Single-Leg Glute Bridge",
+    name_ar: "جلوت بريدج برجل واحدة بوزن الجسم للأرداف",
+  },
   GLUTE_BRIDGE: {
     name_en: "Glute Bridge",
     name_ar: "جلوت بريدج بوزن الجسم للأرداف",

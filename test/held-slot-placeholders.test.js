@@ -113,7 +113,7 @@ test("C03 (shoulder, home dumbbells): the kickback fills the elbow-extension slo
   assert.equal(program.intake_decision.plan_status, "COACH_REVIEW_REQUIRED", "C03 decision must still withhold the plan");
 });
 
-test("C06 (home, no equipment): 20 held slots are named placeholders, plan still withheld", () => {
+test("C06 (home, no equipment): 15 held slots are named placeholders, plan still withheld", () => {
   const program = fullProgram({
     ...BASE_INTAKE,
     gender: "male", age: "22", height_cm: "175", weight_kg: "78",
@@ -125,18 +125,21 @@ test("C06 (home, no equipment): 20 held slots are named placeholders, plan still
   });
   assertNoNullCodeExercises(program, "C06");
   const held = allExercises(program).filter((ex) => ex.held_for_review);
-  // H8: 20, not 15 — the Nordic curl and the 45-degree hyperextension
-  // used to be served to a bodyweight-only client (the catalog mislabels
-  // them BODYWEIGHT). They are now honest EQUIPMENT_EXHAUSTED holds: no
-  // bodyweight knee-flexion exists in the catalog, and the hyper bench is
-  // a machine. The plan stays READY with coach-fill slots.
-  assert.equal(held.length, 20, `C06 must hold exactly 20 slots, got ${held.length}`);
+  // R1: 15, not 20 — the hip-extension slot is now filled by the single-leg
+  // glute bridge (a real bodyweight exercise added to the catalog), so only
+  // the slots with no bodyweight substitute stay held: shoulder abduction
+  // (2/week) and elbow flexion (1/week). The remaining holds are still
+  // honest EQUIPMENT_EXHAUSTED placeholders, and the decision now flags
+  // them too (it used to be READY with zero flags).
+  assert.equal(held.length, 15, `C06 must hold exactly 15 slots, got ${held.length}`);
   assert.ok(held.every((ex) => ex.held_reason === "EQUIPMENT_EXHAUSTED"), "C06 held reason must be EQUIPMENT_EXHAUSTED");
   assert.equal(program.training_program.final_preflight.status, "REVIEW_REQUIRED", "C06 final preflight must still withhold");
   assert.equal(program.nutrition_program.status, "REVIEW_REQUIRED", "C06 plan must still be REVIEW_REQUIRED");
+  assert.equal(program.intake_decision.plan_status, "COACH_REVIEW_REQUIRED", "C06 decision must withhold the plan while slots are held");
+  assert.ok((program.intake_decision.review_flags || []).some((f) => (f.code || f.type) === "EQUIPMENT_SLOT_HELD_FOR_REVIEW"), "C06 decision must flag the held slots");
 });
 
-test("C15 (home, no equipment, 2 days): 15 held slots are named placeholders, plan still withheld", () => {
+test("C15 (home, no equipment, 2 days): 10 held slots are named placeholders, plan still withheld", () => {
   const program = fullProgram({
     ...BASE_INTAKE,
     gender: "female", age: "23", height_cm: "158", weight_kg: "55",
@@ -149,12 +152,14 @@ test("C15 (home, no equipment, 2 days): 15 held slots are named placeholders, pl
   });
   assertNoNullCodeExercises(program, "C15");
   const held = allExercises(program).filter((ex) => ex.held_for_review);
-  // H8: 15, not 10 — same honest holds as C06 (Nordic + hyperextension
-  // are no longer served to a bodyweight-only client).
-  assert.equal(held.length, 15, `C15 must hold exactly 15 slots, got ${held.length}`);
+  // R1: 10, not 15 — same hip-extension fill as C06 (single-leg glute
+  // bridge); the remaining holds are shoulder abduction (1/week) and
+  // elbow flexion (1/week), the two slots with no bodyweight substitute.
+  assert.equal(held.length, 10, `C15 must hold exactly 10 slots, got ${held.length}`);
   assert.ok(held.every((ex) => ex.held_reason === "EQUIPMENT_EXHAUSTED"), "C15 held reason must be EQUIPMENT_EXHAUSTED");
   assert.equal(program.training_program.final_preflight.status, "REVIEW_REQUIRED", "C15 final preflight must still withhold");
   assert.equal(program.nutrition_program.status, "REVIEW_REQUIRED", "C15 plan must still be REVIEW_REQUIRED");
+  assert.ok((program.intake_decision.review_flags || []).some((f) => (f.code || f.type) === "EQUIPMENT_SLOT_HELD_FOR_REVIEW"), "C15 decision must flag the held slots");
 });
 
 test("C16 (knee + back, gym): the knee-guard substitute fills the unilateral-lower slot, no hold, training preflight passes", () => {
