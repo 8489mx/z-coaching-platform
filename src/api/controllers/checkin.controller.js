@@ -156,7 +156,25 @@ export async function submitCheckin(req, res) {
     // -------------------------------------------------------------
     // Tier 0 / Tier 1 Authoritative Server-Side Schedule Guard
     // -------------------------------------------------------------
-    const submissionTime = req.body.submission_time ? new Date(req.body.submission_time) : new Date();
+    // H6 (B-API-1): the schedule guard runs on server time. A
+    // client-supplied submission_time may only describe the past — a
+    // check-in filled offline earlier and uploaded now. A future
+    // timestamp is time travel to a week that has not happened yet: it
+    // is rejected with 400, never honoured. The ceiling is server now
+    // plus a 10-minute clock-skew tolerance; a timestamp a few minutes
+    // ahead is clamped to now, and an unparseable value is rejected.
+    const FUTURE_SUBMISSION_TOLERANCE_MS = 10 * 60 * 1000;
+    let submissionTime = new Date();
+    if (req.body.submission_time !== undefined && req.body.submission_time !== null && req.body.submission_time !== "") {
+      const parsedSubmissionTime = new Date(req.body.submission_time);
+      if (Number.isNaN(parsedSubmissionTime.getTime())) {
+        return res.status(400).json({ success: false, error: "تاريخ الإرسال غير صالح", code: "INVALID_SUBMISSION_TIME" });
+      }
+      if (parsedSubmissionTime.getTime() > Date.now() + FUTURE_SUBMISSION_TOLERANCE_MS) {
+        return res.status(400).json({ success: false, error: "تاريخ الإرسال في المستقبل؛ لا يمكن إرسال متابعة لأسبوع لم يأتِ بعد", code: "FUTURE_SUBMISSION_TIME" });
+      }
+      submissionTime = parsedSubmissionTime.getTime() > Date.now() ? new Date() : parsedSubmissionTime;
+    }
     const schedule = await evaluateClientCheckinSchedule(targetUserId, submissionTime);
 
     // If active program exists, strictly enforce schedule window and cadence
@@ -1135,13 +1153,20 @@ export async function approveCheckin(req, res) {
       return res.status(404).json({ success: false, error: "Check-in not found" });
     }
 
-    // P0-A12 stage 1: status guard. Only a PENDING_REVIEW row may be
-    // approved. Without it, an already-approved or auto-applied row sits
-    // in the coach's queue (the pending endpoint returns status !=
-    // APPROVED, which includes AUTO_APPLIED) and approving it again
-    // merges the same adaptation a second time — week counter and
+    // P0-A12 stage 1: status guard. Only a PENDING_REVIEW row — or an
+    // AUTO_APPLIED row — may be approved. H6 (B-API-2): a GREEN check-in
+    // auto-applies at submit by the locked P1-B10 design, so its row is
+    // AUTO_APPLIED, not PENDING_REVIEW; the coach's approve action must
+    // still work on it as a review-only approval (notes saved, status ->
+    // APPROVED, no re-merge: requestedAdaptation below is already false
+    // for an already-adapted row without custom macros, so the
+    // double-merge protection still holds). An APPROVED row still 409s:
+    // it is genuinely approved already. Without this, an auto-applied
+    // row sat in the coach's queue (the pending endpoint returned
+    // status != APPROVED, which includes AUTO_APPLIED) and approving it
+    // again merged the same adaptation a second time — week counter and
     // targets re-applied. A second approval is rejected, never merged.
-    if (checkin.status !== "PENDING_REVIEW") {
+    if (checkin.status !== "PENDING_REVIEW" && checkin.status !== "AUTO_APPLIED") {
       return res.status(409).json({
         success: false,
         error: "هذه المتابعة اعتُمدت من قبل ولا يمكن اعتمادها مرة أخرى؛ اعتماد ثانٍ كان سيُدمج نفس التعديل مرتين",

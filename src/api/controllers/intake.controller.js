@@ -7,7 +7,7 @@ import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engin
 import { resolveDailySteps, stepsActivityFactor } from "../../steps-source/resolve-daily-steps.js";
 import { IntakeValidationError } from "../../intake-decision-engine/validation/intake-validation-error.js";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
-import { resolveIntakeMedicalReview, MEDICAL_REVIEW_CONFIRMATION_REQUIRED, resolveCountryFromPhone } from "./program.controller.js";
+import { resolvePublishMedicalReview, MEDICAL_REVIEW_CONFIRMATION_REQUIRED, resolveCountryFromPhone } from "./program.controller.js";
 import { User, Program, IntakeSubmission } from "../models/index.js";
 import { startCycleOnPublish } from "../services/trainingCycleService.js";
 import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
@@ -702,11 +702,17 @@ export const approveAndPublishIntake = async (req, res) => {
       return res.status(404).json({ error: "لم يتم توليد مسودة خطة لهذا المتدرب بعد" });
     }
 
-    const medicalReview = await resolveIntakeMedicalReview(submission.user_id);
+    // H6 (B-API-7): the publish gate fires for ANY flagged intake
+    // decision, not only MEDICAL-level ones — a medication flag or
+    // unconfirmed allergy needs the same explicit confirmation as a
+    // medical flag before the plan goes live.
+    const medicalReview = await resolvePublishMedicalReview(submission.user_id);
     if (medicalReview.required && req.body?.medical_review_confirmed !== true) {
       return res.status(409).json({
         code: MEDICAL_REVIEW_CONFIRMATION_REQUIRED,
-        error: "هذا المتدرب يحتاج مراجعة طبية قبل اعتماد الخطة. راجع الحالة مع الطبيب المعالج ثم أكد المراجعة لنشر الخطة.",
+        error: medicalReview.has_medical_flag
+          ? "هذا المتدرب يحتاج مراجعة طبية قبل اعتماد الخطة. راجع الحالة مع الطبيب المعالج ثم أكد المراجعة لنشر الخطة."
+          : "هذه الخطة تحمل ملاحظات مراجعة يجب تأكيدها قبل النشر. راجع الملاحظات المرفقة ثم أكد المراجعة لنشر الخطة.",
         reasons: medicalReview.reasons,
       });
     }

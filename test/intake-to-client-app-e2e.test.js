@@ -90,8 +90,10 @@ test("real form submit -> draft -> approve -> active program carries every linke
     });
 
     const approve = mockRes();
-    await approveAndPublishIntake({ params: { submission_id: submission.id }, body: {} }, approve.res);
-    assert.equal(approve.out.status, 200);
+    // This intake is flagged (celiac + favism + T2D): the coach approving it confirms
+    // the review explicitly, which the publish gate requires for flagged plans.
+    await approveAndPublishIntake({ params: { submission_id: submission.id }, body: { medical_review_confirmed: true } }, approve.res);
+    assert.equal(approve.out.status, 200, JSON.stringify(approve.out.body));
 
     await t.test("active program returns the client-app clinical constraints, bedtime and goal", async () => {
       const active = mockRes();

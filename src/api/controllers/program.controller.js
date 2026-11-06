@@ -366,9 +366,16 @@ export const getUserPrograms = async (req, res) => {
 
 export const getPendingCheckins = async (req, res) => {
   try {
+    // H6 (B-API-4): the pending queue is the coach's work list — only
+    // rows awaiting a decision belong here. AUTO_APPLIED rows are
+    // already decided (auto-applied at submit by the locked P1-B10
+    // design); listing them as pending showed work the coach could not
+    // do (approving one 409d) and the queue never drained for GREEN
+    // clients. AUTO_APPLIED rows stay visible in the coach digest
+    // (getCoachDigest, 14-day window), not here.
     const checkins = await CheckinSubmission.findAll({
       where: {
-        status: { [Op.ne]: "APPROVED" }
+        status: "PENDING_REVIEW"
       },
       include: [
         {
@@ -1094,6 +1101,42 @@ export async function resolveIntakeMedicalReview(userId) {
 }
 
 export const MEDICAL_REVIEW_CONFIRMATION_REQUIRED = "MEDICAL_REVIEW_CONFIRMATION_REQUIRED";
+
+/**
+ * H6 (B-API-7): whether publishing requires an explicit review
+ * confirmation. Unlike resolveIntakeMedicalReview (MEDICAL-level flags
+ * only, shared with triage, auto-publish and target calculation), the
+ * publish gate fires for ANY flagged intake decision
+ * (COACH_REVIEW_REQUIRED or MEDICAL_REVIEW_REQUIRED): a plan carrying
+ * a medication flag, an unconfirmed allergy, or any other review flag
+ * must not publish with one click — the coach confirms the review
+ * first, with the flag codes in `reasons` so the prompt names what
+ * needs reviewing. READY_FOR_DRAFT plans publish normally, and
+ * BLOCKED decisions keep their existing path (a missing guardian
+ * consent or unknown answer is a data problem, not a review to
+ * confirm). `has_medical_flag` lets the gate message tell the coach
+ * when a treating doctor must be consulted.
+ */
+export async function resolvePublishMedicalReview(userId) {
+  try {
+    const answers = await loadLatestIntakeAnswers(userId);
+    if (!answers) return { required: false, reasons: [], has_medical_flag: false };
+    const decision = evaluateIntake(
+      adaptIntakePayloadToCanonicalEngine(structuredClone(answers)),
+      { assessmentDate: new Date().toISOString().split("T")[0] },
+    );
+    const required = decision.plan_status === "COACH_REVIEW_REQUIRED" || decision.plan_status === "MEDICAL_REVIEW_REQUIRED";
+    const flags = decision.review_flags || [];
+    return {
+      required,
+      reasons: required ? flags.map((f) => f.code) : [],
+      has_medical_flag: required ? flags.some((f) => f.level === "MEDICAL") : false,
+    };
+  } catch {
+    // An unreadable intake must not silently allow publishing a flagged plan.
+    return { required: true, reasons: ["INTAKE_UNREADABLE"], has_medical_flag: false };
+  }
+}
 
 /**
  * POST /api/v1/programs/next-cycle: prepare the client's next training cycle from the one they just
@@ -2007,15 +2050,21 @@ export const updateCustomProgram = async (req, res) => {
       }
     }
 
-    // Medical review gate: a plan for a client flagged for medical review is only published after the
-    // coach explicitly confirms the review (medical_review_confirmed: true in the request).
+    // Medical review gate (H6 B-API-7): a plan for a client whose
+    // intake carries ANY review flag is only published after the coach
+    // explicitly confirms the review (medical_review_confirmed: true in
+    // the request). resolvePublishMedicalReview — not the MEDICAL-only
+    // resolver — is used here, so a medication flag or unconfirmed
+    // allergy gates publishing exactly like a medical flag.
     let medicalReviewConfirmation = null;
     if (shouldPublish) {
-      const medicalReview = await resolveIntakeMedicalReview(user.id);
+      const medicalReview = await resolvePublishMedicalReview(user.id);
       if (medicalReview.required && req.body.medical_review_confirmed !== true) {
         return res.status(409).json({
           code: MEDICAL_REVIEW_CONFIRMATION_REQUIRED,
-          error: "هذا المتدرب يحتاج مراجعة طبية قبل اعتماد الخطة (أمراض كلى أو كبد أو أعراض خطرة أو إصابة بعلامة تحذير). راجع الحالة مع الطبيب المعالج ثم أكد المراجعة لنشر الخطة.",
+          error: medicalReview.has_medical_flag
+            ? "هذا المتدرب يحتاج مراجعة طبية قبل اعتماد الخطة (أمراض كلى أو كبد أو أعراض خطرة أو إصابة بعلامة تحذير). راجع الحالة مع الطبيب المعالج ثم أكد المراجعة لنشر الخطة."
+            : "هذه الخطة تحمل ملاحظات مراجعة يجب تأكيدها قبل النشر. راجع الملاحظات المرفقة ثم أكد المراجعة لنشر الخطة.",
           reasons: medicalReview.reasons,
         });
       }

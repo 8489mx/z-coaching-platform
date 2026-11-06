@@ -11,6 +11,7 @@ const answers = (selected) => ({ answers: {
   gender: "female", age: "34", height_cm: "165", weight_kg: "80", primary_goal: "fat_loss", dangerous_symptoms: ["NONE"],
   medical_conditions: { has_conditions: selected.length > 0, selected, female_cases: { is_pcos: false, is_lactating: false, is_postpartum: false, answered: true } },
   injuries_map: { has_injuries: false, selected_areas: ["none"] }, strict_allergies: ["none"],
+  cardio: { walkingAbility: "EASY" },
   training_logistics: { days_per_week: 3, experience_level: "beginner" },
 } });
 let client;

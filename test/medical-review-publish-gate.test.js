@@ -27,6 +27,7 @@ const storedIntake = (selected) => ({
       gender: "male", age: "45", height_cm: "175", weight_kg: "82", primary_goal: "fat_loss",
       dangerous_symptoms: ["NONE"],
       medical_conditions: { has_conditions: selected.length > 0, selected, diabetes: { type: "type2", uses_insulin: false } },
+      cardio: { walkingAbility: "EASY" },
       training_logistics: { days_per_week: 3, experience_level: "beginner" },
     },
   }),
