@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
+import { capWholeEggsForCholesterol } from "../src/nutrition-meal-context-v2/culinary-portion-passes.js";
 
 /**
  * H8 rejected-plans sweep: the 10 day-0 plans a real coach would NOT hand
@@ -272,8 +273,68 @@ test("H8 new condition codes: osteoporosis and high cholesterol are real codes w
   const l17 = build("L17");
   assert.ok(decisionFlagCodes(l17).includes("HIGH_CHOLESTEROL_REQUIRES_COACH_REVIEW"), `high cholesterol must flag the decision, got: ${JSON.stringify(decisionFlagCodes(l17))}`);
   assert.ok(l17.nutrition_program.targets.clinical_guardrails?.cholesterol_guidance_ar, "cholesterol guidance must be present");
-  const eggGrams = culinaryMeals(l17).flatMap((m) => (m.items || []).filter((i) => i.food_code === "EGGS_OMELETTE")).reduce((s, i) => s + (i.portion_g || 0), 0);
+  // B2-1: the cap counts every whole-egg code, not only the omelette —
+  // shakshouka is in the codebase's own EGG_CODES set, so it draws from the
+  // same 100 g/day budget. (On the current plates L17 serves no shakshouka,
+  // so this guards the plate; the fail-first proof is the cap test below.)
+  const eggGrams = culinaryMeals(l17).flatMap((m) => (m.items || []).filter((i) => i.food_code === "EGGS_OMELETTE" || i.food_code === "SHAKSHOUKA_EGGS")).reduce((s, i) => s + (i.portion_g || 0), 0);
   assert.ok(eggGrams <= 100, `high cholesterol: whole eggs ${eggGrams} g/day over the two-egg cap`);
+});
+
+test("H8 whole-egg cap counts shakshouka too (B2-1)", () => {
+  // Fail-first on the base: the cap only counted EGGS_OMELETTE, so a day
+  // with a 100 g omelette plus a 62 g shakshouka sailed through at 162 g
+  // against a 100 g/day budget. Both codes are whole eggs (the codebase's
+  // own EGG_CODES set), so both draw from the same budget, first meal
+  // keeping its eggs — the same replacement-by-swap behaviour as omelette.
+  const WHITE_SWAP = {
+    food_code: "EGG_WHITE_COOKED", name_ar: "بياض بيض مسلوق", name_en: "Boiled egg whites",
+    equivalent_grams: 100, protein_g: 11, carb_g: 0.7, fat_g: 0.2, calories_kcal: 52,
+  };
+  const wholeEggItem = (code, grams, protein) => ({
+    food_code: code, name_ar: code, name_en: code, category: "PROTEIN",
+    portion_g: grams, protein_g: protein, carb_g: 0, fat_g: 0, calories_kcal: 0,
+    swaps: [WHITE_SWAP],
+  });
+  const wholeEggGrams = (meals) => meals
+    .flatMap((m) => m.items || [])
+    .filter((i) => i.food_code === "EGGS_OMELETTE" || i.food_code === "SHAKSHOUKA_EGGS")
+    .reduce((s, i) => s + (Number(i.portion_g) || 0), 0);
+  const wholeEggCodes = (meals) => meals
+    .flatMap((m) => m.items || [])
+    .filter((i) => i.food_code === "EGGS_OMELETTE" || i.food_code === "SHAKSHOUKA_EGGS")
+    .map((i) => `${i.food_code}:${i.portion_g}g`);
+
+  // C's L17 day: omelette 100 g first, shakshouka 62 g second — the
+  // shakshouka no longer fits the spent budget, so it is replaced, not kept.
+  const dayA = capWholeEggsForCholesterol([
+    { meal_number: 1, items: [wholeEggItem("EGGS_OMELETTE", 100, 12.6)] },
+    { meal_number: 2, items: [wholeEggItem("SHAKSHOUKA_EGGS", 62, 8)] },
+  ], true);
+  assert.ok(wholeEggGrams(dayA) <= 100, `omelette-first day: whole eggs ${wholeEggGrams(dayA)} g over the 100 g cap (${wholeEggCodes(dayA).join(", ")})`);
+  assert.ok(!wholeEggCodes(dayA).some((c) => c.startsWith("SHAKSHOUKA_EGGS")), `shakshouka must be replaced once the budget is spent, got: ${wholeEggCodes(dayA).join(", ")}`);
+
+  // Shakshouka first: it keeps its 62 g, the later omelette is the one
+  // that no longer fits and is replaced.
+  const dayB = capWholeEggsForCholesterol([
+    { meal_number: 1, items: [wholeEggItem("SHAKSHOUKA_EGGS", 62, 8)] },
+    { meal_number: 2, items: [wholeEggItem("EGGS_OMELETTE", 100, 12.6)] },
+  ], true);
+  assert.ok(wholeEggGrams(dayB) <= 100, `shakshouka-first day: whole eggs ${wholeEggGrams(dayB)} g over the 100 g cap (${wholeEggCodes(dayB).join(", ")})`);
+  assert.deepEqual(wholeEggCodes(dayB), ["SHAKSHOUKA_EGGS:62g"], `first meal keeps its eggs, got: ${wholeEggCodes(dayB).join(", ")}`);
+
+  // No high cholesterol: the cap must not touch anything.
+  const dayC = capWholeEggsForCholesterol([
+    { meal_number: 1, items: [wholeEggItem("EGGS_OMELETTE", 100, 12.6)] },
+    { meal_number: 2, items: [wholeEggItem("SHAKSHOUKA_EGGS", 62, 8)] },
+  ], false);
+  assert.equal(wholeEggGrams(dayC), 162, "without high cholesterol the cap must not run");
+
+  // Shakshouka alone at 62 g is under the budget and stays whole.
+  const dayD = capWholeEggsForCholesterol([
+    { meal_number: 1, items: [wholeEggItem("SHAKSHOUKA_EGGS", 62, 8)] },
+  ], true);
+  assert.deepEqual(wholeEggCodes(dayD), ["SHAKSHOUKA_EGGS:62g"], `shakshouka alone under budget must be kept whole, got: ${wholeEggCodes(dayD).join(", ")}`);
 });
 
 test("Batch 1 new condition codes: epilepsy and depression/anxiety are real codes with coach-review holds", () => {

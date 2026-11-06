@@ -10,6 +10,10 @@ import { FOOD_SWAP_DATABASE, isFoodClinicallySafe, PROTEIN_PORTION_CAPS_G } from
 // portions eggs as count x 55 g); the swap book uses the same 55 g.
 const GRAMS_PER_WHOLE_EGG = 55;
 const EGGS_OMELETTE = "EGGS_OMELETTE";
+const SHAKSHOUKA_EGGS = "SHAKSHOUKA_EGGS";
+// Both whole-egg codes (the codebase's own EGG_CODES set in
+// derive-plate-flags.js) draw from the same cholesterol budget.
+const WHOLE_EGG_CODES = new Set([EGGS_OMELETTE, SHAKSHOUKA_EGGS]);
 const OLIVE_OIL = "OLIVE_OIL";
 const CHICKEN_BREAST = "CHICKEN_BREAST";
 const SWEET_POTATO = "SWEET_POTATO";
@@ -142,13 +146,17 @@ export function splitOversizedProteinPortions(meals = []) {
 
 /**
  * High cholesterol: whole eggs across the whole day are capped at two
- * (100 g). The cap is spent from the first meal onward — breakfast keeps
- * its eggs; a later omelette that no longer fits is replaced by its first
- * vetted protein swap (protein-matched), because dropping a meal's protein
- * anchor would leave the plate without protein. A remainder under one egg
- * (50 g) is not a serving either, so it is replaced the same way. When no
- * swap partner exists the item is dropped and the preflight flags the
- * shortfall — the coach sees it instead of a silent gap.
+ * (100 g). Both whole-egg codes count — omelette and shakshouka (the
+ * codebase's EGG_CODES set) — because a shakshouka is eggs too, and counting
+ * only the omelette let a day carry 100 g of omelette plus 62 g of
+ * shakshouka past the cap. The cap is spent from the first meal onward —
+ * breakfast keeps its eggs; a later whole-egg item that no longer fits is
+ * replaced by its first vetted protein swap (protein-matched), because
+ * dropping a meal's protein anchor would leave the plate without protein.
+ * A remainder under one egg (50 g) is not a serving either, so it is
+ * replaced the same way. When no swap partner exists the item is dropped
+ * and the preflight flags the shortfall — the coach sees it instead of a
+ * silent gap.
  */
 export function capWholeEggsForCholesterol(meals = [], hasHighCholesterol = false, maxGramsPerDay = 100) {
   if (!hasHighCholesterol) return meals;
@@ -158,7 +166,7 @@ export function capWholeEggsForCholesterol(meals = [], hasHighCholesterol = fals
     let changed = false;
     const items = [];
     for (const item of meal.items || []) {
-      if (item.food_code !== EGGS_OMELETTE) {
+      if (!WHOLE_EGG_CODES.has(item.food_code)) {
         items.push(item);
         continue;
       }
@@ -176,7 +184,7 @@ export function capWholeEggsForCholesterol(meals = [], hasHighCholesterol = fals
         continue;
       }
       // No whole-egg budget left (or less than one egg): replace the
-      // omelette with its first vetted protein swap, protein-matched.
+      // whole-egg item with its first vetted protein swap, protein-matched.
       const proteinG = Number(item.protein_g) || 0;
       const swaps = Array.isArray(item.swaps) ? item.swaps : [];
       let replaced = false;
