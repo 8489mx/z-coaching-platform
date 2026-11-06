@@ -1,5 +1,6 @@
 /**
- * Who this service plans for. Pregnancy and kidney disease are followed by the client's own doctor,
+ * Who this service plans for. Pregnancy, breastfeeding, an eating-disorder
+ * history and kidney disease are followed by the client's own doctor,
  * who sets the food and the limits; the coach's answer there is a referral, not a plan. The engine
  * builds no plan for them at all, so the clinical branches that exist for those cases never run by
  * themselves and nobody publishes one by accident.
@@ -10,7 +11,7 @@
  * One more case is read from the numbers the client already gave: a body far too light for a
  * weight-loss goal. Free-text notes are never scanned - a client can spell anything.
  *
- * Breastfeeding, a recent birth, PCOS, type 2 diabetes (insulin included), blood pressure, thyroid,
+ * A recent birth, PCOS, type 2 diabetes (insulin included), blood pressure, thyroid,
  * gout, coeliac disease, allergies, IBS, favism and bariatric surgery all stay inside the service.
  */
 
@@ -54,6 +55,37 @@ export function assessServiceScope(intake) {
   if (kidney) {
     cases.push("KIDNEY_DISEASE");
     reasons.push("أمراض الكلى والغسيل الكلوي: البروتين والأملاح بتتحدد بتحاليل ومتابعة دكتور الكلى، فالخدمة مش بتشملها.");
+  }
+
+  // An eating-disorder history is outside the service: food, calories and
+  // training for a client with that history are set by the doctor and the
+  // treating team, not by a plan. The engine holds the same clients for
+  // medical review; the scope layer refuses them here so no draft is ever
+  // generated. The history is read from the flat form field and from the
+  // structured medical answers, whichever the intake carries.
+  const eatingDisorderHistory = [
+    answers.eating_disorder_history,
+    medical.eatingDisorderHistory,
+    answers.medical?.eatingDisorderHistory,
+  ]
+    .map((value) => String(value || "").trim().toUpperCase())
+    .find((value) => value !== "" && value !== "NONE");
+  const eatingDisorder = eatingDisorderHistory !== undefined
+    || conditions.some((condition) => condition.includes("eating"));
+  if (eatingDisorder) {
+    cases.push("EATING_DISORDER_HISTORY");
+    reasons.push("تاريخ اضطراب أكل: الأكل والسعرات والتدريب في الحالة دي بيتحددوا مع الدكتور والفريق المعالج، فالخدمة مش بتشملها.");
+  }
+
+  // Breastfeeding is outside the service for the same reason as pregnancy:
+  // a nursing mother's food and calories follow her doctor while she nurses.
+  const breastfeeding = String(answers.female_pregnancy || "").toUpperCase() === "BREASTFEEDING"
+    || medical.female_cases?.is_lactating === true
+    || medical.female_cases?.is_breastfeeding === true
+    || answers.is_breastfeeding === true;
+  if (breastfeeding) {
+    cases.push("BREASTFEEDING");
+    reasons.push("الرضاعة: أكل وسعرات الأم المرضعة بيتحددوا مع دكتورها وهي بترضّع، فالخدمة مش بتشمل المرضعات.");
   }
 
   // Owner's decision (2026-09-25): a diagnosed heart condition is served when the client brings his

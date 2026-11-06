@@ -7,9 +7,10 @@ import { User, IntakeSubmission, Program } from "../src/api/models/index.js";
 import sequelize from "../src/api/config/database.js";
 
 /**
- * Pregnancy and kidney disease are followed by the client's own doctor, so the service does not plan
- * for them: no draft is generated and nothing is published, whatever a coach clicks. Breastfeeding,
- * a recent birth and every other condition stay inside the service.
+ * Pregnancy, breastfeeding, an eating-disorder history and kidney disease are followed by the
+ * client's own doctor, so the service does not plan for them: no draft is generated and nothing
+ * is published, whatever a coach clicks. A recent birth and every other condition stay inside
+ * the service.
  */
 const base = () => ({
   health_data_consent: { accepted: true, version: "PDPL-2026-09", accepted_at: new Date().toISOString() },
@@ -27,7 +28,12 @@ const breastfeeding = () => ({ ...base(), medical_conditions: { ...base().medica
 
 test("the scope rule reads the form's own answers", () => {
   assert.equal(assessServiceScope(base()).supported, true);
-  assert.equal(assessServiceScope(breastfeeding()).supported, true);
+  // Breastfeeding is outside the service since H3, like pregnancy: a nursing
+  // mother's food and calories follow her doctor.
+  const b = assessServiceScope(breastfeeding());
+  assert.equal(b.supported, false);
+  assert.deepEqual(b.cases, ["BREASTFEEDING"]);
+  assert.match(b.reasons_ar[0], /الرضاعة/);
   const p = assessServiceScope(pregnant());
   assert.equal(p.supported, false);
   assert.deepEqual(p.cases, ["PREGNANCY"]);

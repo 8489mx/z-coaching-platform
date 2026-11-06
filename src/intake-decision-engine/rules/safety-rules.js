@@ -1,4 +1,5 @@
 import {
+  EatingDisorderHistory,
   PlanStatus,
   MovementImpact,
   PregnancyStatus,
@@ -524,9 +525,24 @@ export function evaluateSafetyRules(input, context) {
     evaluateUnclassifiedTextAndMedication(input),
   ]);
 
-  const medicalGate = result.statusCandidates.some(
-    (candidate) => candidate.status === PlanStatus.MEDICAL_REVIEW_REQUIRED,
-  );
+  // An eating-disorder history rides the medical-review path, so it must
+  // gate every downstream decision exactly like the safety rules' own
+  // medical-review candidates (kidney, heart, dangerous symptoms). Only
+  // the nutrition rules saw it before: the decision came out
+  // MEDICAL_REVIEW_REQUIRED with a CARDIO_SESSIONS prescription, and the
+  // cardio validator threw instead of holding. The nutrition rules stay
+  // the sole source of the ED candidate, flag and reason — only the
+  // boolean gate is added here. Any non-NONE history gates; a missing
+  // value never gates.
+  const eatingDisorderHistory = input.medical?.eatingDisorderHistory;
+  const eatingDisorderGate =
+    typeof eatingDisorderHistory === "string" &&
+    eatingDisorderHistory !== "" &&
+    eatingDisorderHistory !== EatingDisorderHistory.NONE;
+  const medicalGate =
+    result.statusCandidates.some(
+      (candidate) => candidate.status === PlanStatus.MEDICAL_REVIEW_REQUIRED,
+    ) || eatingDisorderGate;
   const adultPathBlocked = calculateAgeYears(input.personal.dateOfBirth, context.assessmentDate) < 18;
   const blockingGate = result.statusCandidates.some(
     (candidate) => candidate.status === PlanStatus.BLOCKED,
