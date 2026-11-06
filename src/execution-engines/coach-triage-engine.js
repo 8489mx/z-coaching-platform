@@ -344,6 +344,13 @@ export function classifyFollowUp(signals) {
         typeof (p.pain_level ?? p.score ?? p.severity) !== "number",
     );
 
+  // Gap #19 (Batch 1, P0-A12 pattern): biofeedback reported without
+  // levels is unknown — YELLOW, never GREEN. Detected from the
+  // evaluation output flag.
+  const biofeedbackWithoutLevel =
+    signals.biofeedback_without_level === true ||
+    analysis.biofeedback_without_level === true;
+
   const alerts = Array.isArray(analysis.biofeedback_alerts)
     ? analysis.biofeedback_alerts
     : [];
@@ -511,6 +518,7 @@ export function classifyFollowUp(signals) {
     weight_change_percent: weightChangePercent,
     max_pain_level: maxPainLevel,
     pain_without_level: painWithoutLevel,
+    biofeedback_without_level: biofeedbackWithoutLevel,
     clinical_lockout_locked: lockoutLocked,
     clinical_lockout_unknown: lockoutUnknown,
     medical_review_required: medicalReview,
@@ -562,6 +570,14 @@ export function classifyFollowUp(signals) {
       reason(
         "PAIN_WITHOUT_LEVEL",
         "تم الإبلاغ عن ألم مفصلي من غير مستوى شدة؛ الشدة غير معروفة فالحالة تحتاج مراجعة الكوتش، ولا تصنيف أخضر قبل تحديدها.",
+      ),
+    );
+  }
+  if (biofeedbackWithoutLevel) {
+    reasons.push(
+      reason(
+        "BIOFEEDBACK_WITHOUT_LEVEL",
+        "تم الإبلاغ عن متابعة من غير تحديد مستويات الطاقة أو النوم أو الجوع؛ المؤشرات غير معروفة فالحالة تحتاج مراجعة الكوتش، ولا تصنيف أخضر قبل تحديدها.",
       ),
     );
   }

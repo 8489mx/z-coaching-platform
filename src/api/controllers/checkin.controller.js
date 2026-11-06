@@ -58,9 +58,27 @@ async function findPlanInUse(userId) {
  * The web check-in form uses 1-10 sliders and says so with biofeedback_scale: 10; map 1-2 -> 1 ... 9-10 -> 5.
  */
 function toEngineScale(value, scale) {
+  // Gap #19 (Batch 1): an explicit null is "not chosen", not 0 —
+  // Number(null) is 0 and would convert to engine 1 (false low-energy /
+  // poor-sleep alerts). Null passes through so the engine can fail closed.
+  if (value === null || value === undefined) return null;
   const n = Number(value);
   if (!Number.isFinite(n)) return n;
   return Number(scale) === 10 ? Math.min(5, Math.max(1, Math.ceil(n / 2))) : n;
+}
+
+/**
+ * Gap #19 (Batch 1): resolve one biofeedback trio value with presence,
+ * not ??. An explicit null means "asked but not chosen" and must survive
+ * as null so the engine can fail closed; a missing key keeps today's
+ * fallback (2/4/4) so older clients and submissions without biofeedback
+ * behave exactly as today (F3).
+ */
+function resolveTrioValue(biofeedback, snakeKey, camelKey, extraKey, fallback) {
+  if (biofeedback[snakeKey] !== undefined) return biofeedback[snakeKey];
+  if (camelKey !== null && biofeedback[camelKey] !== undefined) return biofeedback[camelKey];
+  if (extraKey !== null && biofeedback[extraKey] !== undefined) return biofeedback[extraKey];
+  return fallback;
 }
 
 
@@ -305,9 +323,9 @@ export async function submitCheckin(req, res) {
       workouts_completed: Number(workouts_completed),
       workouts_scheduled: Number(workouts_scheduled),
       biofeedback: {
-        hunger_level: toEngineScale(biofeedback.hunger_level ?? biofeedback.hungerLevel ?? 2, req.body.biofeedback_scale),
-        energy_level: toEngineScale(biofeedback.energy_level ?? biofeedback.energyLevel ?? biofeedback.energy_in_gym ?? 4, req.body.biofeedback_scale),
-        sleep_quality: toEngineScale(biofeedback.sleep_quality ?? biofeedback.sleepQuality ?? 4, req.body.biofeedback_scale),
+        hunger_level: toEngineScale(resolveTrioValue(biofeedback, "hunger_level", "hungerLevel", null, 2), req.body.biofeedback_scale),
+        energy_level: toEngineScale(resolveTrioValue(biofeedback, "energy_level", "energyLevel", "energy_in_gym", 4), req.body.biofeedback_scale),
+        sleep_quality: toEngineScale(resolveTrioValue(biofeedback, "sleep_quality", "sleepQuality", null, 4), req.body.biofeedback_scale),
         sleep_hours: Number(biofeedback.sleep_hours ?? biofeedback.sleepHours ?? 7),
         stress_level: Number(biofeedback.stress_level ?? biofeedback.stressLevel ?? 2),
       },
@@ -381,9 +399,18 @@ export async function submitCheckin(req, res) {
     // dropping on 2+ exercises confirmed by this check-in's fatigue signals, or joint pain >= 7/10.
     const maxPainLevel = (Array.isArray(evalInput.pain_reports) ? evalInput.pain_reports : [])
       .reduce((max, p) => Math.max(max, Number(p?.pain_level ?? p?.score ?? p?.severity) || 0), 0);
+    // Gap #19 (F2): evaluateDeloadTrigger reads Number(biofeedback.energy_level)
+    // <= 2 — Number(null) is 0, which would fabricate "low energy / poor
+    // sleep" fatigue signals. Drop explicitly-null trio keys so the callee
+    // sees undefined (Number(undefined) is NaN, never <= 2). The engine
+    // input itself keeps the nulls (stored record + unknown rule).
+    const deloadBiofeedback = { ...evalInput.biofeedback };
+    for (const key of ["hunger_level", "energy_level", "sleep_quality"]) {
+      if (deloadBiofeedback[key] === null) delete deloadBiofeedback[key];
+    }
     const deloadRecommendation = evaluateDeloadTrigger({
       state: await loadProgressionState(targetUserId),
-      biofeedback: evalInput.biofeedback,
+      biofeedback: deloadBiofeedback,
       sleep_stress_composite: evalInput.sleep_stress_composite,
       max_pain_level: maxPainLevel,
     });

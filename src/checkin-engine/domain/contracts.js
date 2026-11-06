@@ -1,8 +1,9 @@
 /**
  * @typedef {Object} BiofeedbackScores
- * @property {number} hunger_level - 1 (Low) to 5 (Ravenous)
+ * @property {number|null} hunger_level - 1 (Low) to 5 (Ravenous); null = not chosen (Gap #19)
  * @property {number} energy_in_gym - 1 (Exhausted) to 5 (Peak)
- * @property {number} sleep_quality - 1 (Poor) to 5 (Deep/Restful)
+ * @property {number|null} energy_level - 1 (Exhausted) to 5 (Peak); null = not chosen (Gap #19)
+ * @property {number|null} sleep_quality - 1 (Poor) to 5 (Deep/Restful); null = not chosen (Gap #19)
  * @property {number} stress_level - 1 (Calm) to 5 (High Stress)
  */
 
@@ -49,6 +50,7 @@
  * @property {string} adherence_tier
  * @property {string[]} biofeedback_alerts
  * @property {PainReport[]} flagged_pains
+ * @property {boolean} [biofeedback_without_level] - Gap #19: biofeedback trio reported without levels (fail closed to coach review)
  * @property {string[]} recommendations_ar
  * @property {string[]} recommendations_en
  * @property {boolean} requires_coach_review

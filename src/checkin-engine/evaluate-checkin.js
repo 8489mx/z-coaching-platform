@@ -113,12 +113,27 @@ export function evaluateCheckin(submission) {
   // 3. Adherence Gate Rule (80% threshold)
   const adherenceTier = nutrition_adherence_percent >= 80 ? AdherenceTier.OPTIMAL : AdherenceTier.LOW;
 
+  // Gap #19 (Batch 1, P0-A12 pattern): the biofeedback trio (energy /
+  // sleep / hunger) may arrive explicitly null — the form asked, the
+  // client did not choose. Null is unknown, never a value: it must not
+  // fire alerts (note null <= 2 is true in JS, so every comparison below
+  // is guarded by isBiofeedbackValue) and it must fail closed to coach
+  // review. Absent biofeedback ({}) keeps today's behavior — the flag
+  // fires only on an explicitly null trio member.
+  const isBiofeedbackValue = (value) => typeof value === "number" && Number.isFinite(value);
+  const biofeedbackWithoutLevel =
+    biofeedback !== null &&
+    typeof biofeedback === "object" &&
+    (biofeedback.hunger_level === null ||
+      biofeedback.energy_level === null ||
+      biofeedback.sleep_quality === null);
+
   // 4. Biofeedback Alerts
   const alerts = [];
-  if (biofeedback.hunger_level >= 4) alerts.push(BiofeedbackAlert.HIGH_HUNGER);
-  if (biofeedback.energy_in_gym <= 2 || biofeedback.energy_level <= 2) alerts.push(BiofeedbackAlert.LOW_RECOVERY_ENERGY);
-  if (biofeedback.sleep_quality <= 2 || (biofeedback.sleep_hours !== undefined && biofeedback.sleep_hours < 6)) alerts.push(BiofeedbackAlert.POOR_SLEEP);
-  if (biofeedback.stress_level >= 4) alerts.push(BiofeedbackAlert.HIGH_STRESS);
+  if (isBiofeedbackValue(biofeedback.hunger_level) && biofeedback.hunger_level >= 4) alerts.push(BiofeedbackAlert.HIGH_HUNGER);
+  if ((isBiofeedbackValue(biofeedback.energy_in_gym) && biofeedback.energy_in_gym <= 2) || (isBiofeedbackValue(biofeedback.energy_level) && biofeedback.energy_level <= 2)) alerts.push(BiofeedbackAlert.LOW_RECOVERY_ENERGY);
+  if ((isBiofeedbackValue(biofeedback.sleep_quality) && biofeedback.sleep_quality <= 2) || (biofeedback.sleep_hours !== undefined && biofeedback.sleep_hours !== null && biofeedback.sleep_hours < 6)) alerts.push(BiofeedbackAlert.POOR_SLEEP);
+  if (isBiofeedbackValue(biofeedback.stress_level) && biofeedback.stress_level >= 4) alerts.push(BiofeedbackAlert.HIGH_STRESS);
   if (isRapidLoss) alerts.push(BiofeedbackAlert.RAPID_LOSS_DETECTED);
 
   // 5. Pain & Injuries
@@ -319,7 +334,9 @@ export function evaluateCheckin(submission) {
   }
 
   // RULE E: High Hunger & Low Recovery Energy (Refeed Day / Fatigue Warning)
-  else if (biofeedback.hunger_level >= 4 && (biofeedback.energy_in_gym <= 2 || biofeedback.energy_level <= 2) && adherenceTier === AdherenceTier.OPTIMAL) {
+  // Gap #19: the energy side is guarded by isBiofeedbackValue — a null
+  // energy_level is unknown, never low, so RULE E cannot fire on it.
+  else if (isBiofeedbackValue(biofeedback.hunger_level) && biofeedback.hunger_level >= 4 && ((isBiofeedbackValue(biofeedback.energy_in_gym) && biofeedback.energy_in_gym <= 2) || (isBiofeedbackValue(biofeedback.energy_level) && biofeedback.energy_level <= 2)) && adherenceTier === AdherenceTier.OPTIMAL) {
     analysisStatus = CheckinAnalysisStatus.HIGH_FATIGUE_WARNING;
     isRefeedRecommended = true;
     recommendationsAr.push("مؤشرات الجوع مرتفعة مع انخفاض طاقة الاستشفاء رغم التزامك الممتاز. يُوصى بجدولة يوم إعادة شحن كربوهيدرات (Refeed Day) لملء مخازن الجليكوجين وتحفيز هرمون اللبتين.");
@@ -439,6 +456,16 @@ export function evaluateCheckin(submission) {
     recommendationsEn.push("Joint pain was reported without a severity level; unknown severity requires coach review before any progression or auto-apply.");
   }
 
+  // Gap #19 (Batch 1, P0-A12 pattern): biofeedback reported without
+  // levels is unknown, never "fine". Like unknown-severity pain, it can
+  // never sail through GREEN — it is forced to coach review here;
+  // triage maps the output flag to YELLOW.
+  if (biofeedbackWithoutLevel) {
+    requiresCoachReview = true;
+    recommendationsAr.push("تم الإبلاغ عن متابعة أسبوعية من غير تحديد مستويات الطاقة أو النوم أو الجوع؛ هذه المؤشرات غير معروفة، فالحالة تحتاج مراجعة الكوتش قبل أي تقدم أو تطبيق تلقائي.");
+    recommendationsEn.push("Weekly check-in was submitted without energy, sleep, or hunger levels; unknown biofeedback requires coach review before any progression or auto-apply.");
+  }
+
   // P1-B10: logged workouts cross-check the self-report. When the caller
   // counted real sessions for this week and the numbers disagree, the
   // contradiction goes to coach review — the evaluation must not quietly
@@ -472,6 +499,7 @@ export function evaluateCheckin(submission) {
     biofeedback_alerts: Object.freeze(alerts),
     flagged_pains: Object.freeze(flaggedPains),
     pain_without_level: painWithoutLevel,
+    biofeedback_without_level: biofeedbackWithoutLevel,
     workout_log_agreement: workoutLogAgreement ? Object.freeze(workoutLogAgreement) : null,
     recommendations_ar: Object.freeze(recommendationsAr),
     recommendations_en: Object.freeze(recommendationsEn),

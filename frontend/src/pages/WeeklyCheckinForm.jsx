@@ -71,10 +71,15 @@ export default function WeeklyCheckinForm() {
     waist_circumference_cm: '',
     nutrition_adherence_percent: 100,
     workouts_completed: 4,
+    // Gap #19 (Batch 1, P0-A12 pattern): no default levels. Sliders
+    // sitting at 7/7/5 reported biofeedback the client never chose, and
+    // the server read it as a real "good week". null means "not chosen":
+    // the report goes out with nulls and the server maps it to coach
+    // review, never GREEN.
     biofeedback: {
-      energyLevel: 7,
-      sleepQuality: 7,
-      hungerLevel: 5
+      energyLevel: null,
+      sleepQuality: null,
+      hungerLevel: null
     },
     client_notes: '',
     fasting_transition: 'MAINTAIN_BASELINE',
@@ -234,6 +239,9 @@ export default function WeeklyCheckinForm() {
         }));
 
       const dailyWeightsComplete = formData.daily_weights.every((w) => Number(cleanArabicNumStr(w)) > 20);
+      // Gap #19: null means "not chosen" — pass nulls through, never
+      // Number(null) (= 0 → engine 1 → false low-energy / poor-sleep alerts).
+      const biofeedbackOrNull = (v) => (v === null || v === undefined ? null : Number(v));
       const payload = {
         user_id: clientCode,
         client_code: clientCode,
@@ -246,12 +254,12 @@ export default function WeeklyCheckinForm() {
         // The sliders below are 1-10; the server converts them to the engine's 1-5 scale.
         biofeedback_scale: 10,
         biofeedback: {
-          energy_level: Number(formData.biofeedback.energyLevel),
-          sleep_quality: Number(formData.biofeedback.sleepQuality),
-          hunger_level: Number(formData.biofeedback.hungerLevel),
-          energyLevel: Number(formData.biofeedback.energyLevel),
-          sleepQuality: Number(formData.biofeedback.sleepQuality),
-          hungerLevel: Number(formData.biofeedback.hungerLevel)
+          energy_level: biofeedbackOrNull(formData.biofeedback.energyLevel),
+          sleep_quality: biofeedbackOrNull(formData.biofeedback.sleepQuality),
+          hunger_level: biofeedbackOrNull(formData.biofeedback.hungerLevel),
+          energyLevel: biofeedbackOrNull(formData.biofeedback.energyLevel),
+          sleepQuality: biofeedbackOrNull(formData.biofeedback.sleepQuality),
+          hungerLevel: biofeedbackOrNull(formData.biofeedback.hungerLevel)
         },
         pain_reports: formData.has_joint_pain && formData.pain_area
           ? [{ area: formData.pain_area, body_part: PAIN_AREAS.find((a) => a.id === formData.pain_area)?.label || formData.pain_area, ...(formData.pain_level === null || formData.pain_level === undefined ? {} : { pain_level: Number(formData.pain_level) }) }]
@@ -563,13 +571,13 @@ export default function WeeklyCheckinForm() {
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                   <span style={{ color: '#0F172A' }}>جودة وعمق النوم</span>
-                  <strong style={{ color: '#0284C7', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.sleepQuality} / 10</strong>
+                  <strong style={{ color: '#0284C7', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.sleepQuality === null ? 'غير محدد — حرّك المؤشر لاختيار القيمة' : `${formData.biofeedback.sleepQuality} / 10`}</strong>
                 </div>
                 <input 
                   type="range" 
                   min="1" 
                   max="10" 
-                  value={formData.biofeedback.sleepQuality} 
+                  value={formData.biofeedback.sleepQuality ?? 1} 
                   onChange={(e) => handleSliderChange('sleepQuality', e.target.value)} 
                   style={{ width: '100%', accentColor: '#0284C7', cursor: 'pointer' }} 
                 />
@@ -583,13 +591,13 @@ export default function WeeklyCheckinForm() {
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                   <span style={{ color: '#0F172A' }}>مستوى الطاقة في التمرين واليوم</span>
-                  <strong style={{ color: '#D97706', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.energyLevel} / 10</strong>
+                  <strong style={{ color: '#D97706', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.energyLevel === null ? 'غير محدد — حرّك المؤشر لاختيار القيمة' : `${formData.biofeedback.energyLevel} / 10`}</strong>
                 </div>
                 <input 
                   type="range" 
                   min="1" 
                   max="10" 
-                  value={formData.biofeedback.energyLevel} 
+                  value={formData.biofeedback.energyLevel ?? 1} 
                   onChange={(e) => handleSliderChange('energyLevel', e.target.value)} 
                   style={{ width: '100%', accentColor: '#D97706', cursor: 'pointer' }} 
                 />
@@ -892,13 +900,13 @@ export default function WeeklyCheckinForm() {
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                   <span style={{ color: '#0F172A' }}>مستوى الشبع والجوع</span>
-                  <strong style={{ color: '#DC2626', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.hungerLevel} / 10</strong>
+                  <strong style={{ color: '#DC2626', fontFamily: 'JetBrains Mono' }}>{formData.biofeedback.hungerLevel === null ? 'غير محدد — حرّك المؤشر لاختيار القيمة' : `${formData.biofeedback.hungerLevel} / 10`}</strong>
                 </div>
                 <input 
                   type="range" 
                   min="1" 
                   max="10" 
-                  value={formData.biofeedback.hungerLevel} 
+                  value={formData.biofeedback.hungerLevel ?? 1} 
                   onChange={(e) => handleSliderChange('hungerLevel', e.target.value)} 
                   style={{ width: '100%', accentColor: '#DC2626', cursor: 'pointer' }} 
                 />

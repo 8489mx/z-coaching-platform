@@ -25,11 +25,34 @@ test("web check-in 1-10 sliders are converted to the engine's 1-5 scale", async 
       return r.out.body;
     };
 
-    await t.test("the form's default sliders (energy 7, sleep 7, hunger 5 of 10) raise no alert", async () => {
+    // Gap #19: explicit 7/7/5 sliders still convert to 4/4/3 and raise no
+    // alert — the scale conversion is pinned and unchanged by this fix.
+    await t.test("explicit 7/7/5 sliders on the 10-scale still convert to 4/4/3 and raise no alert", async () => {
       const out = await submit(1, { energyLevel: 7, sleepQuality: 7, hungerLevel: 5 }, { biofeedback_scale: 10 });
       assert.deepEqual(out.checkin.biofeedback.hunger_level, 3);
       assert.deepEqual(out.checkin.biofeedback.energy_level, 4);
       assert.ok(!out.analysis.biofeedback_alerts.includes("HIGH_HUNGER"), JSON.stringify(out.analysis.biofeedback_alerts));
+    });
+
+    // Gap #19 (Batch 1, P0-A12 pattern): an untouched form sends a null
+    // trio — nulls are stored, no biofeedback alert fires on the unknown
+    // values, and the check-in fails closed to coach review (YELLOW with
+    // the BIOFEEDBACK_WITHOUT_LEVEL reason).
+    await t.test("untouched form (null trio) stores nulls, raises no biofeedback alert, and requires coach review", async () => {
+      const out = await submit(4, { energyLevel: null, sleepQuality: null, hungerLevel: null }, { biofeedback_scale: 10 });
+      assert.equal(out.checkin.biofeedback.hunger_level, null);
+      assert.equal(out.checkin.biofeedback.energy_level, null);
+      assert.equal(out.checkin.biofeedback.sleep_quality, null);
+      assert.ok(!out.analysis.biofeedback_alerts.includes("HIGH_HUNGER"), JSON.stringify(out.analysis.biofeedback_alerts));
+      assert.ok(!out.analysis.biofeedback_alerts.includes("LOW_RECOVERY_ENERGY"), JSON.stringify(out.analysis.biofeedback_alerts));
+      assert.ok(!out.analysis.biofeedback_alerts.includes("POOR_SLEEP"), JSON.stringify(out.analysis.biofeedback_alerts));
+      assert.equal(out.analysis.biofeedback_without_level, true);
+      assert.equal(out.analysis.requires_coach_review, true);
+      assert.equal(out.analysis.triage.tier, "YELLOW");
+      assert.ok(
+        out.analysis.triage.reasons.some((r) => r.code === "BIOFEEDBACK_WITHOUT_LEVEL"),
+        JSON.stringify(out.analysis.triage.reasons),
+      );
     });
 
     await t.test("low energy on the 10-point slider (3/10) is read as low (2/5)", async () => {

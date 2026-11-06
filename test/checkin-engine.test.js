@@ -104,6 +104,81 @@ test("Check-in Engine Suite", async (t) => {
 
   });
 
+  // Gap #19 (Batch 1, P0-A12 pattern): the biofeedback trio left null
+  // ("not chosen") is unknown, never a value — it must not fire alerts
+  // (null <= 2 is true in JS) and must fail closed to coach review.
+  await t.test("biofeedback trio left null fails closed to coach review with no biofeedback alerts", () => {
+    const input = {
+      weight_kg: 84.5,
+      previous_weight_kg: 85.0,
+      nutrition_adherence_percent: 90,
+      workouts_completed: 4,
+      workouts_scheduled: 4,
+      biofeedback: { hunger_level: null, energy_level: null, sleep_quality: null, stress_level: 2 },
+    };
+
+    const result = evaluateCheckin(input);
+    assert.equal(result.biofeedback_without_level, true);
+    assert.equal(result.requires_coach_review, true);
+    assert.ok(!result.biofeedback_alerts.includes("HIGH_HUNGER"), JSON.stringify(result.biofeedback_alerts));
+    assert.ok(!result.biofeedback_alerts.includes("LOW_RECOVERY_ENERGY"), JSON.stringify(result.biofeedback_alerts));
+    assert.ok(!result.biofeedback_alerts.includes("POOR_SLEEP"), JSON.stringify(result.biofeedback_alerts));
+    assert.ok(result.recommendations_ar.some((r) => r.includes("مراجعة الكوتش")));
+  });
+
+  // Gap #19: a partially null trio must not let RULE E fire on the
+  // unknown value — hunger 5 alone is not fatigue when energy is unknown.
+  await t.test("partially null biofeedback never fires RULE E on the unknown value", () => {
+    const input = {
+      weight_kg: 84.0,
+      previous_weight_kg: 84.5,
+      nutrition_adherence_percent: 90,
+      biofeedback: { hunger_level: 5, energy_level: null, sleep_quality: 3, stress_level: 2 },
+    };
+
+    const result = evaluateCheckin(input);
+    assert.equal(result.biofeedback_without_level, true);
+    assert.equal(result.requires_coach_review, true);
+    assert.notEqual(result.analysis_status, CheckinAnalysisStatus.HIGH_FATIGUE_WARNING);
+    assert.equal(result.is_refeed_recommended, false);
+    assert.ok(!result.biofeedback_alerts.includes("LOW_RECOVERY_ENERGY"), JSON.stringify(result.biofeedback_alerts));
+  });
+
+  // Gap #19 (F3): absent biofeedback ({}) keeps today's behavior — the
+  // fail-closed rule fires only on an explicitly null trio, never on a
+  // submission that never carried biofeedback at all.
+  await t.test("absent biofeedback ({}) keeps today's behavior — no review, no alerts", () => {
+    const input = {
+      weight_kg: 84.5,
+      previous_weight_kg: 85.0,
+      nutrition_adherence_percent: 90,
+      workouts_completed: 4,
+      workouts_scheduled: 4,
+      biofeedback: {},
+    };
+
+    const result = evaluateCheckin(input);
+    assert.equal(result.biofeedback_without_level, false);
+    assert.equal(result.requires_coach_review, false);
+    assert.deepEqual(result.biofeedback_alerts, []);
+  });
+
+  // Gap #19 regression pin: real answers still fire RULE E through
+  // energy_level (not only energy_in_gym) exactly as today.
+  await t.test("real answers still fire RULE E through energy_level", () => {
+    const input = {
+      weight_kg: 84.0,
+      previous_weight_kg: 84.5,
+      nutrition_adherence_percent: 90,
+      biofeedback: { hunger_level: 5, energy_level: 2, sleep_quality: 3, stress_level: 2 },
+    };
+
+    const result = evaluateCheckin(input);
+    assert.equal(result.analysis_status, CheckinAnalysisStatus.HIGH_FATIGUE_WARNING);
+    assert.equal(result.is_refeed_recommended, true);
+    assert.equal(result.biofeedback_without_level, false);
+  });
+
   await t.test("identifies RAPID_LOSS_WARNING when weight drops > 1.5%", () => {
     const input = {
       weight_kg: 83.0,
