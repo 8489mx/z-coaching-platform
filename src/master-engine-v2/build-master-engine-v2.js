@@ -230,7 +230,10 @@ function calculateAge(dobString, assessmentDateString) {
   if (m < 0 || (m === 0 && assessDate.getDate() < dob.getDate())) {
     age--;
   }
-  return Math.max(16, Math.min(100, age));
+  // H5: the real age is returned — a 12-year-old is 12, never rewritten to 16.
+  // Only the 100 upper sanity bound stays (validation already refuses a future
+  // date of birth, so a negative age cannot arrive through the validated path).
+  return Math.min(100, age);
 }
 
 /**
@@ -1519,7 +1522,8 @@ export function buildMasterEngineV2(inputs) {
     isAgeEstimated = false;
     ageSource = "CLIENT_PROVIDED";
   } else if (validAgeCandidate !== undefined) {
-    clientAge = Math.max(16, Math.min(100, Math.round(Number(validAgeCandidate))));
+    // H5: the stated age is used as stated — a 12-year-old is 12, never 16.
+    clientAge = Math.min(100, Math.round(Number(validAgeCandidate)));
     isAgeEstimated = false;
     ageSource = "CLIENT_PROVIDED";
   } else {
@@ -1529,7 +1533,7 @@ export function buildMasterEngineV2(inputs) {
   }
 
   // P1-B8: canonical Zone 2 computation (same function as the frontend).
-  // Numbers are unchanged for every age the server already clamped 16-100;
+  // H5: zones use the real age (a 12-year-old gets max HR 200, not 197);
   // the P0-A16 estimated-age hold and beta-blocker talk-test-only paths
   // below are untouched.
   const canonicalZones = computeZone2Bpm(clientAge);
@@ -1955,7 +1959,12 @@ export function buildMasterEngineV2(inputs) {
   const femaleCases = effectiveIntake?.medical_conditions?.female_cases || {};
   const client_profile = Object.freeze({
     gender: effectiveIntake?.gender || null,
-    age: Number(effectiveIntake?.age) || null,
+    // H5: the recorded age is the engine's resolved real age (from the date of
+    // birth or the stated age), never the flat intake field — the production
+    // path passes the canonical intake, which carries no top-level age, so
+    // every client used to be recorded as null (and the editor showed 27).
+    // No age was supplied at all -> null, never the 30 fallback.
+    age: ageSource === "CLIENT_PROVIDED" ? clientAge : null,
     weight_kg: bodyWeight,
     height_cm: bodyHeight,
     bmi: Math.round((bodyWeight / ((bodyHeight / 100) ** 2)) * 10) / 10,
