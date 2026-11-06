@@ -322,7 +322,15 @@ export function buildAdaptedPlan(inputs) {
       adaptationAction = AdaptationAction.MAINTAIN_TRAJECTORY;
       adaptedCalories = Math.round(preBreakCalories);
       if (preBreakMacros) {
-        adaptedProtein = Math.round(preBreakMacros.protein_g ?? adaptedProtein);
+        // B2-2 (C04): the pre-break protein is stale when the program was
+        // regenerated at a new weight between the break and the return —
+        // the adjusted-weight formula jumps when BMI crosses below 30, so
+        // the fresh regen can carry MORE protein than the pre-break plan
+        // (218 g vs 193 g). Protein is inviolable at a merge: never
+        // restore a lower pre-break protein over the program's current
+        // protein. Calories still return to the exact pre-break deficit;
+        // carbs absorb the difference in the alignment below.
+        adaptedProtein = Math.max(adaptedProtein, Math.round(preBreakMacros.protein_g ?? adaptedProtein));
         adaptedCarbs = Math.round(preBreakMacros.carbohydrate_g ?? adaptedCarbs);
         adaptedFat = Math.round(preBreakMacros.fat_g ?? adaptedFat);
       }
@@ -698,8 +706,18 @@ export function buildAdaptedPlan(inputs) {
       adaptedCarbs = maxCarbG;
       if (guardrails.kidney_protein_capped !== true) {
         const referenceKg = Number(guardrails.energy_reference_weight_kg) || currentWeightKg;
+        // B2-2 (X08): the top-up rate is the H8 elderly cap (1.6 g/kg at
+        // 65+, kidney function unknown) when the generation path recorded
+        // it in the guardrails — never the uncapped 2.2 rate. Without
+        // this, a 72-year-old's break week rose to 178-179 g and the
+        // return week restored the capped 130 g: a 49 g cut at the same
+        // weight. A laboratory cap still blocks the top-up entirely above.
+        const proteinRate = Math.min(
+          CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_PROTEIN_PER_KG,
+          Number(guardrails.elderly_protein_cap_per_kg) || CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_PROTEIN_PER_KG,
+        );
         const maxProteinG = Number.isFinite(referenceKg) && referenceKg > 30
-          ? Math.round(referenceKg * CLINICAL_GUIDELINES.NUTRITION_BALANCE.MAX_PROTEIN_PER_KG)
+          ? Math.round(referenceKg * proteinRate)
           : adaptedProtein;
         const addProteinG = Math.min(Math.max(0, maxProteinG - adaptedProtein), Math.floor(excessKcal / 4));
         adaptedProtein += addProteinG;

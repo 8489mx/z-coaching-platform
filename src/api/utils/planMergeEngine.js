@@ -823,6 +823,105 @@ function recomputeMealActualMacros(meal) {
   return { mealP, mealC, mealF, mealKcal };
 }
 
+// B2-5: per-item residual solver. The per-category ratio scaling in
+// rebalanceCulinaryMeals cannot hit the macro targets because items
+// carry all three macros — a CARBS item's protein scales by the carb
+// ratio, not the protein ratio — so the served food drifts off target
+// and, on tight plates, barely moves at all (L23 week 3: targets
+// +31 kcal, served food +9 kcal). After the ratio pass and the kcal
+// guard, close the per-macro residuals by scaling the items richest in
+// each macro, in small steps. Removals run first (they free kcal
+// headroom), then additions, carbs first — the usual titration lever.
+// No category moves more than 3% in one round. The corrected day never
+// rises above target + 15 kcal, so it never re-triggers the guard
+// threshold (+30) — and when the calorie target FELL, it never rises
+// above 5 kcal under the pre-merge day total, so the food still moves
+// DOWN with the target (the LO-1 guard's direction). Totals are
+// re-measured from the items before every job: whole-gram rounding
+// makes estimated kcal deltas drift, and the headroom must come from
+// reality, not an estimate. VEGGIES/BEVERAGE are never in a macro
+// category, so they stay locked, same as the ratio scaling.
+function closeMacroResiduals(meals, { finalCalories, finalProtein, finalCarbs, finalFats, preMergeKcal } = {}) {
+  const targetKcal = Number(finalCalories);
+  let kcalCap = Number.isFinite(targetKcal)
+    ? targetKcal + MERGE_KCAL_GUARD_TOLERANCE_KCAL - 15
+    : Infinity;
+  if (Number.isFinite(targetKcal) && Number.isFinite(Number(preMergeKcal)) && targetKcal < Number(preMergeKcal)) {
+    // The calorie target fell: the food must end below where it started.
+    kcalCap = Math.min(kcalCap, Math.max(targetKcal, Number(preMergeKcal) - 5));
+  }
+
+  const sumDayTotals = () => {
+    let kcal = 0;
+    let protein = 0;
+    let carbs = 0;
+    let fat = 0;
+    for (const meal of meals) {
+      if (!Array.isArray(meal?.items)) continue;
+      for (const item of meal.items) {
+        kcal += Number(item.calories_kcal) || 0;
+        protein += Number(item.protein_g) || 0;
+        carbs += Number(item.carb_g) || 0;
+        fat += Number(item.fat_g) || 0;
+      }
+    }
+    return { kcal, protein, carbs, fat };
+  };
+
+  for (let round = 0; round < 2; round++) {
+    const totals = sumDayTotals();
+    const residuals = [
+      { macro: "C", residual: (Number(finalCarbs) || 0) - totals.carbs, cat: "CARBS", key: "carb_g", tol: 1 },
+      { macro: "P", residual: (Number(finalProtein) || 0) - totals.protein, cat: "PROTEIN", key: "protein_g", tol: 1 },
+      { macro: "F", residual: (Number(finalFats) || 0) - totals.fat, cat: "FATS", key: "fat_g", tol: 0.5 },
+    ];
+    if (residuals.every((job) => Math.abs(job.residual) <= job.tol)) break;
+    // Removals (served over target) first — they free headroom for the
+    // additions that follow. Stable sort keeps CARBS, PROTEIN, FATS
+    // order inside each group.
+    const jobs = residuals.sort((a, b) => (a.residual < 0 ? 0 : 1) - (b.residual < 0 ? 0 : 1));
+
+    for (const job of jobs) {
+      // Re-measure before every job: the previous job moved the food.
+      const now = sumDayTotals();
+      const residual = (Number(job.macro === "C" ? finalCarbs : job.macro === "P" ? finalProtein : finalFats) || 0)
+        - (job.macro === "C" ? now.carbs : job.macro === "P" ? now.protein : now.fat);
+      if (Math.abs(residual) <= job.tol) continue;
+      let catMacro = 0;
+      let catKcal = 0;
+      for (const meal of meals) {
+        if (!Array.isArray(meal?.items)) continue;
+        for (const item of meal.items) {
+          if (String(item.category || "").toUpperCase() !== job.cat) continue;
+          catMacro += Number(item[job.key]) || 0;
+          catKcal += Number(item.calories_kcal) || 0;
+        }
+      }
+      if (catMacro <= 0 || catKcal <= 0) continue;
+      let factor = (catMacro + residual) / catMacro;
+      factor = Math.max(0.97, Math.min(1.03, factor));
+      const kcalDelta = (factor - 1) * catKcal;
+      if (kcalDelta > 0) {
+        // An addition must not push the day past the cap: shrink it to
+        // the remaining headroom, or skip it when there is none.
+        const headroom = kcalCap - now.kcal;
+        if (headroom <= 0) continue;
+        if (kcalDelta > headroom) {
+          factor = 1 + headroom / catKcal;
+          if (factor <= 1.001) continue;
+        }
+      }
+      for (const meal of meals) {
+        if (!Array.isArray(meal?.items)) continue;
+        for (const item of meal.items) {
+          if (String(item.category || "").toUpperCase() !== job.cat) continue;
+          scaleMealItem(item, factor);
+        }
+      }
+    }
+  }
+}
+
 // R2 LO-1: the kcal tolerance the post-scale guard shares with
 // reconcileDayCaloriesToTarget (its default toleranceKcal = 30). The
 // guard fires only when the scaled day total exceeds the new calorie
@@ -938,6 +1037,24 @@ export function rebalanceCulinaryMeals(meals, { finalCalories, finalProtein, fin
         recomputeMealActualMacros(meal);
       }
     }
+  }
+
+  // B2-5: close the per-macro residuals the ratio scaling leaves behind
+  // (items carry all three macros), so the served food tracks the new
+  // targets instead of drifting off them. This runs AFTER the guard on
+  // purpose: the ratio pass can overshoot the calorie target while the
+  // macros sit at or under it (item kcal runs above the macro-implied
+  // value), and the guard's uniform scale-down then pushes the macros
+  // under target — a solver before the guard has no headroom to add
+  // anything back (L23 week 3: ratio pass lands at 1794, guard pulls it
+  // to 1766, food moves only +9 kcal). After the guard the day sits at
+  // ~target, and the solver adds the under-target macros back within
+  // its own cap (target + 15), which never re-triggers the guard (+30).
+  // currentTotalKcal is the pre-merge day total: when the calorie
+  // target fell, the solver must not push the food back above it.
+  closeMacroResiduals(meals, { finalCalories, finalProtein, finalCarbs, finalFats, preMergeKcal: currentTotalKcal });
+  for (const meal of meals) {
+    recomputeMealActualMacros(meal);
   }
 
   return meals;

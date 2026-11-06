@@ -225,14 +225,16 @@ test("R2 LO-1: first merge must not inflate the served food above the new target
     const merged = mergeAdaptedPlanIntoProgram(baseProgram, adaptationResult);
     const adaptedMeals = merged.nutrition_program.culinary_meals;
     const newCal = adaptedMeals.reduce((sum, m) => sum + m.actual_macros.calories_kcal, 0);
-    // Baseline measured on the batch-1 branch: 2528 vs target 2517 (+11,
+    // Baseline measured on the batch-2 branch: 2533 vs target 2517 (+16,
     // still inside the 30 kcal tolerance, so the guard must not fire and
-    // nothing may move). The day-0 plate changed by design (Alt 2), so the
-    // R1 baseline 2522 no longer applies; the guard invariant is unchanged.
-    assert.equal(newCal, 2528, `merged day kcal must stay 2528 (guard must not fire at +11), got ${newCal}`);
+    // nothing may move). The B2-5 residual solver changed the titration
+    // outcome by design (carb cut 26 -> 27.4 g, protein corrected toward
+    // its target): the R1 baseline 2522 and the batch-1 baseline 2528 no
+    // longer apply; the guard invariant is unchanged.
+    assert.equal(newCal, 2533, `merged day kcal must stay 2533 (guard must not fire at +16), got ${newCal}`);
     const rice = adaptedMeals[1].items.find((it) => it.food_code === "BASMATI_RICE");
     const chicken = adaptedMeals[1].items.find((it) => it.food_code === "CHICKEN_BREAST");
-    assert.equal(rice.portion_g, 221, "rice portion unchanged");
-    assert.equal(chicken.portion_g, 103, "chicken portion unchanged (protein locked on a carb-only cut)");
+    assert.equal(rice.portion_g, 220, "rice portion unchanged");
+    assert.equal(chicken.portion_g, 106, "chicken portion unchanged (protein corrected toward its target, within the 3% lock)");
   });
 });

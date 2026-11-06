@@ -77,12 +77,13 @@ test('Red Team Item 5: Culinary Meals Ingredient Portion Rebalancing on Calorie 
 
     // 2. Carb grams must decrease to reflect -30g target
     assert.ok(newCarbs < origCarbs, `New carbs (${newCarbs}g) must be lower than original (${origCarbs}g)`);
-    // Batch 1 fixup: the day-0 plate changed by design (Alt 2: omelette 110
-    // vs 100 g, rice 239 vs 250 g, oil 14 vs 16 g), so the merge's per-category
-    // ratio scaling + rounding now lands the carb cut at 26 g, not 30 g. The
-    // residual ~4 g is the known per-category scaling leak (later batch; the
-    // merge engine itself is untouched). Measured on the batch-1 branch: 26 g.
-    assert.ok(Math.abs((origCarbs - newCarbs) - 26) <= 2, `Carb reduction should be approximately 26g, got ${origCarbs - newCarbs}g`);
+    // Batch 2 (B2-5): the per-item residual solver closes the leak, so
+    // the food now lands on the 337 g carb target. The cut measures
+    // 27.4 g, not the full 30 g headline delta, because the served
+    // plate starts 2.6 g below the headline (364.4 g served vs 367 g
+    // target) — the food-to-target error is what the solver closes.
+    // Measured on the batch-2 branch: 27.4 g.
+    assert.ok(Math.abs((origCarbs - newCarbs) - 28) <= 2, `Carb reduction should be approximately 28g, got ${origCarbs - newCarbs}g`);
 
     // 3. Basmati rice portion must decrease
     const adaptedRice = adaptedMeals[1].items.find(it => it.food_code === 'BASMATI_RICE');
