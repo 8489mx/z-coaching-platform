@@ -75,11 +75,13 @@ export function deriveEngineProposed({ adapted = null, baseCaloriesKcal = null, 
         alignment_conflict: false,
         exercise_substitution: false,
         diet_break_eligible: false,
+        diet_break_return: false,
       }),
       engine_flags: Object.freeze({
         requires_coach_approval: false,
         alignment_conflict: false,
         diet_break_eligible: false,
+        diet_break_return: false,
         floor_or_ceiling_clamp: false,
         exercise_substitution: false,
         deload_recommended: false,
@@ -103,6 +105,14 @@ export function deriveEngineProposed({ adapted = null, baseCaloriesKcal = null, 
     ? (finiteNumber(adapted.adapted_cardio?.daily_step_target) ?? baseSteps) - baseSteps
     : null;
   const reasons = adaptedReasons(adapted);
+  // R2 LO-2: a diet-break return is a return to the stored pre-break plan
+  // (already floor-checked at generation), not a fresh proposal from noisy
+  // check-in data — so the green-cap size check must not hold it. The
+  // marker is surfaced on both objects: `proposed` for the triage (which
+  // reads proposed.* fields) and `engine_flags` for the gate below.
+  const dietBreakReturn = reasons.some(
+    (r) => r?.code === "DIET_BREAK_ENDED_RETURN_TO_DEFICIT",
+  );
   const floorOrCeilingClamp = reasons.some(
     (r) =>
       r?.floor_locked === true ||
@@ -118,6 +128,7 @@ export function deriveEngineProposed({ adapted = null, baseCaloriesKcal = null, 
     diet_break_eligible:
       adapted.is_diet_break_recommended === true ||
       adapted.adaptation_action === "SCHEDULE_DIET_BREAK",
+    diet_break_return: dietBreakReturn,
     floor_or_ceiling_clamp: floorOrCeilingClamp,
     exercise_substitution: exerciseSubstitution,
     deload_recommended:
@@ -133,6 +144,7 @@ export function deriveEngineProposed({ adapted = null, baseCaloriesKcal = null, 
     alignment_conflict: engineFlags.alignment_conflict,
     exercise_substitution: engineFlags.exercise_substitution,
     diet_break_eligible: engineFlags.diet_break_eligible,
+    diet_break_return: dietBreakReturn,
   });
   return Object.freeze({ proposed, engine_flags: engineFlags, calorie_delta: calorieDelta, steps_delta: stepsDelta });
 }
@@ -142,6 +154,9 @@ export function deriveEngineProposed({ adapted = null, baseCaloriesKcal = null, 
  * re-checked triage is GREEN, an adapted plan exists, the check-in was not
  * already applied, no WITHHELD stage, no safety correction, no engine flag,
  * and both deltas are inside the unchanged green caps (200 kcal / 1000 steps).
+ * R2 LO-2: a diet-break return is exempt from the CALORIE cap only — its
+ * target is the stored pre-break plan, not a fresh proposal — while the
+ * steps cap and every other block stay unconditional.
  */
 export function decideFollowUpAutoApply({
   triage = null,
@@ -174,7 +189,8 @@ export function decideFollowUpAutoApply({
   if (flags.deload_recommended) blocked.push("DELOAD_RECOMMENDED");
   if (flags.refeed_configured) blocked.push("REFEED_CONFIGURED");
   if (
-    Math.abs(derived.calorie_delta) > FOLLOW_UP_TRIAGE.GREEN_MAX_CALORIE_DELTA_KCAL ||
+    (!flags.diet_break_return &&
+      Math.abs(derived.calorie_delta) > FOLLOW_UP_TRIAGE.GREEN_MAX_CALORIE_DELTA_KCAL) ||
     Math.abs(derived.steps_delta) > FOLLOW_UP_TRIAGE.GREEN_MAX_STEPS_DELTA
   ) {
     blocked.push("PROPOSED_CHANGE_EXCEEDS_GREEN_CAP");

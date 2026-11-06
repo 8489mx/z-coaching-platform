@@ -414,8 +414,15 @@ export function classifyFollowUp(signals) {
     analysis.is_deload_recommended === true ||
     analysis.deload_recommendation?.recommended === true;
   const adaptiveTdeeReady = analysis.adaptive_tdee?.ready === true;
+  // R2 LO-2: a diet-break return is exempt from the CALORIE cap only — its
+  // target is the stored pre-break plan (already floor-checked at
+  // generation), not a fresh proposal from noisy check-in data. The steps
+  // cap stays unconditional, and every independent safety reason below
+  // (lockout, cardiac, injury, rapid loss) is untouched by this flag.
+  const dietBreakReturn = proposed.diet_break_return === true;
   const exceedsCap =
-    Math.abs(calorieDelta) > FOLLOW_UP_TRIAGE.GREEN_MAX_CALORIE_DELTA_KCAL ||
+    (!dietBreakReturn &&
+      Math.abs(calorieDelta) > FOLLOW_UP_TRIAGE.GREEN_MAX_CALORIE_DELTA_KCAL) ||
     Math.abs(stepsDelta) > FOLLOW_UP_TRIAGE.GREEN_MAX_STEPS_DELTA;
 
   const reason = (code, message_ar) => Object.freeze({ code, message_ar });

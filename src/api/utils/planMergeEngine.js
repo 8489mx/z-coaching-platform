@@ -750,6 +750,85 @@ function isDietBreakAfterMerge(merged) {
  * @param {Object} targets - { finalCalories, finalProtein, finalCarbs, finalFats }
  * @returns {Array<Object>} Rebalanced meals array
  */
+/**
+ * Scale one meal item (portion, macros, swaps, household measurement) by
+ * a ratio. Shared by the per-category scaling below and the R2 LO-1
+ * post-scale kcal guard, so both use exactly the same mechanics.
+ */
+function scaleMealItem(item, ratio) {
+  if (!item || typeof item !== "object") return;
+  const origPortion = Number(item.portion_g ?? item.amount_g ?? item.amount) || 0;
+  if (origPortion > 0 && Math.abs(ratio - 1.0) > 0.0001) {
+    const newPortion = Math.max(5, Math.round(origPortion * ratio));
+    item.portion_g = newPortion;
+    if (item.amount_g !== undefined) item.amount_g = newPortion;
+    if (item.amount !== undefined) item.amount = newPortion;
+
+    const effectiveRatio = newPortion / origPortion;
+
+    if (item.calories_kcal !== undefined) item.calories_kcal = Math.round(item.calories_kcal * effectiveRatio);
+    if (item.protein_g !== undefined) item.protein_g = Math.round(item.protein_g * effectiveRatio);
+    if (item.carb_g !== undefined) item.carb_g = Math.round(item.carb_g * effectiveRatio);
+    if (item.fat_g !== undefined) item.fat_g = Math.round(item.fat_g * effectiveRatio);
+
+    // Update leading portion number in household measurement if it matches origPortion
+    if (typeof item.household_measurement === 'string') {
+      const m = item.household_measurement.match(/^(\d+(?:\.\d+)?)/);
+      if (m && Math.abs(Number(m[1]) - origPortion) <= 1) {
+        item.household_measurement = item.household_measurement.replace(/^(\d+(?:\.\d+)?)/, String(newPortion));
+      }
+    }
+
+    // Synchronously rebalance swap alternatives
+    if (Array.isArray(item.swaps)) {
+      for (const swap of item.swaps) {
+        const origSwap = Number(swap.equivalent_grams ?? swap.portion_g) || 0;
+        if (origSwap > 0) {
+          const newSwap = Math.max(5, Math.round(origSwap * effectiveRatio));
+          swap.equivalent_grams = newSwap;
+          if (swap.portion_g !== undefined) swap.portion_g = newSwap;
+
+          const swapRatio = newSwap / origSwap;
+          if (swap.calories_kcal !== undefined) swap.calories_kcal = Math.round(swap.calories_kcal * swapRatio);
+          if (swap.protein_g !== undefined) swap.protein_g = Math.round(swap.protein_g * swapRatio);
+          if (swap.carb_g !== undefined) swap.carb_g = Math.round(swap.carb_g * swapRatio);
+          if (swap.fat_g !== undefined) swap.fat_g = Math.round(swap.fat_g * swapRatio);
+
+          if (typeof swap.household_measurement === 'string') {
+            const sm = swap.household_measurement.match(/^(\d+(?:\.\d+)?)/);
+            if (sm && Math.abs(Number(sm[1]) - origSwap) <= 1) {
+              swap.household_measurement = swap.household_measurement.replace(/^(\d+(?:\.\d+)?)/, String(newSwap));
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/** Recompute one meal's actual macros from its (possibly rescaled) items. */
+function recomputeMealActualMacros(meal) {
+  if (!meal || !Array.isArray(meal.items)) return { mealP: 0, mealC: 0, mealF: 0, mealKcal: 0 };
+  const mealP = meal.items.reduce((sum, it) => sum + (Number(it.protein_g) || 0), 0);
+  const mealC = meal.items.reduce((sum, it) => sum + (Number(it.carb_g) || 0), 0);
+  const mealF = meal.items.reduce((sum, it) => sum + (Number(it.fat_g) || 0), 0);
+  const mealKcal = meal.items.reduce((sum, it) => sum + (Number(it.calories_kcal) || 0), 0);
+
+  meal.actual_macros = {
+    protein_g: Math.round(mealP),
+    carb_g: Math.round(mealC),
+    fat_g: Math.round(mealF),
+    calories_kcal: Math.round(mealKcal),
+  };
+  return { mealP, mealC, mealF, mealKcal };
+}
+
+// R2 LO-1: the kcal tolerance the post-scale guard shares with
+// reconcileDayCaloriesToTarget (its default toleranceKcal = 30). The
+// guard fires only when the scaled day total exceeds the new calorie
+// target by MORE than this; it never changes the tolerance itself.
+const MERGE_KCAL_GUARD_TOLERANCE_KCAL = 30;
+
 export function rebalanceCulinaryMeals(meals, { finalCalories, finalProtein, finalCarbs, finalFats } = {}) {
   if (!Array.isArray(meals) || meals.length === 0) return meals;
 
@@ -808,67 +887,11 @@ export function rebalanceCulinaryMeals(meals, { finalCalories, finalProtein, fin
         ratio = calRatio;
       }
 
-      const origPortion = Number(item.portion_g ?? item.amount_g ?? item.amount) || 0;
-      if (origPortion > 0 && Math.abs(ratio - 1.0) > 0.0001) {
-        const newPortion = Math.max(5, Math.round(origPortion * ratio));
-        item.portion_g = newPortion;
-        if (item.amount_g !== undefined) item.amount_g = newPortion;
-        if (item.amount !== undefined) item.amount = newPortion;
-
-        const effectiveRatio = newPortion / origPortion;
-
-        if (item.calories_kcal !== undefined) item.calories_kcal = Math.round(item.calories_kcal * effectiveRatio);
-        if (item.protein_g !== undefined) item.protein_g = Math.round(item.protein_g * effectiveRatio);
-        if (item.carb_g !== undefined) item.carb_g = Math.round(item.carb_g * effectiveRatio);
-        if (item.fat_g !== undefined) item.fat_g = Math.round(item.fat_g * effectiveRatio);
-
-        // Update leading portion number in household measurement if it matches origPortion
-        if (typeof item.household_measurement === 'string') {
-          const m = item.household_measurement.match(/^(\d+(?:\.\d+)?)/);
-          if (m && Math.abs(Number(m[1]) - origPortion) <= 1) {
-            item.household_measurement = item.household_measurement.replace(/^(\d+(?:\.\d+)?)/, String(newPortion));
-          }
-        }
-
-        // Synchronously rebalance swap alternatives
-        if (Array.isArray(item.swaps)) {
-          for (const swap of item.swaps) {
-            const origSwap = Number(swap.equivalent_grams ?? swap.portion_g) || 0;
-            if (origSwap > 0) {
-              const newSwap = Math.max(5, Math.round(origSwap * effectiveRatio));
-              swap.equivalent_grams = newSwap;
-              if (swap.portion_g !== undefined) swap.portion_g = newSwap;
-
-              const swapRatio = newSwap / origSwap;
-              if (swap.calories_kcal !== undefined) swap.calories_kcal = Math.round(swap.calories_kcal * swapRatio);
-              if (swap.protein_g !== undefined) swap.protein_g = Math.round(swap.protein_g * swapRatio);
-              if (swap.carb_g !== undefined) swap.carb_g = Math.round(swap.carb_g * swapRatio);
-              if (swap.fat_g !== undefined) swap.fat_g = Math.round(swap.fat_g * swapRatio);
-
-              if (typeof swap.household_measurement === 'string') {
-                const sm = swap.household_measurement.match(/^(\d+(?:\.\d+)?)/);
-                if (sm && Math.abs(Number(sm[1]) - origSwap) <= 1) {
-                  swap.household_measurement = swap.household_measurement.replace(/^(\d+(?:\.\d+)?)/, String(newSwap));
-                }
-              }
-            }
-          }
-        }
-      }
+      scaleMealItem(item, ratio);
     }
 
     // Recompute actual meal macros
-    const mealP = meal.items.reduce((sum, it) => sum + (Number(it.protein_g) || 0), 0);
-    const mealC = meal.items.reduce((sum, it) => sum + (Number(it.carb_g) || 0), 0);
-    const mealF = meal.items.reduce((sum, it) => sum + (Number(it.fat_g) || 0), 0);
-    const mealKcal = meal.items.reduce((sum, it) => sum + (Number(it.calories_kcal) || 0), 0);
-
-    meal.actual_macros = {
-      protein_g: Math.round(mealP),
-      carb_g: Math.round(mealC),
-      fat_g: Math.round(mealF),
-      calories_kcal: Math.round(mealKcal),
-    };
+    const { mealP, mealC, mealF, mealKcal } = recomputeMealActualMacros(meal);
 
     if (meal.target_macros && typeof meal.target_macros === 'object') {
       meal.target_macros = {
@@ -877,6 +900,43 @@ export function rebalanceCulinaryMeals(meals, { finalCalories, finalProtein, fin
         fat_g: Math.round((Number(meal.target_macros.fat_g) || mealF) * fatRatio),
         calories_kcal: Math.round((Number(meal.target_macros.calories_kcal) || mealKcal) * calRatio),
       };
+    }
+  }
+
+  // R2 LO-1 — post-scale kcal guard. The day-0 plate is systematically
+  // macro-short of its headline (reconcile fixes kcal by cutting starch
+  // only), so the per-category ratios above can exceed 1.0 even when the
+  // calorie target falls, and the food scales UP while the prescription
+  // goes DOWN. Measure the scaled day total: if it exceeds the new calorie
+  // target by more than the reconcile tolerance, scale every
+  // macro-category item down uniformly by finalCalories / resultKcal so
+  // the served food lands on target. Direction-neutral (it only ever
+  // scales down, never up) and it never touches VEGGIES/BEVERAGE (locked
+  // at 1.0, same as the ratio scaling) or the targets themselves.
+  const targetKcal = Number(finalCalories);
+  if (targetKcal > 0) {
+    let resultKcal = 0;
+    for (const meal of meals) {
+      if (!Array.isArray(meal?.items)) continue;
+      for (const item of meal.items) {
+        resultKcal += Number(item.calories_kcal) || 0;
+      }
+    }
+    if (resultKcal - targetKcal > MERGE_KCAL_GUARD_TOLERANCE_KCAL) {
+      const guardFactor = targetKcal / resultKcal;
+      for (const meal of meals) {
+        if (!Array.isArray(meal?.items)) continue;
+        for (const item of meal.items) {
+          const cat = String(item.category || '').toUpperCase();
+          if (cat === 'VEGGIES' || cat === 'BEVERAGE') continue;
+          scaleMealItem(item, guardFactor);
+        }
+      }
+      // The guard moved the items again: recompute the reported macros so
+      // they agree with the guarded food, not the pre-guard scaling.
+      for (const meal of meals) {
+        recomputeMealActualMacros(meal);
+      }
     }
   }
 
