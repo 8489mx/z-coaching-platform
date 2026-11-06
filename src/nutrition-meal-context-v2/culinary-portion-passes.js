@@ -1,16 +1,10 @@
-import { FOOD_SWAP_DATABASE, isFoodClinicallySafe } from "./build-culinary-meals.js";
+import { FOOD_SWAP_DATABASE, isFoodClinicallySafe, PROTEIN_PORTION_CAPS_G } from "./build-culinary-meals.js";
 
 // H8 rejected-plans sweep: portion passes that run on the FINAL plate —
 // after the recipe build, the carb split, the trims and the protein
 // fallback, and before the culinary preflight audits it. Each pass is pure
 // (it returns new meal objects) and only touches what it names, so a pass
 // that finds nothing changes nothing.
-
-const PROTEIN_PORTION_CAPS_G = Object.freeze({
-  CANNED_TUNA: 120,
-  COTTAGE_CHEESE: 150,
-  EGGS_OMELETTE: 100,
-});
 
 // One whole egg is about 55 g in the recipe book (the breakfast recipe
 // portions eggs as count x 55 g); the swap book uses the same 55 g.
@@ -289,7 +283,7 @@ const ANIMAL_PROTEIN_CODES = new Set([
 ]);
 const LEGUME_CODE_PARTS = ["LENTIL", "CHICKPEA", "BEAN", "FAVA", "FOUL", "LUPINI", "MIXED_LEGUMES"];
 const REPLACEABLE_EGG_DAIRY = new Set([
-  "EGGS_OMELETTE", "EGG_WHOLE_HARD_BOILED", "COTTAGE_CHEESE", "GREEK_YOGURT",
+  "EGGS_OMELETTE", "EGG_WHOLE_HARD_BOILED", "EGG_WHITE_COOKED", "COTTAGE_CHEESE", "GREEK_YOGURT",
   "GREEK_YOGURT_PLAIN_NONFAT", "LABNEH_LIGHT", "HALLOUMI_LIGHT",
 ]);
 export function ensureLegumeForNoAnimalProtein(meals = [], allergenContext = {}) {
@@ -371,12 +365,66 @@ export function ensureLegumeForNoAnimalProtein(meals = [], allergenContext = {})
  * item, never below the food's minimum (50 g starch, 5 g oil) — and a
  * shortfall is topped up the same way, bounded by the food's cap. Nothing
  * is invented: only food already on the plate moves.
+ * Alt 2 (LO-1 / HO-4): the shave is meal-aware and macro-aware. The old
+ * largest-first order cut whichever meal held the biggest donor, so a main
+ * meal that was already under target lost its rice while breakfast kept its
+ * overshoot (the meal kcal see-saw). Now the shave budget is split across
+ * the meals that are over their own target, in proportion to their overage,
+ * and under-target meals are left alone unless their room is the only way
+ * left to land the day. Within a meal, donors are cut in harm order: a
+ * donor that carries a macro the meal is short on costs more (protein x3,
+ * carbs x2, fat x1 per kcal), so oil goes first when fat is over and rice
+ * before bread when protein is short — and a donor carrying a macro the
+ * meal is already over on costs less (x-1), so a carb cut lands in carbs
+ * while fats stay locked. On a harm tie, the donor carrying the least
+ * protein and carbs per kcal goes first — oil is pure fat, so cutting
+ * it costs no protein and no carbs. Day macro targets are the sum of the
+ * per-meal target_macros already on the meals — no new arguments. A meal
+ * without targets falls back to the legacy largest-first order.
  */
 export function reconcileDayCaloriesToTarget(meals = [], targetCalories = 0, toleranceKcal = 30) {
   if (!Number.isFinite(targetCalories) || targetCalories <= 0) return meals;
   const served = meals.reduce((sum, meal) => sum + mealCalories(meal), 0);
   const drift = served - targetCalories;
   if (Math.abs(drift) <= toleranceKcal) return meals;
+
+  const shave = drift > 0;
+  const mealMacro = (meal, key) => (meal.items || []).reduce((sum, item) => sum + (Number(item[key]) || 0), 0);
+  // A macro's weight is signed: a short macro is protected when cutting
+  // (protein x3, carbs x2, fat x1 per kcal) and sought when topping up,
+  // while a macro already over target is cut first (x-1) and never added
+  // to. A carb titration lowers the carb targets, so the served carbs sit
+  // over them and starch — not oil — takes the cut, which is what makes a
+  // carb cut land in carbs while fats stay locked.
+  const mealStats = meals.map((meal) => {
+    const target = meal?.target_macros || null;
+    const kcalTarget = target ? Number(target.calories_kcal) : NaN;
+    const macroWeight = (key, shortWeight) => {
+      const targetValue = target ? Number(target[key]) : NaN;
+      if (!Number.isFinite(targetValue)) return 0;
+      const servedValue = mealMacro(meal, key);
+      if (servedValue < targetValue) return shortWeight;
+      if (servedValue > targetValue) return -1;
+      return 0;
+    };
+    return {
+      kcalDelta: Number.isFinite(kcalTarget) ? mealCalories(meal) - kcalTarget : null,
+      proteinWeight: macroWeight("protein_g", 3),
+      carbWeight: macroWeight("carb_g", 2),
+      fatWeight: macroWeight("fat_g", 1),
+    };
+  });
+  const hasMealTargets = mealStats.every((stats) => stats.kcalDelta !== null);
+
+  // Per-meal kcal budgets, in proportion to how far each meal is over
+  // (shave) or under (top-up) its own target. Null means legacy order.
+  let budgets = null;
+  if (hasMealTargets) {
+    const total = mealStats.reduce((sum, stats) => sum + Math.max(0, shave ? stats.kcalDelta : -stats.kcalDelta), 0);
+    if (total > 0) {
+      budgets = mealStats.map((stats) => Math.max(0, shave ? stats.kcalDelta : -stats.kcalDelta) / total * Math.abs(drift));
+    }
+  }
 
   const donors = [];
   meals.forEach((meal, mealIndex) => {
@@ -386,32 +434,74 @@ export function reconcileDayCaloriesToTarget(meals = [], targetCalories = 0, tol
       const isStarch = STARCH_CODES.has(item.food_code);
       const isOil = item.food_code === OLIVE_OIL;
       if (!isStarch && !isOil) return;
+      const stats = mealStats[mealIndex];
+      const proteinPerKcal = (Number(item.protein_g) || 0) / Math.max(1, Number(item.calories_kcal) || 1);
+      const carbPerKcal = (Number(item.carb_g) || 0) / Math.max(1, Number(item.calories_kcal) || 1);
+      const fatPerKcal = (Number(item.fat_g) || 0) / Math.max(1, Number(item.calories_kcal) || 1);
+      const macroWeight = proteinPerKcal * stats.proteinWeight
+        + carbPerKcal * stats.carbWeight
+        + fatPerKcal * stats.fatWeight;
       donors.push({
         mealIndex,
         itemIndex,
         portionG: Number(item.portion_g) || 0,
         kcalPerGram,
+        macroWeight,
+        proteinCarbPerKcal: proteinPerKcal + carbPerKcal,
+        donorKcal: Number(item.calories_kcal) || 0,
         minG: isOil ? 5 : 50,
         maxG: isOil ? Infinity : (STARCH_CAPS_G[item.food_code] ?? Infinity),
       });
     });
   });
-  donors.sort((a, b) => b.portionG * b.kcalPerGram - a.portionG * a.kcalPerGram);
+  if (budgets) {
+    // Shave: cut the least-harmful donor first. Top-up: add the donor that
+    // carries the macros the meal is short on first. On a harm tie, the
+    // donor that carries the least protein and carbs per kcal goes first:
+    // oil is pure fat, so cutting it costs no protein and no carbs, and
+    // adding it disturbs neither. Bigger donor first on a full tie, so the
+    // move lands in as few items as possible.
+    donors.sort((a, b) => (shave ? a.macroWeight - b.macroWeight : b.macroWeight - a.macroWeight)
+      || a.proteinCarbPerKcal - b.proteinCarbPerKcal
+      || b.donorKcal - a.donorKcal);
+  } else {
+    donors.sort((a, b) => b.donorKcal - a.donorKcal);
+  }
 
   let remaining = Math.abs(drift);
-  const shave = drift > 0;
   const adjustments = new Map();
-  for (const donor of donors) {
-    if (remaining <= 0) break;
-    const room = shave
-      ? Math.max(0, Math.min(donor.portionG * 0.25, donor.portionG - donor.minG))
-      : Math.max(0, Math.min(donor.portionG * 0.25, donor.maxG - donor.portionG));
-    if (room <= 0) continue;
-    const grams = Math.min(room, remaining / donor.kcalPerGram);
-    if (grams < 1) continue;
+  const spentKcal = new Map();
+  const roomFor = (donor) => {
     const key = `${donor.mealIndex}:${donor.itemIndex}`;
-    adjustments.set(key, (adjustments.get(key) || 0) + (shave ? -grams : grams));
-    remaining -= grams * donor.kcalPerGram;
+    const already = Math.abs(adjustments.get(key) || 0);
+    const portionNow = donor.portionG + (adjustments.get(key) || 0);
+    if (shave) {
+      return Math.max(0, Math.min(donor.portionG * 0.25 - already, portionNow - donor.minG));
+    }
+    return Math.max(0, Math.min(donor.portionG * 0.25 - already, donor.maxG - portionNow));
+  };
+  const applyPass = (respectBudgets) => {
+    for (const donor of donors) {
+      if (remaining <= 0) break;
+      const key = `${donor.mealIndex}:${donor.itemIndex}`;
+      const budgetLeft = respectBudgets && budgets
+        ? budgets[donor.mealIndex] - (spentKcal.get(donor.mealIndex) || 0)
+        : Infinity;
+      if (budgetLeft <= 0) continue;
+      const room = roomFor(donor);
+      if (room <= 0) continue;
+      const grams = Math.min(room, remaining / donor.kcalPerGram, budgetLeft / donor.kcalPerGram);
+      if (grams < 1) continue;
+      adjustments.set(key, (adjustments.get(key) || 0) + (shave ? -grams : grams));
+      spentKcal.set(donor.mealIndex, (spentKcal.get(donor.mealIndex) || 0) + grams * donor.kcalPerGram);
+      remaining -= grams * donor.kcalPerGram;
+    }
+  };
+  if (budgets) {
+    applyPass(true);
+    if (remaining > 0) applyPass(false);
+  } else {
+    applyPass(false);
   }
   if (adjustments.size === 0) return meals;
   return meals.map((meal, mealIndex) => {

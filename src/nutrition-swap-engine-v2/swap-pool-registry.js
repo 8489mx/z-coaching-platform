@@ -27,6 +27,21 @@ const SMART_SWAP_REGISTRY_ENTRIES = [
     unit_label_ar: "بياض بيضة",
     unit_label_en: "Egg white",
   },
+  // Batch 1 fixup: the Alt 2 breakfast bridge serves this code as a real
+  // plate item (two cooked egg whites, 66 g); same food as EGG_WHITE, so it
+  // needs its own registry entry or the live swap endpoint returns no
+  // candidates for it. Density is derived from the canonical table (10.7 g
+  // protein / 100 g), like every other entry.
+  {
+    food_code: "EGG_WHITE_COOKED",
+    name_ar: "بياض بيض مسلوق",
+    name_en: "Boiled Egg White",
+    macro_type: FoodMacroType.PROTEIN_DOMINANT,
+    meal_categories: Object.freeze([MealTimeCategory.BREAKFAST, MealTimeCategory.SNACK]),
+    grams_per_household_unit: 33,
+    unit_label_ar: "بياض بيضة",
+    unit_label_en: "Egg white",
+  },
   {
     food_code: "CHEESE_COTTAGE_LOW_FAT",
     name_ar: "جبن قريش قليل الدسم",

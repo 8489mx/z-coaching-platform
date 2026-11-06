@@ -142,6 +142,25 @@ const FOOD_SWAP_DATABASE_ENTRIES = {
     is_economic: true,
     is_gout_safe: true,
   },
+  // Alt 2 (LO-1): the breakfast protein bridge serves this code as a real
+  // plate item, so it needs a swap-database row of its own, for the same
+  // reason as the boiled egg above. Two cooked egg whites (66 g): the lean
+  // bridge food — 7.1 g protein, no fat, no yolk, so no cholesterol and no
+  // whole-egg cap applies. Canonical-table macros (P 10.7, F 0, C 2.35
+  // per 100 g; one white is 33 g per the serving quantizer).
+  EGG_WHITE_COOKED: {
+    code: "EGG_WHITE_COOKED",
+    name_ar: "بياض بيض مسلوق",
+    name_en: "Boiled Egg White",
+    fat_tier: FoodFatTier.LEAN,
+    unit_label: "بياض بيضة مسلوقة (33 جم)",
+    category: "PROTEIN",
+    is_gluten_free: true,
+    is_dairy_free: true,
+    is_fish_free: true,
+    is_economic: true,
+    is_gout_safe: true,
+  },
   SMOKED_TURKEY: {
     code: "SMOKED_TURKEY",
     name_ar: "شرائح صدور رومي مدخن فاخرة",
@@ -936,7 +955,7 @@ export function isFoodClinicallySafe(foodCode, allergenContext = {}, mealContext
     String(mealContext || "").toUpperCase() === "BREAKFAST" &&
     food.is_dairy
   ) return false;
-  if (allergenContext.isEggsExcluded && (foodCode === "EGGS_OMELETTE" || foodCode === "SHAKSHOUKA_EGGS" || foodCode === "EGG_WHOLE_HARD_BOILED")) return false;
+  if (allergenContext.isEggsExcluded && (foodCode === "EGGS_OMELETTE" || foodCode === "SHAKSHOUKA_EGGS" || foodCode === "EGG_WHOLE_HARD_BOILED" || foodCode === "EGG_WHITE_COOKED")) return false;
   if (allergenContext.isFishExcluded && food.is_fish) return false;
   if (allergenContext.isPoultryExcluded && (foodCode === "CHICKEN_BREAST" || foodCode === "SMOKED_TURKEY")) return false;
   if (allergenContext.isRedMeatExcluded && (foodCode === "LEAN_BEEF" || foodCode === "CAMEL_MEAT_LEAN")) return false;
@@ -2402,7 +2421,13 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
           // Olive oil
           const remF = Math.max(0, targetF - legF - 0.8 - 0.5);
-          const oilGrams = Math.round(remF);
+          // Minimum real portion: dropTokenPortions removes oil below 5 g, so a
+        // 1-4 g serving silently loses its fat and its kcal. Clamp 3-4 g up to
+        // 5 g (fat overshoot <= 2 g, inside the trim rounding slack, so the
+        // trim leaves it); skip 1-2 g entirely instead of serving a token.
+        let oilGrams = Math.round(remF);
+        if (oilGrams > 0 && oilGrams < 3) oilGrams = 0;
+        else if (oilGrams > 0 && oilGrams < 5) oilGrams = 5;
           if (oilGrams > 0) {
             items.push({
               food_code: "OLIVE_OIL",
@@ -2475,7 +2500,13 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
           // Olive oil
           const remF = Math.max(0, targetF - 0.8 - 0.5);
-          const oilGrams = Math.round(remF);
+          // Minimum real portion: dropTokenPortions removes oil below 5 g, so a
+        // 1-4 g serving silently loses its fat and its kcal. Clamp 3-4 g up to
+        // 5 g (fat overshoot <= 2 g, inside the trim rounding slack, so the
+        // trim leaves it); skip 1-2 g entirely instead of serving a token.
+        let oilGrams = Math.round(remF);
+        if (oilGrams > 0 && oilGrams < 3) oilGrams = 0;
+        else if (oilGrams > 0 && oilGrams < 5) oilGrams = 5;
           if (oilGrams > 0) {
             items.push({
               food_code: "OLIVE_OIL",
@@ -2571,7 +2602,13 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
           // Olive oil
           const remF = Math.max(0, targetF - legF - 0.2 - 0.5);
-          const oilGrams = Math.round(remF);
+          // Minimum real portion: dropTokenPortions removes oil below 5 g, so a
+        // 1-4 g serving silently loses its fat and its kcal. Clamp 3-4 g up to
+        // 5 g (fat overshoot <= 2 g, inside the trim rounding slack, so the
+        // trim leaves it); skip 1-2 g entirely instead of serving a token.
+        let oilGrams = Math.round(remF);
+        if (oilGrams > 0 && oilGrams < 3) oilGrams = 0;
+        else if (oilGrams > 0 && oilGrams < 5) oilGrams = 5;
           if (oilGrams > 0) {
             items.push({
               food_code: "OLIVE_OIL",
@@ -2644,7 +2681,13 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
           // Olive oil
           const remF = Math.max(0, targetF - 0.2 - 0.5);
-          const oilGrams = Math.round(remF);
+          // Minimum real portion: dropTokenPortions removes oil below 5 g, so a
+        // 1-4 g serving silently loses its fat and its kcal. Clamp 3-4 g up to
+        // 5 g (fat overshoot <= 2 g, inside the trim rounding slack, so the
+        // trim leaves it); skip 1-2 g entirely instead of serving a token.
+        let oilGrams = Math.round(remF);
+        if (oilGrams > 0 && oilGrams < 3) oilGrams = 0;
+        else if (oilGrams > 0 && oilGrams < 5) oilGrams = 5;
           if (oilGrams > 0) {
             items.push({
               food_code: "OLIVE_OIL",
@@ -3198,7 +3241,13 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
         // Close remaining Fat with Olive oil
         const remF = Math.max(0, targetF - currentF);
-        const oilGrams = Math.round(remF);
+        // Minimum real portion: dropTokenPortions removes oil below 5 g, so a
+        // 1-4 g serving silently loses its fat and its kcal. Clamp 3-4 g up to
+        // 5 g (fat overshoot <= 2 g, inside the trim rounding slack, so the
+        // trim leaves it); skip 1-2 g entirely instead of serving a token.
+        let oilGrams = Math.round(remF);
+        if (oilGrams > 0 && oilGrams < 3) oilGrams = 0;
+        else if (oilGrams > 0 && oilGrams < 5) oilGrams = 5;
         if (oilGrams > 0) {
           items.push({
             food_code: "OLIVE_OIL",
@@ -3309,7 +3358,13 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
         // Olive oil to close remaining Fat
         const remF = Math.max(0, targetF - 5 - secF - riceF);
-        const oilGrams = Math.round(remF);
+        // Minimum real portion: dropTokenPortions removes oil below 5 g, so a
+        // 1-4 g serving silently loses its fat and its kcal. Clamp 3-4 g up to
+        // 5 g (fat overshoot <= 2 g, inside the trim rounding slack, so the
+        // trim leaves it); skip 1-2 g entirely instead of serving a token.
+        let oilGrams = Math.round(remF);
+        if (oilGrams > 0 && oilGrams < 3) oilGrams = 0;
+        else if (oilGrams > 0 && oilGrams < 5) oilGrams = 5;
         if (oilGrams > 0) {
           items.push({
             food_code: "OLIVE_OIL",
@@ -3507,30 +3562,40 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         // But a small remainder still has to be covered: a locked breakfast
         // (no dairy) leaves about 5 g of protein unfilled, and the recipe
         // builder is also called on its own (no trim runs after it), so the
-        // remainder cannot be left for the trim alone. One whole boiled egg
-        // (55 g, 6.5 g protein) is a real portion that covers a 4-6 g
+        // remainder cannot be left for the trim alone. Two boiled egg whites
+        // (66 g, 7.1 g protein) are a real portion that covers a 4-6 g
         // remainder without inventing a sliver of anything.
         const eggGramsOnPlate = items.filter((i) => i.food_code === "EGGS_OMELETTE").reduce((s, i) => s + Number(i.portion_g || 0), 0);
-        // EGG_WHOLE_HARD_BOILED is a canonical-table code, not a swap-database
+        // EGG_WHITE_COOKED is a canonical-table code, not a swap-database
         // code, so isFoodClinicallySafe would refuse it for want of a row;
         // the omelette is the same food for safety purposes (egg exclusion,
         // vegan, fasting).
-        if (finalRemP >= 4 && finalRemP < topUpMinP && !isEggsExcluded && eggGramsOnPlate < 165 && isFoodClinicallySafe("EGGS_OMELETTE", allergenContext)) {
+        // Alt 2 (LO-1): a 3-egg breakfast is exactly 165 g of omelette, so
+        // the old "< 165" gate never fired for it and the 4-16 g protein
+        // remainder was left unfilled. "<=" lets the bridge cover it.
+        // The bridge is egg whites, not a whole boiled egg: a whole egg
+        // costs 71 kcal and 5 g fat for 6.5 g protein, which pushed the
+        // breakfast 7 g over its fat target and made the trim's fat pass
+        // grind the egg down to 33 g — a counted food scaled to 0.6 of an
+        // egg. Two whites cost 34 kcal and no fat for 7.1 g protein, so
+        // the breakfast fat stays inside its rounding slack and the bridge
+        // survives the trim intact. Whites carry no yolk, so no cholesterol
+        // and no whole-egg cap applies to them.
+        if (finalRemP >= 4 && finalRemP < topUpMinP && !isEggsExcluded && eggGramsOnPlate <= 165 && isFoodClinicallySafe("EGGS_OMELETTE", allergenContext)) {
           items.push({
-            food_code: "EGG_WHOLE_HARD_BOILED",
-            name_ar: "بيضة كاملة مسلوقة",
-            name_en: "1 Whole Boiled Egg",
+            food_code: "EGG_WHITE_COOKED",
+            name_ar: "بياض بيض مسلوق",
+            name_en: "2 Boiled Egg Whites",
             category: "PROTEIN",
-            portion_g: 55,
-            household_measurement: "بيضة كاملة مسلوقة",
-            protein_g: 6.5,
-            carb_g: 0,
-            fat_g: 5,
-            calories_kcal: 71,
-            swaps: generateSmartSwaps("PROTEIN", 55, "EGG_WHOLE_HARD_BOILED", "BREAKFAST", 5, allergenContext),
+            portion_g: 66,
+            household_measurement: "بياض بيضتين مسلوقتين",
+            protein_g: 7.1,
+            carb_g: 1.6,
+            fat_g: 0,
+            calories_kcal: 34,
+            swaps: generateSmartSwaps("PROTEIN", 66, "EGG_WHITE_COOKED", "BREAKFAST", 5, allergenContext),
           });
-          currentP += 6.5;
-          currentF += 5;
+          currentP += 7.1;
         }
         if (finalRemP >= topUpMinP) {
           if (!isPoultryExcluded) {
@@ -3615,7 +3680,13 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
         // Fat / Olive oil to close Fat target exactly
         const remF = Math.max(0, targetF - currentF);
-        const oilGrams = Math.round(remF);
+        // Minimum real portion: dropTokenPortions removes oil below 5 g, so a
+        // 1-4 g serving silently loses its fat and its kcal. Clamp 3-4 g up to
+        // 5 g (fat overshoot <= 2 g, inside the trim rounding slack, so the
+        // trim leaves it); skip 1-2 g entirely instead of serving a token.
+        let oilGrams = Math.round(remF);
+        if (oilGrams > 0 && oilGrams < 3) oilGrams = 0;
+        else if (oilGrams > 0 && oilGrams < 5) oilGrams = 5;
         if (oilGrams > 0) {
           items.push({
             food_code: "OLIVE_OIL",
@@ -3806,7 +3877,13 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
         // Fat Source: Olive Oil
         const remF = Math.max(0, targetF - protF - riceF);
-        const oilGrams = Math.round(remF);
+        // Minimum real portion: dropTokenPortions removes oil below 5 g, so a
+        // 1-4 g serving silently loses its fat and its kcal. Clamp 3-4 g up to
+        // 5 g (fat overshoot <= 2 g, inside the trim rounding slack, so the
+        // trim leaves it); skip 1-2 g entirely instead of serving a token.
+        let oilGrams = Math.round(remF);
+        if (oilGrams > 0 && oilGrams < 3) oilGrams = 0;
+        else if (oilGrams > 0 && oilGrams < 5) oilGrams = 5;
         if (oilGrams > 0) {
           items.push({
             food_code: "OLIVE_OIL",
@@ -4072,7 +4149,13 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
 
         // Fat Source: Olive Oil
         const remF = Math.max(0, targetF - protF - carbF);
-        const oilGrams = Math.round(remF);
+        // Minimum real portion: dropTokenPortions removes oil below 5 g, so a
+        // 1-4 g serving silently loses its fat and its kcal. Clamp 3-4 g up to
+        // 5 g (fat overshoot <= 2 g, inside the trim rounding slack, so the
+        // trim leaves it); skip 1-2 g entirely instead of serving a token.
+        let oilGrams = Math.round(remF);
+        if (oilGrams > 0 && oilGrams < 3) oilGrams = 0;
+        else if (oilGrams > 0 && oilGrams < 5) oilGrams = 5;
         if (oilGrams > 0) {
           items.push({
             food_code: "OLIVE_OIL",
@@ -4941,6 +5024,20 @@ const TRIM_MAX_ROUNDS = 10;
 const TRIM_MAX_DONOR_CUT = 3;
 const TRIM_MAX_SCALE_UP = 2;
 
+// Single source of truth for the largest real portion of a protein food on
+// one plate. The split pass (culinary-portion-passes.js) and the trim
+// protein re-add below both read this table, so a portion the generator
+// serves can never be re-scaled or split into a second dish by the passes
+// that run after it. The caps match what the generator serves: the omelette
+// cap is 165 g because a 3-egg breakfast is exactly 165 g (3 x 55 g) —
+// capping it at 100 g split every normal 2-3 egg breakfast into a second
+// egg dish. The cottage cap is 150 g, the generator's own hard cap.
+export const PROTEIN_PORTION_CAPS_G = Object.freeze({
+  CANNED_TUNA: 120,
+  COTTAGE_CHEESE: 150,
+  EGGS_OMELETTE: 165,
+});
+
 const trimScaleItem = (item, factor) => ({
   ...item,
   portion_g: scaleNumber(item.portion_g, factor),
@@ -5027,11 +5124,21 @@ export function trimMealsToTarget(meals = []) {
     };
     runTrimRounds();
     // Protein re-add: restore what trimming took, from the meal's own protein
-    // items, largest first, at most twice each item's portion. Q28: the
-    // re-add is carb-aware — scaling a protein item up drags its carbs along
-    // (yogurt ~0.35 g carbs per gram of protein), so an add is capped by the
+    // items, at most twice each item's portion. Q28: the re-add is
+    // carb-aware — scaling a protein item up drags its carbs along (yogurt
+    // ~0.35 g carbs per gram of protein), so an add is capped by the
     // carbohydrate headroom still on the plate; a carb-free protein food
     // (chicken, tuna) is never capped. What cannot be restored is flagged.
+    // Alt 2 (LO-1 / HO-8): donors are taken leanest first (least fat per
+    // gram of protein), so the re-add does not scale the omelette — the
+    // fattiest protein on the plate — and then have the fat pass cut it
+    // back. No item is scaled past its portion cap (PROTEIN_PORTION_CAPS_G),
+    // so the re-add can no longer push an omelette or cottage cheese past
+    // the size the split pass would cut back into a second dish. A whole
+    // boiled egg or a counted portion of egg whites is a counted food
+    // (1 egg = 55 g, 1 white = 33 g): scaling it would lie about the
+    // count, so neither is ever a re-add donor — a shortfall one alone
+    // could cover is flagged instead.
     const proteinTarget = Number(meal.target_macros.protein_g);
     if (proteinTarget > 0) {
       let shortfall = Math.round(proteinTarget - totals(items, "protein_g"));
@@ -5039,13 +5146,24 @@ export function trimMealsToTarget(meals = []) {
         const carbTarget = Number(meal.target_macros.carb_g);
         const donors = items
           .map((item, index) => ({ item, index }))
-          .filter(({ item }) => item?.category === "PROTEIN" && (Number(item.protein_g) || 0) > 0 && (Number(item.portion_g) || 0) > 0)
-          .sort((a, b) => (Number(b.item.protein_g) || 0) - (Number(a.item.protein_g) || 0));
+          .filter(({ item }) => item?.category === "PROTEIN" && item?.food_code !== "EGG_WHOLE_HARD_BOILED" && item?.food_code !== "EGG_WHITE_COOKED" && (Number(item.protein_g) || 0) > 0 && (Number(item.portion_g) || 0) > 0)
+          .sort((a, b) => {
+            const fatPerProteinA = (Number(a.item.fat_g) || 0) / (Number(a.item.protein_g) || 1);
+            const fatPerProteinB = (Number(b.item.fat_g) || 0) / (Number(b.item.protein_g) || 1);
+            if (fatPerProteinA !== fatPerProteinB) return fatPerProteinA - fatPerProteinB;
+            return (Number(b.item.protein_g) || 0) - (Number(a.item.protein_g) || 0);
+          });
         for (const { item, index } of donors) {
           if (shortfall <= 0) break;
           const have = Number(item.protein_g) || 0;
           const maxAdd = have * (TRIM_MAX_SCALE_UP - 1);
           let add = Math.min(shortfall, maxAdd);
+          const portion = Number(item.portion_g) || 0;
+          const cap = PROTEIN_PORTION_CAPS_G[item.food_code];
+          if (cap && portion > 0 && have > 0) {
+            const capAdd = Math.max(0, (cap - portion) * (have / portion));
+            add = Math.min(add, capAdd);
+          }
           const carbPerProtein = have > 0 ? (Number(item.carb_g) || 0) / have : 0;
           if (carbPerProtein > 0 && carbTarget > 0) {
             // The rounding slack is usable headroom: a re-add that leaves
@@ -5054,6 +5172,21 @@ export function trimMealsToTarget(meals = []) {
             // never restore any protein from a carb-carrying food.
             const carbHeadroom = Math.max(0, carbTarget + TRIM_ROUNDING_G - 1 - totals(items, "carb_g"));
             add = Math.min(add, Math.floor(carbHeadroom / carbPerProtein));
+          }
+          // Fat-aware (same pattern as the carb cap): scaling a protein item
+          // up drags its fat along (an omelette carries ~0.77 g fat per gram
+          // of protein), and the second trim round's fat pass then cuts the
+          // item back down — and shaves the olive oil with it, one gram per
+          // trim call, until dropTokenPortions removes the oil entirely.
+          // Capping the add by the fat headroom leaves the fat at most
+          // TRIM_ROUNDING_G - 1 over target, so the fat pass never fires
+          // and the oil survives; a shortfall the fat cannot afford is
+          // flagged instead, never silently paid for with the oil.
+          const fatTarget = Number(meal.target_macros.fat_g);
+          const fatPerProtein = have > 0 ? (Number(item.fat_g) || 0) / have : 0;
+          if (fatPerProtein > 0 && fatTarget > 0) {
+            const fatHeadroom = Math.max(0, fatTarget + TRIM_ROUNDING_G - 1 - totals(items, "fat_g"));
+            add = Math.min(add, Math.floor(fatHeadroom / fatPerProtein));
           }
           if (add < 1) continue;
           const factor = (have + add) / have;

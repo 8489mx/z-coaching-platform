@@ -20,8 +20,10 @@ test('Tier 2 Item 4: Food Swap Code Unification & 24-Code Full Compatibility Sui
   }
 
   await t.test('1. Every unique culinary meal code exists directly or via UNIFIED_FOOD_CODE_ALIASES in FOOD_DATABASE', () => {
-    // H8: 24, not 23 — the boiled-egg top-up serves EGG_WHOLE_HARD_BOILED,
-    // aliased to the WHOLE_EGG base entry.
+    // H8: 24, not 23 — the boiled-egg top-up served EGG_WHOLE_HARD_BOILED,
+    // aliased to the WHOLE_EGG base entry. Batch 1 fixup: still 24 — the
+    // Alt 2 breakfast bridge serves EGG_WHITE_COOKED (aliased to EGG_WHITE)
+    // in place of the boiled-egg bridge code, so the count does not move.
     assert.equal(mealCodes.size, 24, 'Expected exactly 24 unique meal codes from culinary meal engine');
 
     for (const code of mealCodes) {

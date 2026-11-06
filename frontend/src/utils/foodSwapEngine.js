@@ -1934,7 +1934,11 @@ export const UNIFIED_FOOD_CODE_ALIASES = {
   MEDITERRANEAN_SALAD: 'FRESH_CUCUMBER',
   // H8: the boiled-egg top-up serves EGG_WHOLE_HARD_BOILED (the canonical
   // catalog code); the frontend base entry for the same food is WHOLE_EGG.
-  EGG_WHOLE_HARD_BOILED: 'WHOLE_EGG'
+  EGG_WHOLE_HARD_BOILED: 'WHOLE_EGG',
+  // Batch 1 fixup: the Alt 2 breakfast bridge serves EGG_WHITE_COOKED (two
+  // cooked egg whites); the frontend base entry for the same food is
+  // EGG_WHITE. Same pattern as the boiled egg above.
+  EGG_WHITE_COOKED: 'EGG_WHITE'
 };
 
 for (const [aliasCode, targetCode] of Object.entries(UNIFIED_FOOD_CODE_ALIASES)) {

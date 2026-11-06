@@ -47,6 +47,12 @@ export const SWAP_FAMILIES = Object.freeze({
   // H8: the boiled-egg top-up serves this code; it is the same food as
   // WHOLE_EGG for swap purposes.
   EGG_WHOLE_HARD_BOILED: [SAVORY_PROTEIN],
+  // Batch 1 fixup (MANIFEST CORRECTION — see fixup report): the Alt 2
+  // breakfast bridge serves EGG_WHITE_COOKED; it is the same food as
+  // EGG_WHITE for swap purposes. The family lives here, not in the swap
+  // pool registry — without this entry no live swap involving the whites
+  // passes the equivalence filter (isEquivalentSwap needs a shared family).
+  EGG_WHITE_COOKED: [SAVORY_PROTEIN],
   SHAKSHOUKA_EGGS: [SAVORY_PROTEIN],
   COTTAGE_CHEESE: [SAVORY_PROTEIN], CHEESE_COTTAGE_LOW_FAT: [SAVORY_PROTEIN],
   LABNEH_LIGHT: [SAVORY_PROTEIN], HALLOUMI_LIGHT: [SAVORY_PROTEIN], LOW_FAT_MOZZARELLA: [SAVORY_PROTEIN],
