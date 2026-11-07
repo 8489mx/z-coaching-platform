@@ -5,7 +5,6 @@ import { buildMasterEngineV2 } from "../src/master-engine-v2/index.js";
 import { evaluateIntake } from "../src/intake-decision-engine/index.js";
 import { evaluateCheckin } from "../src/checkin-engine/evaluate-checkin.js";
 import { applyEmergencyScenarioAdaptation } from "../src/execution-engines/emergency-scenario-engine.js";
-import { calculateEquivalentSwap, getEligibleSwaps, GOLD_FOOD_CATALOG, FOOD_DATABASE } from "../src/execution-engines/food-swap-engine.js";
 import { mergeAdaptedPlanIntoProgram } from "../src/api/utils/planMergeEngine.js";
 import { completeIntake, ASSESSMENT_CONTEXT } from "../test/fixtures/complete-intake.js";
 import {

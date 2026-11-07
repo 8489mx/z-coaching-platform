@@ -94,21 +94,20 @@
 قائمة مولدة من تحليل شجرة الاستيراد بتاريخ 2026-09-18. أي محرك لا يصل إليه الخادم (`src/api/server.js`) أو الواجهة (`frontend/src/main.jsx`) يُحذف ولا يُضاف لهذه القائمة.
 
 **يستخدمها الخادم مباشرة:**
-1. `weekly-checkin-engine.js + weekly-audit-engine.js`: المتابعة الأسبوعية وثبات الوزن وتعديل السعرات وقفل العجز في فترة الطمث
-2. `female-cycle-buffer-engine.js`: حماية فترة ما قبل الطمث في قرار المتابعة
-3. `calorie-cycling-diet-break-engine.js`: تدوير السعرات والرفيد واستراحة الدايت
-4. `progressive-overload-engine.js + progressive-overload-deload-engine.js`: التدرج في الأحمال وأسابيع التفريغ
-5. `warmup-ladder-engine.js`: مجموعات الإحماء التصاعدية
-6. `biomechanics-firewall-engine.js`: جدار حماية المفاصل وبدائل زحمة الجيم
-7. `postural-prehab-engine.js + rehab-mobility-engine.js`: التأهيل القوامي وحركات المرونة العلاجية
-8. `autoregulated-recovery-engine.js`: الجاهزية اليومية وإعادة جدولة الجلسات الفائتة
-9. `biomarker-engine.js + drug-interaction-firewall.js`: التحاليل المخبرية وتداخلات الأدوية
-10. `circadian-nutrient-timing-engine.js`: التوقيت الغذائي حول التمرين
-11. `food-swap-engine.js`: مسار API للتبديل الغذائي (يعيد تصدير نسخة الواجهة)
-12. `onboarding-plan-generator-engine.js`: توليد الخطة المبدئية
-13. `subscription-lifecycle-engine.js`: حالات الاشتراك والتجديد والتجميد
-14. `habit-neat-tracker-engine.js + daily-habits-adherence-engine.js`: العادات اليومية والنشاط غير الرياضي
-15. `coach-triage-engine.js`: سعة الكوتش والفرز اليومي
+1. `female-cycle-buffer-engine.js`: حماية فترة ما قبل الطمث في قرار المتابعة
+2. `calorie-cycling-diet-break-engine.js`: تدوير السعرات والرفيد واستراحة الدايت
+3. `progressive-overload-engine.js + progressive-overload-deload-engine.js`: التدرج في الأحمال وأسابيع التفريغ
+4. `warmup-ladder-engine.js`: مجموعات الإحماء التصاعدية
+5. `biomechanics-firewall-engine.js`: جدار حماية المفاصل وبدائل زحمة الجيم
+6. `postural-prehab-engine.js + rehab-mobility-engine.js`: التأهيل القوامي وحركات المرونة العلاجية
+7. `autoregulated-recovery-engine.js`: الجاهزية اليومية وإعادة جدولة الجلسات الفائتة
+8. `biomarker-engine.js + drug-interaction-firewall.js`: التحاليل المخبرية وتداخلات الأدوية
+9. `circadian-nutrient-timing-engine.js`: التوقيت الغذائي حول التمرين
+10. `frontend/src/utils/foodSwapEngine.js`: منطق التبديل الغذائي (يستورده كود الخادم `src/nutrition-meal-context-v2/build-culinary-meals.js` مباشرة)
+11. `onboarding-plan-generator-engine.js`: توليد الخطة المبدئية
+12. `subscription-lifecycle-engine.js`: حالات الاشتراك والتجديد والتجميد
+13. `habit-neat-tracker-engine.js + daily-habits-adherence-engine.js`: العادات اليومية والنشاط غير الرياضي
+14. `coach-triage-engine.js`: سعة الكوتش والفرز اليومي
 
 **نسخ خادم لمحركات تعمل في الواجهة** (المصدر في `frontend/src/utils`، ونسخة الخادم إما تعيد التصدير أو مطابقة لها ويحرسها `test/engine-copy-drift-guard.test.js`): `biomechanical-swap-engine.js`، `cardio-interference-engine.js`، `cardio-zones-engine.js`، `checkin-approval-whatsapp.js`، `circadian-lab-trigger-engine.js`، `client-retention-radar-engine.js`، `clinical-supplement-safety-engine.js`، `emergency-scenario-engine.js`، `kitchen-yield-engine.js`، `mesocycle-debrief-engine.js`، `metabolic-macro-engine.js`، `offline-sync-engine.js`، `overdue-checkin-engine.js`، `pdf-export-engine.js`، `plan-quality-preflight-shield.js`.
 

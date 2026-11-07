@@ -9,7 +9,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Op } from "sequelize";
 import { FOOD_SWAP_DATABASE } from "../src/nutrition-meal-context-v2/index.js";
-import { getFoodClinicalProperties } from "../src/execution-engines/food-swap-engine.js";
+import { getFoodClinicalProperties } from "../frontend/src/utils/foodSwapEngine.js";
 
 // Ground truth for every food check: the attributes the meal generator itself filters on.
 const FOOD = (code) => FOOD_SWAP_DATABASE[code];
