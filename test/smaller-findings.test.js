@@ -376,24 +376,29 @@ function makeMacroTargets(snapshot, { targetCalories = 1953, protein = 131, fat 
   };
 }
 
-// The half-weight experiment was measured on the 20-client matrix and then
-// reverted: it cut snack-fat misses from 16 to 5 and lifted READY from 1 to
-// 4, but it breaks the locked Q28 invariant (a snack's planned calories must
-// sit on its calorie weight — the snack fell to ~13% instead of 15%),
-// because a gram of fat is 9 kcal and whole-gram carbs cannot return it
-// exactly. This test locks the current behaviour so a future package cannot
-// silently reintroduce the half weight: the snack keeps its full
-// calorie-weight fat share, and the miss stays filed for an owner decision
-// on Q28 (or a pattern-side fix: full-fat yogurt / nuts in the snack).
-test("S1 item 16 (filed): the snack keeps its full calorie-weight fat share — the half-weight fix is blocked by the locked Q28 calorie rule", () => {
+// B5-2 (Option C) supersedes the reverted half-weight experiment below:
+// the experiment halved the snack's fat weight and left the freed calories
+// unreturned, so the snack fell to ~13% and broke the locked Q28 invariant
+// (a snack's planned calories must sit on its calorie weight). This package
+// halves the same weight AND derives the snack's carbohydrate target from
+// its own calorie budget, so the freed calories return as carbohydrate and
+// Q28 holds: on this fixture the snack sits at exactly 15% (293 kcal of a
+// 1953 kcal day), the day's fat still closes exactly at 66 g, and the
+// snack's fat is 5 g (half of its 10 g full-weight share) with 42 g of
+// carbohydrate. This test now locks the new behaviour: half-weight fat,
+// full-weight calories. A future package must not silently restore the
+// full-weight fat share (the served snack cannot carry it — see B5-2) and
+// must not break the Q28 calorie guard.
+test("S1 item 16 (B5-2): the snack takes a half-weight fat share and keeps its calorie weight — the carb-budget derivation returns the freed calories", () => {
   const snapshot = makeSnapshot({ preferredMealCount: 4 });
   const distribution = buildNutritionMealDistribution({
     nutritionPlanningSnapshot: snapshot,
     nutritionMacroTargets: makeMacroTargets(snapshot),
   });
   const snack = distribution.meals.find((m) => m.role === "SNACK");
-  // Full weight: 66 * 15/100 = 10 g (largest-remainder may give 9 or 10).
-  assert.ok(snack.fat_g >= 9 && snack.fat_g <= 10, `snack fat must stay at its full calorie-weight share, got ${snack.fat_g} g`);
+  // Half weight: 66 * 15/100 / 2 = 5 g (largest-remainder may give 4 or 5).
+  assert.ok(snack.fat_g >= 4 && snack.fat_g <= 5, `snack fat must sit at its half-weight share, got ${snack.fat_g} g`);
+  assert.equal(snack.carbohydrate_g, 42, `the snack's carbohydrate target is derived from its own calorie budget, got ${snack.carbohydrate_g} g`);
   assert.ok(Math.abs(snack.actual_calorie_percent - 15) <= 0.5, `the snack's planned calories still sit on its 15% calorie weight (Q28), got ${snack.actual_calorie_percent}%`);
   const totalFat = distribution.meals.reduce((sum, m) => sum + m.fat_g, 0);
   assert.equal(totalFat, 66, "the day's fat still closes exactly");

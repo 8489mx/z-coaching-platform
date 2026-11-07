@@ -208,12 +208,16 @@ const c07Plan = () => buildMasterEngineV2({
 
 // C09 as the matrix runner builds her: 33F, 158 cm, 90 kg, waist 100,
 // fat loss, sedentary, type 2 diabetes, 4 meals, commercial gym,
-// 3 days/week, BEGINNER, 4000 steps. Her snack carb target is 15 g and
-// the yogurt alone carries 7 g, so a 50 g potato (10 g carbs) can never
-// fit: the trim would cut it back to ~35 g and the token pass would
-// delete it, while the nut cut stood — the ungated B1 made her snack
-// -29 -> -55. The carb gate must leave her snack exactly at its base
-// value (197 kcal, nuts untouched at 14 g, no potato): no regression.
+// 3 days/week, BEGINNER, 4000 steps. B6-1 (Option C, served half) raised
+// her snack carb target from 15 g to 24 g (budget-derived) and halved its
+// fat share (8 g -> 4 g), so a 50 g potato (10 g carbs) now FITS: the
+// yogurt (7 g) + potato (10 g) + nuts (~2 g) = ~19 g sits inside the
+// 24 g target with room to spare, and the snack lands on target instead
+// of the -29 kcal outlier. The B4-3 carb gate's "cannot fit" premise
+// therefore no longer occurs for C09 — the gate code path remains in the
+// snack builder for snacks whose target stays below the yogurt+potato
+// floor, and the C07 end-to-end test below still covers the
+// potato-survives path.
 const c09Plan = () => buildMasterEngineV2({
   intake: {
     gender: "female", age: "33", height_cm: "158", weight_kg: "90", waist_cm: "100",
@@ -234,17 +238,29 @@ const c09Plan = () => buildMasterEngineV2({
   options: {},
 }).nutrition_program;
 
-test("B4-3 Option B1 carb gate: the C09 snack stays at its base value when a 50 g potato cannot fit its carb target", () => {
+test("B6-1 (Option C, served half): the C09 snack now carries a real potato and lands on target", () => {
   const program = c09Plan();
   const snack = program.culinary_meals.find((meal) => meal.meal_number === 4);
   assert.ok(snack, "C09 must have a 4th meal (snack)");
+  // The snack's targets moved by design: carbs 15 g -> 24 g (budget-derived),
+  // fat 8 g -> 4 g (half weight). The potato now fits and survives as a real
+  // portion, and the snack lands on its new target instead of the -29 kcal
+  // outlier (197 kcal against a 226 kcal target).
+  assert.equal(Number(snack.target_macros.carb_g), 24, "snack carb target must be the budget-derived 24 g");
+  assert.equal(Number(snack.target_macros.fat_g), 4, "snack fat target must be the half-weight 4 g");
   const potato = (snack.items || []).find((item) => item.food_code === "SWEET_POTATO");
-  assert.equal(potato, undefined, "the snack must not carry a potato the trim would cut back below the minimum");
+  assert.ok(potato, "the snack must carry a sweet potato now that it fits its carb target");
+  assert.ok(potato.portion_g >= 50, `sweet potato must be a real portion, not a token: ${potato.portion_g}g`);
+  assert.equal(potato.portion_g, 77, `sweet potato portion: ${potato.portion_g}g`);
   const nuts = (snack.items || []).find((item) => item.food_code === "RAW_ALMONDS");
   assert.ok(nuts, "the snack must keep its nuts");
-  assert.equal(nuts.portion_g, 14, `the nuts must not be cut when the potato does not survive: ${nuts.portion_g}g`);
+  assert.equal(nuts.portion_g, 6, `the nuts shrink with the halved fat target: ${nuts.portion_g}g`);
+  const target = Number(snack.target_macros.calories_kcal);
   const actual = (snack.items || []).reduce((s, item) => s + (Number(item.calories_kcal) || 0), 0);
-  assert.ok(Math.abs(actual - 197) <= 2, `snack must stay at its base 197 kcal, not worse: ${actual}`);
+  assert.ok(
+    Math.abs(actual - target) <= mealThreshold(target),
+    `snack: ${actual} for target ${target} (threshold ${mealThreshold(target)})`,
+  );
 });
 
 test("B4-3 Option B1 end-to-end: the C07 snack keeps a real 50 g sweet potato and lands on target", () => {

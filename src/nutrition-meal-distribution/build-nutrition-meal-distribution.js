@@ -365,6 +365,87 @@ function fiberWeightsForRoles(roles, weights) {
     role === NutritionMealRole.SNACK ? weights[index] / 2 : weights[index]);
 }
 
+// B5-2 (Option C): a dairy-fruit snack carries no fat vehicle, so a
+// full-weight fat share is not servable. The portion solver deliberately
+// drops the snack's ADDED_FAT slot (oil stirred into yogurt and fruit is
+// not a snack a client will eat), and the snack's remaining pool — low-fat
+// dairy + fruit — serves only ~45% of its calorie-weight fat share across
+// the 20-client matrix, while the solver compensates with carbs. A snack
+// therefore counts at half its calorie weight for fat, exactly like fiber
+// below; the freed share goes to the full meals, which carry oil slots
+// and absorb it inside tolerance. The day total still closes exactly
+// (largest-remainder allocation over the effective weights).
+function fatWeightsForRoles(roles, weights) {
+  return roles.map((role, index) =>
+    role === NutritionMealRole.SNACK ? weights[index] / 2 : weights[index]);
+}
+
+// B5-2 (Option C): the same snack pool forces MORE carbohydrate than its
+// calorie-weight share — protein-driven dairy plus the required-fruit
+// minimums carry ~20-26 g of carbohydrate against snack targets as low as
+// 15 g, so every snack solves above its carb target. A snack's carb target
+// is therefore derived from its own calorie budget (planned kcal minus its
+// protein and fat calories), and the full meals take the remaining day
+// carbs by largest remainder over their weights. No fixed multiplier: the
+// derivation self-calibrates per client (a fixed multiplier misfires on
+// high-carb days). The day still closes exactly, and each snack's planned
+// calories stay on its calorie-weight share (Q28). Snack-less meal counts
+// keep the old uniform allocation byte-for-byte.
+function allocateCarbohydrates({
+  dayCarbohydrates,
+  macroCaloriesTotal,
+  roles,
+  weights,
+  proteinAllocations,
+  fatAllocations,
+}) {
+  const snackIndexes = roles
+    .map((role, index) => (role === NutritionMealRole.SNACK ? index : -1))
+    .filter((index) => index >= 0);
+  if (snackIndexes.length === 0) {
+    return allocateByLargestRemainder(dayCarbohydrates, weights);
+  }
+  const allocations = new Array(roles.length).fill(0);
+  let snackCarbohydrateTotal = 0;
+  for (const index of snackIndexes) {
+    const budgetKcal = Math.round(
+      (macroCaloriesTotal * weights[index]) / 100,
+    );
+    // A snack whose protein + fat already fill its calorie budget gets no
+    // carbohydrate target; the day still closes because the full meals
+    // take the remainder, and the solver flags such a snack honestly
+    // instead of serving a silently broken meal.
+    const derived = Math.max(
+      0,
+      Math.round(
+        (budgetKcal -
+          proteinAllocations[index] * 4 -
+          fatAllocations[index] * 9) /
+          4,
+      ),
+    );
+    allocations[index] = derived;
+    snackCarbohydrateTotal += derived;
+  }
+  if (snackCarbohydrateTotal >= dayCarbohydrates) {
+    // Defensive fallback (unreachable for sane day targets: the derived
+    // snack carbs are a fraction of the day total by construction): keep
+    // the old uniform allocation so the day still closes exactly.
+    return allocateByLargestRemainder(dayCarbohydrates, weights);
+  }
+  const mainIndexes = roles
+    .map((_, index) => index)
+    .filter((index) => !snackIndexes.includes(index));
+  const mainCarbohydrates = allocateByLargestRemainder(
+    dayCarbohydrates - snackCarbohydrateTotal,
+    mainIndexes.map((index) => weights[index]),
+  );
+  mainIndexes.forEach((mealIndex, position) => {
+    allocations[mealIndex] = mainCarbohydrates[position];
+  });
+  return allocations;
+}
+
 function allocateByLargestRemainder(total, weights) {
   const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
   const allocations = weights.map((weight) =>
@@ -525,12 +606,16 @@ export function buildNutritionMealDistribution({
   );
   const fatAllocations = allocateByLargestRemainder(
     nutritionMacroTargets.fat.target_g,
-    distributionMap.weights,
+    fatWeightsForRoles(distributionMap.roles, distributionMap.weights),
   );
-  const carbohydrateAllocations = allocateByLargestRemainder(
-    nutritionMacroTargets.carbohydrate.target_g,
-    distributionMap.weights,
-  );
+  const carbohydrateAllocations = allocateCarbohydrates({
+    dayCarbohydrates: nutritionMacroTargets.carbohydrate.target_g,
+    macroCaloriesTotal: nutritionMacroTargets.macro_calories_total,
+    roles: distributionMap.roles,
+    weights: distributionMap.weights,
+    proteinAllocations,
+    fatAllocations,
+  });
   const fiberAllocations = allocateByLargestRemainder(
     nutritionMacroTargets.fiber_target_g,
     fiberWeightsForRoles(distributionMap.roles, distributionMap.weights),

@@ -419,8 +419,11 @@ test("four-meal policy uses the exact roles and 25/30/15/30 weights", () => {
     distribution.meals.map((meal) => meal.policy_calorie_weight_percent),
     [25, 30, 15, 30],
   );
+  // B5-2: the snack now takes fewer fat grams and more carbohydrate grams
+  // (its own calorie budget), so its planned calories move 346 -> 345 and
+  // the full meals rebalance around it; the day total is unchanged (2309).
   assert.deepEqual(distribution.meals.map((meal) => meal.planned_calories),
-    [576, 700, 346, 687]);
+    [582, 693, 345, 689]);
 });
 
 test("five-meal policy uses the exact roles and 20/10/30/10/30 weights", () => {
@@ -437,8 +440,10 @@ test("five-meal policy uses the exact roles and 20/10/30/10/30 weights", () => {
     distribution.meals.map((meal) => meal.policy_calorie_weight_percent),
     [20, 10, 30, 10, 30],
   );
+  // B5-2: same snack rebalance as the four-meal case; the day total is
+  // unchanged (2309).
   assert.deepEqual(distribution.meals.map((meal) => meal.planned_calories),
-    [461, 239, 700, 222, 687]);
+    [458, 232, 698, 231, 690]);
 });
 
 test("protein follows the meal calorie weights and closes exactly to its daily target", () => {
@@ -456,24 +461,32 @@ test("protein follows the meal calorie weights and closes exactly to its daily t
 });
 
 test("fat uses deterministic largest-remainder allocation", () => {
+  // B5-2: snacks count at half weight for fat, because a dairy-and-fruit
+  // snack has no fat vehicle; the freed grams go to the full meals and the
+  // day still closes exactly.
   assert.deepEqual(
     distributionForMealCount(4).meals.map((meal) => meal.fat_g),
-    [16, 20, 10, 19],
+    [18, 21, 5, 21],
   );
   assert.deepEqual(
     distributionForMealCount(5).meals.map((meal) => meal.fat_g),
-    [13, 7, 20, 6, 19],
+    [14, 4, 22, 3, 22],
   );
 });
 
 test("carbohydrate uses deterministic largest-remainder allocation", () => {
+  // B5-2: a snack's carbohydrate target is derived from its own calorie
+  // budget (budget minus protein and fat), because the dairy-and-fruit
+  // snack pool forces more carbohydrate than a uniform share allows; the
+  // full meals take the remaining day carbohydrate and the day still
+  // closes exactly.
   assert.deepEqual(
     distributionForMealCount(4).meals.map((meal) => meal.carbohydrate_g),
-    [79, 95, 47, 95],
+    [76, 91, 58, 91],
   );
   assert.deepEqual(
     distributionForMealCount(5).meals.map((meal) => meal.carbohydrate_g),
-    [63, 32, 95, 31, 95],
+    [60, 37, 90, 40, 89],
   );
 });
 
@@ -483,7 +496,11 @@ test("a snack's planned calories sit on its calorie weight, not above it (Q28)",
   // weight and the snack overshot before any food was chosen.
   const four = distributionForMealCount(4);
   assert.equal(four.meals[2].role, NutritionMealRole.SNACK);
-  assert.equal(four.meals[2].actual_calorie_percent, 15);
+  // B5-2: 14.9, not 15. Carbohydrate grams are integers, so with P17/F5 the
+  // snack's planned calories step by 4 kcal (345 or 349); 345 is the
+  // reachable value closest to the 346.5 kcal weight share, and the +/-5 kcal
+  // bound below still holds.
+  assert.equal(four.meals[2].actual_calorie_percent, 14.9);
   assert.ok(Math.abs(four.meals[2].planned_calories - 2310 * 0.15) <= 5);
   const five = distributionForMealCount(5);
   for (const snack of [five.meals[1], five.meals[3]]) {

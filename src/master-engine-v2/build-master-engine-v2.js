@@ -1245,10 +1245,78 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
     proteinG,
     mealRatios.map(({ cRatio, fRatio }) => carbG * cRatio * 4 + fatG * fRatio * 9),
   );
+  // B6-1 (Option C, served half): the culinary stage reads meal_distribution
+  // from these universal targets, and the pipeline distribution fix (B5-2)
+  // never reaches it — the master engine computes its own distribution here
+  // with the SAME uniform-share flaw (snacks get cRatio = fRatio = snackShare).
+  // The same two rules therefore apply, mirroring
+  // src/nutrition-meal-distribution/build-nutrition-meal-distribution.js:
+  // 1. Fat: a snack counts at HALF its calorie weight (the freed share flows
+  //    to the full meals, which carry oil slots); the day still closes exactly
+  //    (largest-remainder allocation over the effective weights).
+  // 2. Carbs: a snack's carb target is derived from its own calorie budget
+  //    (planned kcal minus its protein and fat calories); the full meals take
+  //    the remaining day carbs by largest remainder over their weights. No
+  //    fixed multiplier — the derivation self-calibrates per client.
+  // Protein allocation is unchanged (it is computed above from the uniform
+  // ratios, exactly as before), and each snack's planned calories stay on its
+  // calorie-weight share (Q28). Snack-less meal counts keep the old uniform
+  // allocation byte-for-byte.
+  const mealFatAllocations = (() => {
+    if (mealCount < 4) {
+      return mealRatios.map(({ fRatio }) => Math.round(fatG * fRatio));
+    }
+    const snackShare = SNACK_ENERGY_SHARE[mealCount] || 0.15;
+    const snacks = mealCount - 3;
+    const fatWeights = mealRatios.map((_, index) =>
+      (isSnackMeal(index + 1)
+        ? snackShare / 2
+        : (1 - snacks * snackShare / 2) / 3));
+    return allocateByLargestRemainder(fatG, fatWeights);
+  })();
+  const mealCarbAllocations = (() => {
+    if (mealCount < 4) {
+      return mealRatios.map(({ cRatio }) => Math.round(carbG * cRatio));
+    }
+    const snackShare = SNACK_ENERGY_SHARE[mealCount] || 0.15;
+    const allocations = new Array(mealCount).fill(0);
+    let snackCarbohydrateTotal = 0;
+    for (let i = 1; i <= mealCount; i++) {
+      if (!isSnackMeal(i)) continue;
+      const budgetKcal = Math.round(targetCalories * snackShare);
+      // A snack whose protein + fat already fill its calorie budget gets no
+      // carbohydrate target; the day still closes because the full meals
+      // take the remainder, and the solver flags such a snack honestly
+      // instead of serving a silently broken meal.
+      const derived = Math.max(
+        0,
+        Math.round(
+          (budgetKcal - mealProteinAllocations[i - 1] * 4 - mealFatAllocations[i - 1] * 9) / 4,
+        ),
+      );
+      allocations[i - 1] = derived;
+      snackCarbohydrateTotal += derived;
+    }
+    if (snackCarbohydrateTotal >= carbG) {
+      // Defensive fallback (unreachable for sane day targets: the derived
+      // snack carbs are a fraction of the day total by construction): keep
+      // the old uniform allocation so the day still closes.
+      return mealRatios.map(({ cRatio }) => Math.round(carbG * cRatio));
+    }
+    const mainIndexes = mealRatios
+      .map((_, index) => index)
+      .filter((index) => !isSnackMeal(index + 1));
+    const mainCarbohydrates = allocateByLargestRemainder(
+      carbG - snackCarbohydrateTotal,
+      mainIndexes.map((index) => mealRatios[index].cRatio),
+    );
+    mainIndexes.forEach((mealIndex, position) => {
+      allocations[mealIndex] = mainCarbohydrates[position];
+    });
+    return allocations;
+  })();
   const mealDistribution = [];
   for (let i = 1; i <= mealCount; i++) {
-    const { cRatio, fRatio } = mealRatios[i - 1];
-
     let mealNameAr = `الوجبة ${i}`;
     if (mealCount === 2) {
       mealNameAr = i === 1 ? "الوجبة الأولى (كسر الصيام / إفطار كبير)" : "الوجبة الثانية (الوجبة الرئيسية / السحور أو العشاء)";
@@ -1266,9 +1334,9 @@ export function calculateUniversalNutritionTargets(canonicalIntake, evaluationCo
       meal_number: i,
       meal_name_ar: mealNameAr,
       protein_g: mealProteinAllocations[i - 1],
-      carb_g: Math.round(carbG * cRatio),
-      fat_g: Math.round(fatG * fRatio),
-      calories_kcal: Math.round((mealProteinAllocations[i - 1] * 4) + (carbG * cRatio * 4) + (fatG * fRatio * 9)),
+      carb_g: mealCarbAllocations[i - 1],
+      fat_g: mealFatAllocations[i - 1],
+      calories_kcal: Math.round((mealProteinAllocations[i - 1] * 4) + (mealCarbAllocations[i - 1] * 4) + (mealFatAllocations[i - 1] * 9)),
     });
   }
 
