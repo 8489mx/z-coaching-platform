@@ -8,7 +8,14 @@
    ACTIVE creation. The Program model default is intentionally NOT changed:
    every other Program.create in the codebase already passes an explicit
    status, and flipping the global default would silently change next-cycle
-   publishing. Source guard in the style of
+   publishing. B5-3 (gap #7): the two handlers no longer call
+   Program.create directly — every save goes through the shared helper
+   createProgramRow, which passes the same explicit status and archives
+   any superseded ACTIVE program. The guard below follows that
+   indirection: its invariant is unchanged (no save may rely on the
+   model's ACTIVE default; a review case saves DRAFT), and it additionally
+   asserts the single choke point — exactly one Program.create in the
+   controller, inside the helper. Source guard in the style of
    test/engine-copy-drift-guard.test.js: the controllers cannot be imported
    here without the database dependencies. A live HTTP/database test is
    still needed before the fix is trusted end to end. */
@@ -48,21 +55,50 @@ for (const [name, start, end] of [
     );
   });
 
-  test(`${name} never creates a program on the implicit ACTIVE default`, () => {
+  test(`${name} saves only through the shared helper, with an explicit status (never the ACTIVE default)`, () => {
     const body = handlerBody(start, end);
-    const createAt = body.indexOf("Program.create(");
-    assert.ok(createAt >= 0, `${name} must create a program`);
-    const createCall = body.slice(createAt, body.indexOf("});", createAt) + 3);
+    // B5-3 (gap #7): the handler no longer calls Program.create directly —
+    // every save goes through createProgramRow, which passes an explicit
+    // status and archives any superseded ACTIVE program. The invariant is
+    // unchanged: no save may rely on the model's ACTIVE default, and a
+    // review case must save DRAFT.
     assert.ok(
-      createCall.includes("status:"),
-      `${name} must pass an explicit status to Program.create`
+      !body.includes("Program.create("),
+      `${name} must not create a program directly — save through createProgramRow`
     );
+    const callAt = body.indexOf("createProgramRow(");
+    assert.ok(callAt >= 0, `${name} must save through createProgramRow`);
+    const call = body.slice(callAt, body.indexOf(");", callAt) + 2);
     assert.ok(
-      /status:\s*[^,]*DRAFT/.test(body) || /program\.status\s*=\s*"DRAFT"/.test(body),
-      `${name} must save a medical-review program as DRAFT`
+      call.includes("DRAFT"),
+      `${name} must pass a status that saves a medical-review program as DRAFT`
     );
   });
 }
+
+test("createProgramRow passes an explicit status to Program.create and archives the superseded ACTIVE program", () => {
+  const helper = handlerBody("async function createProgramRow(", "export const prepareNextCycle =");
+  const createAt = helper.indexOf("Program.create(");
+  assert.ok(createAt >= 0, "the shared helper must create the program");
+  const createCall = helper.slice(createAt, helper.indexOf("});", createAt) + 3);
+  assert.ok(
+    createCall.includes("status"),
+    "the shared helper must pass an explicit status, never the model default"
+  );
+  assert.ok(
+    helper.includes("archiveSupersededActivePrograms"),
+    "an ACTIVE create must archive the superseded ACTIVE program"
+  );
+});
+
+test("Program.create appears exactly once in the controller — inside the shared helper", () => {
+  const creates = [...controller.matchAll(/Program\.create\(/g)];
+  assert.equal(
+    creates.length,
+    1,
+    "every save path must go through the single choke point, not a second create"
+  );
+});
 
 test("generateAndSaveProgram demotes an overwritten program to DRAFT when medical review is required", () => {
   const body = handlerBody(

@@ -121,11 +121,14 @@ export const generateProgram = async (req, res) => {
     // P0-A16 (Q48): zones computed on an estimated age are held for coach
     // review — the plan saves DRAFT until the age is confirmed.
     const zonesHeldForReview = masterProgram.cardio_program?.heart_rate_zones_held_for_review === true;
-    const savedProgram = await Program.create({
-      user_id: req.user.id,
-      program_data: masterProgram,
-      status: requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired || zonesHeldForReview ? "DRAFT" : "ACTIVE",
-    });
+    // Gap #7: the create goes through the shared save helper, so a second
+    // generation archives the previously ACTIVE program instead of leaving
+    // two live plans beside each other.
+    const savedProgram = await createProgramRow(
+      req.user.id,
+      masterProgram,
+      requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired || zonesHeldForReview ? "DRAFT" : "ACTIVE",
+    );
 
     return res.status(201).json({
       message: "Program generated successfully (V2)",
@@ -318,11 +321,11 @@ export const generateAndSaveProgram = async (req, res) => {
       }
       await program.save();
     } else {
-      program = await Program.create({
-        user_id: user.id,
-        program_data: masterProgram,
-        status: requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired ? "DRAFT" : "ACTIVE"
-      });
+      program = await createProgramRow(
+        user.id,
+        masterProgram,
+        requiresMedicalReview || culinaryReviewRequired || finalPreflightReviewRequired ? "DRAFT" : "ACTIVE"
+      );
     }
 
     return res.status(201).json({
@@ -1157,6 +1160,26 @@ async function archiveSupersededActivePrograms(userId, keepProgramId) {
 }
 
 /**
+ * Gap #7: every program row is created through this one helper, so the
+ * ACTIVE-uniqueness rule lives in exactly one place. Whenever a new row is
+ * created ACTIVE, every other ACTIVE program for the same client is
+ * archived in the same operation, so no reader can ever see two live
+ * plans. A DRAFT never archives anything: the old plan stays live until
+ * the new one is published. No transaction is introduced: this file uses
+ * sequential awaits throughout, and the archive runs in the same handler
+ * right after the create — the same pattern gap #11 established for the
+ * publish paths. The existing-row republish path in updateCustomProgram
+ * (status flip + save) is not a create, so it keeps its own archive call.
+ */
+async function createProgramRow(userId, programData, status) {
+  const created = await Program.create({ user_id: userId, program_data: programData, status });
+  if (status === "ACTIVE") {
+    await archiveSupersededActivePrograms(userId, created.id);
+  }
+  return created;
+}
+
+/**
  * POST /api/v1/programs/next-cycle: prepare the client's next training cycle from the one they just
  * finished — same exercises, starting weights taken from their own logs — and save it as a draft.
  * It is never published here: the coach opens it, deals with anything flagged, and publishes.
@@ -1221,18 +1244,15 @@ export const prepareNextCycle = async (req, res) => {
       clinical_lockout: clinicalLockout,
     });
 
-    const created = await Program.create({
-      user_id: user.id,
+    // Gap #7: the create goes through the shared save helper — an
+    // auto-published cycle archives the previous cycle, and a draft
+    // archives nothing (the old plan stays live until the coach publishes
+    // the draft, see updateCustomProgram).
+    const created = await createProgramRow(
+      user.id,
       program_data,
-      status: decision.allowed ? "ACTIVE" : "DRAFT",
-    });
-
-    // Gap #11: an auto-published cycle must not leave the previous cycle
-    // ACTIVE beside it. A draft archives nothing — the old plan stays live
-    // until the coach publishes the draft (see updateCustomProgram).
-    if (decision.allowed) {
-      await archiveSupersededActivePrograms(user.id, created.id);
-    }
+      decision.allowed ? "ACTIVE" : "DRAFT",
+    );
 
     return res.status(201).json({
       message: `${summary.message_ar} ${decision.message_ar}`,
@@ -2354,13 +2374,15 @@ export const updateCustomProgram = async (req, res) => {
     });
 
     if (!program) {
-      program = await Program.create({
-        user_id: user.id,
-        program_data: shouldPublish
+      // Gap #7: the create goes through the shared save helper, so a
+      // published first draft archives any ACTIVE program beside it.
+      program = await createProgramRow(
+        user.id,
+        shouldPublish
           ? startCycleOnPublish(syncProgramDataNutritionTargets(program_data || {}, null, Boolean(master_program && !rawProgramData)))
           : syncProgramDataNutritionTargets(program_data || {}, null, Boolean(master_program && !rawProgramData)),
-        status: shouldPublish ? "ACTIVE" : "DRAFT"
-      });
+        shouldPublish ? "ACTIVE" : "DRAFT"
+      );
     } else {
       previousMacros = program.program_data ? readProgramMacroTargets(program.program_data) : null;
       if (program_data) {
@@ -2394,6 +2416,8 @@ export const updateCustomProgram = async (req, res) => {
       // beside it (the usual case is a prepared draft going live while the
       // previous cycle is still ACTIVE). Re-publishing an already live plan
       // archives nothing of its own — only other rows are archived.
+      // The create branch above already archives through createProgramRow;
+      // this call guards the existing-row republish path (status flip).
       if (shouldPublish) {
         await archiveSupersededActivePrograms(user.id, program.id);
       }
