@@ -4999,7 +4999,7 @@ export function applyCulinaryProteinFallback(meals = [], allergenContext = {}) {
 
 export const MAX_OIL_PER_MEAL_G = 20;
 // Olive oil a leaner protein swap may add to make up the fat (about a tablespoon and a half).
-const MAX_SWAP_OIL_ADDITION_G = 15;
+export const MAX_SWAP_OIL_ADDITION_G = 15;
 // Nuts or seeds in the fourth-meal snack: a handful, like the almonds below.
 const SNACK_NUT_MAX_G = 30;
 // A snack of yogurt stays within about a tub and a half; protein beyond that comes from a second

@@ -1,4 +1,4 @@
-import { FOOD_SWAP_DATABASE, isFoodClinicallySafe, PROTEIN_PORTION_CAPS_G } from "./build-culinary-meals.js";
+import { FOOD_SWAP_DATABASE, isFoodClinicallySafe, PROTEIN_PORTION_CAPS_G, MAX_OIL_PER_MEAL_G, MAX_SWAP_OIL_ADDITION_G } from "./build-culinary-meals.js";
 
 // H8 rejected-plans sweep: portion passes that run on the FINAL plate —
 // after the recipe build, the carb split, the trims and the protein
@@ -281,6 +281,10 @@ export function dropTokenPortions(meals = []) {
  * protein from eggs and dairy alone. One egg/dairy protein at the main
  * meal becomes the mixed legumes stew, protein-matched, and the meal's
  * starch gives back the stew's extra carbs so the plate stays on target.
+ * The stew is far leaner than the egg or dairy it replaces, so the fat
+ * that swap loses is returned as olive oil in the same meal — the way a
+ * leaner protein swap already does — because the day reconciliation
+ * after this pass only fixes calories, and fixes them with starch.
  * Gout (or any clinical rule) keeps the stew off the plate instead.
  */
 const ANIMAL_PROTEIN_CODES = new Set([
@@ -339,6 +343,7 @@ export function ensureLegumeForNoAnimalProtein(meals = [], allergenContext = {})
     // gives them back, down to its 50 g minimum, so the plate stays on
     // its carb target. Any residual drift is the day reconciliation's job.
     const excessCarbs = Math.max(0, stewItem.carb_g - (Number(replaced.carb_g) || 0));
+    let starchFatLost = 0;
     if (excessCarbs > 0) {
       let starchIndex = -1;
       let starchCarbs = 0;
@@ -354,7 +359,46 @@ export function ensureLegumeForNoAnimalProtein(meals = [], allergenContext = {})
         const carbPerGram = (Number(starch.carb_g) || 0) / Math.max(1, Number(starch.portion_g) || 1);
         if (carbPerGram > 0) {
           const cutGrams = Math.min(Math.max(0, Number(starch.portion_g) - 50), excessCarbs / carbPerGram);
-          if (cutGrams >= 1) items[starchIndex] = withRescaledItem(starch, Number(starch.portion_g) - cutGrams);
+          if (cutGrams >= 1) {
+            const starchFatBefore = Number(starch.fat_g) || 0;
+            items[starchIndex] = withRescaledItem(starch, Number(starch.portion_g) - cutGrams);
+            starchFatLost = starchFatBefore - (Number(items[starchIndex].fat_g) || 0);
+          }
+        }
+      }
+    }
+    // The stew is far leaner than the egg or dairy it replaces, so the
+    // swap loses fat the starch cut cannot return: the day reconciliation
+    // after this pass only fixes calories, and fixes them with starch, so
+    // without this the meal lands on its calories with the fat short and
+    // the carbs over. Return the lost fat here, as olive oil in this same
+    // meal — the same rule a leaner protein swap already follows (at
+    // least 4 g lost, at most 15 g of oil), and never above the per-meal
+    // oil cap, so a meal that already carries oil is topped up, not
+    // flooded.
+    const fatLost = (Number(replaced.fat_g) || 0) - stewItem.fat_g + starchFatLost;
+    if (fatLost >= 4) {
+      const existingOil = items.find((item) => item.food_code === OLIVE_OIL);
+      const existingOilGrams = existingOil ? Number(existingOil.portion_g) || 0 : 0;
+      const oilToAdd = Math.min(MAX_SWAP_OIL_ADDITION_G, Math.round(fatLost), Math.max(0, MAX_OIL_PER_MEAL_G - existingOilGrams));
+      if (oilToAdd >= 1) {
+        if (existingOil) {
+          items[items.indexOf(existingOil)] = withRescaledItem(existingOil, existingOilGrams + oilToAdd);
+        } else {
+          const oilFood = FOOD_SWAP_DATABASE[OLIVE_OIL];
+          items.push({
+            food_code: OLIVE_OIL,
+            name_ar: oilFood?.name_ar || "زيت زيتون بكر ممتاز",
+            name_en: oilFood?.name_en || "Extra Virgin Olive Oil",
+            category: "FATS",
+            portion_g: oilToAdd,
+            household_measurement: `${oilToAdd} جم`,
+            protein_g: 0,
+            carb_g: 0,
+            fat_g: oilToAdd,
+            calories_kcal: oilToAdd * 9,
+            swaps: [],
+          });
         }
       }
     }
