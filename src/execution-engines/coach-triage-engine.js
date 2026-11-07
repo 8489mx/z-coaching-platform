@@ -351,6 +351,13 @@ export function classifyFollowUp(signals) {
     signals.biofeedback_without_level === true ||
     analysis.biofeedback_without_level === true;
 
+  // B2-3 (Batch 4): nutrition adherence reported without a level is
+  // unknown — YELLOW, never GREEN. Detected from the evaluation output
+  // flag (same gap #19 / P0-A12 pattern as biofeedback_without_level).
+  const adherenceWithoutLevel =
+    signals.adherence_without_level === true ||
+    analysis.adherence_without_level === true;
+
   const alerts = Array.isArray(analysis.biofeedback_alerts)
     ? analysis.biofeedback_alerts
     : [];
@@ -519,6 +526,7 @@ export function classifyFollowUp(signals) {
     max_pain_level: maxPainLevel,
     pain_without_level: painWithoutLevel,
     biofeedback_without_level: biofeedbackWithoutLevel,
+    adherence_without_level: adherenceWithoutLevel,
     clinical_lockout_locked: lockoutLocked,
     clinical_lockout_unknown: lockoutUnknown,
     medical_review_required: medicalReview,
@@ -578,6 +586,14 @@ export function classifyFollowUp(signals) {
       reason(
         "BIOFEEDBACK_WITHOUT_LEVEL",
         "تم الإبلاغ عن متابعة من غير تحديد مستويات الطاقة أو النوم أو الجوع؛ المؤشرات غير معروفة فالحالة تحتاج مراجعة الكوتش، ولا تصنيف أخضر قبل تحديدها.",
+      ),
+    );
+  }
+  if (adherenceWithoutLevel) {
+    reasons.push(
+      reason(
+        "ADHERENCE_WITHOUT_LEVEL",
+        "تم الإبلاغ عن متابعة من غير تحديد نسبة الالتزام بالدايت؛ النسبة غير معروفة فالحالة تحتاج مراجعة الكوتش، ولا تصنيف أخضر قبل تحديدها.",
       ),
     );
   }

@@ -36,7 +36,11 @@ const CheckinSubmission = sequelize.define(
     },
     nutrition_adherence_percent: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      // B2-3 (Batch 4): null means "not chosen" — the client did not pick
+      // an adherence level. Legacy writers that omit the key still get
+      // the 100 default; the controller always passes an explicit
+      // number-or-null.
+      allowNull: true,
       defaultValue: 100,
     },
     workouts_completed: {

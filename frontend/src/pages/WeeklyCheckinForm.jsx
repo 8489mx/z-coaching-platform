@@ -69,7 +69,12 @@ export default function WeeklyCheckinForm() {
     pain_level: null,
     average_daily_calories: '',
     waist_circumference_cm: '',
-    nutrition_adherence_percent: 100,
+    // B2-3 (Batch 4, gap #19 pattern): no default level. A slider
+    // sitting at 100 reported adherence the client never chose, and the
+    // server read it as a real perfect week. null means "not chosen":
+    // the report goes out with null and the server maps it to coach
+    // review, never GREEN.
+    nutrition_adherence_percent: null,
     workouts_completed: 4,
     // Gap #19 (Batch 1, P0-A12 pattern): no default levels. Sliders
     // sitting at 7/7/5 reported biofeedback the client never chose, and
@@ -215,9 +220,11 @@ export default function WeeklyCheckinForm() {
         return;
       }
 
-      // Nutrition adherence validation
-      const parsedAdherence = Number(formData.nutrition_adherence_percent);
-      if (isNaN(parsedAdherence) || parsedAdherence < 0 || parsedAdherence > 100) {
+      // Nutrition adherence validation — skipped when null: B2-3, null
+      // means "not chosen", and Number(null) is 0, which would pass
+      // today but must not validate a null as 0%.
+      const parsedAdherence = formData.nutrition_adherence_percent == null ? null : Number(formData.nutrition_adherence_percent);
+      if (parsedAdherence !== null && (isNaN(parsedAdherence) || parsedAdherence < 0 || parsedAdherence > 100)) {
         setError('نسبة الالتزام بالدايت يجب أن تكون بين 0% و 100%');
         setIsSubmitting(false);
         return;
@@ -249,7 +256,7 @@ export default function WeeklyCheckinForm() {
         ...(dailyWeightsComplete ? { daily_weights_kg: formData.daily_weights.map((w) => Number(cleanArabicNumStr(w))) } : {}),
         ...(formData.average_daily_calories ? { average_daily_calories: Number(cleanArabicNumStr(formData.average_daily_calories)) } : {}),
         waist_circumference_cm: formData.waist_circumference_cm ? Number(cleanArabicNumStr(formData.waist_circumference_cm)) : null,
-        nutrition_adherence_percent: Number(formData.nutrition_adherence_percent),
+        nutrition_adherence_percent: biofeedbackOrNull(formData.nutrition_adherence_percent),
         workouts_completed: Number(formData.workouts_completed),
         // The sliders below are 1-10; the server converts them to the engine's 1-5 scale.
         biofeedback_scale: 10,
@@ -550,14 +557,14 @@ export default function WeeklyCheckinForm() {
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
                   <span style={{ color: '#0F172A' }}>نسبة الالتزام بالدايت والماكروز</span>
-                  <strong style={{ color: '#16A34A', fontFamily: 'JetBrains Mono' }}>{formData.nutrition_adherence_percent}%</strong>
+                  <strong style={{ color: '#16A34A', fontFamily: 'JetBrains Mono' }}>{formData.nutrition_adherence_percent === null ? 'غير محدد — حرّك المؤشر لاختيار القيمة' : `${formData.nutrition_adherence_percent}%`}</strong>
                 </div>
                 <input 
                   type="range" 
                   min="0" 
                   max="100" 
                   step="5" 
-                  value={formData.nutrition_adherence_percent} 
+                  value={formData.nutrition_adherence_percent ?? 0} 
                   onChange={(e) => setFormData({...formData, nutrition_adherence_percent: Number(e.target.value)})} 
                   style={{ width: '100%', accentColor: '#16A34A', cursor: 'pointer' }} 
                 />
@@ -1378,7 +1385,7 @@ export default function WeeklyCheckinForm() {
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#64748B' }}>نسبة الالتزام بالدايت:</span>
-                <strong style={{ color: '#16A34A' }}>{formData.nutrition_adherence_percent}%</strong>
+                <strong style={{ color: '#16A34A' }}>{formData.nutrition_adherence_percent === null ? 'غير محدد' : `${formData.nutrition_adherence_percent}%`}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#64748B' }}>جلسات التمرين المنجزة:</span>
@@ -1417,7 +1424,7 @@ export default function WeeklyCheckinForm() {
             {/* Actions Grid */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '400px', marginTop: '6px' }}>
               <a 
-                href={`https://wa.me/${coachWhatsApp}?text=${encodeURIComponent(`كابتن، قمت بإرسال تقييم المتابعة الأسبوعية.\nالوزن الحالي: ${formData.weight_kg} كجم\nالالتزام بالدايت: ${formData.nutrition_adherence_percent}%\nجلسات التمرين: ${formData.workouts_completed} أيام`)}`}
+                href={`https://wa.me/${coachWhatsApp}?text=${encodeURIComponent(`كابتن، قمت بإرسال تقييم المتابعة الأسبوعية.\nالوزن الحالي: ${formData.weight_kg} كجم\nالالتزام بالدايت: ${formData.nutrition_adherence_percent === null ? 'غير محدد' : `${formData.nutrition_adherence_percent}%`}\nجلسات التمرين: ${formData.workouts_completed} أيام`)}`}
                 target="_blank"
                 rel="noreferrer"
                 style={{

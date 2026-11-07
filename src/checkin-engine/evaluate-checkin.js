@@ -34,7 +34,10 @@ export function evaluateCheckin(submission) {
     previous_waist_circumference_cm = null,
     hip_circumference_cm = null,
     previous_hip_circumference_cm = null,
-    nutrition_adherence_percent = 100,
+    // B2-3 (Batch 4): no default level. The old default (100) silently
+    // treated "the client did not choose" as perfect adherence and
+    // earned a -125 kcal cut with no review. null means "not chosen".
+    nutrition_adherence_percent = null,
     workouts_completed = 0,
     workouts_scheduled = 4,
     // P1-B10: logged sessions for the same week, when the caller counted
@@ -111,7 +114,17 @@ export function evaluateCheckin(submission) {
   const isRapidLoss = Number.isFinite(weightChangePercent) && weightChangePercent < -1.5;
 
   // 3. Adherence Gate Rule (80% threshold)
-  const adherenceTier = nutrition_adherence_percent >= 80 ? AdherenceTier.OPTIMAL : AdherenceTier.LOW;
+  // B2-3 (Batch 4): adherence reported without a level is unknown,
+  // never 100%. A finite number is a known level; null / undefined /
+  // non-finite means the client did not choose, so no tier exists and no
+  // OPTIMAL-gated rule may fire on it. The unknown flag is forced to
+  // coach review just before the return below (gap #19 / P0-A12 pattern).
+  const adherenceIsKnown =
+    typeof nutrition_adherence_percent === "number" && Number.isFinite(nutrition_adherence_percent);
+  const adherenceWithoutLevel = !adherenceIsKnown;
+  const adherenceTier = adherenceIsKnown
+    ? (nutrition_adherence_percent >= 80 ? AdherenceTier.OPTIMAL : AdherenceTier.LOW)
+    : null;
 
   // Gap #19 (Batch 1, P0-A12 pattern): the biofeedback trio (energy /
   // sleep / hunger) may arrive explicitly null — the form asked, the
@@ -466,6 +479,22 @@ export function evaluateCheckin(submission) {
     recommendationsEn.push("Weekly check-in was submitted without energy, sleep, or hunger levels; unknown biofeedback requires coach review before any progression or auto-apply.");
   }
 
+  // B2-3 (Batch 4): nutrition adherence reported without a level is
+  // unknown, never 100%. The form asked, the client did not choose — so
+  // no calorie/carb/steps suggestion may be computed from fabricated
+  // adherence. Like unknown-severity pain and unknown biofeedback, it is
+  // forced to coach review here; triage maps the output flag to YELLOW.
+  // RULE D's +150 rapid-loss suggestion is deliberately zeroed too
+  // ("all suggested deltas 0"); the rapid-loss alert and review remain.
+  if (adherenceWithoutLevel) {
+    suggestedCalorieDelta = 0;
+    suggestedCarbDeltaGrams = 0;
+    suggestedStepsDelta = 0;
+    requiresCoachReview = true;
+    recommendationsAr.push("تم الإبلاغ عن متابعة أسبوعية من غير تحديد نسبة الالتزام بالدايت؛ النسبة غير معروفة، فلا يمكن حساب أي تعديل على السعرات قبل مراجعة الكوتش، والسعرات تظل كما هي.");
+    recommendationsEn.push("Weekly check-in was submitted without a nutrition adherence level; unknown adherence means no calorie adjustment can be computed — calories stay unchanged pending coach review.");
+  }
+
   // P1-B10: logged workouts cross-check the self-report. When the caller
   // counted real sessions for this week and the numbers disagree, the
   // contradiction goes to coach review — the evaluation must not quietly
@@ -500,6 +529,7 @@ export function evaluateCheckin(submission) {
     flagged_pains: Object.freeze(flaggedPains),
     pain_without_level: painWithoutLevel,
     biofeedback_without_level: biofeedbackWithoutLevel,
+    adherence_without_level: adherenceWithoutLevel,
     workout_log_agreement: workoutLogAgreement ? Object.freeze(workoutLogAgreement) : null,
     recommendations_ar: Object.freeze(recommendationsAr),
     recommendations_en: Object.freeze(recommendationsEn),

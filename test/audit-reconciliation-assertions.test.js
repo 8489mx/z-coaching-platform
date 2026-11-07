@@ -105,6 +105,8 @@ test('5. Check-in Time-Series: 3kg/week Rapid Loss Triggers RAPID_LOSS_WARNING a
   const res = evaluateCheckin({
     previous_weight_kg: 85,
     current_weight_kg: 82,
+    // Explicit known-good adherence; omitted adherence is now unknown by design (B4-1).
+    nutrition_adherence_percent: 95,
     adherence_score: 95
   });
   assert.equal(res.analysis_status, CheckinAnalysisStatus.RAPID_LOSS_WARNING);
@@ -116,6 +118,8 @@ test('6. Check-in Time-Series: 4-Week Plateau Triggers PLATEAU_DETECTED and -125
     previous_weight_kg: 92,
     current_weight_kg: 92,
     weight_history: [92, 92, 92, 92],
+    // Explicit known-good adherence; omitted adherence is now unknown by design (B4-1).
+    nutrition_adherence_percent: 95,
     adherence_score: 95
   });
   assert.equal(res.analysis_status, CheckinAnalysisStatus.PLATEAU_DETECTED);

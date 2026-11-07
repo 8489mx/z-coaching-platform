@@ -20,7 +20,7 @@
  * @property {number} [previous_week_average_weight_kg]
  * @property {number} [waist_circumference_cm]
  * @property {number} [previous_waist_circumference_cm]
- * @property {number} nutrition_adherence_percent - 0 to 100
+ * @property {number|null} nutrition_adherence_percent - 0 to 100; null = not chosen (B2-3)
  * @property {number} workouts_completed - Count of completed sessions
  * @property {number} workouts_scheduled - Count of planned sessions
  * @property {number} [average_daily_steps]
@@ -47,10 +47,11 @@
  * @property {number|null} weight_change_kg
  * @property {number|null} weight_change_percent
  * @property {number|null} waist_change_cm
- * @property {string} adherence_tier
+ * @property {string|null} adherence_tier - OPTIMAL / LOW, or null when adherence is unknown (B2-3)
  * @property {string[]} biofeedback_alerts
  * @property {PainReport[]} flagged_pains
  * @property {boolean} [biofeedback_without_level] - Gap #19: biofeedback trio reported without levels (fail closed to coach review)
+ * @property {boolean} [adherence_without_level] - B2-3: nutrition adherence reported without a level (fail closed to coach review)
  * @property {string[]} recommendations_ar
  * @property {string[]} recommendations_en
  * @property {boolean} requires_coach_review

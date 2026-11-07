@@ -93,7 +93,11 @@ export async function submitCheckin(req, res) {
       weight_kg,
       waist_circumference_cm,
       hip_circumference_cm,
-      nutrition_adherence_percent = 100,
+      // B2-3 (Batch 4): no default level. The old default (100) silently
+      // treated "the client did not choose" as perfect adherence.
+      // null means "not chosen" and flows through as null, never
+      // Number(null) (= 0 → fabricated 0% adherence).
+      nutrition_adherence_percent = null,
       workouts_completed = 0,
       workouts_scheduled = 4,
       biofeedback = {},
@@ -319,7 +323,9 @@ export async function submitCheckin(req, res) {
       waist_circumference_cm: waist_circumference_cm ? Number(waist_circumference_cm) : null,
       previous_waist_circumference_cm: prevWaist,
       hip_circumference_cm: hip_circumference_cm ? Number(hip_circumference_cm) : null,
-      nutrition_adherence_percent: Number(nutrition_adherence_percent),
+      // B2-3: null passes through — Number(null) is 0, which would
+      // fabricate 0% adherence. The engine reads null as "not chosen".
+      nutrition_adherence_percent: nutrition_adherence_percent == null ? null : Number(nutrition_adherence_percent),
       workouts_completed: Number(workouts_completed),
       workouts_scheduled: Number(workouts_scheduled),
       biofeedback: {
@@ -384,7 +390,9 @@ export async function submitCheckin(req, res) {
         {
           week_number: targetWeekNumber,
           average_weight_kg: weeklyWeight,
-          adherence_percent: Number(nutrition_adherence_percent),
+          // B2-3: null passes through (see evalInput) — a 0 here would
+          // mark the week low-adherence instead of unknown.
+          adherence_percent: nutrition_adherence_percent == null ? null : Number(nutrition_adherence_percent),
           planned_target_kcal: planTargetKcal,
           reported_intake_kcal: reportedIntakeKcal,
         },
@@ -480,7 +488,9 @@ export async function submitCheckin(req, res) {
       average_weight_kg: weeklyWeight,
       weight_change_kg: analysisOutput.weight_change_kg,
       waist_circumference_cm: waist_circumference_cm ? Number(waist_circumference_cm) : null,
-      nutrition_adherence_percent: Number(nutrition_adherence_percent),
+      // B2-3: null passes through and is stored as NULL (model allows it
+      // now) — omitting the key would store the fabricated default 100.
+      nutrition_adherence_percent: nutrition_adherence_percent == null ? null : Number(nutrition_adherence_percent),
       workouts_completed: Number(workouts_completed),
       workouts_scheduled: Number(workouts_scheduled),
       biofeedback: evalInput.biofeedback,
@@ -553,7 +563,9 @@ export async function submitCheckin(req, res) {
       const shadowTriage = classifyFollowUp({
         analysis_status: analysisOutput.analysis_status,
         analysis: analysisOutput,
-        adherence_percent: Number(nutrition_adherence_percent),
+        // B2-3: null passes through — a 0 in the triage echo would
+        // fabricate 0% adherence.
+        adherence_percent: nutrition_adherence_percent == null ? null : Number(nutrition_adherence_percent),
         weight_change_percent: analysisOutput.weight_change_percent,
         max_pain_level: maxPainLevel,
         flagged_pains: evalInput.pain_reports,
@@ -685,7 +697,8 @@ export async function submitCheckin(req, res) {
           const recheckedTriage = classifyFollowUp({
             analysis_status: analysisOutput.analysis_status,
             analysis: analysisOutput,
-            adherence_percent: Number(nutrition_adherence_percent),
+            // B2-3: null passes through (see shadow triage above).
+            adherence_percent: nutrition_adherence_percent == null ? null : Number(nutrition_adherence_percent),
             weight_change_percent: analysisOutput.weight_change_percent,
             max_pain_level: maxPainLevel,
             flagged_pains: evalInput.pain_reports,
@@ -1029,6 +1042,10 @@ export async function updateCheckinMeasurements(req, res) {
         analysisObj.suggested_steps_delta = reevaluated.suggested_steps_delta;
         analysisObj.biofeedback_alerts = reevaluated.biofeedback_alerts;
         analysisObj.flagged_pains = reevaluated.flagged_pains;
+        // B2-3: keep the unknown-adherence flag visible after a
+        // correction (same display-fidelity gap as biofeedback_without_level
+        // today — not safety: review is forced and deltas are 0 anyway).
+        analysisObj.adherence_without_level = reevaluated.adherence_without_level;
         analysisObj.recommendations_ar = reevaluated.recommendations_ar;
         analysisObj.recommendations_en = reevaluated.recommendations_en;
         analysisObj.training_locked = reevaluated.training_locked;
