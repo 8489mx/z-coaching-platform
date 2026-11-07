@@ -1,12 +1,27 @@
 import { trainingAgePolicy, trainingAgeForExperience } from "./training-age.js";
 import { buildTrainingEngine } from "../training-engine/index.js";
 import { getExerciseV2ByCode } from "../exercise-catalog-v2/index.js";
+import { getExerciseByCode } from "../exercise-catalog/exercise-catalog.js";
 import { EXERCISE_CATALOG_V2 } from "../exercise-catalog-v2/exercise-catalog-v2.js";
 
 // The catalog records one piece of equipment per exercise. These are done just as well with any of
 // several ("Cable / DB Rotator Cuff External Rotation"): a band or a light dumbbell at home.
 const ANY_OF_EQUIPMENT = Object.freeze({
   ROTATOR_CUFF_EXTERNAL_ROTATION: ["CABLE_STATION", "DUMBBELLS", "RESISTANCE_BANDS"],
+});
+
+// B6-2: codes the templates / V1 engine can serve that are in NEITHER catalog
+// with an equipment-neutral name, so neither the V2 record nor the name can
+// state what they need. The requirement is definitional (the exercise IS the
+// machine): a lat pulldown station is a selectorized machine (the V1
+// CABLE_STATION label is the narrower/older vocabulary — a machines-only
+// client keeps LAT_PULLDOWN), a seated leg curl is done on a leg-curl machine,
+// a chest-supported row on a supported-row machine. A bodyweight-only client
+// (empty declared set) must never be served one.
+const MACHINE_ONLY_EQUIPMENT = Object.freeze({
+  LAT_PULLDOWN: ["SELECTORIZED_MACHINES"],
+  SEATED_LEG_CURL: ["SELECTORIZED_MACHINES"],
+  CHEST_SUPPORTED_ROW: ["SELECTORIZED_MACHINES"],
 });
 
 /** Equipment the exercise code's own name implies (DUMBBELL_*, BARBELL_*, ...). */
@@ -25,9 +40,21 @@ function equipmentNamedByCode(code) {
 function exerciseFitsEquipment(code, available) {
   if (!available) return true;
   if (ANY_OF_EQUIPMENT[code]) return ANY_OF_EQUIPMENT[code].some((item) => available.has(item));
+  // B6-2: codes with no record anywhere whose requirement is definitional
+  // (the exercise IS the machine). Checked before the V1 fallback so
+  // LAT_PULLDOWN is covered by SELECTORIZED_MACHINES, not by the V1
+  // CABLE_STATION label (a machines-only client keeps it).
+  if (MACHINE_ONLY_EQUIPMENT[code]) return MACHINE_ONLY_EQUIPMENT[code].every((item) => available.has(item));
   const record = getExerciseV2ByCode(code);
   if (record) {
     if (!(record.equipment_requirements || []).every((req) => available.has(String(req.equipment_code).toUpperCase()))) return false;
+  } else {
+    // B6-2: V1 fallback — a V1 passthrough code with no V2 record must still
+    // honour the equipment its V1 record states, instead of passing every
+    // declared set because neither the record nor the name names any
+    // equipment. The V2 record stays authoritative when one exists.
+    const v1Record = getExerciseByCode(code);
+    if (v1Record && !(v1Record.equipment_requirements || []).every((req) => available.has(String(req.equipment_code).toUpperCase()))) return false;
   }
   // The code name is what the client sees ("Dumbbell Calf Raise"): a V1 passthrough code
   // whose catalog alias understates its equipment (DUMBBELL_CALF_RAISE resolves to the
