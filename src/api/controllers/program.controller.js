@@ -1139,6 +1139,24 @@ export async function resolvePublishMedicalReview(userId) {
 }
 
 /**
+ * Gap #11: a client must have exactly one ACTIVE program. Whenever a program
+ * becomes ACTIVE (a next cycle auto-publishes, or the coach publishes a
+ * draft), every other ACTIVE program for the same client is archived in the
+ * same operation, so no reader can ever see two live plans. A draft never
+ * archives anything: the old plan stays live until the draft is published.
+ * ARCHIVED is the third status in the Program model (DRAFT | ACTIVE |
+ * ARCHIVED). No transaction is introduced: this file uses sequential awaits
+ * throughout, and the archive runs in the same handler right after the write
+ * that makes the new program ACTIVE.
+ */
+async function archiveSupersededActivePrograms(userId, keepProgramId) {
+  await Program.update(
+    { status: "ARCHIVED" },
+    { where: { user_id: userId, status: "ACTIVE", id: { [Op.ne]: keepProgramId } } },
+  );
+}
+
+/**
  * POST /api/v1/programs/next-cycle: prepare the client's next training cycle from the one they just
  * finished — same exercises, starting weights taken from their own logs — and save it as a draft.
  * It is never published here: the coach opens it, deals with anything flagged, and publishes.
@@ -1208,6 +1226,13 @@ export const prepareNextCycle = async (req, res) => {
       program_data,
       status: decision.allowed ? "ACTIVE" : "DRAFT",
     });
+
+    // Gap #11: an auto-published cycle must not leave the previous cycle
+    // ACTIVE beside it. A draft archives nothing — the old plan stays live
+    // until the coach publishes the draft (see updateCustomProgram).
+    if (decision.allowed) {
+      await archiveSupersededActivePrograms(user.id, created.id);
+    }
 
     return res.status(201).json({
       message: `${summary.message_ar} ${decision.message_ar}`,
@@ -2364,6 +2389,14 @@ export const updateCustomProgram = async (req, res) => {
         program.version = (Number(program.version) || 1) + 1;
       }
       await program.save();
+
+      // Gap #11: publishing this row must not leave another ACTIVE program
+      // beside it (the usual case is a prepared draft going live while the
+      // previous cycle is still ACTIVE). Re-publishing an already live plan
+      // archives nothing of its own — only other rows are archived.
+      if (shouldPublish) {
+        await archiveSupersededActivePrograms(user.id, program.id);
+      }
     }
 
     // P0-A6: audit a manual macro change (editor and macro calculator
