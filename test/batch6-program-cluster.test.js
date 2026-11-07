@@ -66,7 +66,7 @@ async function seedUser() {
     await Program.destroy({ where: { user_id: user.id } });
     await user.destroy();
   }
-  return User.create({ client_code: CODE, phone_number: "01099000941", full_name: "B6 Cluster", role: "CLIENT", plan_approval_status: "APPROVED" });
+  return User.create({ client_code: CODE, phone_number: "01099000942", full_name: "B6 Cluster", role: "CLIENT", plan_approval_status: "APPROVED" });
 }
 
 async function clientView({ programData, religion, now }) {

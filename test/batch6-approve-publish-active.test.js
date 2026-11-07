@@ -116,7 +116,7 @@ test.after(async () => {
 });
 
 test("approving a new draft while an ACTIVE program exists leaves exactly one ACTIVE program — the old one is archived", async () => {
-  const client = await fresh(CLIENT1, "01099000961");
+  const client = await fresh(CLIENT1, "01099001081");
   try {
     const submission = await IntakeSubmission.create({ user_id: client.id, answers: storedIntake(), status: "PENDING_COACH_REVIEW" });
     const oldProgram = await Program.create({ user_id: client.id, program_data: { cycle_number: 1, nutrition: {} }, status: "ACTIVE" });
@@ -141,7 +141,7 @@ test("approving a new draft while an ACTIVE program exists leaves exactly one AC
 });
 
 test("approving a draft with no ACTIVE program works", async () => {
-  const client = await fresh(CLIENT2, "01099000963");
+  const client = await fresh(CLIENT2, "01099001083");
   try {
     const submission = await IntakeSubmission.create({ user_id: client.id, answers: storedIntake(), status: "PENDING_COACH_REVIEW" });
     const draft = await Program.create({ user_id: client.id, program_data: { cycle_number: 1, nutrition: {} }, status: "DRAFT" });
