@@ -389,8 +389,12 @@ export function ensureLegumeForNoAnimalProtein(meals = [], allergenContext = {})
  * it costs no protein and no carbs. Day macro targets are the sum of the
  * per-meal target_macros already on the meals — no new arguments. A meal
  * without targets falls back to the legacy largest-first order.
+ *
+ * Shared single-target engine: the exported day function below runs this
+ * once for the whole day, and the per-meal pass calls it once per meal
+ * with that meal's own target (same donor machinery, same caps).
  */
-export function reconcileDayCaloriesToTarget(meals = [], targetCalories = 0, toleranceKcal = 30) {
+function reconcileMealsToTarget(meals = [], targetCalories = 0, toleranceKcal = 30) {
   if (!Number.isFinite(targetCalories) || targetCalories <= 0) return meals;
   const served = meals.reduce((sum, meal) => sum + mealCalories(meal), 0);
   const drift = served - targetCalories;
@@ -522,4 +526,44 @@ export function reconcileDayCaloriesToTarget(meals = [], targetCalories = 0, tol
     });
     return changed ? { ...meal, items } : meal;
   });
+}
+
+/**
+ * B4-3 (Option A): the served day must land within 30 kcal of its target —
+ * and so must each meal. The day pass only fires when the DAY drifts
+ * past tolerance, so a single meal can sit 30-40 kcal off its own target
+ * while the day looks fine (C13 m2 -43, C13 m3 +38, C20 m2 +33 on the
+ * 20-client matrix). After the unchanged day pass, each meal carrying its
+ * own target_macros is reconciled to that target when it is further off
+ * than the smaller of 30 kcal and 10% of its target — the same donor
+ * machinery, the same 25% per-item cap and minimums, the meal's own
+ * harm-order ranking. Meals without targets are skipped, and a meal with
+ * no starch/oil donor on the plate is left alone (the snack builder owns
+ * that case: it must not emit a sub-minimum starch in the first place).
+ * The day is re-checked once at the end, and the day pass runs once more
+ * only if the per-meal moves pushed the day itself past tolerance.
+ * Disclosed trade-off: a top-up adds the donor's macros with its kcal —
+ * C13 m2 has no fat donor, so its top-up adds ~+8 g carbs to a meal
+ * already over its carb target. Measured on the matrix, the day effect
+ * is small, not the feared one: m3's bread shave takes ~-7 g carbs back,
+ * so C13 day carbs move only +20.3 -> +20.5. The systematic fat
+ * shortfall behind it is a separate package (pipeline portion solver).
+ */
+export function reconcileDayCaloriesToTarget(meals = [], targetCalories = 0, toleranceKcal = 30) {
+  if (!Number.isFinite(targetCalories) || targetCalories <= 0) return meals;
+  let result = reconcileMealsToTarget(meals, targetCalories, toleranceKcal);
+  const perMeal = result.map((meal) => {
+    const target = meal?.target_macros || null;
+    const kcalTarget = target ? Number(target.calories_kcal) : NaN;
+    if (!Number.isFinite(kcalTarget) || kcalTarget <= 0) return meal;
+    const drift = mealCalories(meal) - kcalTarget;
+    if (Math.abs(drift) <= Math.min(30, kcalTarget * 0.1)) return meal;
+    return reconcileMealsToTarget([meal], kcalTarget, 0)[0];
+  });
+  if (perMeal.some((meal, index) => meal !== result[index])) result = perMeal;
+  const dayAfter = result.reduce((sum, meal) => sum + mealCalories(meal), 0);
+  if (Math.abs(dayAfter - targetCalories) > toleranceKcal) {
+    result = reconcileMealsToTarget(result, targetCalories, toleranceKcal);
+  }
+  return result;
 }

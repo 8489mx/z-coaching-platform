@@ -4264,8 +4264,9 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
           ? Math.round((Math.round((Math.max(0, remP - yogurtProtein) / secondFood.protein_per_100g) * 100) * secondFood.fat_per_100g) / 100)
           : 0;
         const proteinFoodsFatBeforeSecond = yogurtFat + chickenFat + secondFatEst;
-        const nutGrams = nutFood ? Math.min(SNACK_NUT_MAX_G, Math.round((Math.max(0, targetF - proteinFoodsFatBeforeSecond) / nutFood.fat_per_100g) * 100)) : 0;
-        const nutMacros = nutGrams > 0 ? {
+        // B4-3 (B1): let — the sweet-potato minimum below may trim the nuts.
+        let nutGrams = nutFood ? Math.min(SNACK_NUT_MAX_G, Math.round((Math.max(0, targetF - proteinFoodsFatBeforeSecond) / nutFood.fat_per_100g) * 100)) : 0;
+        let nutMacros = nutGrams > 0 ? {
           protein_g: Math.round((nutGrams * nutFood.protein_per_100g) / 100),
           carb_g: Math.round((nutGrams * nutFood.carb_per_100g) / 100),
           fat_g: Math.round((nutGrams * nutFood.fat_per_100g) / 100),
@@ -4288,21 +4289,100 @@ export function buildCulinaryRecipeMeals(universalTargets, canonicalIntake = {},
         const proteinFoodsCarb = yogurtCarb + secondCarb;
         const remC = Math.max(0, targetC - nutMacros.carb_g - proteinFoodsCarb);
         const sweetPotatoGrams = Math.round(remC / (sweetPotatoEntry.carb_per_100g / 100));
-        const sweetPotatoFat = Math.round((sweetPotatoGrams * sweetPotatoEntry.fat_per_100g) / 100);
+        let sweetPotatoFat = Math.round((sweetPotatoGrams * sweetPotatoEntry.fat_per_100g) / 100);
 
-        if (sweetPotatoGrams > 0) {
+        // B4-3 (B1) rebalance rule, stated before the edit: a sweet potato
+        // below the 50 g real-portion minimum is a token — dropTokenPortions
+        // deletes it and the snack loses the whole potato (~35 kcal: C07/C19/
+        // C09 m4 -35/-34/-29). Size it to 50 g and take the extra kcal from
+        // the NUTS (primary): nutCutG = round(extraKcal / nutKcalPerGram),
+        // capped at the nuts on the plate, nutMacros recomputed from the
+        // new grams. The oil top-up for the fat the nuts no longer carry is
+        // 1-2 g, itself a token dropped by dropTokenPortions, so the cut
+        // stands. Fallback when the snack has no nuts: cut the YOGURT
+        // instead (same math, floor 50 g yogurt). A sub-kcal extra (potato
+        // 45-49 g) still resizes when a rebalance source exists. The 50 g
+        // minimum itself (MIN_REAL_PORTION_G) is never lowered. All potato
+        // macro fields are recomputed from 50 g — the old code set carb_g
+        // to remC, which would understate the carbs by ~2 g after resizing.
+        //
+        // CARB GATE (found by the matrix re-run): the resize is only safe
+        // when the resized snack's carbs stay inside the trim's tolerance.
+        // trimMealsToTarget cuts a CARBS donor when the meal's carbs sit
+        // >= TRIM_ROUNDING_G (3 g) over target, and the potato is the
+        // snack's only CARBS donor — so a resize that leaves the snack
+        // 3+ g over its carb target gets cut back to ~35 g and deleted
+        // as a token, while the nut cut stands: C09 went -29 -> -55.
+        // C09's snack carb target is 15 g and the yogurt alone carries
+        // 7 g, so a 50 g potato (10 g carbs) can never fit there — that
+        // is a portion-solver/meal-distribution question for batch 5,
+        // not a snack-builder one. When the gate blocks, the potato AND
+        // the nuts stay exactly as the builder sized them (no regression:
+        // C09 stays -29, its base value).
+        let potatoGrams = sweetPotatoGrams;
+        let potatoCarbG = remC;
+        if (sweetPotatoGrams > 0 && sweetPotatoGrams < 50) {
+          const extraKcal = (50 - sweetPotatoGrams) * (sweetPotatoEntry.kcal_per_100g / 100);
+          const nutKcalPerG = (nutFood?.kcal_per_100g || 0) / 100;
+          const potatoCarbG50 = Math.round((50 * sweetPotatoEntry.carb_per_100g) / 100);
+          // Tentative rebalance: work out the post-cut values first, then
+          // check the carb gate before mutating anything.
+          let newNutGrams = nutGrams;
+          let newNutMacros = nutMacros;
+          let newYogurtGrams = yogurtGrams;
+          let newYogurtProtein = yogurtProtein;
+          let newYogurtCarb = yogurtCarb;
+          let newYogurtFat = yogurtFat;
+          let rebalanced = false;
+          if (nutGrams > 0 && nutKcalPerG > 0) {
+            const nutCutG = Math.min(nutGrams, Math.round(extraKcal / nutKcalPerG));
+            newNutGrams = nutGrams - nutCutG;
+            newNutMacros = {
+              protein_g: Math.round((newNutGrams * nutFood.protein_per_100g) / 100),
+              carb_g: Math.round((newNutGrams * nutFood.carb_per_100g) / 100),
+              fat_g: Math.round((newNutGrams * nutFood.fat_per_100g) / 100),
+            };
+            rebalanced = true;
+          } else if (yogurtGrams > 50) {
+            const yogurtCutG = Math.min(
+              yogurtGrams - 50,
+              Math.round(extraKcal / (yogurtEntry.kcal_per_100g / 100)),
+            );
+            newYogurtGrams = yogurtGrams - yogurtCutG;
+            newYogurtProtein = Math.round((newYogurtGrams * yogurtEntry.protein_per_100g) / 100);
+            newYogurtCarb = Math.round((newYogurtGrams * yogurtEntry.carb_per_100g) / 100);
+            newYogurtFat = Math.round((newYogurtGrams * yogurtEntry.fat_per_100g) / 100);
+            rebalanced = true;
+          }
+          if (rebalanced) {
+            const postResizeCarbs = newYogurtCarb + secondCarb + newNutMacros.carb_g + potatoCarbG50;
+            if (Math.round(postResizeCarbs - targetC) < 3) {
+              nutGrams = newNutGrams;
+              nutMacros = newNutMacros;
+              yogurtGrams = newYogurtGrams;
+              yogurtProtein = newYogurtProtein;
+              yogurtCarb = newYogurtCarb;
+              yogurtFat = newYogurtFat;
+              potatoGrams = 50;
+              potatoCarbG = potatoCarbG50;
+              sweetPotatoFat = Math.round((50 * sweetPotatoEntry.fat_per_100g) / 100);
+            }
+          }
+        }
+
+        if (potatoGrams > 0) {
           items.push({
             food_code: "SWEET_POTATO",
             name_ar: "بطاطا حلوة مشوية مع نصف تفاحة طازجة",
             name_en: "Baked Sweet Potato & Apple",
             category: "CARBS",
-            portion_g: sweetPotatoGrams,
-            household_measurement: `${sweetPotatoGrams} جم مشوية`,
-            protein_g: Math.round(sweetPotatoGrams * (sweetPotatoEntry.protein_per_100g / 100)),
-            carb_g: remC,
+            portion_g: potatoGrams,
+            household_measurement: `${potatoGrams} جم مشوية`,
+            protein_g: Math.round(potatoGrams * (sweetPotatoEntry.protein_per_100g / 100)),
+            carb_g: potatoCarbG,
             fat_g: sweetPotatoFat,
-            calories_kcal: Math.round((sweetPotatoGrams * sweetPotatoEntry.kcal_per_100g) / 100),
-            swaps: generateSmartSwaps("CARBS", sweetPotatoGrams, "SWEET_POTATO", "SNACK", 5, allergenContext),
+            calories_kcal: Math.round((potatoGrams * sweetPotatoEntry.kcal_per_100g) / 100),
+            swaps: generateSmartSwaps("CARBS", potatoGrams, "SWEET_POTATO", "SNACK", 5, allergenContext),
           });
         }
 
