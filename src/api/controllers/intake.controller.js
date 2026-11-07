@@ -7,7 +7,7 @@ import { adaptIntakePayloadToCanonicalEngine } from "../../intake-decision-engin
 import { resolveDailySteps, stepsActivityFactor } from "../../steps-source/resolve-daily-steps.js";
 import { IntakeValidationError } from "../../intake-decision-engine/validation/intake-validation-error.js";
 import { buildMasterEngineV2 } from "../../../src/master-engine-v2/index.js";
-import { resolvePublishMedicalReview, MEDICAL_REVIEW_CONFIRMATION_REQUIRED, resolveCountryFromPhone } from "./program.controller.js";
+import { resolvePublishMedicalReview, MEDICAL_REVIEW_CONFIRMATION_REQUIRED, resolveCountryFromPhone, archiveSupersededActivePrograms } from "./program.controller.js";
 import { User, Program, IntakeSubmission } from "../models/index.js";
 import { startCycleOnPublish } from "../services/trainingCycleService.js";
 import { encryptMedicalData, decryptMedicalData } from "../../utils/crypto.js";
@@ -727,6 +727,14 @@ export const approveAndPublishIntake = async (req, res) => {
       program.changed('program_data', true);
     }
     await program.save();
+
+    // Gap #7 (B6-3): publishing this row must not leave another ACTIVE program
+    // beside it (the usual case is a new draft going live while the previous
+    // plan is still ACTIVE). The existing-row republish path in
+    // updateCustomProgram keeps the same archive call for its status flip;
+    // this path is the same shape (status flip + save), not a create, so it
+    // uses the shared helper directly instead of createProgramRow.
+    await archiveSupersededActivePrograms(submission.user_id, program.id);
 
     submission.status = "APPROVED";
     submission.coach_notes = coach_notes || "تم اعتماد وتفعيل الخطة من قبل الكابتن";

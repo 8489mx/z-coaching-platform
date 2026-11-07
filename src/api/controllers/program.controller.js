@@ -1152,7 +1152,7 @@ export async function resolvePublishMedicalReview(userId) {
  * throughout, and the archive runs in the same handler right after the write
  * that makes the new program ACTIVE.
  */
-async function archiveSupersededActivePrograms(userId, keepProgramId) {
+export async function archiveSupersededActivePrograms(userId, keepProgramId) {
   await Program.update(
     { status: "ARCHIVED" },
     { where: { user_id: userId, status: "ACTIVE", id: { [Op.ne]: keepProgramId } } },
