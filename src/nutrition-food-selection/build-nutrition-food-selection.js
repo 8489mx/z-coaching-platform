@@ -553,8 +553,13 @@ function compareFoodsByPriority(left, right, patternCode) {
 
 // Swap group that holds the starches suited to breakfast (and light snacks).
 // Cooked lunch/dinner starches (rice, potato, pasta) belong to
-// COOKED_STARCHES and must never fill a breakfast or snack carbohydrate slot.
+// COOKED_STARCHES and must never fill a breakfast or snack carbohydrate slot
+// in the primary pass. The last-resort breakfast fallback in evaluateSlot is
+// the single exception: when exclusions leave a REQUIRED breakfast
+// carbohydrate slot with no breakfast starch at all, a cooked starch may
+// fill it rather than leaving the whole breakfast pattern unselected.
 const BREAKFAST_STARCH_GROUP = "BREAKFAST_STARCHES";
+const COOKED_STARCH_GROUP = "COOKED_STARCHES";
 
 /**
  * Meal-slot food suitability: a carbohydrate slot in a breakfast or snack
@@ -578,6 +583,29 @@ function isSlotSuitable(food, slot, patternCode) {
     return true;
   }
   return group === BREAKFAST_STARCH_GROUP;
+}
+
+/**
+ * Breakfast last-resort suitability: the primary rule above, plus cooked
+ * starches as a fallback. Used ONLY by the breakfast fallback in
+ * evaluateSlot, never by the primary pass, so ordinary breakfasts are
+ * untouched. The same rejection filters still run on every fallback
+ * candidate, so a gluten-tagged cooked starch (pasta) stays rejected for a
+ * gluten-allergic client while untagged rice and potato pass.
+ */
+function isSlotSuitableForBreakfastFallback(food, slot, patternCode) {
+  if (isSlotSuitable(food, slot, patternCode)) {
+    return true;
+  }
+  if (
+    slot.slot === NutritionMealComponentSlot.CARBOHYDRATE_BASE &&
+    patternCode.startsWith("BREAKFAST") &&
+    food.food_class === NutritionFoodClass.STARCH
+  ) {
+    const group = food.swap ? food.swap.group_code : null;
+    return group === COOKED_STARCH_GROUP;
+  }
+  return false;
 }
 
 /**
@@ -823,7 +851,12 @@ function evaluateSlot({
     }
   }
 
-  // Intelligent fallback for heavy exclusion cases (e.g. eggs+dairy+legumes excluded for breakfast)
+  // Intelligent fallback for heavy exclusion cases (e.g. eggs+dairy+legumes excluded for breakfast).
+  // It also relaxes breakfast starch suitability: when no breakfast starch
+  // survived exclusions, a cooked starch (rice, potato) may fill a REQUIRED
+  // breakfast carbohydrate slot rather than leaving the pattern unselected.
+  // The rejection filters below still run, so a gluten-tagged cooked starch
+  // (pasta) stays rejected for a gluten-allergic client.
   if (
     eligibleFoods.length < slot.min_items &&
     slot.requirement === NutritionComponentRequirement.REQUIRED &&
@@ -833,7 +866,7 @@ function evaluateSlot({
     const fallbackUniverse = catalogItems.filter(
       (food) =>
         slot.allowed_food_classes.includes(food.food_class) &&
-        isSlotSuitable(food, slot, patternCode) &&
+        isSlotSuitableForBreakfastFallback(food, slot, patternCode) &&
         !localSelected.has(food.food_code) &&
         !candidateCodes.has(food.food_code),
     );
