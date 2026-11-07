@@ -1527,12 +1527,26 @@ export function buildMasterEngineV2(inputs) {
   // run before session enrichment); it changes no stored output.
   const mobilityPrescriptionStatus = buildMobilityEngine(intake_decision, null).prescription?.status;
 
+  // B5-1 (#18 Option A): a regeneration rebuilds the training weeks from
+  // the intake, so the stored check-in fatigue score must be read here —
+  // the canonical preservedAdaptationState below is computed after this
+  // call, so this local read uses the same inputs (same whitelist, same
+  // sanitizer) and yields the same fatigue value. Regen only: a first
+  // plan carries no adaptation state, so nothing new is passed and week 5
+  // stays heuristic by design. Fatigue only: no recoveryScore /
+  // performanceTrend / dataQuality value exists in the check-in path to
+  // store, so those stay null as today.
+  const regenAdaptationState = readAdaptationState({
+    adaptation_state: options.adaptation_state ?? options.previous_program?.adaptation_state ?? null,
+  });
+
   // 2. Training Engine V2 (Multi-Week Meso-Cycle Periodization)
   const training_mesocycle = buildTrainingMesoCycle(intake_decision, {
     weeksCount: options.weeksCount || 5,
     muscleBias: options.muscleBias || resolveFocusMuscleBias(effectiveIntake, canonicalIntake),
     rawIntake: canonicalIntake,
     experience: canonicalIntake.training?.experience,
+    fatigueScore: regenAdaptationState.accumulated_fatigue_score ?? options.fatigueScore ?? options.accumulated_fatigue_score,
   });
 
   // Enrich each session with tailored Dynamic Warm-Up & Static Cool-Down protocols

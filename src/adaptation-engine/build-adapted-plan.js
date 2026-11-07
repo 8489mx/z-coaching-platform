@@ -1140,6 +1140,24 @@ export function buildAdaptedPlan(inputs) {
       ),
     };
   }
+  // B5-1 (#18 Option A): store the latest REAL check-in fatigue score in
+  // the adaptation state, so a later regeneration can deload on it. Only a
+  // measured score is stored — never the follow-up-path default (4) from
+  // the deload decision above, which is a fallback, not a measurement. No
+  // max age: the score is by construction the latest check-in's fatigue,
+  // and the only staleness failure mode is a conservative deload (safe) or
+  // a missed deload (status quo, same as today); no timestamp field exists
+  // to enforce an age and any threshold number would be invented. Regen
+  // only: a first plan has no adaptation state, so week 5 stays heuristic
+  // by design. Fatigue only: no recoveryScore / performanceTrend /
+  // dataQuality value exists in the check-in path to store.
+  const measuredFatigueScore = Number(options.accumulated_fatigue_score || checkinAnalysis.fatigue_score);
+  if (Number.isFinite(measuredFatigueScore) && measuredFatigueScore > 0) {
+    nextAdaptationState = {
+      ...nextAdaptationState,
+      accumulated_fatigue_score: measuredFatigueScore,
+    };
+  }
   // H1 (CB1): a compliant deficit week after a break counts toward the
   // fresh streak a new break needs.
   if (!dietBreakWeek && nextAdaptationState.diet_break.status === "COMPLETED" && consecutiveHighComplianceWeeks >= 1) {

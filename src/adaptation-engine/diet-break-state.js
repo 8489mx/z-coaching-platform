@@ -93,6 +93,13 @@ export function readAdaptationState(program = {}) {
     formula_calories_at_adaptation_kcal: finiteOrNull(state.formula_calories_at_adaptation_kcal),
     calorie_offset_kcal: Number.isFinite(Number(state.calorie_offset_kcal)) ? Number(state.calorie_offset_kcal) : 0,
     coach_step_target: finiteOrNull(state.coach_step_target),
+    // B5-1 (#18 Option A): the latest measured check-in fatigue score,
+    // stored by the adaptation engine so a regeneration can deload on it.
+    // A missing score reads as null and falls through to the experience
+    // heuristic, exactly as before. (finiteOrNull maps 0 to null, same as
+    // the other fields; a 0 behaves exactly as absent in the mesocycle,
+    // since 0 >= 7 is false, so nothing is lost.)
+    accumulated_fatigue_score: finiteOrNull(state.accumulated_fatigue_score),
   };
 }
 
