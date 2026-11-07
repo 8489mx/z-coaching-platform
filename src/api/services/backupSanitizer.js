@@ -87,6 +87,13 @@ function stripProgramHealth(row) {
       for (const key of PROGRAM_CLIENT_HEALTH_KEYS) delete cloned.client[key];
     }
     delete cloned.medical_review_confirmation;
+    // B3-3 (#28): published programs carry free-text coach notes at the top
+    // level of program_data (program.controller.js writes coach_notes on
+    // approve/publish and preserves it across saves). Coach notes can carry
+    // clinical content, so they must never reach a backup. `notes` is the
+    // same class of field (free-text notes on the program row).
+    delete cloned.coach_notes;
+    delete cloned.notes;
     copy.program_data = cloned;
   }
   return copy;
