@@ -608,6 +608,41 @@ function servedCulinaryMeals(programData = {}) {
 }
 
 /**
+ * B6-4 (#9): normalise served culinary meals to the display shape the
+ * fasting pipeline and the phone contract expect (meal id/title/items with
+ * code, name, amount in grams, p/c/f/cal). The culinary item fields are
+ * aliased, never renamed away: the original object is spread first, so
+ * swaps, household measurements and macro totals stay readable downstream.
+ * A culinary meal carries no clock time, so `time` stays null instead of
+ * an invented hour. Meal order is the stored order (meal_number).
+ */
+function normalizeCulinaryMealsForDisplay(culinaryMeals = []) {
+  if (!Array.isArray(culinaryMeals)) return [];
+  return culinaryMeals.map((meal, idx) => {
+    const mealNumber = meal?.meal_number || idx + 1;
+    return {
+      ...meal,
+      id: meal?.id || `m${mealNumber}`,
+      title: meal?.meal_name_ar || meal?.recipe_title_ar || meal?.title || meal?.name || `الوجبة ${mealNumber}`,
+      time: meal?.timing || meal?.time || null,
+      items: (meal?.items || []).map((item, itemIdx) => ({
+        ...item,
+        id: item?.id || `i_${mealNumber}_${itemIdx + 1}`,
+        code: item?.food_code || item?.code,
+        name: item?.name_ar || item?.name || item?.name_en || "صنف غذائي",
+        amount: Number(item?.portion_g ?? item?.amount ?? 100),
+        unit: item?.unit || "جم",
+        p: Number(item?.protein_g ?? item?.p ?? 0),
+        c: Number(item?.carb_g ?? item?.c ?? 0),
+        f: Number(item?.fat_g ?? item?.f ?? 0),
+        cal: Math.round(item?.calories_kcal ?? item?.cal ?? 0),
+        category: item?.category || "MAIN",
+      })),
+    };
+  });
+}
+
+/**
  * P0-A7: the meal as it will actually be eaten must still pass the plate
  * check. After a live swap is computed, the meal that contains the swapped
  * food is rebuilt with the new item and checked intrinsically (targets,
@@ -1600,12 +1635,18 @@ export const getActiveProgramByUserId = async (req, res) => {
 
     const isApproved = program.status === "ACTIVE" || user.plan_approval_status === "APPROVED";
 
-    const targets = program.program_data?.nutrition?.targets || {};
+    // B6-4 (#9): the display reader looked for targets under a top-level
+    // `nutrition` key, which the V2 master engine never writes — every fresh
+    // V2 plan served target_macros all zeros. The file already owns a
+    // V2-aware reader (readProgramMacroTargets: macro_targets first, then
+    // nutrition_program.targets, then the legacy nutrition.targets), so the
+    // display uses it; legacy programs keep serving their stored numbers.
+    const readTargets = readProgramMacroTargets(program.program_data);
     const target_macros = {
-      calories: Number(targets.calories || 0),
-      protein_g: Number(targets.protein || targets.protein_g || 0),
-      carbs_g: Number(targets.carbs || targets.carbs_g || 0),
-      fat_g: Number(targets.fats || targets.fat_g || 0),
+      calories: Number(readTargets.calories || 0),
+      protein_g: Number(readTargets.protein || 0),
+      carbs_g: Number(readTargets.carbs || 0),
+      fat_g: Number(readTargets.fats || 0),
     };
 
     const nowStr = req.query?.now;
@@ -1613,7 +1654,17 @@ export const getActiveProgramByUserId = async (req, res) => {
 
     const fastingContext = await resolveClientFastingContext(user, program.program_data, now);
     const clinicalConstraints = await resolveClientClinicalConstraints(user.id) || {};
-    const meals = annotateServedMealsLogistics(annotateServedMeals(withNoSwapNotes(applyFastingToMeals(program.program_data?.nutrition?.meals || [], fastingContext, clinicalConstraints))));
+    // B6-4 (#9): same key mismatch for meals — the reader took
+    // `nutrition.meals`, which V2 never writes, so client_view.meals was
+    // empty for every V2 plan. The served culinary meals are read first
+    // (servedCulinaryMeals, same helper the preflight/allergy gates use)
+    // and normalised to the display shape the fasting pipeline and the
+    // phone expect; legacy `nutrition.meals` is the fallback for pre-fix
+    // programs. No time is invented: a culinary meal carries no clock time.
+    const displayMeals = servedCulinaryMeals(program.program_data || {}).length > 0
+      ? normalizeCulinaryMealsForDisplay(servedCulinaryMeals(program.program_data || {}))
+      : (program.program_data?.nutrition?.meals || []);
+    const meals = annotateServedMealsLogistics(annotateServedMeals(withNoSwapNotes(applyFastingToMeals(displayMeals, fastingContext, clinicalConstraints))));
 
     const heatAdvisory = getGulfHeatAdvisory({ country_code: resolveCountryFromPhone(user.phone_number), date: now });
     

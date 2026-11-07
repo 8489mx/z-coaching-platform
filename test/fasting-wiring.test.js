@@ -106,7 +106,15 @@ test("wiring: active program response, coach save carry-over, client meals, swap
   assert.match(controller, /resolveClientFastingContext\(targetClient, activeProg\?\.program_data/);
   assert.match(read("src/api/services/liveFoodSwapSafety.js"), /isChristianFast/);
   assert.match(read("src/api/services/liveFoodSwapSafety.js"), /fastingDiet/);
-  assert.match(controller, /applyFastingToMeals\(program\.program_data\?\.nutrition\?\.meals/);
+  // B6-4 (#9): the serve path no longer reads the legacy `nutrition.meals`
+  // key — V2 never writes it, so client_view.meals was empty for every V2
+  // plan. Fasting is still applied to the served meals: the served culinary
+  // meals are normalised to the display shape first (legacy `nutrition.meals`
+  // stays the fallback for pre-fix programs), then applyFastingToMeals runs
+  // on them. Behavioural proof is in test/batch6-program-cluster.test.js
+  // (Ramadan relabelling and Lent substitution on real V2 meals).
+  assert.match(controller, /applyFastingToMeals\(displayMeals, fastingContext, clinicalConstraints\)/);
+  assert.match(controller, /normalizeCulinaryMealsForDisplay\(servedCulinaryMeals\(program\.program_data/);
   assert.match(read("frontend/src/pages/ClientInteractiveApp/components/WorkoutTab.jsx"), /cardioAdvisories\.map/);
   assert.match(read("frontend/src/pages/ClientInteractiveApp/components/MealsTab.jsx"), /fastingContext\?\.active/);
   assert.match(read("frontend/src/pages/CoachEditor.jsx"), /<CoachFastingToggle/);
