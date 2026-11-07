@@ -439,6 +439,7 @@ export const logout = async (req, res) => {
  * تغيير كلمة المرور مع إلغاء كافة الجلسات النشطة الأخرى فوراً (Session Revocation)
  */
 export const changePassword = async (req, res) => {
+  const ip = req.clientIp || req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
   try {
     const userId = req.user?.id;
     const { current_password, new_password } = req.body;
@@ -456,6 +457,10 @@ export const changePassword = async (req, res) => {
     if (user.password) {
       const isMatch = await bcrypt.compare(current_password, user.password);
       if (!isMatch) {
+        // B3-2 (#29): a wrong current password is a failed auth attempt, like
+        // a failed login — it must consume the auth limiter budget (5 per
+        // 15 minutes on this route) instead of being guessable without end.
+        await recordAuthFailedAttempt(ip, String(user.id));
         return res.status(401).json({ error: "كلمة المرور الحالية غير صحيحة" });
       }
     }
@@ -492,6 +497,9 @@ export const changePassword = async (req, res) => {
     });
 
     // إصدار توكن جديد محدث للجلسة الحالية
+    // B3-2 (#29): like a successful login, a proven-correct password clears
+    // the failure budget for this IP.
+    resetAuthAttempts(ip);
     const freshToken = generateToken(user.id, nextVersion);
 
     return res.status(200).json({
